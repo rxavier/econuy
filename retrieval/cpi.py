@@ -11,7 +11,6 @@ def get(update=None, revise=0, save=None):
     cpi = (cpi_raw.drop(["Mensual", "Acum.año", "Acum.12 meses"], axis=1).
            dropna(axis=0, how="all").set_index("Mes y año").rename_axis(None))
     cpi.columns = ["CPI index"]
-    cpi = cpi.apply(pd.to_numeric, errors="coerce")
 
     if update is not None:
         previous_data = pd.read_csv(update, sep=" ", index_col=0, header=[0, 1, 2, 3, 4, 5, 6, 7, 8])
@@ -21,6 +20,7 @@ def get(update=None, revise=0, save=None):
         non_revised.columns = ["CPI index"]
         cpi = non_revised.append(revised, sort=True)
 
+    cpi = cpi.apply(pd.to_numeric, errors="coerce")
     colnames.set_colnames(cpi, area="Prices and wages", currency="-", inf_adj="No",
                           index="2010-10-31", seas_adj="NSA", ts_type="-", cumperiods=1)
 
