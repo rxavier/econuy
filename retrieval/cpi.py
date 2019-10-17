@@ -18,7 +18,7 @@ def get(update=None, revise=0, save=None):
         non_revised = previous_data[:len(previous_data)-revise]
         revised = cpi[len(previous_data)-revise:]
         non_revised.columns = ["CPI index"]
-        cpi = non_revised.append(revised, sort=True)
+        cpi = non_revised.append(revised, sort=False)
 
     cpi = cpi.apply(pd.to_numeric, errors="coerce")
     colnames.set_colnames(cpi, area="Prices and wages", currency="-", inf_adj="No",
