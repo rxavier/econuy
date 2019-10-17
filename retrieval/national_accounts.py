@@ -44,7 +44,7 @@ def get(update=None, revise=0, save=None):
         if save is not None:
             base_transpose.to_csv(f"../data/{metadata['Name']}.csv", sep=" ")
 
-        parsed_excels.update({name: base_transpose})
+        parsed_excels.update({metadata["Name"]: base_transpose})
 
     return parsed_excels
 
