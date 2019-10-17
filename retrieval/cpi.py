@@ -31,4 +31,4 @@ def get(update=None, revise=0, save=None):
 
 
 if __name__ == "__main__":
-    prices = get(update="data/cpi.csv", revise=6, save="data/cpi.csv")
+    prices = get(update="../data/cpi.csv", revise=6, save="../data/cpi.csv")
