@@ -3,22 +3,22 @@ from pandas.tseries.offsets import MonthEnd
 
 from processing import colnames
 
-FILES = {"https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_101t.xls":
-         {"Rows": 12, "Inf. Adj.": "Const. 2005", "Index": "No", "Seas": "NSA"},
-         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_100t.xls":
-         {"Rows": 12, "Inf. Adj.": "Current", "Index": "No", "Seas": "NSA"},
-         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_104t.xls":
-         {"Rows": 10, "Inf. Adj.": "Const. 2005", "Index": "No", "Seas": "NSA"},
-         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_132t.xls":
-         {"Rows": 12, "Inf. Adj.": "Const. 2005", "Index": "2005=100", "Seas": "NSA"},
-         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_133t.xls":
-         {"Rows": 12, "Inf. Adj.": "Const. 2005", "Index": "2005=100", "Seas": "SA"}}
 
+def get(update=None, revise=0, save=None):
 
-def parse_excel(dictionary):
+    files = {"https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_101t.xls":
+             {"Rows": 12, "Inf. Adj.": "Const. 2005", "Index": "No", "Seas": "NSA", "Name": "na_ind_con_nsa"},
+             "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_100t.xls":
+             {"Rows": 12, "Inf. Adj.": "Current", "Index": "No", "Seas": "NSA", "Name": "na_ind_cur_nsa"},
+             "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_104t.xls":
+             {"Rows": 10, "Inf. Adj.": "Const. 2005", "Index": "No", "Seas": "NSA", "Name": "na_gas_con_nsa"},
+             "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_132t.xls":
+             {"Rows": 12, "Inf. Adj.": "Const. 2005", "Index": "2005=100", "Seas": "NSA", "Name": "na_ind_con_idx_nsa"},
+             "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_133t.xls":
+             {"Rows": 12, "Inf. Adj.": "Const. 2005", "Index": "2005=100", "Seas": "SA", "Name": "na_ind_con_idx_sa"}}
 
     parsed_excels = {}
-    for file, metadata in dictionary.items():
+    for file, metadata in files.items():
 
         base = pd.read_excel(file, skiprows=9, nrows=metadata["Rows"])
         base_pruned = base.drop(columns=["Unnamed: 0"]).dropna(axis=0, how="all").dropna(axis=1, how="all")
