@@ -25,13 +25,24 @@ def get(update=None, revise=0, save=None):
         base_transpose = base_pruned.transpose()
         base_transpose.columns = base_transpose.iloc[0]
         base_transpose.drop(["Unnamed: 1"], inplace=True)
-        base_transpose = base_transpose.apply(pd.to_numeric, errors="coerce")
 
         fix_na_dates(base_transpose)
+
+        if update is not None:
+            previous_data = pd.read_csv(f"../data/{metadata['Name']}.csv", sep=" ",
+                                        index_col=0, header=[0, 1, 2, 3, 4, 5, 6, 7, 8])
+            previous_data.index = pd.to_datetime(previous_data.index)
+            non_revised = previous_data[:len(previous_data)-revise]
+            revised = base_transpose[len(previous_data)-revise:]
+            non_revised.columns = base_transpose.columns
+            base_transpose = non_revised.append(revised, sort=False)
+
+        base_transpose = base_transpose.apply(pd.to_numeric, errors="coerce")
         colnames.set_colnames(base_transpose, area="National accounts", currency="UYU", inf_adj=metadata["Inf. Adj."],
                               index=metadata["Index"], seas_adj=metadata["Seas"], ts_type="Flow", cumperiods=1)
 
-        name = file.split("/")[-1].replace(".xls", "")
+        if save is not None:
+            base_transpose.to_csv(f"../data/{metadata['Name']}.csv", sep=" ")
 
         parsed_excels.update({name: base_transpose})
 
@@ -49,4 +60,4 @@ def fix_na_dates(df):
 
 
 if __name__ == "__main__":
-    national_accounts = parse_excel(FILES)
+    national_accounts = get(update=True, revise=4, save=True)
