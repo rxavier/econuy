@@ -8,7 +8,7 @@ def get(update=None, revise=0, save=None):
     file = "http://ine.gub.uy/c/document_library/get_file?uuid=3fbf4ffd-a829-420c-aca9-9f01ecd7919a&groupId=10181"
 
     nxr_raw = pd.read_excel(file, skiprows=4)
-    nxr = nxr_raw.dropna(axis=0, thresh=4).set_index("Mes y año").dropna(axis=1, how="all")
+    nxr = nxr_raw.dropna(axis=0, thresh=4).set_index("Mes y año").dropna(axis=1, how="all").rename_axis(None)
     nxr.columns = ["Buy, average", "Sell, average", "Buy, EOP", "Sell, EOP"]
 
     if update is not None:
