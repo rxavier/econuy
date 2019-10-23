@@ -1,6 +1,6 @@
 import pandas as pd
 
-from processing import colnames
+from processing import colnames, update_revise
 
 
 def get(update=None, revise=0, save=None):
@@ -14,12 +14,7 @@ def get(update=None, revise=0, save=None):
     labor.columns = ["LFPR", "Employment", "Unemployment"]
 
     if update is not None:
-        previous_data = pd.read_csv(update, sep=" ", index_col=0, header=[0, 1, 2, 3, 4, 5, 6, 7, 8])
-        previous_data.index = pd.to_datetime(previous_data.index)
-        non_revised = previous_data[:len(previous_data)-revise]
-        revised = labor[len(previous_data)-revise:]
-        non_revised.columns = ["LFPR", "Employment", "Unemployment"]
-        labor = non_revised.append(revised, sort=False)
+        labor = update_revise.upd_rev(labor, prev_data=update, revise=revise)
 
     labor = labor.apply(pd.to_numeric, errors="coerce")
     colnames.set_colnames(labor, area="Labor market", currency="-", inf_adj="No",
