@@ -1,6 +1,6 @@
 import pandas as pd
 
-from processing import colnames
+from processing import colnames, update_revise
 
 
 def get(update=None, revise=0, save=None):
@@ -12,12 +12,7 @@ def get(update=None, revise=0, save=None):
     nxr.columns = ["Buy, average", "Sell, average", "Buy, EOP", "Sell, EOP"]
 
     if update is not None:
-        previous_data = pd.read_csv(update, sep=" ", index_col=0, header=[0, 1, 2, 3, 4, 5, 6, 7, 8])
-        previous_data.index = pd.to_datetime(previous_data.index)
-        non_revised = previous_data[:len(previous_data)-revise]
-        revised = nxr[len(previous_data)-revise:]
-        non_revised.columns = ["Buy, average", "Sell, average", "Buy, EOP", "Sell, EOP"]
-        nxr = non_revised.append(revised, sort=False)
+        nxr = update_revise.upd_rev(nxr, prev_data=update, revise=revise)
 
     nxr = nxr.apply(pd.to_numeric, errors="coerce")
     colnames.set_colnames(nxr, area="Prices and wages", currency="-", inf_adj="No",

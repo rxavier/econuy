@@ -1,7 +1,7 @@
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
-from processing import colnames
+from processing import colnames, update_revise
 
 
 def get(update=None, revise=0, save=None):
@@ -29,13 +29,8 @@ def get(update=None, revise=0, save=None):
         fix_na_dates(base_transpose)
 
         if update is not None:
-            previous_data = pd.read_csv(f"../data/{metadata['Name']}.csv", sep=" ",
-                                        index_col=0, header=[0, 1, 2, 3, 4, 5, 6, 7, 8])
-            previous_data.index = pd.to_datetime(previous_data.index)
-            non_revised = previous_data[:len(previous_data)-revise]
-            revised = base_transpose[len(previous_data)-revise:]
-            non_revised.columns = base_transpose.columns
-            base_transpose = non_revised.append(revised, sort=False)
+            base_transpose = update_revise.upd_rev(base_transpose, prev_data=f"../data/{metadata['Name']}.csv",
+                                                   revise=revise)
 
         base_transpose = base_transpose.apply(pd.to_numeric, errors="coerce")
         colnames.set_colnames(base_transpose, area="National accounts", currency="UYU", inf_adj=metadata["Inf. Adj."],
