@@ -32,7 +32,6 @@ def get(update=None, revise=0, save=None):
             base_transpose = update_revise.upd_rev(base_transpose, prev_data=f"../data/{metadata['Name']}.csv",
                                                    revise=revise)
 
-
         base_transpose = base_transpose.apply(pd.to_numeric, errors="coerce")
         colnames.set_colnames(base_transpose, area="National accounts", currency="UYU", inf_adj=metadata["Inf. Adj."],
                               index=metadata["Index"], seas_adj=metadata["Seas"], ts_type="Flow", cumperiods=1)
