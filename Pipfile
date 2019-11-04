@@ -8,6 +8,7 @@ verify_ssl = true
 [packages]
 pandas = "~=0.25.0"
 xlrd = "~=1.2.0"
+matplotlib = "==3.1.1"
 
 [requires]
 python_version = "3.7"

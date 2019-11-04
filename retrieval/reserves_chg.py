@@ -41,7 +41,7 @@ def base_reports(files, update=None):
     if update is not None:
         urls = urls[-12:]
         previous_data = pd.read_csv(update, sep=" ", index_col=0, header=[0, 1, 2, 3, 4, 5, 6, 7, 8])
-        previous_data.columns = COLUMNS
+        previous_data.columns = COLUMNS[1:46]
         previous_data.index = pd.to_datetime(previous_data.index)
 
     reports = []
@@ -56,16 +56,12 @@ def base_reports(files, update=None):
                                  skiprows=3).dropna(axis=0, thresh=20).dropna(axis=1, thresh=20)
             base_transpose = base.transpose()
             base_transpose.index.name = "Date"
-            base_transpose.columns = base_transpose.iloc[0]
+            base_transpose = base_transpose.iloc[:, 1:46]
+            base_transpose.columns = COLUMNS[1:46]
             base_transpose = base_transpose.iloc[1:]
             base_transpose.index = pd.to_datetime(base_transpose.index, errors="coerce")
             base_transpose = base_transpose.loc[base_transpose.index.dropna()]
             base_transpose = base_transpose.loc[first_day:last_day]
-
-            if "5.4.8. Integración en dólares de tíulos en UI y pesos" in base_transpose.columns:
-                base_transpose.rename(columns={"5.4.8. Integración en dólares de tíulos en UI y pesos":
-                                               "5.4.8. Integración en dólares de tíulos en UI y pesos (neto)"},
-                                      inplace=True)
 
             reports.append(base_transpose)
 
@@ -90,13 +86,8 @@ def missing_reports(online, offline):
 
     missing_offline = []
     for file in offline:
-        offline_aux = pd.read_csv(file, sep=" ").set_index("Date", drop=True)
+        offline_aux = pd.read_csv(file, sep=" ", index_col=0)
         offline_aux.index = pd.to_datetime(offline_aux.index, errors="coerce")
-
-        if "5.4.8. Integración en dólares de tíulos en UI y pesos" in offline_aux.columns:
-            offline_aux.rename(columns={"5.4.8. Integración en dólares de tíulos en UI y pesos":
-                                        "5.4.8. Integración en dólares de tíulos en UI y pesos (neto)"},
-                               inplace=True)
 
         missing_offline.append(offline_aux)
 
@@ -118,7 +109,7 @@ def get_reserves_chg(files, online=None, offline=None, update=None, save=None):
         reserves.sort_index(inplace=True)
 
     colnames.set_colnames(reserves, area="International reserves", currency="USD", inf_adj="No",
-                          index="No", seas_adj="NSA", ts_type="Stock", cumperiods=1)
+                          index="No", seas_adj="NSA", ts_type="Flow", cumperiods=1)
 
     if save is not None:
         reserves.to_csv(save, sep=" ")

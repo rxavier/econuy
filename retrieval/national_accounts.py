@@ -4,7 +4,7 @@ from pandas.tseries.offsets import MonthEnd
 from processing import colnames, update_revise
 
 
-def get(update=None, revise=0, save=None):
+def get(update=False, revise=0, save=False):
 
     files = {"https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_101t.xls":
              {"Rows": 12, "Inf. Adj.": "Const. 2005", "Index": "No", "Seas": "NSA", "Name": "na_ind_con_nsa"},
@@ -28,7 +28,7 @@ def get(update=None, revise=0, save=None):
 
         fix_na_dates(base_transpose)
 
-        if update is not None:
+        if update is True:
             base_transpose = update_revise.upd_rev(base_transpose, prev_data=f"../data/{metadata['Name']}.csv",
                                                    revise=revise)
 
@@ -36,7 +36,7 @@ def get(update=None, revise=0, save=None):
         colnames.set_colnames(base_transpose, area="National accounts", currency="UYU", inf_adj=metadata["Inf. Adj."],
                               index=metadata["Index"], seas_adj=metadata["Seas"], ts_type="Flow", cumperiods=1)
 
-        if save is not None:
+        if save is True:
             base_transpose.to_csv(f"../data/{metadata['Name']}.csv", sep=" ")
 
         parsed_excels.update({metadata["Name"]: base_transpose})
