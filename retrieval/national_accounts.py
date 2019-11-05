@@ -1,7 +1,11 @@
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
+import os
 
+from config import ROOT_DIR
 from processing import colnames, update_revise
+
+DATA_PATH = os.path.join(ROOT_DIR, "data")
 
 
 def get(update=False, revise=0, save=False):
@@ -29,15 +33,16 @@ def get(update=False, revise=0, save=False):
         fix_na_dates(base_transpose)
 
         if update is True:
-            base_transpose = update_revise.upd_rev(base_transpose, prev_data=f"../data/{metadata['Name']}.csv",
-                                                   revise=revise)
+            update_path = os.path.join(DATA_PATH, metadata['Name'] + ".csv")
+            base_transpose = update_revise.upd_rev(base_transpose, prev_data=update_path, revise=revise)
 
         base_transpose = base_transpose.apply(pd.to_numeric, errors="coerce")
         colnames.set_colnames(base_transpose, area="National accounts", currency="UYU", inf_adj=metadata["Inf. Adj."],
                               index=metadata["Index"], seas_adj=metadata["Seas"], ts_type="Flow", cumperiods=1)
 
         if save is True:
-            base_transpose.to_csv(f"../data/{metadata['Name']}.csv", sep=" ")
+            save_path = os.path.join(DATA_PATH, metadata['Name'] + ".csv")
+            base_transpose.to_csv(save_path, sep=" ")
 
         parsed_excels.update({metadata["Name"]: base_transpose})
 

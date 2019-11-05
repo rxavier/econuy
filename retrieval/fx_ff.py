@@ -2,20 +2,20 @@ import pandas as pd
 import datetime as dt
 import urllib
 import os
-from config import ROOT_DIR
 
+from config import ROOT_DIR
 from processing import colnames
 
 URL = "https://www.bcu.gub.uy/Politica-Economica-y-Mercados/Mercado%20de%20Cambios/informepublico"
 DATES = pd.bdate_range("2013-11-01", dt.datetime.today()).strftime("%y%m%d").tolist()
 
+DATA_PATH = os.path.join(ROOT_DIR, "data")
+
 
 def get(dates, update=None, save=None):
 
-    data_path = os.path.join(ROOT_DIR, "data")
-
     if update is not None:
-        update_path = os.path.join(data_path, update)
+        update_path = os.path.join(DATA_PATH, update)
         prev_data = pd.read_csv(update_path, sep=" ", index_col=0, header=[0, 1, 2, 3, 4, 5, 6, 7, 8])
         prev_data.columns = ["Future", "Forward"]
         prev_data.index = pd.to_datetime(prev_data.index)
@@ -55,7 +55,7 @@ def get(dates, update=None, save=None):
                           index="No", seas_adj="NSA", ts_type="Flow", cumperiods=1)
 
     if save is not None:
-        save_path = os.path.join(data_path, save)
+        save_path = os.path.join(DATA_PATH, save)
         operations.to_csv(save_path, sep=" ")
 
     return operations

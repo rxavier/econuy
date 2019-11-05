@@ -1,6 +1,10 @@
 import pandas as pd
+import os
 
+from config import ROOT_DIR
 from processing import colnames, update_revise
+
+DATA_PATH = os.path.join(ROOT_DIR, "data")
 
 
 def get(update=None, revise=0, save=None):
@@ -13,17 +17,19 @@ def get(update=None, revise=0, save=None):
     cpi.columns = ["CPI index"]
 
     if update is not None:
-        cpi = update_revise.upd_rev(cpi, prev_data=update, revise=revise)
+        update_path = os.path.join(DATA_PATH, update)
+        cpi = update_revise.upd_rev(cpi, prev_data=update_path, revise=revise)
 
     cpi = cpi.apply(pd.to_numeric, errors="coerce")
     colnames.set_colnames(cpi, area="Prices and wages", currency="-", inf_adj="No",
                           index="2010-10-31", seas_adj="NSA", ts_type="-", cumperiods=1)
 
     if save is not None:
-        cpi.to_csv(save, sep=" ")
+        save_path = os.path.join(DATA_PATH, save)
+        cpi.to_csv(save_path, sep=" ")
 
     return cpi
 
 
 if __name__ == "__main__":
-    prices = get(update="../data/cpi.csv", revise=6, save="../data/cpi.csv")
+    prices = get(update="cpi.csv", revise=6, save="cpi.csv")
