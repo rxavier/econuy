@@ -1,7 +1,7 @@
 import pandas as pd
 import os
-from config import ROOT_DIR
 
+from config import ROOT_DIR
 from processing import colnames
 from retrieval import fx_ff, reserves_chg
 

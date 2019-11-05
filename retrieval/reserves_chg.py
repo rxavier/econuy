@@ -2,7 +2,9 @@ import pandas as pd
 import datetime as dt
 from dateutil.relativedelta import relativedelta
 import urllib
+import os
 
+from config import ROOT_DIR
 from processing import colnames
 
 BASE_URL = "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Informe%20Diario%20Pasivos%20Monetarios/infd_"
@@ -33,14 +35,17 @@ COLUMNS = ['SALDO AL INICIO DEL PERÍODO', '1. Compras netas de moneda extranjer
 YEARS = list(range(2013, dt.datetime.now().year + 1))
 FILES = [month + str(year) for year in YEARS for month in MONTHS]
 
+DATA_PATH = os.path.join(ROOT_DIR, "data")
+
 
 def base_reports(files, update=None):
 
     urls = [f"{BASE_URL}{file}.xls" for file in files]
 
     if update is not None:
+        update_path = os.path.join(DATA_PATH, update)
         urls = urls[-12:]
-        previous_data = pd.read_csv(update, sep=" ", index_col=0, header=[0, 1, 2, 3, 4, 5, 6, 7, 8])
+        previous_data = pd.read_csv(update_path, sep=" ", index_col=0, header=[0, 1, 2, 3, 4, 5, 6, 7, 8])
         previous_data.columns = COLUMNS[1:46]
         previous_data.index = pd.to_datetime(previous_data.index)
 
@@ -112,11 +117,12 @@ def get_reserves_chg(files, online=None, offline=None, update=None, save=None):
                           index="No", seas_adj="NSA", ts_type="Flow", cumperiods=1)
 
     if save is not None:
-        reserves.to_csv(save, sep=" ")
+        save_path = os.path.join(DATA_PATH, save)
+        reserves.to_csv(save_path, sep=" ")
 
     return reserves
 
 
 if __name__ == "__main__":
     int_reserves = get_reserves_chg(files=FILES, online=None, offline=None,
-                                    update="../data/reserves_chg.csv", save="../data/reserves_chg.csv")
+                                    update="reserves_chg.csv", save="reserves_chg.csv")

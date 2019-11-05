@@ -1,6 +1,10 @@
 import pandas as pd
+import os
 
+from config import ROOT_DIR
 from processing import colnames, update_revise
+
+DATA_PATH = os.path.join(ROOT_DIR, "data")
 
 
 def get(update=None, revise=0, save=None):
@@ -14,17 +18,19 @@ def get(update=None, revise=0, save=None):
     labor.columns = ["LFPR", "Employment", "Unemployment"]
 
     if update is not None:
-        labor = update_revise.upd_rev(labor, prev_data=update, revise=revise)
+        update_path = os.path.join(DATA_PATH, update)
+        labor = update_revise.upd_rev(labor, prev_data=update_path, revise=revise)
 
     labor = labor.apply(pd.to_numeric, errors="coerce")
     colnames.set_colnames(labor, area="Labor market", currency="-", inf_adj="No",
                           index="No", seas_adj="NSA", ts_type="-", cumperiods=1)
 
     if save is not None:
-        labor.to_csv(save, sep=" ")
+        save_path = os.path.join(DATA_PATH, save)
+        labor.to_csv(save_path, sep=" ")
 
     return labor
 
 
 if __name__ == "__main__":
-    labor_mkt = get(update="../data/labor.csv", revise=6, save="../data/labor.csv")
+    labor_mkt = get(update="labor.csv", revise=6, save="labor.csv")
