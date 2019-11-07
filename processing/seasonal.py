@@ -18,7 +18,8 @@ def decompose(df, exec_path):
     seas_adjs = []
     for column in range(len(df.columns)):
         series = df.iloc[:, column]
-        decomposition = sm.tsa.x13_arima_analysis(series, x12path=exec_path, forecast_years=0)
+        decomposition = sm.tsa.x13_arima_analysis(series, outlier=True, trading=True, forecast_years=0,
+                                                  x12path=exec_path, prefer_x13=True)
         trend = decomposition.trend
         seas_adj = decomposition.seasadj
 
