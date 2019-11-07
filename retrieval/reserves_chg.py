@@ -53,12 +53,14 @@ def base_reports(files, update=None):
     for url in urls:
 
         try:
-            month_of_report = pd.read_excel(url, sheet_name="INDICE")
+            with pd.ExcelFile(url) as xls:
+                month_of_report = pd.read_excel(xls, sheet_name="INDICE")
+                base = pd.read_excel(xls, sheet_name="ACTIVOS DE RESERVA",
+                                     skiprows=3).dropna(axis=0, thresh=20).dropna(axis=1, thresh=20)
+
             first_day = month_of_report.iloc[7, 4]
             last_day = first_day + relativedelta(months=1) - dt.timedelta(days=1)
 
-            base = pd.read_excel(url, sheet_name="ACTIVOS DE RESERVA",
-                                 skiprows=3).dropna(axis=0, thresh=20).dropna(axis=1, thresh=20)
             base_transpose = base.transpose()
             base_transpose.index.name = "Date"
             base_transpose = base_transpose.iloc[:, 1:46]
