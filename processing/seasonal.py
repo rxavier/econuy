@@ -1,5 +1,6 @@
-import pandas as pd
 import os
+
+import pandas as pd
 import statsmodels.api as sm
 
 from config import ROOT_DIR
