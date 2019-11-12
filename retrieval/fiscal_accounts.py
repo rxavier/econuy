@@ -59,3 +59,7 @@ def get(update=None, revise=0, save=None):
                 output.update({sheet: data})
 
     return output
+
+
+if __name__ == "__main__":
+    fiscal_accounts = get(update=True, revise=6, save=True)
