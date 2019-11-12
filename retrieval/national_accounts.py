@@ -1,6 +1,7 @@
+import os
+
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
-import os
 
 from config import ROOT_DIR
 from processing import colnames, update_revise

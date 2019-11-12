@@ -1,8 +1,9 @@
-import pandas as pd
 import datetime as dt
-from dateutil.relativedelta import relativedelta
-import urllib
 import os
+import urllib
+
+import pandas as pd
+from dateutil.relativedelta import relativedelta
 
 from config import ROOT_DIR
 from processing import colnames

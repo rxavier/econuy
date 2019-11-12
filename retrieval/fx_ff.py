@@ -1,7 +1,8 @@
-import pandas as pd
 import datetime as dt
-import urllib
 import os
+import urllib
+
+import pandas as pd
 
 from config import ROOT_DIR
 from processing import colnames
