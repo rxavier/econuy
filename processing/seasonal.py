@@ -9,7 +9,7 @@ from processing import colnames
 X13_PATH = os.path.join(ROOT_DIR, "x13as")
 
 
-def decompose(df, exec_path):
+def decompose(df):
 
     old_columns = df.columns
     df.columns = df.columns.get_level_values(level=0)
@@ -20,7 +20,7 @@ def decompose(df, exec_path):
     for column in range(len(df.columns)):
         series = df.iloc[:, column]
         decomposition = sm.tsa.x13_arima_analysis(series, outlier=True, trading=True, forecast_years=0,
-                                                  x12path=exec_path, prefer_x13=True)
+                                                  x12path=X13_PATH, prefer_x13=True)
         trend = decomposition.trend
         seas_adj = decomposition.seasadj
 
