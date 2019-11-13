@@ -15,7 +15,7 @@ URL = ("https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/dat
        "informacion-resultados-del-sector-publico")
 SHEETS = {"Sector Público No Financiero": "fiscal_nfps", "Sector Público Consolidado": "fiscal_gps",
           "Gobierno Central - BPS": "fiscal_gc-bps", "Empresas Públicas Consolidado": "fiscal_pe",
-          "ANCAP": "fiscal_ancap", "ANTEL": "fiscal_ante", "OSE": "fiscal_ose", "UTE": "fiscal_ute"}
+          "ANCAP": "fiscal_ancap", "ANTEL": "fiscal_antel", "OSE": "fiscal_ose", "UTE": "fiscal_ute"}
 
 
 def get(update=None, revise=0, save=None):
