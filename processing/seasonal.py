@@ -1,7 +1,9 @@
 import os
 
 import pandas as pd
+import numpy as np
 import statsmodels.api as sm
+from statsmodels.tools.sm_exceptions import X13Error
 
 from config import ROOT_DIR
 from processing import colnames
@@ -18,11 +20,18 @@ def decompose(df):
     trends = []
     seas_adjs = []
     for column in range(len(df.columns)):
-        series = df.iloc[:, column]
-        decomposition = sm.tsa.x13_arima_analysis(series, outlier=True, trading=True, forecast_years=0,
-                                                  x12path=X13_PATH, prefer_x13=True)
-        trend = decomposition.trend
-        seas_adj = decomposition.seasadj
+
+        try:
+            series = df.iloc[:, column]
+            decomposition = sm.tsa.x13_arima_analysis(series, outlier=True, trading=True, forecast_years=0,
+                                                      x12path=X13_PATH, prefer_x13=True)
+            trend = decomposition.trend
+            seas_adj = decomposition.seasadj
+
+        except X13Error:
+            print(f"X13 error found. Filling series '{df.columns[column]}' with NaN.")
+            trend = pd.Series(np.nan, index=df.index)
+            seas_adj = pd.Series(np.nan, index=df.index)
 
         trends.append(trend)
         seas_adjs.append(seas_adj)

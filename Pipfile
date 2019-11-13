@@ -13,6 +13,7 @@ statsmodels = "==0.10.1"
 requests = "==2.22.0"
 beautifulsoup4 = "==4.8.1"
 patool = "==1.12"
+numpy = "==1.17.4"
 
 [requires]
 python_version = "3.7"
