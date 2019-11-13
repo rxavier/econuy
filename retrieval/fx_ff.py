@@ -48,6 +48,7 @@ def get(dates, update=None, save=None):
     operations = pd.DataFrame(reports)
     operations.columns = ["Date", "Future", "Forward"]
     operations.set_index("Date", inplace=True)
+    operations = operations.divide(1000)
 
     if update is not None:
         operations = prev_data.append(operations, sort=False)
@@ -63,4 +64,4 @@ def get(dates, update=None, save=None):
 
 
 if __name__ == "__main__":
-    fx_ops = get(dates=DATES, update="reserves_ff.csv", save="reserves_ff.csv")
+    fx_ops = get(dates=DATES, update="fx_ff.csv", save="fx_ff.csv")

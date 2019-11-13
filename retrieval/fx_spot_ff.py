@@ -8,13 +8,12 @@ from retrieval import fx_ff, reserves_chg
 
 data_path = os.path.join(ROOT_DIR, "data")
 path_chg = os.path.join(data_path, "reserves_chg.csv")
-path_ff = os.path.join(data_path, "reserves_ff.csv")
+path_ff = os.path.join(data_path, "fx_ff.csv")
 path_save = os.path.join(data_path, "fx_spot_ff.csv")
 
 changes = reserves_chg.get_reserves_chg(files=reserves_chg.FILES, online=None, offline=None,
                                         update=path_chg, save=path_chg)
 ff = fx_ff.get(dates=fx_ff.DATES, update=path_ff, save=path_ff)
-ff = ff.apply(lambda x: x / 1000)
 
 spot = changes.iloc[:, 0]
 

@@ -80,8 +80,8 @@ def base_reports(files, update=None):
     reserves = pd.concat(reports, sort=False)
 
     if update is not None:
-        previous_data.append(reserves, sort=False)
-        reserves = previous_data.loc[~previous_data.index.duplicated(keep="last")]
+        reserves = previous_data.append(reserves, sort=False)
+        reserves = reserves.loc[~reserves.index.duplicated(keep="last")]
 
     reserves = reserves.apply(pd.to_numeric, errors="coerce")
 
