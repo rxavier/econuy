@@ -1,6 +1,9 @@
-import pandas as pd
+import datetime as dt
 
-from retrieval import nxr, cpi
+import pandas as pd
+from pandas.tseries.offsets import YearEnd
+
+from retrieval import nxr, cpi, national_accounts
 from processing import freqs, colnames, rolling
 
 
@@ -55,5 +58,42 @@ def real(df, start_date=None, end_date=None):
         col_text = f"Const. {start_date}_{end_date}"
 
     colnames.set_colnames(converted_df, inf_adj=col_text)
+
+    return converted_df
+
+
+def pcgdp(df, hifreq=True):
+
+    inferred_freq = pd.infer_freq(df.index)
+
+    gdp_base = national_accounts.get()["na_gdp_cur_nsa"]
+
+    if hifreq is False:
+        gdp_freq = freqs.freq_resample(gdp_base, target=inferred_freq, operation="sum")
+    else:
+        gdp_cum = rolling.rolling(gdp_base, periods=4)
+        gdp_freq = freqs.freq_resample(gdp_cum, target=inferred_freq, operation="upsample")
+
+    if df.columns.get_level_values("Currency")[0] == "USD":
+        gdp = usd(gdp_freq)
+        series_name = "NGDPD"
+    else:
+        gdp = gdp_freq
+        series_name = "NGDP"
+
+    last_year = gdp.index.max().year
+
+    gdp_url = (f"https://www.imf.org/external/pubs/ft/weo/2019/02/weodata/weorept.aspx?sy={last_year-1}&ey={last_year}&"
+               f"scsm=1&ssd=1&sort=country&ds=.&br=1&pr1.x=27&pr1.y=9&c=298&s={series_name}&grp=0&a=")
+    imf_data = pd.to_numeric(pd.read_html(gdp_url)[4].iloc[2, [5, 6]].reset_index(drop=True))
+    forecast = gdp.loc[[dt.datetime(last_year-1, 12, 31)]].multiply(imf_data.iloc[1]).divide(imf_data.iloc[0])
+    forecast.index = forecast.index + YearEnd(1)
+    gdp = gdp.append(forecast)
+    gdp = gdp.resample(inferred_freq).interpolate("linear")
+
+    gdp_to_use = gdp[gdp.index.isin(df.index)].divide(100000).iloc[:, 0]
+    converted_df = df.apply(lambda x: x / gdp_to_use)
+
+    colnames.set_colnames(converted_df, currency="% GDP")
 
     return converted_df
