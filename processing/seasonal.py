@@ -42,7 +42,7 @@ def decompose(df):
     trends.columns = old_columns
     seas_adjs.columns = old_columns
 
-    colnames.set_colnames(trends, seas_adj="Trend")
+    colnames.set_colnames(trends, seas_adj="Tendencia")
 
     colnames.set_colnames(seas_adjs, seas_adj="SA")
 

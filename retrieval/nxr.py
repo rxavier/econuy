@@ -14,14 +14,15 @@ def get(update=None, revise=0, save=None):
 
     nxr_raw = pd.read_excel(file, skiprows=4)
     nxr = nxr_raw.dropna(axis=0, thresh=4).set_index("Mes y año").dropna(axis=1, how="all").rename_axis(None)
-    nxr.columns = ["Buy, average", "Sell, average", "Buy, EOP", "Sell, EOP"]
+    nxr.columns = ["Tipo de cambio compra, promedio", "Tipo de cambio venta, promedio",
+                   "Tipo de cambio compra, fin período", "Tipo de cambio venta, fin período"]
 
     if update is not None:
         update_path = os.path.join(DATA_PATH, update)
         nxr = update_revise.upd_rev(nxr, prev_data=update_path, revise=revise)
 
     nxr = nxr.apply(pd.to_numeric, errors="coerce")
-    colnames.set_colnames(nxr, area="Prices and wages", currency="-", inf_adj="No",
+    colnames.set_colnames(nxr, area="Precios y salarios", currency="-", inf_adj="No",
                           index="No", seas_adj="NSA", ts_type="-", cumperiods=1)
 
     if save is not None:
