@@ -1,6 +1,7 @@
 import os
 
 import pandas as pd
+from pandas.tseries.offsets import MonthEnd
 
 from config import ROOT_DIR
 from processing import colnames, update_revise
@@ -16,6 +17,7 @@ def get(update=None, revise=0, save=None):
     cpi = (cpi_raw.drop(["Mensual", "Acum.año", "Acum.12 meses"], axis=1).
            dropna(axis=0, how="all").set_index("Mes y año").rename_axis(None))
     cpi.columns = ["Índice de precios al consumo"]
+    cpi.index = cpi.index + MonthEnd(1)
 
     if update is not None:
         update_path = os.path.join(DATA_PATH, update)

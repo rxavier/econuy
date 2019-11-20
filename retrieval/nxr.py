@@ -1,6 +1,7 @@
 import os
 
 import pandas as pd
+from pandas.tseries.offsets import MonthEnd
 
 from config import ROOT_DIR
 from processing import colnames, update_revise
@@ -16,6 +17,7 @@ def get(update=None, revise=0, save=None):
     nxr = nxr_raw.dropna(axis=0, thresh=4).set_index("Mes y año").dropna(axis=1, how="all").rename_axis(None)
     nxr.columns = ["Tipo de cambio compra, promedio", "Tipo de cambio venta, promedio",
                    "Tipo de cambio compra, fin período", "Tipo de cambio venta, fin período"]
+    nxr.index = nxr.index + MonthEnd(1)
 
     if update is not None:
         update_path = os.path.join(DATA_PATH, update)
