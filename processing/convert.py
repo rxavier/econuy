@@ -13,12 +13,12 @@ def usd(df):
 
     nxr_data = nxr.get()
 
-    if df.columns.get_level_values("Type")[0] == "Flow":
+    if df.columns.get_level_values("Tipo")[0] == "Flujo":
 
-        colnames.set_colnames(nxr_data, ts_type="Flow")
+        colnames.set_colnames(nxr_data, ts_type="Flujo")
         nxr_matching_freq = freqs.freq_resample(nxr_data, target=inferred_freq, operation="average").iloc[:, [1]]
 
-        cum_periods = int(df.columns.get_level_values("Cumulative periods")[0])
+        cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
         nxr_matching_freq = rolling.rolling(nxr_matching_freq, periods=cum_periods, operation="average")
 
     else:
@@ -39,10 +39,10 @@ def real(df, start_date=None, end_date=None):
     inferred_freq = pd.infer_freq(df.index)
 
     cpi_data = cpi.get()
-    colnames.set_colnames(cpi_data, ts_type="Flow")
+    colnames.set_colnames(cpi_data, ts_type="Flujo")
     cpi_matching_freq = freqs.freq_resample(cpi_data, target=inferred_freq, operation="average").iloc[:, [0]]
 
-    cum_periods = int(df.columns.get_level_values("Cumulative periods")[0])
+    cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
     cpi_matching_freq = rolling.rolling(cpi_matching_freq, periods=cum_periods, operation="average")
 
     cpi_to_use = cpi_matching_freq[cpi_matching_freq.index.isin(df.index)].iloc[:, 0]
@@ -74,7 +74,7 @@ def pcgdp(df, hifreq=True):
         gdp_cum = rolling.rolling(gdp_base, periods=4)
         gdp_freq = freqs.freq_resample(gdp_cum, target=inferred_freq, operation="upsample")
 
-    if df.columns.get_level_values("Currency")[0] == "USD":
+    if df.columns.get_level_values("Unidad/Moneda")[0] == "USD":
         gdp = usd(gdp_freq)
         series_name = "NGDPD"
     else:
@@ -94,6 +94,6 @@ def pcgdp(df, hifreq=True):
     gdp_to_use = gdp[gdp.index.isin(df.index)].divide(100000).iloc[:, 0]
     converted_df = df.apply(lambda x: x / gdp_to_use)
 
-    colnames.set_colnames(converted_df, currency="% GDP")
+    colnames.set_colnames(converted_df, currency="% PBI")
 
     return converted_df

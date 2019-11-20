@@ -12,7 +12,7 @@ def rolling(df, periods=None, operation="sum"):
     window_operation = {"sum": lambda x: x.rolling(window=periods, min_periods=periods).sum(),
                         "average": lambda x: x.rolling(window=periods, min_periods=periods).mean()}
 
-    if df.columns.get_level_values("Type")[0] == "Stock":
+    if df.columns.get_level_values("Tipo")[0] == "Stock":
         raise Warning("Rolling operations shouldn't be calculated on stock variables")
 
     if periods is None:

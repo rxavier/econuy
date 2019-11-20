@@ -3,7 +3,7 @@ from processing import colnames
 
 def freq_resample(df, target, operation="sum", interpolation="linear"):
 
-    if df.columns.get_level_values("Type")[0] == "Flow":
+    if df.columns.get_level_values("Tipo")[0] == "Flujo":
 
         if operation == "sum":
             resampled_df = df.resample(target).sum()
@@ -15,14 +15,14 @@ def freq_resample(df, target, operation="sum", interpolation="linear"):
             raise Warning("Only sum, average and upsample are accepted operations")
             return
 
-        cum_periods = df.columns.get_level_values("Cumulative periods")[0]
+        cum_periods = df.columns.get_level_values("Acum. períodos")[0]
         if cum_periods != 1:
             input_notna = df.iloc[:, 0].count()
             output_notna = resampled_df.iloc[:, 0].count()
             cum_adj = round(output_notna/input_notna)
             colnames.set_colnames(resampled_df, cumperiods=int(cum_periods*cum_adj))
 
-    elif df.columns.get_level_values("Type")[0] == "Stock":
+    elif df.columns.get_level_values("Tipo")[0] == "Stock":
 
         resampled_df = df.resample(target, convention="end").asfreq().interpolate(method=interpolation)
 

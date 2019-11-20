@@ -9,8 +9,8 @@ def set_colnames(df, area=None, currency=None, inf_adj=None, index=None, seas_ad
     if not isinstance(df.columns, pd.core.index.MultiIndex):
         df.columns = pd.MultiIndex.from_product([colnames, [area], [inferred_freq], [currency],
                                                  [inf_adj], [index], [seas_adj], [ts_type], [cumperiods]],
-                                                names=["Indicator", "Area", "Frequency", "Currency", "Inf. Adj.",
-                                                       "Index", "Seas. Adj.", "Type", "Cumulative periods"])
+                                                names=["Indicador", "Área", "Frecuencia", "Unidad/Moneda", "Inf. adj.",
+                                                       "Índice", "Seas. Adj.", "Tipo", "Acum. períodos"])
     else:
         df.columns = df.columns.set_levels([inferred_freq], level=2)
 

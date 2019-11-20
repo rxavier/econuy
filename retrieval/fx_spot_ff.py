@@ -20,9 +20,9 @@ spot = changes.iloc[:, 0]
 fx_ops = pd.merge(spot, ff, how="outer", left_index=True, right_index=True)
 fx_ops = fx_ops.loc[(fx_ops.index >= ff.index.min()) & (fx_ops.index <= spot.index.max())]
 fx_ops = fx_ops.apply(pd.to_numeric, errors="coerce")
-fx_ops.columns = ["Spot", "Future", "Forward"]
+fx_ops.columns = ["Spot", "Futuros", "Forwards"]
 
-colnames.set_colnames(fx_ops, area="International reserves", currency="USD", inf_adj="No",
-                      index="No", seas_adj="NSA", ts_type="Flow", cumperiods=1)
+colnames.set_colnames(fx_ops, area="Reservas internacionales", currency="USD", inf_adj="No",
+                      index="No", seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
 fx_ops.to_csv(path_save, sep=" ")

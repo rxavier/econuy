@@ -116,8 +116,8 @@ def get_reserves_chg(files, online=None, offline=None, update=None, save=None):
         reserves = reserves.append(missing, sort=False)
         reserves.sort_index(inplace=True)
 
-    colnames.set_colnames(reserves, area="International reserves", currency="USD", inf_adj="No",
-                          index="No", seas_adj="NSA", ts_type="Flow", cumperiods=1)
+    colnames.set_colnames(reserves, area="Reservas internacionales", currency="USD", inf_adj="No",
+                          index="No", seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
     if save is not None:
         save_path = os.path.join(DATA_PATH, save)
