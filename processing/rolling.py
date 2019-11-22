@@ -2,9 +2,9 @@ import pandas as pd
 
 from processing import colnames
 
-PD_FREQUENCIES = {"A-DEC": 1,
+PD_FREQUENCIES = {"A": 1,
                   "Q-DEC": 4,
-                  "M-DEC": 12}
+                  "M": 12}
 
 
 def rolling(df, periods=None, operation="sum"):
