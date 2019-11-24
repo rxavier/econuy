@@ -91,7 +91,7 @@ def pcgdp(df, hifreq=True):
     gdp = gdp.append(forecast)
     gdp = gdp.resample(inferred_freq).interpolate("linear")
 
-    gdp_to_use = gdp[gdp.index.isin(df.index)].divide(100000).iloc[:, 0]
+    gdp_to_use = gdp[gdp.index.isin(df.index)].iloc[:, 0]
     converted_df = df.apply(lambda x: x / gdp_to_use)
 
     colnames.set_colnames(converted_df, currency="% PBI")
