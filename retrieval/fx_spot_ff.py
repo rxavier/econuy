@@ -20,6 +20,7 @@ spot = changes.iloc[:, 0]
 fx_ops = pd.merge(spot, ff, how="outer", left_index=True, right_index=True)
 fx_ops = fx_ops.loc[(fx_ops.index >= ff.index.min()) & (fx_ops.index <= spot.index.max())]
 fx_ops = fx_ops.apply(pd.to_numeric, errors="coerce")
+fx_ops = fx_ops.fillna(0)
 fx_ops.columns = ["Spot", "Futuros", "Forwards"]
 
 colnames.set_colnames(fx_ops, area="Reservas internacionales", currency="USD", inf_adj="No",
