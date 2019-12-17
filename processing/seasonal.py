@@ -13,25 +13,26 @@ X13_PATH = os.path.join(ROOT_DIR, "x13as")
 
 def decompose(df):
 
-    old_columns = df.columns
-    df.columns = df.columns.get_level_values(level=0)
-    df.index = pd.to_datetime(df.index, errors="coerce")
+    df_proc = df.copy()
+    old_columns = df_proc.columns
+    df_proc.columns = df_proc.columns.get_level_values(level=0)
+    df_proc.index = pd.to_datetime(df_proc.index, errors="coerce")
 
     trends = []
     seas_adjs = []
-    for column in range(len(df.columns)):
+    for column in range(len(df_proc.columns)):
 
         try:
-            series = df.iloc[:, column]
+            series = df_proc.iloc[:, column]
             decomposition = sm.tsa.x13_arima_analysis(series, outlier=True, trading=True, forecast_years=0,
                                                       x12path=X13_PATH, prefer_x13=True)
             trend = decomposition.trend
             seas_adj = decomposition.seasadj
 
         except X13Error:
-            print(f"X13 error found. Filling series '{df.columns[column]}' with NaN.")
-            trend = pd.Series(np.nan, index=df.index)
-            seas_adj = pd.Series(np.nan, index=df.index)
+            print(f"X13 error found. Filling series '{df_proc.columns[column]}' with NaN.")
+            trend = pd.Series(np.nan, index=df_proc.index)
+            seas_adj = pd.Series(np.nan, index=df_proc.index)
 
         trends.append(trend)
         seas_adjs.append(seas_adj)
