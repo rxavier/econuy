@@ -61,14 +61,14 @@ def get(update=False, revise=0, save=False):
 
         fix_na_dates(base_transpose)
 
+        if metadata["Index"] == "No":
+            base_transpose = base_transpose.divide(1000)
+
         if update is True:
             update_path = os.path.join(DATA_PATH, metadata['Name'] + ".csv")
             base_transpose = update_revise.upd_rev(base_transpose, prev_data=update_path, revise=revise)
 
         base_transpose = base_transpose.apply(pd.to_numeric, errors="coerce")
-
-        if metadata["Index"] == "No":
-            base_transpose = base_transpose.divide(1000)
 
         colnames.set_colnames(base_transpose, area="Actividad económica", currency="UYU", inf_adj=metadata["Inf. Adj."],
                               index=metadata["Index"], seas_adj=metadata["Seas"], ts_type="Flujo", cumperiods=1)
