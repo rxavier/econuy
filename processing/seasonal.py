@@ -11,7 +11,7 @@ from processing import colnames
 X13_PATH = os.path.join(ROOT_DIR, "x13as")
 
 
-def decompose(df):
+def decompose(df, trading=True, outlier=True):
 
     df_proc = df.copy()
     old_columns = df_proc.columns
@@ -22,17 +22,69 @@ def decompose(df):
     seas_adjs = []
     for column in range(len(df_proc.columns)):
 
+        series = df_proc.iloc[:, column]
+
         try:
-            series = df_proc.iloc[:, column]
-            decomposition = sm.tsa.x13_arima_analysis(series, outlier=True, trading=True, forecast_years=0,
+            decomposition = sm.tsa.x13_arima_analysis(series, outlier=outlier, trading=trading, forecast_years=0,
                                                       x12path=X13_PATH, prefer_x13=True)
             trend = decomposition.trend
             seas_adj = decomposition.seasadj
 
         except X13Error:
-            print(f"X13 error found. Filling series '{df_proc.columns[column]}' with NaN.")
-            trend = pd.Series(np.nan, index=df_proc.index)
-            seas_adj = pd.Series(np.nan, index=df_proc.index)
+
+            if outlier is True:
+                try:
+                    print(f"X13 error found while processing '{df_proc.columns[column]}' with selected parameters."
+                          f"Trying with outlier=False...")
+                    decomposition = sm.tsa.x13_arima_analysis(series, outlier=False, trading=trading, forecast_years=0,
+                                                              x12path=X13_PATH, prefer_x13=True)
+                    trend = decomposition.trend
+                    seas_adj = decomposition.seasadj
+
+                except X13Error:
+
+                    if trading is True:
+                        try:
+                            print(f"X13 error found while processing '{df_proc.columns[column]}' with trading=True."
+                                  f"Trying with trading=False...")
+                            decomposition = sm.tsa.x13_arima_analysis(series, outlier=False, trading=False,
+                                                                      forecast_years=0, x12path=X13_PATH,
+                                                                      prefer_x13=True)
+                            trend = decomposition.trend
+                            seas_adj = decomposition.seasadj
+
+                        except X13Error:
+                            print(f"X13 error found while processing '{df_proc.columns[column]}'. Filling with nan.")
+                            trend = pd.Series(np.nan, index=df_proc.index)
+                            seas_adj = pd.Series(np.nan, index=df_proc.index)
+
+            elif trading is True:
+
+                try:
+                    print(f"X13 error found while processing '{df_proc.columns[column]}' with selected parameters."
+                          f"Trying with trading=False...")
+                    decomposition = sm.tsa.x13_arima_analysis(series, outlier=outlier, trading=False, forecast_years=0,
+                                                              x12path=X13_PATH, prefer_x13=True)
+                    trend = decomposition.trend
+                    seas_adj = decomposition.seasadj
+
+                except X13Error:
+                    print(f"X13 error found while processing '{df_proc.columns[column]}'. Filling with nan.")
+                    trend = pd.Series(np.nan, index=df_proc.index)
+                    seas_adj = pd.Series(np.nan, index=df_proc.index)
+
+            else:
+
+                try:
+                    decomposition = sm.tsa.x13_arima_analysis(series, outlier=outlier, trading=trading, forecast_years=0,
+                                                              x12path=X13_PATH, prefer_x13=True)
+                    trend = decomposition.trend
+                    seas_adj = decomposition.seasadj
+
+                except X13Error:
+                    print(f"X13 error found while processing '{df_proc.columns[column]}'. Filling with nan.")
+                    trend = pd.Series(np.nan, index=df_proc.index)
+                    seas_adj = pd.Series(np.nan, index=df_proc.index)
 
         trends.append(trend)
         seas_adjs.append(seas_adj)
