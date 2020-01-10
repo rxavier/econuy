@@ -12,6 +12,7 @@ from config import ROOT_DIR
 from processing import colnames, update_revise
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
+update_threshold = 25
 URL = ("https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/"
        "informacion-resultados-del-sector-publico")
 SHEETS = {"Sector Público No Financiero":
@@ -91,7 +92,7 @@ SHEETS = {"Sector Público No Financiero":
                         "Resultado: Global"]}}
 
 
-def get(update=None, revise=0, save=None):
+def get(update=False, revise=0, save=False, force_update=False):
     response = requests.get(URL)
     soup = BeautifulSoup(response.content, "html.parser")
     links = soup.find_all(href=re.compile("\\.rar$"))
@@ -110,6 +111,16 @@ def get(update=None, revise=0, save=None):
 
             for sheet, metadata in SHEETS.items():
 
+                if update is True:
+                    update_path = os.path.join(DATA_PATH, metadata['Name'] + ".csv")
+                    delta, previous_data = update_revise.check_modified(update_path)
+
+                    if delta < update_threshold and force_update is False:
+                        print(f"File in update path was modified within {update_threshold} day(s)."
+                              f"Skipping download...")
+                        output.update({metadata["Name"]: previous_data})
+                        continue
+
                 data = (pd.read_excel(xls, sheet_name=sheet).
                         dropna(axis=0, thresh=4).dropna(axis=1, thresh=4).
                         transpose().set_index(2, drop=True))
@@ -119,8 +130,7 @@ def get(update=None, revise=0, save=None):
                 data.columns = metadata["Colnames"]
 
                 if update is True:
-                    update_path = os.path.join(DATA_PATH, metadata["Name"] + ".csv")
-                    data = update_revise.upd_rev(data, prev_data=update_path, revise=revise)
+                    data = update_revise.upd_rev(new_data=data, prev_data=previous_data, revise=revise)
 
                 data = data.apply(pd.to_numeric, errors="coerce")
                 colnames.set_colnames(data, area="Cuentas fiscales y deuda", currency="UYU", inf_adj="No",

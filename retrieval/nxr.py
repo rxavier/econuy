@@ -7,9 +7,18 @@ from config import ROOT_DIR
 from processing import colnames, update_revise
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
+update_threshold = 25
 
 
-def get(update=None, revise=0, save=None):
+def get(update=None, revise=0, save=None, force_update=False):
+
+    if update is not None:
+        update_path = os.path.join(DATA_PATH, update)
+        delta, previous_data = update_revise.check_modified(update_path)
+
+        if delta < update_threshold and force_update is False:
+            print(f"File in update path was modified within {update_threshold} day(s). Skipping download...")
+            return previous_data
 
     file = "http://ine.gub.uy/c/document_library/get_file?uuid=3fbf4ffd-a829-420c-aca9-9f01ecd7919a&groupId=10181"
 
@@ -20,8 +29,7 @@ def get(update=None, revise=0, save=None):
     nxr.index = nxr.index + MonthEnd(1)
 
     if update is not None:
-        update_path = os.path.join(DATA_PATH, update)
-        nxr = update_revise.upd_rev(nxr, prev_data=update_path, revise=revise)
+        nxr = update_revise.upd_rev(new_data=nxr, prev_data=previous_data, revise=revise)
 
     nxr = nxr.apply(pd.to_numeric, errors="coerce")
     colnames.set_colnames(nxr, area="Precios y salarios", currency="-", inf_adj="No",

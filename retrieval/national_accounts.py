@@ -7,9 +7,10 @@ from config import ROOT_DIR
 from processing import colnames, update_revise
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
+update_threshold = 80
 
 
-def get(update=False, revise=0, save=False):
+def get(update=False, revise=0, save=False, force_update=False):
 
     files = {"https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_101t.xls":
              {"Rows": 12, "Inf. Adj.": "Const. 2005", "Index": "No", "Seas": "NSA", "Name": "na_ind_con_nsa",
@@ -53,6 +54,15 @@ def get(update=False, revise=0, save=False):
     parsed_excels = {}
     for file, metadata in files.items():
 
+        if update is True:
+            update_path = os.path.join(DATA_PATH, metadata['Name'] + ".csv")
+            delta, previous_data = update_revise.check_modified(update_path)
+
+            if delta < update_threshold and force_update is False:
+                print(f"File in update path was modified within {update_threshold} day(s). Skipping download...")
+                parsed_excels.update({metadata["Name"]: previous_data})
+                continue
+
         base = pd.read_excel(file, skiprows=9, nrows=metadata["Rows"])
         base_pruned = base.drop(columns=["Unnamed: 0"]).dropna(axis=0, how="all").dropna(axis=1, how="all")
         base_transpose = base_pruned.transpose()
@@ -65,8 +75,7 @@ def get(update=False, revise=0, save=False):
             base_transpose = base_transpose.divide(1000)
 
         if update is True:
-            update_path = os.path.join(DATA_PATH, metadata['Name'] + ".csv")
-            base_transpose = update_revise.upd_rev(base_transpose, prev_data=update_path, revise=revise)
+            base_transpose = update_revise.upd_rev(new_data=base_transpose, prev_data=previous_data, revise=revise)
 
         base_transpose = base_transpose.apply(pd.to_numeric, errors="coerce")
 
