@@ -4,7 +4,7 @@ import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
 from config import ROOT_DIR
-from processing import colnames, update_revise
+from processing import colnames, updates
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 25
@@ -14,7 +14,7 @@ def get(update=None, revise=0, save=None, force_update=False):
 
     if update is not None:
         update_path = os.path.join(DATA_PATH, update)
-        delta, previous_data = update_revise.check_modified(update_path)
+        delta, previous_data = updates.check_modified(update_path)
 
         if delta < update_threshold and force_update is False:
             print(f"File in update path was modified within {update_threshold} day(s). Skipping download...")
@@ -29,7 +29,7 @@ def get(update=None, revise=0, save=None, force_update=False):
     cpi.index = cpi.index + MonthEnd(1)
 
     if update is not None:
-        cpi = update_revise.upd_rev(new_data=cpi, prev_data=previous_data, revise=revise)
+        cpi = updates.revise(new_data=cpi, prev_data=previous_data, revise=revise)
 
     cpi = cpi.apply(pd.to_numeric, errors="coerce")
     colnames.set_colnames(cpi, area="Precios y salarios", currency="-", inf_adj="No",

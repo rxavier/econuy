@@ -9,7 +9,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from config import ROOT_DIR
-from processing import colnames, update_revise
+from processing import colnames, updates
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 25
@@ -113,7 +113,7 @@ def get(update=False, revise=0, save=False, force_update=False):
 
                 if update is True:
                     update_path = os.path.join(DATA_PATH, metadata['Name'] + ".csv")
-                    delta, previous_data = update_revise.check_modified(update_path)
+                    delta, previous_data = updates.check_modified(update_path)
 
                     if delta < update_threshold and force_update is False:
                         print(f"File in update path was modified within {update_threshold} day(s)."
@@ -130,7 +130,7 @@ def get(update=False, revise=0, save=False, force_update=False):
                 data.columns = metadata["Colnames"]
 
                 if update is True:
-                    data = update_revise.upd_rev(new_data=data, prev_data=previous_data, revise=revise)
+                    data = updates.revise(new_data=data, prev_data=previous_data, revise=revise)
 
                 data = data.apply(pd.to_numeric, errors="coerce")
                 colnames.set_colnames(data, area="Cuentas fiscales y deuda", currency="UYU", inf_adj="No",

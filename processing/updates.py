@@ -14,7 +14,7 @@ def check_modified(data_path: str):
     return delta, previous_data
 
 
-def upd_rev(new_data: pd.DataFrame, prev_data: pd.DataFrame, revise: int):
+def revise(new_data: pd.DataFrame, prev_data: pd.DataFrame, revise: int):
 
     non_revised = prev_data[:len(prev_data)-revise]
     revised = new_data[len(prev_data)-revise:]

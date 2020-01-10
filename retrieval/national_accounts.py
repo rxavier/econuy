@@ -4,7 +4,7 @@ import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
 from config import ROOT_DIR
-from processing import colnames, update_revise
+from processing import colnames, updates
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 80
@@ -56,7 +56,7 @@ def get(update=False, revise=0, save=False, force_update=False):
 
         if update is True:
             update_path = os.path.join(DATA_PATH, metadata['Name'] + ".csv")
-            delta, previous_data = update_revise.check_modified(update_path)
+            delta, previous_data = updates.check_modified(update_path)
 
             if delta < update_threshold and force_update is False:
                 print(f"File in update path was modified within {update_threshold} day(s). Skipping download...")
@@ -75,7 +75,7 @@ def get(update=False, revise=0, save=False, force_update=False):
             base_transpose = base_transpose.divide(1000)
 
         if update is True:
-            base_transpose = update_revise.upd_rev(new_data=base_transpose, prev_data=previous_data, revise=revise)
+            base_transpose = updates.revise(new_data=base_transpose, prev_data=previous_data, revise=revise)
 
         base_transpose = base_transpose.apply(pd.to_numeric, errors="coerce")
 

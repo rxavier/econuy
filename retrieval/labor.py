@@ -4,7 +4,7 @@ import datetime as dt
 import pandas as pd
 
 from config import ROOT_DIR
-from processing import colnames, update_revise
+from processing import colnames, updates
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 25
@@ -14,7 +14,7 @@ def get(update=None, revise=0, save=None, force_update=False):
 
     if update is not None:
         update_path = os.path.join(DATA_PATH, update)
-        delta, previous_data = update_revise.check_modified(update_path)
+        delta, previous_data = updates.check_modified(update_path)
 
         if delta < update_threshold and force_update is False:
             print(f"File in update path was modified within {update_threshold} day(s). Skipping download...")
@@ -29,7 +29,7 @@ def get(update=None, revise=0, save=None, force_update=False):
     labor.columns = ["Tasa de actividad", "Tasa de empleo", "Tasa de desempleo"]
 
     if update is not None:
-        labor = update_revise.upd_rev(new_data=labor, prev_data=previous_data, revise=revise)
+        labor = updates.revise(new_data=labor, prev_data=previous_data, revise=revise)
 
     labor = labor.apply(pd.to_numeric, errors="coerce")
     colnames.set_colnames(labor, area="Mercado laboral", currency="-", inf_adj="No",
