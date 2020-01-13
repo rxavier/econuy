@@ -13,8 +13,7 @@ from processing import colnames, updates
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 25
-URL = ("https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/"
-       "informacion-resultados-del-sector-publico")
+URL = "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos"
 SHEETS = {"Sector Público No Financiero":
           {"Name": "fiscal_nfps",
            "Colnames": ["Ingresos: SPNF", "Ingresos: Gobierno central", "Ingresos: DGI", "Ingresos: IRP",
