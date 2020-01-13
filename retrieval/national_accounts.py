@@ -99,7 +99,3 @@ def fix_na_dates(df):
     df.index = df.index.str.replace(r"\bIII \b", "9-", regex=True)
     df.index = df.index.str.replace(r"\bIV \b", "12-", regex=True)
     df.index = pd.to_datetime(df.index, format="%m-%Y") + MonthEnd(1)
-
-
-if __name__ == "__main__":
-    national_accounts = get(update=True, revise_rows=4, save=True)

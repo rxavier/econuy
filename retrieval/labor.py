@@ -40,7 +40,3 @@ def get(update=None, revise=0, save=None, force_update=False):
         labor.to_csv(save_path, sep=" ")
 
     return labor
-
-
-if __name__ == "__main__":
-    labor_mkt = get(update="labor.csv", revise=6, save="labor.csv")

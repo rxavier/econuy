@@ -141,7 +141,3 @@ def get(update=False, revise_rows=0, save=False, force_update=False):
                 output.update({metadata["Name"]: data})
 
     return output
-
-
-if __name__ == "__main__":
-    fiscal_accounts = get(save=True)
