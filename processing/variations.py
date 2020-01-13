@@ -1,6 +1,6 @@
 import pandas as pd
 
-from processing import colnames, rolling
+from processing import colnames, freqs
 
 
 def var_diff(df, operation="var", period_op="last"):
@@ -31,7 +31,7 @@ def var_diff(df, operation="var", period_op="last"):
         if df.columns.get_level_values("Tipo")[0] == "Stock":
             output = df.apply(type_change[period_op][operation][0]).multiply(100)
         else:
-            output = rolling.rolling(df, operation="sum")
+            output = freqs.rolling(df, operation="sum")
             output = output.apply(type_change[period_op][operation][0]).multiply(100)
 
         colnames.set_colnames(output, index=type_change[period_op][operation][1])

@@ -4,7 +4,7 @@ import pandas as pd
 from pandas.tseries.offsets import YearEnd
 
 from retrieval import nxr, cpi, national_accounts
-from processing import freqs, colnames, rolling
+from processing import freqs, colnames
 
 
 def usd(df):
@@ -19,7 +19,7 @@ def usd(df):
         nxr_matching_freq = freqs.freq_resample(nxr_data, target=inferred_freq, operation="average").iloc[:, [1]]
 
         cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
-        nxr_matching_freq = rolling.rolling(nxr_matching_freq, periods=cum_periods, operation="average")
+        nxr_matching_freq = freqs.rolling(nxr_matching_freq, periods=cum_periods, operation="average")
 
     else:
 
@@ -43,7 +43,7 @@ def real(df, start_date=None, end_date=None):
     cpi_matching_freq = freqs.freq_resample(cpi_data, target=inferred_freq, operation="average").iloc[:, [0]]
 
     cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
-    cpi_matching_freq = rolling.rolling(cpi_matching_freq, periods=cum_periods, operation="average")
+    cpi_matching_freq = freqs.rolling(cpi_matching_freq, periods=cum_periods, operation="average")
 
     cpi_to_use = cpi_matching_freq[cpi_matching_freq.index.isin(df.index)].iloc[:, 0]
 
@@ -71,7 +71,7 @@ def pcgdp(df, hifreq=True):
     if hifreq is False:
         gdp_freq = freqs.freq_resample(gdp_base, target=inferred_freq, operation="sum")
     else:
-        gdp_cum = rolling.rolling(gdp_base, periods=4)
+        gdp_cum = freqs.rolling(gdp_base, periods=4)
         gdp_freq = freqs.freq_resample(gdp_cum, target=inferred_freq, operation="upsample")
 
     if df.columns.get_level_values("Unidad/Moneda")[0] == "USD":
