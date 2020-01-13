@@ -70,12 +70,11 @@ SHEETS = {"Sector Público No Financiero":
                         "Egresos: No corrientes", "Egresos: Inversiones", "Egresos: Var. stock petróleo",
                         "Egresos: Otros", "Egresos: Dividendo", "Resultado: Global"]},
           "ANTEL":
-          {"Name": "fiscal_ancap",
+          {"Name": "fiscal_antel",
            "Colnames": ["Ingresos", "Ingresos: Venta bienes y servicios", "Ingresos: Otros",
                         "Ingresos: Transferencias GC", "Egresos", "Egresos: Corrientes", "Egresos: Remuneraciones",
                         "Egresos: Compras bienes y servicios", "Egresos: Intereses", "Egresos: DGI", "Egresos: BPS",
-                        "Egresos: No corrientes", "Egresos: Inversiones", "Egresos: Var. stock petróleo",
-                        "Egresos: Otros", "Egresos: Dividendo", "Resultado: Global"]},
+                        "Egresos: No corrientes", "Egresos: Inversiones", "Egresos: Dividendo", "Resultado: Global"]},
           "OSE":
           {"Name": "fiscal_ose",
            "Colnames": ["Ingresos", "Ingresos: Venta bienes y servicios", "Ingresos: Otros",
