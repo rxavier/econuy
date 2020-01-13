@@ -24,8 +24,8 @@ def get(update=None, revise_rows=0, save=None, force_update=False):
 
     nxr_raw = pd.read_excel(file, skiprows=4)
     nxr = nxr_raw.dropna(axis=0, thresh=4).set_index("Mes y año").dropna(axis=1, how="all").rename_axis(None)
-    nxr.columns = ["Tipo de cambio compra, promedio", "Tipo de cambio venta, promedio",
-                   "Tipo de cambio compra, fin período", "Tipo de cambio venta, fin período"]
+    nxr.columns = ["Tipo de cambio compra, fin de período", "Tipo de cambio venta, fin de período",
+                   "Tipo de cambio compra, promedio", "Tipo de cambio venta, promedio"]
     nxr.index = nxr.index + MonthEnd(1)
 
     if update is not None:
@@ -40,7 +40,3 @@ def get(update=None, revise_rows=0, save=None, force_update=False):
         nxr.to_csv(save_path, sep=" ")
 
     return nxr
-
-
-if __name__ == "__main__":
-    exchange_rate = get(update="nxr.csv", revise_rows=6, save="nxr.csv")
