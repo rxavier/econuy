@@ -10,7 +10,7 @@ DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 25
 
 
-def get(update=None, revise=0, save=None, force_update=False):
+def get(update=None, revise_rows=0, save=None, force_update=False):
 
     if update is not None:
         update_path = os.path.join(DATA_PATH, update)
@@ -29,7 +29,7 @@ def get(update=None, revise=0, save=None, force_update=False):
     cpi.index = cpi.index + MonthEnd(1)
 
     if update is not None:
-        cpi = updates.revise(new_data=cpi, prev_data=previous_data, revise=revise)
+        cpi = updates.revise(new_data=cpi, prev_data=previous_data, revise_rows=revise_rows)
 
     cpi = cpi.apply(pd.to_numeric, errors="coerce")
     colnames.set_colnames(cpi, area="Precios y salarios", currency="-", inf_adj="No",
@@ -43,4 +43,4 @@ def get(update=None, revise=0, save=None, force_update=False):
 
 
 if __name__ == "__main__":
-    prices = get(update="cpi.csv", revise=6, save="cpi.csv")
+    prices = get(update="cpi.csv", revise_rows=6, save="cpi.csv")

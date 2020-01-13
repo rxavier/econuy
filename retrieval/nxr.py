@@ -10,7 +10,7 @@ DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 25
 
 
-def get(update=None, revise=0, save=None, force_update=False):
+def get(update=None, revise_rows=0, save=None, force_update=False):
 
     if update is not None:
         update_path = os.path.join(DATA_PATH, update)
@@ -29,7 +29,7 @@ def get(update=None, revise=0, save=None, force_update=False):
     nxr.index = nxr.index + MonthEnd(1)
 
     if update is not None:
-        nxr = updates.revise(new_data=nxr, prev_data=previous_data, revise=revise)
+        nxr = updates.revise(new_data=nxr, prev_data=previous_data, revise_rows=revise_rows)
 
     nxr = nxr.apply(pd.to_numeric, errors="coerce")
     colnames.set_colnames(nxr, area="Precios y salarios", currency="-", inf_adj="No",
@@ -43,4 +43,4 @@ def get(update=None, revise=0, save=None, force_update=False):
 
 
 if __name__ == "__main__":
-    exchange_rate = get(update="nxr.csv", revise=6, save="nxr.csv")
+    exchange_rate = get(update="nxr.csv", revise_rows=6, save="nxr.csv")

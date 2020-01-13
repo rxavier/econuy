@@ -92,7 +92,7 @@ SHEETS = {"Sector Público No Financiero":
                         "Resultado: Global"]}}
 
 
-def get(update=False, revise=0, save=False, force_update=False):
+def get(update=False, revise_rows=0, save=False, force_update=False):
     response = requests.get(URL)
     soup = BeautifulSoup(response.content, "html.parser")
     links = soup.find_all(href=re.compile("\\.rar$"))
@@ -130,7 +130,7 @@ def get(update=False, revise=0, save=False, force_update=False):
                 data.columns = metadata["Colnames"]
 
                 if update is True:
-                    data = updates.revise(new_data=data, prev_data=previous_data, revise=revise)
+                    data = updates.revise(new_data=data, prev_data=previous_data, revise_rows=revise_rows)
 
                 data = data.apply(pd.to_numeric, errors="coerce")
                 colnames.set_colnames(data, area="Cuentas fiscales y deuda", currency="UYU", inf_adj="No",

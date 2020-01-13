@@ -10,7 +10,7 @@ DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 80
 
 
-def get(update=False, revise=0, save=False, force_update=False):
+def get(update=False, revise_rows=0, save=False, force_update=False):
 
     files = {"https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_101t.xls":
              {"Rows": 12, "Inf. Adj.": "Const. 2005", "Index": "No", "Seas": "NSA", "Name": "na_ind_con_nsa",
@@ -75,7 +75,7 @@ def get(update=False, revise=0, save=False, force_update=False):
             base_transpose = base_transpose.divide(1000)
 
         if update is True:
-            base_transpose = updates.revise(new_data=base_transpose, prev_data=previous_data, revise=revise)
+            base_transpose = updates.revise(new_data=base_transpose, prev_data=previous_data, revise_rows=revise_rows)
 
         base_transpose = base_transpose.apply(pd.to_numeric, errors="coerce")
 
@@ -102,4 +102,4 @@ def fix_na_dates(df):
 
 
 if __name__ == "__main__":
-    national_accounts = get(update=True, revise=4, save=True)
+    national_accounts = get(update=True, revise_rows=4, save=True)

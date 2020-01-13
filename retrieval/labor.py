@@ -29,7 +29,7 @@ def get(update=None, revise=0, save=None, force_update=False):
     labor.columns = ["Tasa de actividad", "Tasa de empleo", "Tasa de desempleo"]
 
     if update is not None:
-        labor = updates.revise(new_data=labor, prev_data=previous_data, revise=revise)
+        labor = updates.revise(new_data=labor, prev_data=previous_data, revise_rows=revise)
 
     labor = labor.apply(pd.to_numeric, errors="coerce")
     colnames.set_colnames(labor, area="Mercado laboral", currency="-", inf_adj="No",
