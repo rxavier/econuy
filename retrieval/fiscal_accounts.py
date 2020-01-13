@@ -91,6 +91,7 @@ SHEETS = {"Sector Público No Financiero":
 
 
 def get(update=False, revise_rows=0, save=False, force_update=False):
+
     response = requests.get(URL)
     soup = BeautifulSoup(response.content, "html.parser")
     links = soup.find_all(href=re.compile("\\.rar$"))
@@ -114,7 +115,7 @@ def get(update=False, revise_rows=0, save=False, force_update=False):
                     delta, previous_data = updates.check_modified(update_path)
 
                     if delta < update_threshold and force_update is False:
-                        print(f"File in update path was modified within {update_threshold} day(s)."
+                        print(f"File in update path was modified within {update_threshold} day(s). "
                               f"Skipping download...")
                         output.update({metadata["Name"]: previous_data})
                         continue
