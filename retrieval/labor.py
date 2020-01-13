@@ -1,5 +1,4 @@
 import os
-import datetime as dt
 
 import pandas as pd
 
@@ -10,7 +9,7 @@ DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 25
 
 
-def get(update=None, revise=0, save=None, force_update=False):
+def get(update=None, revise_rows=0, save=None, force_update=False):
 
     if update is not None:
         update_path = os.path.join(DATA_PATH, update)
@@ -29,7 +28,7 @@ def get(update=None, revise=0, save=None, force_update=False):
     labor.columns = ["Tasa de actividad", "Tasa de empleo", "Tasa de desempleo"]
 
     if update is not None:
-        labor = updates.revise(new_data=labor, prev_data=previous_data, revise_rows=revise)
+        labor = updates.revise(new_data=labor, prev_data=previous_data, revise_rows=revise_rows)
 
     labor = labor.apply(pd.to_numeric, errors="coerce")
     colnames.set_colnames(labor, area="Mercado laboral", currency="-", inf_adj="No",
