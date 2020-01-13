@@ -12,8 +12,7 @@ def freq_resample(df, target, operation="sum", interpolation="linear"):
         elif operation == "upsample":
             resampled_df = df.resample(target).asfreq().interpolate(method=interpolation)
         else:
-            raise Warning("Only sum, average and upsample are accepted operations")
-            return
+            raise ValueError("Only sum, average and upsample are accepted operations")
 
         cum_periods = df.columns.get_level_values("Acum. períodos")[0]
         if cum_periods != 1:
@@ -27,8 +26,7 @@ def freq_resample(df, target, operation="sum", interpolation="linear"):
         resampled_df = df.resample(target, convention="end").asfreq().interpolate(method=interpolation)
 
     else:
-        raise Warning("Dataframe needs to have a Type")
-        return
+        raise ValueError("Dataframe needs to have a Type")
 
     colnames.set_colnames(resampled_df)
 
