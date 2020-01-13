@@ -22,36 +22,36 @@ def decompose(df, trading=True, outlier=True):
     seas_adjs = []
     for column in range(len(df_proc.columns)):
 
-        series = df_proc.iloc[:, column]
+        series = df_proc.iloc[:, column].dropna()
 
         try:
             decomposition = sm.tsa.x13_arima_analysis(series, outlier=outlier, trading=trading, forecast_years=0,
                                                       x12path=X13_PATH, prefer_x13=True)
-            trend = decomposition.trend
-            seas_adj = decomposition.seasadj
+            trend = decomposition.trend.reindex(df_proc.index)
+            seas_adj = decomposition.seasadj.reindex(df_proc.index)
 
         except X13Error:
 
             if outlier is True:
                 try:
-                    print(f"X13 error found while processing '{df_proc.columns[column]}' with selected parameters."
+                    print(f"X13 error found while processing '{df_proc.columns[column]}' with selected parameters. "
                           f"Trying with outlier=False...")
                     decomposition = sm.tsa.x13_arima_analysis(series, outlier=False, trading=trading, forecast_years=0,
                                                               x12path=X13_PATH, prefer_x13=True)
-                    trend = decomposition.trend
-                    seas_adj = decomposition.seasadj
+                    trend = decomposition.trend.reindex(df_proc.index)
+                    seas_adj = decomposition.seasadj.reindex(df_proc.index)
 
                 except X13Error:
 
                     if trading is True:
                         try:
-                            print(f"X13 error found while processing '{df_proc.columns[column]}' with trading=True."
+                            print(f"X13 error found while processing '{df_proc.columns[column]}' with trading=True. "
                                   f"Trying with trading=False...")
                             decomposition = sm.tsa.x13_arima_analysis(series, outlier=False, trading=False,
                                                                       forecast_years=0, x12path=X13_PATH,
                                                                       prefer_x13=True)
-                            trend = decomposition.trend
-                            seas_adj = decomposition.seasadj
+                            trend = decomposition.trend.reindex(df_proc.index)
+                            seas_adj = decomposition.seasadj.reindex(df_proc.index)
 
                         except X13Error:
                             print(f"X13 error found while processing '{df_proc.columns[column]}'. Filling with nan.")
@@ -61,12 +61,12 @@ def decompose(df, trading=True, outlier=True):
             elif trading is True:
 
                 try:
-                    print(f"X13 error found while processing '{df_proc.columns[column]}' with selected parameters."
+                    print(f"X13 error found while processing '{df_proc.columns[column]}' with selected parameters. "
                           f"Trying with trading=False...")
                     decomposition = sm.tsa.x13_arima_analysis(series, outlier=outlier, trading=False, forecast_years=0,
                                                               x12path=X13_PATH, prefer_x13=True)
-                    trend = decomposition.trend
-                    seas_adj = decomposition.seasadj
+                    trend = decomposition.trend.reindex(df_proc.index)
+                    seas_adj = decomposition.seasadj.reindex(df_proc.index)
 
                 except X13Error:
                     print(f"X13 error found while processing '{df_proc.columns[column]}'. Filling with nan.")
@@ -78,8 +78,8 @@ def decompose(df, trading=True, outlier=True):
                 try:
                     decomposition = sm.tsa.x13_arima_analysis(series, outlier=outlier, trading=trading, forecast_years=0,
                                                               x12path=X13_PATH, prefer_x13=True)
-                    trend = decomposition.trend
-                    seas_adj = decomposition.seasadj
+                    trend = decomposition.trend.reindex(df_proc.index)
+                    seas_adj = decomposition.seasadj.reindex(df_proc.index)
 
                 except X13Error:
                     print(f"X13 error found while processing '{df_proc.columns[column]}'. Filling with nan.")
