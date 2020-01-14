@@ -1,7 +1,4 @@
-import datetime as dt
-
 import pandas as pd
-from pandas.tseries.offsets import YearEnd
 
 from retrieval import nxr, cpi, national_accounts
 from processing import freqs, colnames
@@ -11,7 +8,7 @@ def usd(df):
 
     inferred_freq = pd.infer_freq(df.index)
 
-    nxr_data = nxr.get()
+    nxr_data = nxr.get(update="nxr.csv", revise_rows=6, save="nxr.csv", force_update=False)
 
     if df.columns.get_level_values("Tipo")[0] == "Flujo":
 
@@ -38,7 +35,7 @@ def real(df, start_date=None, end_date=None):
 
     inferred_freq = pd.infer_freq(df.index)
 
-    cpi_data = cpi.get()
+    cpi_data = cpi.get(update="cpi.csv", revise_rows=6, save="cpi.csv", force_update=False)
     colnames.set_colnames(cpi_data, ts_type="Flujo")
     cpi_matching_freq = freqs.freq_resample(cpi_data, target=inferred_freq, operation="average").iloc[:, [0]]
 
