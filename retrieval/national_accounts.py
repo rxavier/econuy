@@ -1,10 +1,11 @@
 import os
+import datetime as dt
 
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
 from config import ROOT_DIR
-from processing import colnames, updates
+from processing import colnames, updates, convert, freqs
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 80
@@ -59,7 +60,7 @@ def get(update=False, revise_rows=0, save=False, force_update=False):
             delta, previous_data = updates.check_modified(update_path)
 
             if delta < update_threshold and force_update is False:
-                print(f"File in update path was modified within {update_threshold} day(s). Skipping download...")
+                print(f"{metadata['Name']}.csv was modified within {update_threshold} day(s). Skipping download...")
                 parsed_excels.update({metadata["Name"]: previous_data})
                 continue
 
@@ -99,3 +100,46 @@ def fix_na_dates(df):
     df.index = df.index.str.replace(r"\bIII \b", "9-", regex=True)
     df.index = df.index.str.replace(r"\bIV \b", "12-", regex=True)
     df.index = pd.to_datetime(df.index, format="%m-%Y") + MonthEnd(1)
+
+
+def lin_gdp(update=None, save=None, force_update=False):
+
+    if update is not None:
+        update_path = os.path.join(DATA_PATH, update)
+        delta, previous_data = updates.check_modified(update_path)
+
+        if delta < update_threshold and force_update is False:
+            print(f"{update} was modified within {update_threshold} day(s). Skipping download...")
+            return previous_data
+
+    data_uyu = get(update=True, revise_rows=4, save=True, force_update=False)["na_gdp_cur_nsa"]
+    data_uyu = freqs.rolling(data_uyu, periods=4, operation="sum")
+    data_usd = convert.usd(data_uyu)
+
+    data = [data_uyu, data_usd]
+    last_year = data_uyu.index.max().year
+    if data_uyu.index.max().month == 12:
+        last_year += 1
+
+    results = []
+    for table, gdp in zip(["NGDP", "NGDPD"], data):
+
+        table_url = (f"https://www.imf.org/external/pubs/ft/weo/2019/02/weodata/weorept.aspx?sy={last_year-1}&ey="
+                     f"{last_year+1}&scsm=1&ssd=1&sort=country&ds=.&br=1&pr1.x=27&pr1.y=9&c=298&s={table}&grp=0&a=")
+        imf_data = pd.to_numeric(pd.read_html(table_url)[4].iloc[2, [5, 6, 7]].reset_index(drop=True))
+        forecast = (gdp.loc[[dt.datetime(last_year-1, 12, 31)]].multiply(imf_data.iloc[1]).divide(imf_data.iloc[0]).
+                    rename(index={dt.datetime(last_year-1, 12, 31): dt.datetime(last_year, 12, 31)}))
+        forecast = forecast.append(gdp.loc[[dt.datetime(last_year-1, 12, 31)]].multiply(imf_data.iloc[2]).
+                                   divide(imf_data.iloc[0]).rename(index={dt.datetime(last_year-1, 12, 31):
+                                                                          dt.datetime(last_year+1, 12, 31)}))
+        gdp = gdp.append(forecast)
+        results.append(gdp)
+
+    output = pd.concat(results, axis=1)
+    output = output.resample("Q-DEC").interpolate("linear")
+
+    if save is not None:
+        save_path = os.path.join(DATA_PATH, save)
+        output.to_csv(save_path, sep=" ")
+
+    return output

@@ -17,7 +17,7 @@ def get(update=None, revise_rows=0, save=None, force_update=False):
         delta, previous_data = updates.check_modified(update_path)
 
         if delta < update_threshold and force_update is False:
-            print(f"File in update path was modified within {update_threshold} day(s). Skipping download...")
+            print(f"{update} was modified within {update_threshold} day(s). Skipping download...")
             return previous_data
 
     file = "http://ine.gub.uy/c/document_library/get_file?uuid=2e92084a-94ec-4fec-b5ca-42b40d5d2826&groupId=10181"

@@ -20,7 +20,7 @@ def freq_resample(df, target, operation="sum", interpolation="linear"):
         else:
             raise ValueError("Only sum, average and upsample are accepted operations")
 
-        cum_periods = df.columns.get_level_values("Acum. períodos")[0]
+        cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
         if cum_periods != 1:
             input_notna = df.iloc[:, 0].count()
             output_notna = resampled_df.iloc[:, 0].count()
