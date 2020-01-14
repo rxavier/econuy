@@ -60,7 +60,7 @@ def get(update=False, revise_rows=0, save=False, force_update=False):
             delta, previous_data = updates.check_modified(update_path)
 
             if delta < update_threshold and force_update is False:
-                print(f"File in update path was modified within {update_threshold} day(s). Skipping download...")
+                print(f"{metadata['Name']}.csv was modified within {update_threshold} day(s). Skipping download...")
                 parsed_excels.update({metadata["Name"]: previous_data})
                 continue
 
@@ -109,7 +109,7 @@ def lin_gdp(update=None, save=None, force_update=False):
         delta, previous_data = updates.check_modified(update_path)
 
         if delta < update_threshold and force_update is False:
-            print(f"File in update path was modified within {update_threshold} day(s). Skipping download...")
+            print(f"{update} was modified within {update_threshold} day(s). Skipping download...")
             return previous_data
 
     data_uyu = get(update=True, revise_rows=4, save=True, force_update=False)["na_gdp_cur_nsa"]
