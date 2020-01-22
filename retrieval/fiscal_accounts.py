@@ -1,6 +1,7 @@
 import os
 import re
 import tempfile
+import datetime as dt
 
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
@@ -91,6 +92,21 @@ SHEETS = {"Sector Público No Financiero":
 
 
 def get(update=False, revise_rows=0, save=False, force_update=False):
+
+    if update is True:
+        update_path = os.path.join(DATA_PATH, "fiscal_nfps.csv")
+        modified_time = dt.datetime.fromtimestamp(os.path.getmtime(update_path))
+        delta = (dt.datetime.now() - modified_time).days
+
+        if delta < update_threshold and force_update is False:
+            print(f"Fiscal data was modified within {update_threshold} day(s)."
+                  f" Skipping download...")
+            output = {}
+            for metadata in SHEETS.values():
+                update_path = os.path.join(DATA_PATH, metadata['Name'] + ".csv")
+                delta, previous_data = updates.check_modified(update_path)
+                output.update({metadata["Name"]: previous_data})
+            return output
 
     response = requests.get(URL)
     soup = BeautifulSoup(response.content, "html.parser")

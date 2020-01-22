@@ -76,7 +76,7 @@ def pcgdp(df, hifreq=True):
         gdp_base = gdp_base.iloc[:, 0].to_frame()
 
     gdp_to_use = gdp_base[gdp_base.index.isin(df.index)].iloc[:, 0]
-    converted_df = df.apply(lambda x: x / gdp_to_use)
+    converted_df = df.apply(lambda x: x / gdp_to_use).multiply(100)
 
     colnames.set_colnames(converted_df, currency="% PBI")
 
