@@ -16,7 +16,7 @@ if platform.system() == "Windows":
 
 
 def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True):
-    """Apply X13 decomposition. Return trend and seasonally adjusted dataframes
+    """Apply X13 decomposition. Return trend and seasonally adjusted dataframe.
 
     Decompose the series in a Pandas dataframe using the US Census X13
     methodology. Will try different combinations of the `trading` and `outlier`
