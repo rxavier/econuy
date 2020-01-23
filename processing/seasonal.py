@@ -16,6 +16,13 @@ if platform.system() == "Windows":
 
 def decompose(df, trading=True, outlier=True):
 
+    if os.path.isfile(X13_PATH) is False:
+        print("X13 binary missing. Place the relevant binary for your system"
+              "within the 'resources' directory. Please refer to the README"
+              "for instructions on where to get binaries for Windows and Unix,"
+              "and how to compile it for macOS.")
+        return
+
     df_proc = df.copy()
     old_columns = df_proc.columns
     df_proc.columns = df_proc.columns.get_level_values(level=0)
