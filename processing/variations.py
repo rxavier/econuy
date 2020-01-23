@@ -4,7 +4,36 @@ from processing import colnames, freqs
 
 
 def var_diff(df, operation="var", period_op="last"):
+    """Wrapper for the pct_change and diff Pandas methods.
 
+    Calculate percentage change or difference for dataframes. The `period`
+    argument takes into account the frequency of the dataframe, i.e.,
+    `inter` (for interannual) will calculate pct change/differences with
+    `periods=4` for quarterly frequency, but `periods=12` for monthly
+    frequency.
+
+    Parameters
+    ----------
+    df : Pandas dataframe
+    operation : str (default is 'chg')
+        'chg' for percent change or 'diff' for differences.
+    period_op : str (default is 'last')
+        Period with which to calculate change or difference. 'last' for
+        previous period (last month for monthly data), 'inter' for same period
+        last year, 'annual' for same period last year but taking annual
+        averages/sums.
+
+    Returns
+    -------
+    output : Pandas dataframe
+
+    Raises
+    ------
+    ValueError
+        If the dataframe is not of frequency M (month end), Q (quarter end) or
+        A (year end).
+
+    """
     inferred_freq = pd.infer_freq(df.index)
 
     type_change = {"last":
