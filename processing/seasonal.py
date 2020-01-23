@@ -8,7 +8,7 @@ from statsmodels.tools.sm_exceptions import X13Error
 from config import ROOT_DIR
 from processing import colnames
 
-X13_PATH = os.path.join(ROOT_DIR, "x13as")
+X13_PATH = os.path.join(ROOT_DIR, "resources", "x13as")
 
 
 def decompose(df, trading=True, outlier=True):
