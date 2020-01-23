@@ -14,8 +14,31 @@ X13_PATH = os.path.join(ROOT_DIR, "resources", "x13as")
 if platform.system() == "Windows":
     X13_PATH = X13_PATH + ".exe"
 
-def decompose(df, trading=True, outlier=True):
 
+def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True):
+    """Apply X13 decomposition. Return trend and seasonally adjusted dataframes
+
+    Decomposes the series in a Pandas dataframe using the US Census X13
+    methodology. Will try different combinations of the 'trading' and 'outlier'
+    arguments if an X13 error is raised. Requires having the X13 binary in the
+    'resources' folder. Please refer to the README for instructions on where
+    to get this binary.
+
+    Parameters
+    ----------
+    df : Pandas dataframe
+    trading : bool (default is True)
+        Whether to automatically detect trading days.
+    outlier : bool (default is True)
+        Whether to automatically detect outliers.
+
+    Returns
+    -------
+    trend, seas_adj : Pandas dataframe
+        Dataframes of the same shape of the input dataframe, containing the
+        trend component and the seasonally adjusted series.
+
+    """
     if os.path.isfile(X13_PATH) is False:
         print("X13 binary missing. Place the relevant binary for your system"
               "within the 'resources' directory. Please refer to the README"
