@@ -1,4 +1,5 @@
 import os
+import platform
 
 import pandas as pd
 import numpy as np
@@ -10,6 +11,8 @@ from processing import colnames
 
 X13_PATH = os.path.join(ROOT_DIR, "resources", "x13as")
 
+if platform.system() == "Windows":
+    X13_PATH = X13_PATH + ".exe"
 
 def decompose(df, trading=True, outlier=True):
 
