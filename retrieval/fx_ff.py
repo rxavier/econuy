@@ -11,13 +11,12 @@ from processing import columns
 
 URL = "https://www.bcu.gub.uy/Politica-Economica-y-Mercados/Mercado%20de%20Cambios/informepublico"
 DATES = pd.bdate_range("2013-11-01", dt.datetime.today()).strftime("%y%m%d").tolist()
-
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 
 
 def get(update: Union[str, Path, None] = None,
         save: Union[str, Path, None] = None):
-    """Get futures and forwards operations by the Central Bank.
+    """Get future and forwards FX operations by the Central Bank.
 
     Parameters
     ----------
@@ -48,7 +47,8 @@ def get(update: Union[str, Path, None] = None,
         try:
             raw_report = pd.read_excel(f"{URL}{date}.xls")
 
-            if dt.datetime.strptime(date, "%y%m%d") >= dt.datetime(2014, 5, 21):
+            if (dt.datetime.strptime(date, "%y%m%d") >=
+                    dt.datetime(2014, 5, 21)):
                 future1 = raw_report.iloc[19, ].apply(pd.to_numeric,
                                                       errors="coerce").sum()
                 future2 = raw_report.iloc[21, ].apply(pd.to_numeric,
@@ -80,7 +80,8 @@ def get(update: Union[str, Path, None] = None,
 
     columns.set_metadata(
         operations, area="Reservas internacionales",  currency="USD",
-        inf_adj="No", index="No", seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+        inf_adj="No", index="No", seas_adj="NSA", ts_type="Flujo",
+        cumperiods=1)
 
     if save is not None:
         save_path = os.path.join(DATA_PATH, save)
