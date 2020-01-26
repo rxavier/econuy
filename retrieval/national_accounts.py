@@ -5,7 +5,7 @@ import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
 from config import ROOT_DIR
-from processing import colnames, updates, convert, freqs
+from processing import columns, updates, convert, freqs
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 80
@@ -79,8 +79,8 @@ def get(update=False, revise_rows=0, save=False, force_update=False):
 
         base_transpose = base_transpose.apply(pd.to_numeric, errors="coerce")
 
-        colnames.set_colnames(base_transpose, area="Actividad económica", currency="UYU", inf_adj=metadata["Inf. Adj."],
-                              index=metadata["Index"], seas_adj=metadata["Seas"], ts_type="Flujo", cumperiods=1)
+        columns.set_metadata(base_transpose, area="Actividad económica", currency="UYU", inf_adj=metadata["Inf. Adj."],
+                             index=metadata["Index"], seas_adj=metadata["Seas"], ts_type="Flujo", cumperiods=1)
 
         if save is True:
             save_path = os.path.join(DATA_PATH, metadata['Name'] + ".csv")

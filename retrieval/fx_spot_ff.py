@@ -3,7 +3,7 @@ import os
 import pandas as pd
 
 from config import ROOT_DIR
-from processing import colnames
+from processing import columns
 from retrieval import fx_ff, reserves_chg
 
 data_path = os.path.join(ROOT_DIR, "data")
@@ -23,7 +23,7 @@ fx_ops = fx_ops.apply(pd.to_numeric, errors="coerce")
 fx_ops = fx_ops.fillna(0)
 fx_ops.columns = ["Spot", "Futuros", "Forwards"]
 
-colnames.set_colnames(fx_ops, area="Reservas internacionales", currency="USD", inf_adj="No",
-                      index="No", seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+columns.set_metadata(fx_ops, area="Reservas internacionales", currency="USD", inf_adj="No",
+                     index="No", seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
 fx_ops.to_csv(path_save, sep=" ")

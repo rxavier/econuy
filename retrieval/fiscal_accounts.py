@@ -10,7 +10,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from config import ROOT_DIR
-from processing import colnames, updates
+from processing import columns, updates
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 25
@@ -148,8 +148,8 @@ def get(update=False, revise_rows=0, save=False, force_update=False):
                     data = updates.revise(new_data=data, prev_data=previous_data, revise_rows=revise_rows)
 
                 data = data.apply(pd.to_numeric, errors="coerce")
-                colnames.set_colnames(data, area="Cuentas fiscales y deuda", currency="UYU", inf_adj="No",
-                                      index="No", seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+                columns.set_metadata(data, area="Cuentas fiscales y deuda", currency="UYU", inf_adj="No",
+                                     index="No", seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
                 if save is True:
                     save_path = os.path.join(DATA_PATH, metadata["Name"] + ".csv")

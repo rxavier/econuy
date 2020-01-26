@@ -4,7 +4,7 @@ from typing import Union
 import pandas as pd
 
 from retrieval import nxr, cpi, national_accounts
-from processing import freqs, colnames
+from processing import freqs, columns
 
 
 def usd(df: pd.DataFrame):
@@ -31,7 +31,7 @@ def usd(df: pd.DataFrame):
                        save="nxr.csv", force_update=False)
 
     if df.columns.get_level_values("Tipo")[0] == "Flujo":
-        colnames.set_colnames(nxr_data, ts_type="Flujo")
+        columns.set_metadata(nxr_data, ts_type="Flujo")
         nxr_freq = freqs.freq_resample(nxr_data, target=inferred_freq,
                                        operation="average").iloc[:, [1]]
         cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
@@ -39,13 +39,13 @@ def usd(df: pd.DataFrame):
                                  operation="average")
 
     else:
-        colnames.set_colnames(nxr_data, ts_type="Stock")
+        columns.set_metadata(nxr_data, ts_type="Stock")
         nxr_freq = freqs.freq_resample(nxr_data, target=inferred_freq,
                                        operation="average").iloc[:, [3]]
 
     nxr_to_use = nxr_freq[nxr_freq.index.isin(df.index)].iloc[:, 0]
     converted_df = df.apply(lambda x: x / nxr_to_use)
-    colnames.set_colnames(converted_df, currency="USD")
+    columns.set_metadata(converted_df, currency="USD")
 
     return converted_df
 
@@ -78,7 +78,7 @@ def real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
 
     cpi_data = cpi.get(update="cpi.csv", revise_rows=6, save="cpi.csv",
                        force_update=False)
-    colnames.set_colnames(cpi_data, ts_type="Flujo")
+    columns.set_metadata(cpi_data, ts_type="Flujo")
     cpi_freq = freqs.freq_resample(cpi_data, target=inferred_freq,
                                    operation="average").iloc[:, [0]]
     cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
@@ -100,7 +100,7 @@ def real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
         )
         col_text = f"Const. {start_date}_{end_date}"
 
-    colnames.set_colnames(converted_df, inf_adj=col_text)
+    columns.set_metadata(converted_df, inf_adj=col_text)
 
     return converted_df
 
@@ -144,6 +144,6 @@ def pcgdp(df: pd.DataFrame, hifreq: bool = True):
     gdp_to_use = gdp[gdp.index.isin(df.index)].iloc[:, 0]
     converted_df = df.apply(lambda x: x / gdp_to_use).multiply(100)
 
-    colnames.set_colnames(converted_df, currency="% PBI")
+    columns.set_metadata(converted_df, currency="% PBI")
 
     return converted_df

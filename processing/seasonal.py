@@ -7,7 +7,7 @@ from statsmodels.api import tsa
 from statsmodels.tools.sm_exceptions import X13Error
 
 from config import ROOT_DIR
-from processing import colnames
+from processing import columns
 
 X13_PATH = os.path.join(ROOT_DIR, "resources", "x13as")
 
@@ -120,8 +120,8 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True):
     trends.columns = old_columns
     seas_adjs.columns = old_columns
 
-    colnames.set_colnames(trends, seas_adj="Tendencia")
+    columns.set_metadata(trends, seas_adj="Tendencia")
 
-    colnames.set_colnames(seas_adjs, seas_adj="SA")
+    columns.set_metadata(seas_adjs, seas_adj="SA")
 
     return trends, seas_adjs

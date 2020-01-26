@@ -3,7 +3,7 @@ from typing import Union
 
 import pandas as pd
 
-from processing import colnames
+from processing import columns
 
 
 def base_index(df: pd.DataFrame, start_date: Union[str, date],
@@ -29,10 +29,10 @@ def base_index(df: pd.DataFrame, start_date: Union[str, date],
     """
     if end_date is None:
         indexed = df.apply(lambda x: x / x[start_date] * base)
-        colnames.set_colnames(indexed, index=start_date)
+        columns.set_metadata(indexed, index=start_date)
 
     else:
         indexed = df.apply(lambda x: x / x[start_date:end_date].mean() * base)
-        colnames.set_colnames(indexed, index=f"{start_date}_{end_date}")
+        columns.set_metadata(indexed, index=f"{start_date}_{end_date}")
 
     return indexed

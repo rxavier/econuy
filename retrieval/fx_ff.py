@@ -5,7 +5,7 @@ import urllib
 import pandas as pd
 
 from config import ROOT_DIR
-from processing import colnames
+from processing import columns
 
 URL = "https://www.bcu.gub.uy/Politica-Economica-y-Mercados/Mercado%20de%20Cambios/informepublico"
 DATES = pd.bdate_range("2013-11-01", dt.datetime.today()).strftime("%y%m%d").tolist()
@@ -53,8 +53,8 @@ def get(dates, update=None, save=None):
     if update is not None:
         operations = prev_data.append(operations, sort=False)
 
-    colnames.set_colnames(operations, area="Reservas internacionales", currency="USD", inf_adj="No",
-                          index="No", seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+    columns.set_metadata(operations, area="Reservas internacionales", currency="USD", inf_adj="No",
+                         index="No", seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
     if save is not None:
         save_path = os.path.join(DATA_PATH, save)

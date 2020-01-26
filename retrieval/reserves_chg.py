@@ -6,7 +6,7 @@ import pandas as pd
 from dateutil.relativedelta import relativedelta
 
 from config import ROOT_DIR
-from processing import colnames
+from processing import columns
 
 BASE_URL = "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Informe%20Diario%20Pasivos%20Monetarios/infd_"
 MONTHS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "set", "oct", "nov", "dic"]
@@ -116,8 +116,8 @@ def get_reserves_chg(files, online=None, offline=None, update=None, save=None):
         reserves = reserves.append(missing, sort=False)
         reserves.sort_index(inplace=True)
 
-    colnames.set_colnames(reserves, area="Reservas internacionales", currency="USD", inf_adj="No",
-                          index="No", seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+    columns.set_metadata(reserves, area="Reservas internacionales", currency="USD", inf_adj="No",
+                         index="No", seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
     if save is not None:
         save_path = os.path.join(DATA_PATH, save)

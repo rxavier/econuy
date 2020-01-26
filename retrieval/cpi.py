@@ -4,7 +4,7 @@ import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
 from config import ROOT_DIR
-from processing import colnames, updates
+from processing import columns, updates
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 25
@@ -32,8 +32,8 @@ def get(update=None, revise_rows=0, save=None, force_update=False):
         cpi = updates.revise(new_data=cpi, prev_data=previous_data, revise_rows=revise_rows)
 
     cpi = cpi.apply(pd.to_numeric, errors="coerce")
-    colnames.set_colnames(cpi, area="Precios y salarios", currency="-", inf_adj="No",
-                          index="2010-10-31", seas_adj="NSA", ts_type="-", cumperiods=1)
+    columns.set_metadata(cpi, area="Precios y salarios", currency="-", inf_adj="No",
+                         index="2010-10-31", seas_adj="NSA", ts_type="-", cumperiods=1)
 
     if save is not None:
         save_path = os.path.join(DATA_PATH, save)

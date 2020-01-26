@@ -1,6 +1,6 @@
 import pandas as pd
 
-from processing import colnames, freqs
+from processing import columns, freqs
 
 
 def chg_diff(df: pd.DataFrame, operation: str = "chg",
@@ -71,10 +71,10 @@ def chg_diff(df: pd.DataFrame, operation: str = "chg",
             output = freqs.rolling(df, operation="sum")
             output = output.apply(type_change[period_op][operation][0]).multiply(100)
 
-        colnames.set_colnames(output, index=type_change[period_op][operation][1])
+        columns.set_metadata(output, index=type_change[period_op][operation][1])
 
     else:
         output = df.apply(type_change[period_op][operation][0]).multiply(100)
-        colnames.set_colnames(output, index=type_change[period_op][operation][1])
+        columns.set_metadata(output, index=type_change[period_op][operation][1])
 
     return output
