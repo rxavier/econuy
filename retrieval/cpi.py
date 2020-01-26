@@ -14,14 +14,7 @@ update_threshold = 25
 
 def get(update: Union[str, Path, None] = None, revise_rows: int = 0,
         save: Union[str, Path, None] = None, force_update: bool = False):
-    """Convert dataframe from UYU to USD.
-
-    Convert a dataframe's columns from Uruguayan pesos to US dollars. Call the
-    `nxr.get()` function to obtain nominal exchange rates, and take into
-    account whether the input dataframe's `Type`, as defined by its multiindex,
-    is flow or stock, in order to choose end of period or monthly average NXR.
-    Also take into account the input dataframe's frequency and whether columns
-    represent rolling averages or sums.
+    """Get CPI data.
 
     Parameters
     ----------
