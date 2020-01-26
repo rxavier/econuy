@@ -2,6 +2,8 @@ import os
 import re
 import tempfile
 import datetime as dt
+from pathlib import Path
+from typing import Union
 
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
@@ -16,9 +18,9 @@ DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 25
 URL = "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos"
 SHEETS = {"Sector Público No Financiero":
-          {"Name": "fiscal_nfps",
-           "Colnames": ["Ingresos: SPNF", "Ingresos: Gobierno central", "Ingresos: DGI", "Ingresos: IRP",
-                        "Ingresos: Comercio ext.", "Ingresos: Otros", "Ingresos: BPS",
+def get(update: Union[str, Path, None] = None, revise_rows: int = 0,
+        save: Union[str, Path, None] = None, force_update: bool = False):
+    """Get fiscal data.
                         "Ingresos: Res. primario corriente EEPP", "Egresos: Primarios SPNF",
                         "Egresos: Primarios corrientes GC-BPS", "Egresos: Remuneraciones", "Egresos: No personales",
                         "Egresos: Pasividades", "Egresos: Transferencias", "Egresos: Inversiones",
@@ -90,13 +92,28 @@ SHEETS = {"Sector Público No Financiero":
                         "Egresos: No corrientes", "Egresos: Inversiones", "Egresos: Dividendo",
                         "Resultado: Global"]}}
 
+    Parameters
+    ----------
+    update : str, Path or None (default is None)
+        Path or path-like string pointing to a CSV file for updating.
+    revise_rows : int (default is 0)
+        How many rows of old data to replace with new data.
+    save : str, Path or None (default is None)
+        Path or path-like string where to save the output dataframe in CSV
+        format.
+    force_update : bool (default is False)
+        If True, fetch data and update existing data even if it was modified
+        within its update window (for fiscal data, 25 days)
 
-def get(update=False, revise_rows=0, save=False, force_update=False):
+    Returns
+    -------
+    dataframe : Pandas dataframe
 
+    """
     if update is True:
         update_path = os.path.join(DATA_PATH, "fiscal_nfps.csv")
-        modified_time = dt.datetime.fromtimestamp(os.path.getmtime(update_path))
-        delta = (dt.datetime.now() - modified_time).days
+        modified = dt.datetime.fromtimestamp(os.path.getmtime(update_path))
+        delta = (dt.datetime.now() - modified).days
 
         if delta < update_threshold and force_update is False:
             print(f"Fiscal data was modified within {update_threshold} day(s)."
@@ -104,6 +121,7 @@ def get(update=False, revise_rows=0, save=False, force_update=False):
             output = {}
             for metadata in SHEETS.values():
                 update_path = os.path.join(DATA_PATH, metadata['Name'] + ".csv")
+                                           metadata['Name'] + ".csv")
                 delta, previous_data = updates.check_modified(update_path)
                 output.update({metadata["Name"]: previous_data})
             return output
@@ -125,13 +143,14 @@ def get(update=False, revise_rows=0, save=False, force_update=False):
         with pd.ExcelFile(path) as xls:
 
             for sheet, metadata in SHEETS.items():
-
                 if update is True:
-                    update_path = os.path.join(DATA_PATH, metadata['Name'] + ".csv")
+                    update_path = os.path.join(DATA_PATH,
+                                               metadata['Name'] + ".csv")
                     delta, previous_data = updates.check_modified(update_path)
 
                     if delta < update_threshold and force_update is False:
-                        print(f"{metadata['Name']}.csv was modified within {update_threshold} day(s). "
+                        print(f"{metadata['Name']}.csv was modified within "
+                              f"{update_threshold} day(s). "
                               f"Skipping download...")
                         output.update({metadata["Name"]: previous_data})
                         continue
@@ -145,14 +164,19 @@ def get(update=False, revise_rows=0, save=False, force_update=False):
                 data.columns = metadata["Colnames"]
 
                 if update is True:
-                    data = updates.revise(new_data=data, prev_data=previous_data, revise_rows=revise_rows)
-
+                    data = updates.revise(new_data=data,
+                                          prev_data=previous_data,
+                                          revise_rows=revise_rows)
                 data = data.apply(pd.to_numeric, errors="coerce")
-                columns.set_metadata(data, area="Cuentas fiscales y deuda", currency="UYU", inf_adj="No",
-                                     index="No", seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+                columns.set_metadata(
+                    data, area="Cuentas fiscales y deuda", currency="UYU",
+                    inf_adj="No", index="No", seas_adj="NSA", ts_type="Flujo",
+                    cumperiods=1
+                )
 
                 if save is True:
-                    save_path = os.path.join(DATA_PATH, metadata["Name"] + ".csv")
+                    save_path = os.path.join(DATA_PATH,
+                                             metadata["Name"] + ".csv")
                     data.to_csv(save_path, sep=" ")
 
                 output.update({metadata["Name"]: data})
