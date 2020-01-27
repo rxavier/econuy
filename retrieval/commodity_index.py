@@ -30,7 +30,8 @@ def weights(window: int = 3):
 
     Returns
     -------
-    dataframe : Pandas dataframe
+    resampled_weights : Pandas dataframe
+        Export-based weights for relevant commodities to Uruguay.
 
     """
     weights_path = os.path.join(DATA_PATH, "other",
@@ -83,7 +84,8 @@ def prices(update: Union[str, Path, None] = None, revise_rows: int = 0,
 
     Returns
     -------
-    dataframe : Pandas dataframe
+    complete : Pandas dataframe
+        Prices and price indexes of relevant commodities for Uruguay.
 
     """
     bushel_conv = 36.74 / 100
@@ -207,7 +209,8 @@ def get(save: Union[str, Path, None] = None):
 
     Returns
     -------
-    dataframe : Pandas dataframe
+    product : Pandas dataframe
+        Export-weighted average of commodity prices relevant to Uruguay.
 
     """
     prices_ = prices(update="commodity_prices.csv", revise_rows=3,

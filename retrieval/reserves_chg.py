@@ -35,7 +35,7 @@ def base_reports(files: List[str], update: Union[str, Path, None] = None):
 
     Returns
     -------
-    dataframe : Pandas dataframe
+    reserves : Pandas dataframe
 
     """
     urls = [f"{reserves_url}{file}.xls" for file in files]
@@ -102,7 +102,7 @@ def missing_reports(online_files: List[str], offline_files: List[str]):
 
     Returns
     -------
-    dataframe : Pandas dataframe
+    missing : Pandas dataframe
 
     """
     missing_online = base_reports(online_files)
@@ -146,7 +146,7 @@ def get_reserves_chg(files: List[str], online_files: List[str] = None,
 
     Returns
     -------
-    dataframe : Pandas dataframe
+    reserves : Pandas dataframe
 
     """
     reserves = base_reports(files=files, update=update)

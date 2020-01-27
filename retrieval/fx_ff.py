@@ -27,7 +27,8 @@ def get(update: Union[str, Path, None] = None,
 
     Returns
     -------
-    dataframe : Pandas dataframe
+    operations : Pandas dataframe
+        Daily future and forward FX operations since november 2013.
 
     """
     dates = pd.bdate_range("2013-11-01",

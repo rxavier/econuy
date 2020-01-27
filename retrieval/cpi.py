@@ -32,7 +32,7 @@ def get(update: Union[str, Path, None] = None, revise_rows: int = 0,
 
     Returns
     -------
-    dataframe : Pandas dataframe
+    cpi : Pandas dataframe
 
     """
     if update is not None:

@@ -35,7 +35,9 @@ def get(update: bool = False, revise_rows: int = 0,
 
     Returns
     -------
-    dataframe : Pandas dataframe
+    output : dictionary of Pandas dataframes
+        Each dataframe corresponds to a sheet in the fiscal accounts Excel
+        provided by the MEF. Not all sheets are considered.
 
     """
     if update is True:

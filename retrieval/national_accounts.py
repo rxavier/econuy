@@ -32,7 +32,8 @@ def get(update: bool = False, revise_rows: int = 0,
 
     Returns
     -------
-    dataframe : Pandas dataframe
+    parsed_excels : dictionary of Pandas dataframes
+        Each dataframe corresponds to a national accounts table.
 
     """
     parsed_excels = {}
@@ -121,7 +122,8 @@ def lin_gdp(update: Union[str, Path, None] = None,
 
     Returns
     -------
-    dataframe : Pandas dataframe
+    output : Pandas dataframe
+        Quarterly GDP in UYU and USD with 1 year forecasts.
 
     """
     if update is not None:
