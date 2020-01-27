@@ -10,7 +10,6 @@ from config import ROOT_DIR
 from processing import columns
 from resources.utils import ff_url
 
-DATES = pd.bdate_range("2013-11-01", dt.datetime.today()).strftime("%y%m%d").tolist()
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 
 
@@ -31,6 +30,8 @@ def get(update: Union[str, Path, None] = None,
     dataframe : Pandas dataframe
 
     """
+    dates = pd.bdate_range("2013-11-01",
+                           dt.datetime.today()).strftime("%y%m%d").tolist()
     if update is not None:
         update_path = os.path.join(DATA_PATH, update)
         prev_data = pd.read_csv(update_path, sep=" ", index_col=0,

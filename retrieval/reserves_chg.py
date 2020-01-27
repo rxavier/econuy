@@ -14,7 +14,7 @@ from resources.utils import reserves_cols, reserves_url
 months = ["ene", "feb", "mar", "abr", "may", "jun",
           "jul", "ago", "set", "oct", "nov", "dic"]
 years = list(range(2013, dt.datetime.now().year + 1))
-_files = [month + str(year) for year in years for month in months]
+files_ = [month + str(year) for year in years for month in months]
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 
@@ -42,7 +42,7 @@ def base_reports(files: List[str], update: Union[str, Path, None] = None):
 
     if update is not None:
         update_path = os.path.join(DATA_PATH, update)
-        urls = urls[-12:]
+        urls = urls[-18:]
         previous_data = pd.read_csv(update_path, sep=" ", index_col=0,
                                     header=list(range(9)))
         previous_data.columns = reserves_cols[1:46]

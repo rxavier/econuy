@@ -11,9 +11,10 @@ path_chg = os.path.join(data_path, "reserves_chg.csv")
 path_ff = os.path.join(data_path, "fx_ff.csv")
 path_save = os.path.join(data_path, "fx_spot_ff.csv")
 
-changes = reserves_chg.get_reserves_chg(files=reserves_chg.FILES, online=None, offline=None,
+changes = reserves_chg.get_reserves_chg(files=reserves_chg.files_,
+                                        online_files=None, offline_files=None,
                                         update=path_chg, save=path_chg)
-ff = fx_ff.get(dates=fx_ff.DATES, update=path_ff, save=path_ff)
+ff = fx_ff.get(update=path_ff, save=path_ff)
 
 spot = changes.iloc[:, 0]
 
