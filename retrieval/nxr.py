@@ -7,6 +7,7 @@ from pandas.tseries.offsets import MonthEnd
 
 from config import ROOT_DIR
 from processing import columns, updates
+from resources.utils import nxr_url
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 25
@@ -43,9 +44,9 @@ def get(update: Union[str, Path, None] = None, revise_rows: int = 0,
                   f"Skipping download...")
             return previous_data
 
-    file = "http://ine.gub.uy/c/document_library/get_file?uuid=3fbf4ffd-a829-420c-aca9-9f01ecd7919a&groupId=10181"
+    nxr_raw = pd.read_excel(nxr_url, skiprows=4)
     nxr = (nxr_raw.dropna(axis=0, thresh=4).set_index("Mes y año").
-    nxr_raw = pd.read_excel(file, skiprows=4)
+           dropna(axis=1, how="all").rename_axis(None))
     nxr.columns = ["Tipo de cambio compra, fin de período",
                    "Tipo de cambio venta, fin de período",
                    "Tipo de cambio compra, promedio",

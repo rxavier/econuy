@@ -8,47 +8,11 @@ from pandas.tseries.offsets import MonthEnd
 
 from config import ROOT_DIR
 from processing import columns, updates, convert, freqs
+from resources.utils import nat_accounts_metadata
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 80
-FILES = {"https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_101t.xls":
-             {"Rows": 12, "Inf. Adj.": "Const. 2005", "Index": "No", "Seas": "NSA", "Name": "na_ind_con_nsa",
-              "Colnames": ["PBI: Actividades primarias", "PBI: Agricultura, ganadería, caza y silvucultura",
-                           "PBI: Industrias manufactureras", "PBI: Suministro de electricidad, gas y agua",
-                           "PBI: Construcción", "PBI: Comercio, reparaciones, restaurantes y hoteles",
-                           "PBI: Transporte, almacenamiento y comunicaciones", "PBI: Otras actividades",
-                           "PBI: SIFMI", "PBI: Impuestos menos subvenciones", "PBI"]},
-         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_100t.xls":
-             {"Rows": 12, "Inf. Adj.": "Corriente", "Index": "No", "Seas": "NSA", "Name": "na_ind_cur_nsa",
-              "Colnames": ["PBI: Actividades primarias", "PBI: Agricultura, ganadería, caza y silvucultura",
-                           "PBI: Industrias manufactureras", "PBI: Suministro de electricidad, gas y agua",
-                           "PBI: Construcción", "PBI: Comercio, reparaciones, restaurantes y hoteles",
-                           "PBI: Transporte, almacenamiento y comunicaciones", "PBI: Otras actividades",
-                           "PBI: SIFMI", "PBI: Impuestos menos subvenciones", "PBI"]},
-         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_104t.xls":
-             {"Rows": 10, "Inf. Adj.": "Const. 2005", "Index": "No", "Seas": "NSA", "Name": "na_gas_con_nsa",
-              "Colnames": ["PBI: Gasto total", "PBI: Gasto privado", "PBI: Gasto público",
-                           "PBI: Formación bruta de capital", "PBI: Formación bruta de capital fijo",
-                           "PBI: Formación bruta de capital fijo pública",
-                           "PBI: Formación bruta de capital fijo privada", "PBI: Exportaciones",
-                           "PBI: Importaciones", "PBI"]},
-         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_132t.xls":
-             {"Rows": 12, "Inf. Adj.": "Const. 2005", "Index": "2005=100", "Seas": "NSA", "Name": "na_ind_con_idx_nsa",
-              "Colnames": ["PBI: Actividades primarias", "PBI: Agricultura, ganadería, caza y silvucultura",
-                           "PBI: Industrias manufactureras", "PBI: Suministro de electricidad, gas y agua",
-                           "PBI: Construcción", "PBI: Comercio, reparaciones, restaurantes y hoteles",
-                           "PBI: Transporte, almacenamiento y comunicaciones", "PBI: Otras actividades",
-                           "PBI: SIFMI", "PBI: Impuestos menos subvenciones", "PBI"]},
-         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_133t.xls":
-             {"Rows": 12, "Inf. Adj.": "Const. 2005", "Index": "2005=100", "Seas": "SA", "Name": "na_ind_con_idx_sa",
-              "Colnames": ["PBI: Actividades primarias", "PBI: Agricultura, ganadería, caza y silvucultura",
-                           "PBI: Industrias manufactureras", "PBI: Suministro de electricidad, gas y agua",
-                           "PBI: Construcción", "PBI: Comercio, reparaciones, restaurantes y hoteles",
-                           "PBI: Transporte, almacenamiento y comunicaciones", "PBI: Otras actividades",
-                           "PBI: SIFMI", "PBI: Impuestos menos subvenciones", "PBI"]},
-         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_130t.xls":
-             {"Rows": 2, "Inf. Adj.": "Corriente", "Index": "No", "Seas": "NSA", "Name": "na_gdp_cur_nsa",
-              "Colnames": ["PBI"]}}
+
 
 def get(update: bool = False, revise_rows: int = 0,
         save: bool = False, force_update: bool = False):
@@ -72,7 +36,7 @@ def get(update: bool = False, revise_rows: int = 0,
 
     """
     parsed_excels = {}
-    for file, metadata in FILES.items():
+    for file, metadata in nat_accounts_metadata.items():
 
         if update is True:
             update_path = os.path.join(DATA_PATH, metadata['Name'] + ".csv")

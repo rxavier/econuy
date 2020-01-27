@@ -6,6 +6,7 @@ import pandas as pd
 
 from config import ROOT_DIR
 from processing import columns, updates
+from resources.utils import labor_url
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 25
@@ -45,9 +46,9 @@ def get(update: Union[str, Path, None] = None, revise_rows: int = 0,
                   f"Skipping download...")
             return previous_data
 
-    file = "http://ine.gub.uy/c/document_library/get_file?uuid=50ae926c-1ddc-4409-afc6-1fecf641e3d0&groupId=10181"
-
-    labor_raw = pd.read_excel(file, skiprows=39).dropna(axis=0, thresh=2)
+    labor_raw = pd.read_excel(labor_url, skiprows=39).dropna(axis=0, thresh=2)
+    labor = labor_raw[~labor_raw["Unnamed: 0"].str.contains("-|/|Total",
+                                                            regex=True)]
     labor = labor[["Unnamed: 1", "Unnamed: 4", "Unnamed: 7"]]
     labor.index = pd.date_range(start="2006-01-01",
                                 periods=len(labor), freq="M")

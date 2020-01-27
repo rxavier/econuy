@@ -7,6 +7,7 @@ from pandas.tseries.offsets import MonthEnd
 
 from config import ROOT_DIR
 from processing import columns, updates
+from resources.utils import cpi_url
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 25
@@ -43,9 +44,7 @@ def get(update: Union[str, Path, None] = None, revise_rows: int = 0,
                   f"Skipping download...")
             return previous_data
 
-    file = "http://ine.gub.uy/c/document_library/get_file?uuid=2e92084a-94ec-4fec-b5ca-42b40d5d2826&groupId=10181"
-
-    cpi_raw = pd.read_excel(file, skiprows=7).dropna(axis=0, thresh=2)
+    cpi_raw = pd.read_excel(cpi_url, skiprows=7).dropna(axis=0, thresh=2)
     cpi = (cpi_raw.drop(["Mensual", "Acum.año", "Acum.12 meses"], axis=1).
            dropna(axis=0, how="all").set_index("Mes y año").rename_axis(None))
     cpi.columns = ["Índice de precios al consumo"]

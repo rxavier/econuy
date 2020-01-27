@@ -8,8 +8,8 @@ import pandas as pd
 
 from config import ROOT_DIR
 from processing import columns
+from resources.utils import ff_url
 
-URL = "https://www.bcu.gub.uy/Politica-Economica-y-Mercados/Mercado%20de%20Cambios/informepublico"
 DATES = pd.bdate_range("2013-11-01", dt.datetime.today()).strftime("%y%m%d").tolist()
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 
@@ -45,7 +45,7 @@ def get(update: Union[str, Path, None] = None,
     for date in dates:
 
         try:
-            raw_report = pd.read_excel(f"{URL}{date}.xls")
+            raw_report = pd.read_excel(f"{ff_url}{date}.xls")
 
             if (dt.datetime.strptime(date, "%y%m%d") >=
                     dt.datetime(2014, 5, 21)):

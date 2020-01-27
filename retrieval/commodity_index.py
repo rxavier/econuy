@@ -11,8 +11,8 @@ import requests
 
 from config import ROOT_DIR
 from processing import updates
-from processing.utils import (BEEF_URL, PULP_URL, SOYBEAN_URL,
-                              WHEAT_URL, IMF_URL, MILK1_URL, MILK2_URL)
+from resources.utils import (beef_url, pulp_url, soybean_url,
+                             what_url, imf_url, milk1_url, milk2_url)
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 WEIGHTS_PATH = os.path.join(DATA_PATH, "other",
@@ -65,7 +65,7 @@ def prices(update=None, revise_rows=0, save=None, force_update=False):
                   f"Skipping download...")
             return previous_data
 
-    raw_beef = (pd.read_excel(BEEF_URL, header=4, index_col=0)
+    raw_beef = (pd.read_excel(beef_url, header=4, index_col=0)
                 .dropna(how="all").drop(index=0))
     raw_beef.columns = raw_beef.columns.str.strip()
     proc_beef = raw_beef["Ing. Prom./Ton."].to_frame()
@@ -78,7 +78,7 @@ def prices(update=None, revise_rows=0, save=None, force_update=False):
     )
     beef = proc_beef.resample("M").mean()
 
-    raw_pulp_r = requests.get(PULP_URL)
+    raw_pulp_r = requests.get(pulp_url)
     temp_dir = tempfile.TemporaryDirectory()
     with zipfile.ZipFile(BytesIO(raw_pulp_r.content), "r") as f:
         f.extractall(path=temp_dir.name)
@@ -91,7 +91,7 @@ def prices(update=None, revise_rows=0, save=None, force_update=False):
     pulp = proc_pulp
 
     soy_wheat = []
-    for url in [SOYBEAN_URL, WHEAT_URL]:
+    for url in [soybean_url, what_url]:
         raw = pd.read_csv(url, index_col=0)
         proc = (raw["Settle"] * BUSHEL_CONV).to_frame()
         proc.index = pd.to_datetime(proc.index, format="%Y-%m-%d")
@@ -101,7 +101,7 @@ def prices(update=None, revise_rows=0, save=None, force_update=False):
     wheat = soy_wheat[1]
 
     milk = []
-    for region, row in {MILK1_URL: 14, MILK2_URL: 13}.items():
+    for region, row in {milk1_url: 14, milk2_url: 13}.items():
         raw_milk = pd.read_excel(region, skiprows=row,
                                  nrows=dt.datetime.now().year - 2007)
         raw_milk.dropna(how="all", axis=1, inplace=True)
@@ -125,7 +125,7 @@ def prices(update=None, revise_rows=0, save=None, force_update=False):
     prev_milk.columns = ["Price"]
     milk = prev_milk.append(milk)
 
-    raw_imf = pd.read_excel(IMF_URL)
+    raw_imf = pd.read_excel(imf_url)
     raw_imf.columns = raw_imf.iloc[0, :]
     proc_imf = raw_imf.iloc[3:, 1:]
     proc_imf.index = pd.date_range(start="1980-01-31",
@@ -181,5 +181,3 @@ def get(save=None):
         product.to_csv(save_path, sep=" ")
 
     return product
-
-
