@@ -3,6 +3,8 @@ import datetime as dt
 import zipfile
 import tempfile
 from io import BytesIO
+from pathlib import Path
+from typing import Union
 
 import pandas as pd
 import numpy as np
@@ -15,15 +17,26 @@ from resources.utils import (beef_url, pulp_url, soybean_url,
                              what_url, imf_url, milk1_url, milk2_url)
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
-WEIGHTS_PATH = os.path.join(DATA_PATH, "other",
-                            "commodity_exports_wits.csv")
-BUSHEL_CONV = 36.74 / 100
 UPDATE_THRESHOLD = 10
 
 
-def weights(window=3):
+def weights(window: int = 3):
+    """Prepare weights for the commodity price index.
 
-    raw = pd.read_csv(WEIGHTS_PATH)
+    Parameters
+    ----------
+    window : int (default is 3)
+        How many years to consider for rolling averages.
+
+    Returns
+    -------
+    dataframe : Pandas dataframe
+
+    """
+    weights_path = os.path.join(DATA_PATH, "other",
+                                "commodity_exports_wits.csv")
+
+    raw = pd.read_csv(weights_path)
     table = raw.pivot(index="Year", columns="ProductDescription",
                       values="TradeValue in 1000 USD")
     table.fillna(0, inplace=True)
@@ -51,7 +64,29 @@ def weights(window=3):
     return resampled_weights
 
 
-def prices(update=None, revise_rows=0, save=None, force_update=False):
+def prices(update: Union[str, Path, None] = None, revise_rows: int = 0,
+           save: Union[str, Path, None] = None, force_update: bool = False):
+    """Prepare prices for the commodity price index.
+
+    Parameters
+    ----------
+    update : str, Path or None (default is None)
+        Path or path-like string pointing to a CSV file for updating.
+    revise_rows : int (default is 0)
+        How many rows of old data to replace with new data.
+    save : str, Path or None (default is None)
+        Path or path-like string where to save the output dataframe in CSV
+        format.
+    force_update : bool (default is False)
+        If True, fetch data and update existing data even if it was modified
+        within its update window (for commodity prices, 10 days)
+
+    Returns
+    -------
+    dataframe : Pandas dataframe
+
+    """
+    bushel_conv = 36.74 / 100
 
     if update is not None:
         update_path = os.path.join(DATA_PATH, update)
@@ -93,7 +128,7 @@ def prices(update=None, revise_rows=0, save=None, force_update=False):
     soy_wheat = []
     for url in [soybean_url, what_url]:
         raw = pd.read_csv(url, index_col=0)
-        proc = (raw["Settle"] * BUSHEL_CONV).to_frame()
+        proc = (raw["Settle"] * bushel_conv).to_frame()
         proc.index = pd.to_datetime(proc.index, format="%Y-%m-%d")
         proc.sort_index(inplace=True)
         soy_wheat.append(proc.resample("M").mean())
@@ -130,7 +165,6 @@ def prices(update=None, revise_rows=0, save=None, force_update=False):
     proc_imf = raw_imf.iloc[3:, 1:]
     proc_imf.index = pd.date_range(start="1980-01-31",
                                    periods=len(proc_imf), freq="M")
-
     rice = proc_imf[proc_imf.columns[proc_imf.columns.str.contains("Rice")]]
     wood = proc_imf[proc_imf.columns[
         proc_imf.columns.str.contains("Sawnwood")
@@ -162,18 +196,30 @@ def prices(update=None, revise_rows=0, save=None, force_update=False):
     return complete
 
 
-def get(save=None):
+def get(save: Union[str, Path, None] = None):
+    """Get the commodity price index.
 
-    _prices = prices(update="commodity_prices.csv", revise_rows=3,
+    Parameters
+    ----------
+    save : str, Path or None (default is None)
+        Path or path-like string where to save the output dataframe in CSV
+        format.
+
+    Returns
+    -------
+    dataframe : Pandas dataframe
+
+    """
+    prices_ = prices(update="commodity_prices.csv", revise_rows=3,
                      save="commodity_prices.csv", force_update=False)
-    _prices = _prices.interpolate(method="linear", limit=1).dropna(how="any")
-    _prices = _prices.pct_change(periods=1)
-    _weights = weights(window=3)
-    _weights = _weights[_prices.columns]
-    _weights = _weights.reindex(_prices.index, method="ffill")
+    prices_ = prices_.interpolate(method="linear", limit=1).dropna(how="any")
+    prices_ = prices_.pct_change(periods=1)
+    weights_ = weights(window=3)
+    weights_ = weights_[prices_.columns]
+    weights_ = weights_.reindex(prices_.index, method="ffill")
 
-    product = pd.DataFrame(_prices.values * _weights.values,
-                           columns=_prices.columns, index=_prices.index)
+    product = pd.DataFrame(prices_.values * weights_.values,
+                           columns=prices_.columns, index=prices_.index)
     product = product.sum(axis=1).add(1).to_frame().cumprod()
 
     if save is not None:
