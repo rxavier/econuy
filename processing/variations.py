@@ -1,21 +1,57 @@
 import pandas as pd
 
-from processing import colnames, freqs
+from processing import columns, freqs
 
 
-def var_diff(df, operation="var", period_op="last"):
+def chg_diff(df: pd.DataFrame, operation: str = "chg",
+             period_op: str = "last"):
+    """Wrapper for the pct_change and diff Pandas methods.
 
+    Calculate percentage change or difference for dataframes. The `period`
+    argument takes into account the frequency of the dataframe, i.e.,
+    `inter` (for interannual) will calculate pct change/differences with
+    `periods=4` for quarterly frequency, but `periods=12` for monthly
+    frequency.
+
+    Parameters
+    ----------
+    df : Pandas dataframe
+    operation : str (default is 'chg')
+        'chg' for percent change or 'diff' for differences.
+    period_op : str (default is 'last')
+        Period with which to calculate change or difference. 'last' for
+        previous period (last month for monthly data), 'inter' for same period
+        last year, 'annual' for same period last year but taking annual
+        averages/sums.
+
+    Returns
+    -------
+    output : Pandas dataframe
+
+    Raises
+    ------
+    ValueError
+        If the dataframe is not of frequency M (month end), Q (quarter end) or
+        A (year end).
+
+    """
     inferred_freq = pd.infer_freq(df.index)
 
     type_change = {"last":
-                   {"var": [lambda x: x.pct_change(periods=1), "% variación"],
-                    "diff": [lambda x: x.diff(periods=1, min_periods=1), "Cambio"]},
+                   {"chg": [lambda x: x.pct_change(periods=1),
+                            "% variación"],
+                    "diff": [lambda x: x.diff(periods=1, min_periods=1),
+                             "Cambio"]},
                    "inter":
-                   {"var": [lambda x: x.pct_change(periods=last_year), "% variación interanual"],
-                    "diff": [lambda x: x.diff(periods=last_year), "Cambio interanual"]},
+                   {"chg": [lambda x: x.pct_change(periods=last_year),
+                            "% variación interanual"],
+                    "diff": [lambda x: x.diff(periods=last_year),
+                             "Cambio interanual"]},
                    "annual":
-                   {"var": [lambda x: x.pct_change(periods=last_year), "% variación anual"],
-                    "diff": [lambda x: x.diff(periods=last_year), "Cambio anual"]}}
+                   {"chg": [lambda x: x.pct_change(periods=last_year),
+                            "% variación anual"],
+                    "diff": [lambda x: x.diff(periods=last_year),
+                             "Cambio anual"]}}
 
     if inferred_freq == "M":
         last_year = 12
@@ -24,7 +60,8 @@ def var_diff(df, operation="var", period_op="last"):
     elif inferred_freq == "A":
         last_year = 1
     else:
-        raise ValueError("The dataframe needs to have a frequency of M (month end), Q (quarter end) or A (year end)")
+        raise ValueError("The dataframe needs to have a frequency of M "
+                         "(month end), Q (quarter end) or A (year end)")
 
     if period_op == "annual":
 
@@ -34,10 +71,10 @@ def var_diff(df, operation="var", period_op="last"):
             output = freqs.rolling(df, operation="sum")
             output = output.apply(type_change[period_op][operation][0]).multiply(100)
 
-        colnames.set_colnames(output, index=type_change[period_op][operation][1])
+        columns.set_metadata(output, index=type_change[period_op][operation][1])
 
     else:
         output = df.apply(type_change[period_op][operation][0]).multiply(100)
-        colnames.set_colnames(output, index=type_change[period_op][operation][1])
+        columns.set_metadata(output, index=type_change[period_op][operation][1])
 
     return output

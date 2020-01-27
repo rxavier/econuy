@@ -4,6 +4,9 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+ipython = "==7.11.1"
+spyder-kernels = "==1.8.1"
+autopep8 = "*"
 
 [packages]
 pandas = "~=0.25.0"

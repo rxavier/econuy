@@ -11,4 +11,6 @@ __pycache__/
 
 data/
 
-x13as
+resources/x13as
+
+.spyproject/

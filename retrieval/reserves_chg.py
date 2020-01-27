@@ -1,53 +1,51 @@
 import datetime as dt
 import os
 import urllib
+from pathlib import Path
+from typing import List, Union
 
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
 from config import ROOT_DIR
-from processing import colnames
+from processing import columns
+from resources.utils import reserves_cols, reserves_url
 
-BASE_URL = "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Informe%20Diario%20Pasivos%20Monetarios/infd_"
-MONTHS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "set", "oct", "nov", "dic"]
-COLUMNS = ['SALDO AL INICIO DEL PERÍODO', '1. Compras netas de moneda extranjera', '1.1. Compras netas en el mercado',
-           '1.2. Integración en dólares de valores del BCU ', '1.3. Prefinanciación de exportaciones',
-           '1.4. Cancelación de contratos forward', '1.5. Gobierno Central',
-           '1.5.1. Utilizaciones de préstamos internacionales', '1.5.2. Otras compras netas al Gobierno Central',
-           '1.6. Otros', '2. Depósitos del Sistema Bancario en el Banco Central', '2.1. Banca pública',
-           '2.2. Banca privada', '3.- Otros Depósitos en el Banco Central',
-           '3.1. Depósitos de otras empresas de intermediación financiera ',
-           '3.2. Depósitos de casas de cambio y otras Instituciones',
-           '3.3. Depósitos de empresas públicas y gobiernos departamentales', '4. Divisas de exportación a liquidar',
-           '5.- Obligaciones netas en moneda extranjera con Gobierno Central   ',
-           '5.1. Colocación neta de bonos y letras  ', '5.1.1. Colocación bruta', '5.1.2. Amortizaciones  ',
-           '5.1.3. Intereses y comisiones', '5.2. Otras obligaciones netas en moneda extranjera  ',
-           '5.2.1. Desembolsos de préstamos internacionales', '5.2.2. Servicio neto de préstamos internacionales',
-           '5.3.3. Utilizaciones de préstamos internacionales', '5.4.5. Aporte de entes a cuenta de resultados',
-           '5.4.6.  Compras de moneda extranjera', '5.4.7. Giros hacia y desde el BROU',
-           '5.4.8. Integración en dólares de tíulos en UI y pesos (neto)', '5.4.9. Otros', '6.- Intereses netos',
-           '6.1.Intereses pagados sobre depósitos del sistema financiero',
-           '6.2. Intereses cobrados sobre fondos colocados en el exterior', '6.3. Otros intereses y comisiones netos',
-           '7.- Otros', '7.1.  Préstamos y financiamientos empresas públicas',
-           '7.2. Cuentas con organismos internacionales', ' 7.3. Fondos administrados', '7.4. Diferencias de arbitraje',
-           '7.5. Diferencias de cotización e intereses devengados', '7.6. Depósitos especiales Clearstream Banking ',
-           '7.7. Solicitudes de giro al exterior en trámite', '7.8. Otros',
-           'VARIACIÓN TOTAL DEL PERÍODO (1+2+3+4+5+6+7)', 'SALDO AL FINAL  DEL PERÍODO']
-YEARS = list(range(2013, dt.datetime.now().year + 1))
-FILES = [month + str(year) for year in YEARS for month in MONTHS]
+months = ["ene", "feb", "mar", "abr", "may", "jun",
+          "jul", "ago", "set", "oct", "nov", "dic"]
+years = list(range(2013, dt.datetime.now().year + 1))
+files_ = [month + str(year) for year in years for month in months]
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 
 
-def base_reports(files, update=None):
+def base_reports(files: List[str], update: Union[str, Path, None] = None):
+    """Get international reserves change data from online sources.
 
-    urls = [f"{BASE_URL}{file}.xls" for file in files]
+    Use as input a list of strings of the format %b%Y, each representing a
+    month of data.
+
+    Parameters
+    ----------
+    files : list of strings
+        List of strings of the type '%b%Y', only %b is in Spanish. So 'ene'
+        instead of 'jan'. For example, 'oct2017'.
+    update : str, Path or None (default is None)
+        Path or path-like string pointing to a CSV file for updating.
+
+    Returns
+    -------
+    reserves : Pandas dataframe
+
+    """
+    urls = [f"{reserves_url}{file}.xls" for file in files]
 
     if update is not None:
         update_path = os.path.join(DATA_PATH, update)
-        urls = urls[-12:]
-        previous_data = pd.read_csv(update_path, sep=" ", index_col=0, header=[0, 1, 2, 3, 4, 5, 6, 7, 8])
-        previous_data.columns = COLUMNS[1:46]
+        urls = urls[-18:]
+        previous_data = pd.read_csv(update_path, sep=" ", index_col=0,
+                                    header=list(range(9)))
+        previous_data.columns = reserves_cols[1:46]
         previous_data.index = pd.to_datetime(previous_data.index)
 
     reports = []
@@ -56,22 +54,25 @@ def base_reports(files, update=None):
         try:
             with pd.ExcelFile(url) as xls:
                 month_of_report = pd.read_excel(xls, sheet_name="INDICE")
-                base = pd.read_excel(xls, sheet_name="ACTIVOS DE RESERVA",
-                                     skiprows=3).dropna(axis=0, thresh=20).dropna(axis=1, thresh=20)
+                raw = pd.read_excel(xls, sheet_name="ACTIVOS DE RESERVA",
+                                    skiprows=3)
 
             first_day = month_of_report.iloc[7, 4]
-            last_day = first_day + relativedelta(months=1) - dt.timedelta(days=1)
+            last_day = (first_day
+                        + relativedelta(months=1)
+                        - dt.timedelta(days=1))
 
-            base_transpose = base.transpose()
-            base_transpose.index.name = "Date"
-            base_transpose = base_transpose.iloc[:, 1:46]
-            base_transpose.columns = COLUMNS[1:46]
-            base_transpose = base_transpose.iloc[1:]
-            base_transpose.index = pd.to_datetime(base_transpose.index, errors="coerce")
-            base_transpose = base_transpose.loc[base_transpose.index.dropna()]
-            base_transpose = base_transpose.loc[first_day:last_day]
+            proc = raw.dropna(axis=0, thresh=20).dropna(axis=1, thresh=20)
+            proc = proc.transpose()
+            proc.index.name = "Date"
+            proc = proc.iloc[:, 1:46]
+            proc.columns = reserves_cols[1:46]
+            proc = proc.iloc[1:]
+            proc.index = pd.to_datetime(proc.index, errors="coerce")
+            proc = proc.loc[proc.index.dropna()]
+            proc = proc.loc[first_day:last_day]
 
-            reports.append(base_transpose)
+            reports.append(proc)
 
         except urllib.error.HTTPError:
             print(f"{url} could not be reached.")
@@ -88,12 +89,26 @@ def base_reports(files, update=None):
     return reserves
 
 
-def missing_reports(online, offline):
+def missing_reports(online_files: List[str], offline_files: List[str]):
+    """Get missing reserves data from online and offline sources.
 
-    missing_online = base_reports(online)
+    Parameters
+    ----------
+    online_files : list of strings
+        Used for reserves files that do not match the '%b%Y' format. See
+        `base_reports`.
+    offline_files : list of strings
+        List of strings pointing to CSV locations.
+
+    Returns
+    -------
+    missing : Pandas dataframe
+
+    """
+    missing_online = base_reports(online_files)
 
     missing_offline = []
-    for file in offline:
+    for file in offline_files:
         offline_aux = pd.read_csv(file, sep=" ", index_col=0)
         offline_aux.index = pd.to_datetime(offline_aux.index, errors="coerce")
 
@@ -107,25 +122,47 @@ def missing_reports(online, offline):
     return missing
 
 
-def get_reserves_chg(files, online=None, offline=None, update=None, save=None):
+def get_reserves_chg(files: List[str], online_files: List[str] = None,
+                     offline_files: List[str] = None,
+                     update: Union[str, Path, None] = None,
+                     save: Union[str, Path, None] = None):
+    """Get international reserves changes data from online and offline sources.
 
+    Call the `base_reports()` and `missing_reports()` functions.
+
+    Parameters
+    ----------
+    files : list of strings
+    online_files : list of strings (default is None)
+        Used for reserves files that do not match the '%b%Y' format. See
+        `base_reports`.
+    offline_files : list of strings (default is None)
+        List of strings pointing to CSV locations.
+    update : str, Path or None (default is None)
+        Path or path-like string pointing to a CSV file for updating.
+    save : str, Path or None (default is None)
+        Path or path-like string where to save the output dataframe in CSV
+        format.
+
+    Returns
+    -------
+    reserves : Pandas dataframe
+
+    """
     reserves = base_reports(files=files, update=update)
 
-    if online is not None or offline is not None:
-        missing = missing_reports(online=online, offline=offline)
+    if online_files is not None or offline_files is not None:
+        missing = missing_reports(online_files=online_files,
+                                  offline_files=offline_files)
         reserves = reserves.append(missing, sort=False)
         reserves.sort_index(inplace=True)
 
-    colnames.set_colnames(reserves, area="Reservas internacionales", currency="USD", inf_adj="No",
-                          index="No", seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+    columns.set_metadata(reserves, area="Reservas internacionales",
+                         currency="USD", inf_adj="No", index="No",
+                         seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
     if save is not None:
         save_path = os.path.join(DATA_PATH, save)
         reserves.to_csv(save_path, sep=" ")
 
     return reserves
-
-
-if __name__ == "__main__":
-    int_reserves = get_reserves_chg(files=FILES, online=None, offline=None,
-                                    update="reserves_chg.csv", save="reserves_chg.csv")
