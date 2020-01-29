@@ -16,3 +16,7 @@ econuy/resources/x13as
 .spyproject/
 
 econuy.egg-info/
+
+dist/
+
+build/
