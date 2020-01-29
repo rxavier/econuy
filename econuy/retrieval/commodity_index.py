@@ -11,10 +11,10 @@ import numpy as np
 from pandas.tseries.offsets import YearEnd, MonthEnd
 import requests
 
-from config import ROOT_DIR
-from processing import updates
-from resources.utils import (beef_url, pulp_url, soybean_url,
-                             what_url, imf_url, milk1_url, milk2_url)
+from econuy.config import ROOT_DIR
+from econuy.processing import updates
+from econuy.resources.utils import (beef_url, pulp_url, soybean_url,
+                                    what_url, imf_url, milk1_url, milk2_url)
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 UPDATE_THRESHOLD = 10

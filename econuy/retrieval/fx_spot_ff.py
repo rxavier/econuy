@@ -2,9 +2,9 @@ import os
 
 import pandas as pd
 
-from config import ROOT_DIR
-from processing import columns
-from retrieval import fx_ff, reserves_chg
+from econuy.config import ROOT_DIR
+from econuy.processing import columns
+from econuy.retrieval import fx_ff, reserves_chg
 
 data_path = os.path.join(ROOT_DIR, "data")
 path_chg = os.path.join(data_path, "reserves_chg.csv")

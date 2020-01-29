@@ -1,7 +1,7 @@
 
-processing/__pycache__/
+econuy/processing/__pycache__/
 
-retrieval/__pycache__/
+econuy/retrieval/__pycache__/
 
 .idea/
 
@@ -9,8 +9,10 @@ venv/
 
 __pycache__/
 
-data/
+econuy/data/
 
-resources/x13as
+econuy/resources/x13as
 
 .spyproject/
+
+econuy.egg-info/

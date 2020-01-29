@@ -7,9 +7,9 @@ from typing import List, Union
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
-from config import ROOT_DIR
-from processing import columns
-from resources.utils import reserves_cols, reserves_url
+from econuy.config import ROOT_DIR
+from econuy.processing import columns
+from econuy.resources.utils import reserves_cols, reserves_url
 
 months = ["ene", "feb", "mar", "abr", "may", "jun",
           "jul", "ago", "set", "oct", "nov", "dic"]

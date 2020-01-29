@@ -3,7 +3,7 @@ from typing import Union
 
 import pandas as pd
 
-from processing import columns
+from econuy.processing import columns
 
 
 def base_index(df: pd.DataFrame, start_date: Union[str, date],

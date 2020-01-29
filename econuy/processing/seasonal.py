@@ -6,8 +6,8 @@ import numpy as np
 from statsmodels.api import tsa
 from statsmodels.tools.sm_exceptions import X13Error
 
-from config import ROOT_DIR
-from processing import columns
+from econuy.config import ROOT_DIR
+from econuy.processing import columns
 
 X13_PATH = os.path.join(ROOT_DIR, "resources", "x13as")
 

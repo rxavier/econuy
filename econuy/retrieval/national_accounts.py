@@ -6,9 +6,9 @@ from typing import Union
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
-from config import ROOT_DIR
-from processing import columns, updates, convert, freqs
-from resources.utils import nat_accounts_metadata
+from econuy.config import ROOT_DIR
+from econuy.processing import freqs, updates, columns, convert
+from econuy.resources.utils import nat_accounts_metadata
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 80

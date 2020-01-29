@@ -8,10 +8,10 @@ import numpy as np
 import requests
 from pandas.tseries.offsets import MonthEnd
 
-from retrieval import nxr, cpi
-from config import ROOT_DIR
-from processing import columns, updates, index
-from resources.utils import reer_url, ar_cpi_url, ar_cpi_payload
+from econuy.retrieval import cpi, nxr
+from econuy.config import ROOT_DIR
+from econuy.processing import index, updates, columns
+from econuy.resources.utils import reer_url, ar_cpi_url, ar_cpi_payload
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 25

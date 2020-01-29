@@ -3,8 +3,8 @@ from typing import Union
 
 import pandas as pd
 
-from retrieval import nxr, cpi, national_accounts
-from processing import freqs, columns
+from econuy.retrieval import cpi, national_accounts, nxr
+from econuy.processing import freqs, columns
 
 
 def usd(df: pd.DataFrame):
