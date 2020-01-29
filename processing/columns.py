@@ -43,6 +43,9 @@ def set_metadata(
     """
     colnames = df.columns
     inferred_freq = pd.infer_freq(df.index)
+    if inferred_freq is None:
+        print("Frequency could not be inferred from the index.")
+        inferred_freq = "-"
 
     if not isinstance(df.columns, pd.MultiIndex):
         df.columns = pd.MultiIndex.from_product(

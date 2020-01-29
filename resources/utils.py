@@ -18,6 +18,7 @@ labor_url = "http://ine.gub.uy/c/document_library/get_file?uuid=50ae926c-1ddc-44
 ff_url = "https://www.bcu.gub.uy/Politica-Economica-y-Mercados/Mercado%20de%20Cambios/informepublico"
 fiscal_url = "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos"
 reserves_url = "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Informe%20Diario%20Pasivos%20Monetarios/infd_"
+reer_url = "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Indice_Cambio_Real/eese04d1119.xls"
 
 fiscal_sheets = {
     "Sector Público No Financiero":
@@ -290,3 +291,7 @@ reserves_cols = [
     'VARIACIÓN TOTAL DEL PERÍODO (1+2+3+4+5+6+7)',
     'SALDO AL FINAL  DEL PERÍODO'
 ]
+
+
+ar_cpi_url = "http://www.bcra.gov.ar/PublicacionesEstadisticas/Principales_variables_datos.asp"
+ar_cpi_payload = "fecha_desde=1970-01-01&fecha_hasta=2019-12-31&B1=Enviar&primeravez=1&fecha_desde=19600101&fecha_hasta=20191231&serie=7931&serie1=0&serie2=0&serie3=0&serie4=0&detalle=Inflaci%F3n+mensual%A0%28variaci%F3n+en+%29"
