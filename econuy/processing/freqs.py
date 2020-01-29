@@ -64,7 +64,8 @@ def freq_resample(df: pd.DataFrame, target: str, operation: str = "sum",
         resampled_df = df.resample(target, convention="end").asfreq()
         resampled_df = resampled_df.interpolate(method=interpolation)
     else:
-        raise ValueError("Dataframe needs to have a Type")
+        raise ValueError("Dataframe needs to have a Type of either"
+                         "'Flujo' or 'Stock'")
 
     columns.set_metadata(resampled_df)
 
