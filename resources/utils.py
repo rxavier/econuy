@@ -292,6 +292,46 @@ reserves_cols = [
     'SALDO AL FINAL  DEL PERÍODO'
 ]
 
+fiscal_metadata = {
+    "gps": {True: ["Ingresos: SPNF-SPC aj. FSS", "Egresos: Primarios SPNF-SPC",
+                   "Egresos: Inversiones SPNF-SPC", "Intereses: SPC aj. FSS",
+                   "Egresos: Totales SPC aj. FSS",
+                   "Resultado: Primario intendencias",
+                   "Resultado: Primario BSE", "Resultado: Primario BCU",
+                   "Resultado: Primario SPC aj. FSS",
+                   "Resultado: Global SPC aj. FSS"],
+            False: ["Ingresos: SPNF-SPC", "Egresos: Primarios SPNF-SPC",
+                    "Egresos: Inversiones SPNF-SPC",
+                    "Intereses: SPC", "Egresos: Totales SPC",
+                    "Resultado: Primario intendencias",
+                    "Resultado: Primario BSE", "Resultado: Primario BCU",
+                    "Resultado: Primario SPC",
+                    "Resultado: Global SPC"]},
+    "nfps": {
+        True: ["Ingresos: SPNF-SPC aj. FSS", "Egresos: Primarios SPNF-SPC",
+               "Egresos: Inversiones SPNF-SPC", "Intereses: SPNF aj. FSS",
+               "Egresos: Totales SPNF aj. FSS",
+               "Resultado: Primario intendencias",
+               "Resultado: Primario BSE", "Resultado: Primario SPNF aj. FSS",
+               "Resultado: Global SPNF aj. FSS"],
+        False: ["Ingresos: SPNF-SPC", "Egresos: Primarios SPNF-SPC",
+                "Egresos: Inversiones SPNF-SPC",
+                "Intereses: SPNF", "Egresos: Totales SPNF",
+                "Resultado: Primario intendencias",
+                "Resultado: Primario BSE", "Resultado: Primario SPNF",
+                "Resultado: Global SPNF"]},
+    "gc": {True: ["Ingresos: GC-BPS aj. FSS", "Egresos: Primarios GC-BPS",
+                  "Egresos: Inversiones GC-BPS",
+                  "Intereses: GC-BPS aj. FSS",
+                  "Egresos: Totales GC-BPS aj. FSS",
+                  "Resultado: Primario GC-BPS aj. FSS",
+                  "Resultado: Global GC-BPS aj. FSS"],
+           False: ["Ingresos: GC-BPS", "Egresos: Primarios GC-BPS",
+                   "Egresos: Inversiones GC-BPS",
+                   "Intereses: GC-BPS", "Egresos: Totales GC-BPS",
+                   "Resultado: Primario GC-BPS",
+                   "Resultado: Global GC-BPS"]}
+}
 
 ar_cpi_url = "http://www.bcra.gov.ar/PublicacionesEstadisticas/Principales_variables_datos.asp"
 ar_cpi_payload = "fecha_desde=1970-01-01&fecha_hasta=2019-12-31&B1=Enviar&primeravez=1&fecha_desde=19600101&fecha_hasta=20191231&serie=7931&serie1=0&serie2=0&serie3=0&serie4=0&detalle=Inflaci%F3n+mensual%A0%28variaci%F3n+en+%29"
