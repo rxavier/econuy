@@ -10,7 +10,8 @@ import requests
 from bs4 import BeautifulSoup
 
 from econuy.config import ROOT_DIR
-from econuy.processing import updates, columns
+from econuy.processing import columns
+from econuy.resources import updates
 from econuy.resources.lstrings import fiscal_url, fiscal_sheets
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")

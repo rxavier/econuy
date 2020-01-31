@@ -12,7 +12,7 @@ from pandas.tseries.offsets import YearEnd, MonthEnd
 import requests
 
 from econuy.config import ROOT_DIR
-from econuy.processing import updates
+from econuy.resources import updates
 from econuy.resources.lstrings import (beef_url, pulp_url, soybean_url,
                                        what_url, imf_url, milk1_url, milk2_url)
 

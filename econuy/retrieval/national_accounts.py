@@ -6,8 +6,8 @@ from typing import Union
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
-from econuy.config import ROOT_DIR
-from econuy.processing import freqs, updates, columns, convert
+from econuy.processing import freqs, columns, convert
+from econuy.resources import updates
 from econuy.resources.lstrings import nat_accounts_metadata
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
