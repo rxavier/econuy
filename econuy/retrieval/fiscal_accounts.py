@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 
 from econuy.config import ROOT_DIR
 from econuy.processing import updates, columns
-from econuy.resources.utils import fiscal_url, fiscal_sheets
+from econuy.resources.lstrings import fiscal_url, fiscal_sheets
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 25

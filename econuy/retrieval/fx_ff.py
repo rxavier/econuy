@@ -8,7 +8,7 @@ import pandas as pd
 
 from econuy.config import ROOT_DIR
 from econuy.processing import columns
-from econuy.resources.utils import ff_url
+from econuy.resources.lstrings import ff_url
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 

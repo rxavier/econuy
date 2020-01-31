@@ -6,7 +6,7 @@ import pandas as pd
 
 from econuy.config import ROOT_DIR
 from econuy.processing import updates, columns
-from econuy.resources.utils import labor_url
+from econuy.resources.lstrings import labor_url
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 25

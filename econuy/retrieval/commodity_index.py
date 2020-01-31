@@ -13,8 +13,8 @@ import requests
 
 from econuy.config import ROOT_DIR
 from econuy.processing import updates
-from econuy.resources.utils import (beef_url, pulp_url, soybean_url,
-                                    what_url, imf_url, milk1_url, milk2_url)
+from econuy.resources.lstrings import (beef_url, pulp_url, soybean_url,
+                                       what_url, imf_url, milk1_url, milk2_url)
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 UPDATE_THRESHOLD = 10

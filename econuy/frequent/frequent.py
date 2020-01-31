@@ -8,7 +8,7 @@ from econuy.config import ROOT_DIR
 from econuy.retrieval import nxr, national_accounts, cpi, fiscal_accounts, \
     labor
 from econuy.processing import columns, freqs, variations, seasonal, convert
-from econuy.resources.utils import fiscal_metadata
+from econuy.resources.lstrings import fiscal_metadata
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 

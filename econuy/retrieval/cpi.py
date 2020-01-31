@@ -7,7 +7,7 @@ from pandas.tseries.offsets import MonthEnd
 
 from econuy.config import ROOT_DIR
 from econuy.processing import updates, columns
-from econuy.resources.utils import cpi_url
+from econuy.resources.lstrings import cpi_url
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 update_threshold = 25
