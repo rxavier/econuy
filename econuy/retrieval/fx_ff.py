@@ -7,7 +7,7 @@ from typing import Union
 import pandas as pd
 
 from econuy.config import ROOT_DIR
-from econuy.processing import columns
+from econuy.resources import columns
 from econuy.resources.lstrings import ff_url
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")

@@ -3,7 +3,7 @@ import os
 import pandas as pd
 
 from econuy.config import ROOT_DIR
-from econuy.processing import columns
+from econuy.resources import columns
 from econuy.retrieval import fx_ff, reserves_chg
 
 data_path = os.path.join(ROOT_DIR, "data")

@@ -8,7 +8,7 @@ import pandas as pd
 from dateutil.relativedelta import relativedelta
 
 from econuy.config import ROOT_DIR
-from econuy.processing import columns
+from econuy.resources import columns
 from econuy.resources.lstrings import reserves_cols, reserves_url
 
 months = ["ene", "feb", "mar", "abr", "may", "jun",

@@ -1,6 +1,7 @@
 import pandas as pd
 
-from econuy.processing import freqs, columns
+from econuy.processing import freqs
+from econuy.resources import columns
 
 
 def chg_diff(df: pd.DataFrame, operation: str = "chg",

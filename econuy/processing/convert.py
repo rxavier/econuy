@@ -4,7 +4,8 @@ from typing import Union
 import pandas as pd
 
 from econuy.retrieval import cpi, national_accounts, nxr
-from econuy.processing import freqs, columns
+from econuy.processing import freqs
+from econuy.resources import columns
 
 
 def usd(df: pd.DataFrame):

@@ -5,8 +5,7 @@ from typing import Union
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
-from econuy.processing import columns
-from econuy.resources import updates
+from econuy.resources import updates, columns
 from econuy.resources.lstrings import nxr_url
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")

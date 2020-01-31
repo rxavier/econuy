@@ -2,7 +2,7 @@ from typing import Optional
 
 import pandas as pd
 
-from econuy.processing import columns
+from econuy.resources import columns
 
 PD_FREQUENCIES = {"A": 1,
                   "Q-DEC": 4,

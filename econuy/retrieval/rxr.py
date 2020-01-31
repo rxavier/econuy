@@ -10,8 +10,8 @@ from pandas.tseries.offsets import MonthEnd
 
 from econuy.retrieval import cpi, nxr
 from econuy.config import ROOT_DIR
-from econuy.processing import index, columns
-from econuy.resources import updates
+from econuy.processing import index
+from econuy.resources import updates, columns
 from econuy.resources.lstrings import reer_url, ar_cpi_url, ar_cpi_payload
 
 DATA_PATH = os.path.join(ROOT_DIR, "data")
