@@ -66,7 +66,7 @@ def get(update: bool = False, revise_rows: int = 0,
         f.write(requests.get(rar).content)
 
     with tempfile.TemporaryDirectory() as temp_dir:
-        patoolib.extract_archive(temp_rar, outdir=temp_dir)
+        patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
         path = os.path.join(temp_dir, os.listdir(temp_dir)[0])
 
         output = {}
