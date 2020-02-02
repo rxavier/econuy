@@ -11,9 +11,14 @@ from econuy.resources import columns, updates
 from econuy.resources.lstrings import fiscal_metadata
 
 
-
-def inflation():
+def inflation(save: Union[str, PathLike, bool] = False):
     """Update CPI data and return common inflation measures.
+
+    Parameters
+    ----------
+    save : str, PathLike or bool (default is False)
+        Path, path-like string pointing to a CSV file for saving, or bool,
+        in which case if True, save in predefined file, or False, don't save.
 
     Returns
     -------
@@ -32,15 +37,20 @@ def inflation():
                                      period_op="last")
     monthly_trend = variations.chg_diff(trend, operation="chg",
                                         period_op="last")
-
     output = pd.concat([data, interannual, monthly,
                         monthly_sa, monthly_trend], axis=1)
+
+    if save is not False:
+        save_path = updates.paths(save, multiple=False,
+                                  name="cpi_inflation.csv")
+        output.to_csv(save_path)
 
     return output
 
 
 def exchange_rate(eop: bool = False, sell: bool = True,
-                  seas_adj: Union[str, None] = None, cum: int = 1):
+                  seas_adj: Union[str, None] = None, cum: int = 1,
+                  save: Union[str, PathLike, bool] = False):
     """Get nominal exchange rate data.
 
     Allow choosing end of period or average (monthly), sell/buy rates,
@@ -56,6 +66,9 @@ def exchange_rate(eop: bool = False, sell: bool = True,
         Allowed strings: 'trend' or 'seas'.
     cum : int (default is 1)
         How many periods to accumulate for rolling averages.
+    save : str, PathLike or bool (default is False)
+        Path, path-like string pointing to a CSV file for saving, or bool,
+        in which case if True, save in predefined file, or False, don't save.
 
     Returns
     -------
@@ -89,6 +102,11 @@ def exchange_rate(eop: bool = False, sell: bool = True,
     if cum != 1:
         output = freqs.rolling(output, periods=cum, operation="average")
 
+    if save is not False:
+        save_path = updates.paths(save, multiple=False,
+                                  name="exchange_rate.csv")
+        output.to_csv(save_path)
+
     return output
 
 
@@ -96,7 +114,8 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
            unit: Union[str, None] = "gdp",
            start_date: Union[str, date, None] = None,
            end_date: Union[str, date, None] = None, cum: int = 1,
-           seas_adj: Union[str, None] = None):
+           seas_adj: Union[str, None] = None,
+           save: Union[str, PathLike, bool] = False):
     """Get fiscal accounts data.
 
     Allow choosing government aggregation, whether to exclude the FSS
@@ -126,6 +145,9 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
         How many periods to accumulate for rolling sums.
     seas_adj :
         Allowed strings: 'trend' or 'seas'.
+    save : str, PathLike or bool (default is False)
+        Path, path-like string pointing to a CSV file for saving, or bool,
+        in which case if True, save in predefined file, or False, don't save.
 
     Returns
     -------
@@ -233,14 +255,19 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
         else:
             print("Only 'trend', 'seas' and None are "
                   "possible values for 'seas_adj'")
-
     if cum != 1:
         output = freqs.rolling(output, periods=cum, operation="sum")
+
+    if save is not False:
+        save_path = updates.paths(save, multiple=False,
+                                  name="fiscal_accounts.csv")
+        output.to_csv(save_path)
 
     return output
 
 
-def labor_mkt(seas_adj: Union[str, None] = "trend"):
+def labor_mkt(seas_adj: Union[str, None] = "trend",
+              save: Union[str, PathLike, bool] = False):
     """Get labor market data.
 
     Allow choosing seasonal adjustment.
@@ -249,6 +276,9 @@ def labor_mkt(seas_adj: Union[str, None] = "trend"):
     ----------
     seas_adj :
         Allowed strings: 'trend' or 'seas'.
+    save : str, PathLike or bool (default is False)
+        Path, path-like string pointing to a CSV file for saving, or bool,
+        in which case if True, save in predefined file, or False, don't save.
 
     Returns
     -------
@@ -268,13 +298,19 @@ def labor_mkt(seas_adj: Union[str, None] = "trend"):
         elif seas_adj == "seas":
             output = pd.concat([data, seasadj], axis=1)
 
+    if save is not False:
+        save_path = updates.paths(save, multiple=False,
+                                  name="labor_market.csv")
+        output.to_csv(save_path)
+
     return output
 
 
 def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
                  seas_adj: bool = True, usd: bool = False, cum: int = 1,
                  cust_seas_adj: Union[str, None] = None,
-                 variation: Union[str, None] = None):
+                 variation: Union[str, None] = None,
+                 save: Union[str, PathLike, bool] = False):
     """Get national accounts data.
 
     Attempt to find one of the available data tables with the selected
@@ -299,6 +335,9 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
     variation : str or None (default is None)
         Type of percentage change to calculate. Can be 'last', 'inter' or
         'annual'.
+    save : str, PathLike or bool (default is False)
+        Path, path-like string pointing to a CSV file for saving, or bool,
+        in which case if True, save in predefined file, or False, don't save.
 
     Returns
     -------
@@ -360,5 +399,10 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
     elif variation is not None:
         print("Only 'last', 'inter' and 'annual' are "
               "possible values for 'variation'")
+
+    if save is not False:
+        save_path = updates.paths(save, multiple=False,
+                                  name="national_accounts.csv")
+        output.to_csv(save_path)
 
     return output
