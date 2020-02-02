@@ -19,6 +19,8 @@ ff_url = "https://www.bcu.gub.uy/Politica-Economica-y-Mercados/Mercado%20de%20Ca
 fiscal_url = "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos"
 reserves_url = "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Informe%20Diario%20Pasivos%20Monetarios/infd_"
 reer_url = "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Indice_Cambio_Real/eese04d1119.xls"
+missing_reserves_url = "https://docs.google.com/spreadsheets/d/1tXwv8SaigbBrfBSSCVGBjSs88f3dgTq4nIANPn7vjYI/export?format=xlsx&authuser=0"
+
 
 fiscal_sheets = {
     "Sector Público No Financiero":
