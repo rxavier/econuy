@@ -1,15 +1,15 @@
-from os import PathLike, path
 import datetime as dt
-import zipfile
 import tempfile
+import zipfile
 from io import BytesIO
+from os import PathLike, path
 from pathlib import Path
 from typing import Union
 
-import pandas as pd
 import numpy as np
-from pandas.tseries.offsets import YearEnd
+import pandas as pd
 import requests
+from pandas.tseries.offsets import YearEnd
 
 from econuy.resources import updates
 from econuy.resources.lstrings import (beef_url, pulp_url, soybean_url,
@@ -44,10 +44,10 @@ def weights(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
     update_threshold = 85
 
     if update is not False:
-        update_path = updates.paths(update, multiple=False,
-                                    name="comm_weights.csv")
-        delta, previous_data = updates.check_modified(update_path,
-                                                      multiindex=False)
+        update_path = updates._paths(update, multiple=False,
+                                     name="comm_weights.csv")
+        delta, previous_data = updates._check_modified(update_path,
+                                                       multiindex=False)
 
         if delta < update_threshold and force_update is False:
             print(f"{update} was modified within {update_threshold} day(s). "
@@ -83,12 +83,12 @@ def weights(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
                       "Rice", "Soybeans", "Wheat", "Wool", "Beef"]
 
     if update is not False:
-        output = updates.revise(new_data=output, prev_data=previous_data,
-                                revise_rows=revise_rows)
+        output = updates._revise(new_data=output, prev_data=previous_data,
+                                 revise_rows=revise_rows)
 
     if save is not False:
-        save_path = updates.paths(save, multiple=False,
-                                  name="comm_weights.csv")
+        save_path = updates._paths(save, multiple=False,
+                                   name="comm_weights.csv")
         output.to_csv(save_path)
 
     return output
@@ -122,10 +122,10 @@ def prices(update: Union[str, Path, bool] = False, revise_rows: int = 0,
     bushel_conv = 36.74 / 100
 
     if update is not False:
-        update_path = updates.paths(update, multiple=False,
-                                    name="comm_prices.csv")
-        delta, previous_data = updates.check_modified(update_path,
-                                                      multiindex=False)
+        update_path = updates._paths(update, multiple=False,
+                                     name="comm_prices.csv")
+        delta, previous_data = updates._check_modified(update_path,
+                                                       multiindex=False)
 
         if delta < update_threshold and force_update is False:
             print(f"{update} was modified within {update_threshold} day(s). "
@@ -220,12 +220,12 @@ def prices(update: Union[str, Path, bool] = False, revise_rows: int = 0,
                         "Wool", "Barley", "Gold", "Wheat"]
 
     if update is not False:
-        complete = updates.revise(new_data=complete, prev_data=previous_data,
-                                  revise_rows=revise_rows)
+        complete = updates._revise(new_data=complete, prev_data=previous_data,
+                                   revise_rows=revise_rows)
 
     if save is not False:
-        save_path = updates.paths(save, multiple=False,
-                                  name="comm_prices.csv")
+        save_path = updates._paths(save, multiple=False,
+                                   name="comm_prices.csv")
         complete.to_csv(save_path)
 
     return complete
@@ -266,8 +266,8 @@ def get(save: Union[str, Path, bool] = False,
     product = product.sum(axis=1).add(1).to_frame().cumprod()
 
     if save is not False:
-        save_path = updates.paths(save, multiple=False,
-                                  name="commodity_index.csv")
+        save_path = updates._paths(save, multiple=False,
+                                   name="commodity_index.csv")
         product.to_csv(save_path)
 
     return product

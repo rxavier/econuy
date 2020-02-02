@@ -34,8 +34,8 @@ def get(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
     update_threshold = 25
 
     if update is not False:
-        update_path = updates.paths(update, multiple=False, name="cpi.csv")
-        delta, previous_data = updates.check_modified(update_path)
+        update_path = updates._paths(update, multiple=False, name="cpi.csv")
+        delta, previous_data = updates._check_modified(update_path)
 
         if delta < update_threshold and force_update is False:
             print(f"{update} was modified within {update_threshold} day(s). "
@@ -49,16 +49,16 @@ def get(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
     cpi.index = cpi.index + MonthEnd(1)
 
     if update is not False:
-        cpi = updates.revise(new_data=cpi, prev_data=previous_data,
-                             revise_rows=revise_rows)
+        cpi = updates._revise(new_data=cpi, prev_data=previous_data,
+                              revise_rows=revise_rows)
 
     cpi = cpi.apply(pd.to_numeric, errors="coerce")
-    columns.set_metadata(cpi, area="Precios y salarios", currency="-",
-                         inf_adj="No", index="2010-10-31", seas_adj="NSA",
-                         ts_type="-", cumperiods=1)
+    columns._setmeta(cpi, area="Precios y salarios", currency="-",
+                     inf_adj="No", index="2010-10-31", seas_adj="NSA",
+                     ts_type="-", cumperiods=1)
 
     if save is not False:
-        save_path = updates.paths(save, multiple=False, name="cpi.csv")
+        save_path = updates._paths(save, multiple=False, name="cpi.csv")
         cpi.to_csv(save_path)
 
     return cpi

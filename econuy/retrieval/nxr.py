@@ -34,8 +34,8 @@ def get(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
     update_threshold = 25
 
     if update is not False:
-        update_path = updates.paths(update, multiple=False, name="nxr.csv")
-        delta, previous_data = updates.check_modified(update_path)
+        update_path = updates._paths(update, multiple=False, name="nxr.csv")
+        delta, previous_data = updates._check_modified(update_path)
 
         if delta < update_threshold and force_update is False:
             print(f"{update} was modified within {update_threshold} day(s). "
@@ -52,16 +52,16 @@ def get(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
     nxr.index = nxr.index + MonthEnd(1)
 
     if update is not False:
-        nxr = updates.revise(new_data=nxr, prev_data=previous_data,
-                             revise_rows=revise_rows)
+        nxr = updates._revise(new_data=nxr, prev_data=previous_data,
+                              revise_rows=revise_rows)
 
     nxr = nxr.apply(pd.to_numeric, errors="coerce")
-    columns.set_metadata(nxr, area="Precios y salarios", currency="-",
-                         inf_adj="No", index="No", seas_adj="NSA",
-                         ts_type="-", cumperiods=1)
+    columns._setmeta(nxr, area="Precios y salarios", currency="-",
+                     inf_adj="No", index="No", seas_adj="NSA",
+                     ts_type="-", cumperiods=1)
 
     if save is not False:
-        save_path = updates.paths(save, multiple=False, name="nxr.csv")
+        save_path = updates._paths(save, multiple=False, name="nxr.csv")
         nxr.to_csv(save_path)
 
     return nxr

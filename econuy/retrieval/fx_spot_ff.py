@@ -19,13 +19,13 @@ def get(save: Union[str, PathLike, bool] = False):
     fx_ops = fx_ops.fillna(0)
     fx_ops.columns = ["Spot", "Futuros", "Forwards"]
 
-    columns.set_metadata(fx_ops, area="Reservas internacionales",
-                         currency="USD", inf_adj="No", index="No",
-                         seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+    columns._setmeta(fx_ops, area="Reservas internacionales",
+                     currency="USD", inf_adj="No", index="No",
+                     seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
     if save is not False:
-        save_path = updates.paths(save, multiple=False,
-                                  name="fx_spot_ff.csv")
+        save_path = updates._paths(save, multiple=False,
+                                   name="fx_spot_ff.csv")
         fx_ops.to_csv(save_path)
 
     return fx_ops

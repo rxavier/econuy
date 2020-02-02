@@ -1,6 +1,6 @@
-from os import PathLike
 import datetime as dt
 import urllib
+from os import PathLike
 from typing import List, Union
 
 import pandas as pd
@@ -46,8 +46,8 @@ def get(files: List[str] = files_, update: Union[str, PathLike, bool] = False,
     urls = [fixed_may14 if x == wrong_may14 else x for x in urls]
 
     if update is not False:
-        update_path = updates.paths(update, multiple=False,
-                                    name="reserves_chg.csv")
+        update_path = updates._paths(update, multiple=False,
+                                     name="reserves_chg.csv")
         previous_data = pd.read_csv(update_path, index_col=0,
                                     header=list(range(9)))
         previous_data.columns = reserves_cols[1:46]
@@ -90,13 +90,13 @@ def get(files: List[str] = files_, update: Union[str, PathLike, bool] = False,
         reserves = reserves.loc[~reserves.index.duplicated(keep="last")]
 
     reserves = reserves.apply(pd.to_numeric, errors="coerce")
-    columns.set_metadata(reserves, area="Reservas internacionales",
-                         currency="USD", inf_adj="No", index="No",
-                         seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+    columns._setmeta(reserves, area="Reservas internacionales",
+                     currency="USD", inf_adj="No", index="No",
+                     seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
     if save is not False:
-        save_path = updates.paths(save, multiple=False,
-                                  name="reserves_chg.csv")
+        save_path = updates._paths(save, multiple=False,
+                                   name="reserves_chg.csv")
         reserves.to_csv(save_path)
 
     return reserves

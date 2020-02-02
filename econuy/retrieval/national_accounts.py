@@ -1,5 +1,5 @@
-from os import PathLike
 import datetime as dt
+from os import PathLike
 from typing import Union
 
 import pandas as pd
@@ -41,9 +41,9 @@ def get(update_dir: Union[str, PathLike, bool] = False, revise_rows: int = 0,
     for file, metadata in nat_accounts_metadata.items():
 
         if update_dir is not False:
-            update_path = updates.paths(update_dir, multiple=True,
-                                        multname=metadata["Name"])
-            delta, previous_data = updates.check_modified(update_path)
+            update_path = updates._paths(update_dir, multiple=True,
+                                         multname=metadata["Name"])
+            delta, previous_data = updates._check_modified(update_path)
 
             if delta < update_threshold and force_update is False:
                 print(f"{metadata['Name']}.csv was modified within"
@@ -58,24 +58,24 @@ def get(update_dir: Union[str, PathLike, bool] = False, revise_rows: int = 0,
         proc.columns = metadata["Colnames"]
         proc.drop(["Unnamed: 1"], inplace=True)
 
-        fix_na_dates(proc)
+        _fix_dates(proc)
 
         if metadata["Index"] == "No":
             proc = proc.divide(1000)
         if update_dir is not False:
-            proc = updates.revise(new_data=proc, prev_data=previous_data,
-                                  revise_rows=revise_rows)
+            proc = updates._revise(new_data=proc, prev_data=previous_data,
+                                   revise_rows=revise_rows)
         proc = proc.apply(pd.to_numeric, errors="coerce")
 
-        columns.set_metadata(proc, area="Actividad económica", currency="UYU",
-                             inf_adj=metadata["Inf. Adj."],
-                             index=metadata["Index"],
-                             seas_adj=metadata["Seas"], ts_type="Flujo",
-                             cumperiods=1)
+        columns._setmeta(proc, area="Actividad económica", currency="UYU",
+                         inf_adj=metadata["Inf. Adj."],
+                         index=metadata["Index"],
+                         seas_adj=metadata["Seas"], ts_type="Flujo",
+                         cumperiods=1)
 
         if save_dir is not False:
-            save_path = updates.paths(save_dir, multiple=True,
-                                      multname=metadata["Name"])
+            save_path = updates._paths(save_dir, multiple=True,
+                                       multname=metadata["Name"])
             proc.to_csv(save_path)
 
         parsed_excels.update({metadata["Name"]: proc})
@@ -83,7 +83,7 @@ def get(update_dir: Union[str, PathLike, bool] = False, revise_rows: int = 0,
     return parsed_excels
 
 
-def fix_na_dates(df):
+def _fix_dates(df):
     """Cleanup dates inplace in BCU national accounts files."""
     df.index = df.index.str.replace("*", "")
     df.index = df.index.str.replace(r"\bI \b", "3-", regex=True)
@@ -93,9 +93,9 @@ def fix_na_dates(df):
     df.index = pd.to_datetime(df.index, format="%m-%Y") + MonthEnd(1)
 
 
-def lin_gdp(update: Union[str, PathLike, bool] = False,
-            save: Union[str, PathLike, bool] = False,
-            force_update: bool = False):
+def _lin_gdp(update: Union[str, PathLike, bool] = False,
+             save: Union[str, PathLike, bool] = False,
+             force_update: bool = False):
     """Get nominal GDP data in UYU and USD with forecasts.
 
     Update nominal GDP data for use in the `convert.pcgdp()` function.
@@ -124,8 +124,8 @@ def lin_gdp(update: Union[str, PathLike, bool] = False,
     update_threshold = 80
 
     if update is not False:
-        update_path = updates.paths(update, multiple=False, name="lin_gdp.csv")
-        delta, previous_data = updates.check_modified(update_path)
+        update_path = updates._paths(update, multiple=False, name="lin_gdp.csv")
+        delta, previous_data = updates._check_modified(update_path)
 
         if delta < update_threshold and force_update is False:
             print(f"{update} was modified within {update_threshold} day(s). "
@@ -167,7 +167,7 @@ def lin_gdp(update: Union[str, PathLike, bool] = False,
     output = output.resample("Q-DEC").interpolate("linear")
 
     if save is not False:
-        save_path = updates.paths(save, multiple=False, name="lin_gdp.csv")
+        save_path = updates._paths(save, multiple=False, name="lin_gdp.csv")
         output.to_csv(save_path)
 
     return output

@@ -1,6 +1,6 @@
 import datetime as dt
-from os import PathLike
 import urllib
+from os import PathLike
 from typing import Union
 
 import pandas as pd
@@ -31,8 +31,8 @@ def get(update: Union[str, PathLike, bool] = False,
     dates = pd.bdate_range("2013-11-01",
                            dt.datetime.today()).strftime("%y%m%d").tolist()
     if update is not False:
-        update_path = updates.paths(update, multiple=False,
-                                    name="fx_ff.csv")
+        update_path = updates._paths(update, multiple=False,
+                                     name="fx_ff.csv")
         prev_data = pd.read_csv(update_path, index_col=0,
                                 header=list(range(9)))
         prev_data.columns = ["Futuros", "Forwards"]
@@ -78,15 +78,15 @@ def get(update: Union[str, PathLike, bool] = False,
     if update is not False:
         operations = prev_data.append(operations, sort=False)
 
-    columns.set_metadata(
+    columns._setmeta(
         operations, area="Reservas internacionales",  currency="USD",
         inf_adj="No", index="No", seas_adj="NSA", ts_type="Flujo",
         cumperiods=1
     )
 
     if save is not None:
-        save_path = updates.paths(save, multiple=False,
-                                  name="fx_ff.csv")
+        save_path = updates._paths(save, multiple=False,
+                                   name="fx_ff.csv")
         operations.to_csv(save_path)
 
     return operations

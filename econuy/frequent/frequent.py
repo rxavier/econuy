@@ -41,8 +41,8 @@ def inflation(save: Union[str, PathLike, bool] = False):
                         monthly_sa, monthly_trend], axis=1)
 
     if save is not False:
-        save_path = updates.paths(save, multiple=False,
-                                  name="cpi_inflation.csv")
+        save_path = updates._paths(save, multiple=False,
+                                   name="cpi_inflation.csv")
         output.to_csv(save_path)
 
     return output
@@ -401,8 +401,8 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
               "possible values for 'variation'")
 
     if save is not False:
-        save_path = updates.paths(save, multiple=False,
-                                  name="national_accounts.csv")
+        save_path = updates._paths(save, multiple=False,
+                                   name="national_accounts.csv")
         output.to_csv(save_path)
 
     return output

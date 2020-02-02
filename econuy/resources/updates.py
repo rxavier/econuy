@@ -1,12 +1,12 @@
-from os import path, makedirs, PathLike
 import datetime as dt
-from typing import Union
+from os import path, makedirs, PathLike
 from pathlib import Path
+from typing import Union
 
 import pandas as pd
 
 
-def check_modified(data_path: Union[str, PathLike], multiindex=True):
+def _check_modified(data_path: Union[str, PathLike], multiindex=True):
     """Check how long it has been since the file in path was modified."""
     try:
         modified_time = dt.datetime.fromtimestamp(path.getmtime(data_path))
@@ -25,7 +25,7 @@ def check_modified(data_path: Union[str, PathLike], multiindex=True):
     return delta, previous_data
 
 
-def revise(new_data: pd.DataFrame, prev_data: pd.DataFrame, revise_rows: int):
+def _revise(new_data: pd.DataFrame, prev_data: pd.DataFrame, revise_rows: int):
     """Replace n rows of data at the end of a dataframe with new data."""
     if len(prev_data) == 0:
         return new_data
@@ -37,8 +37,8 @@ def revise(new_data: pd.DataFrame, prev_data: pd.DataFrame, revise_rows: int):
     return updated
 
 
-def paths(filepath: Union[str, PathLike, bool], multiple: bool = False,
-          name: str = None, multname: str = None):
+def _paths(filepath: Union[str, PathLike, bool], multiple: bool = False,
+           name: str = None, multname: str = None):
     """Take a path-like object or bool and return a full path."""
     if multiple is False:
         if isinstance(filepath, PathLike) or isinstance(filepath, str):

@@ -1,14 +1,14 @@
-from os import PathLike, path, listdir
-from typing import Union
+import datetime as dt
 import re
 import tempfile
-import datetime as dt
+from os import PathLike, path, listdir
+from typing import Union
 
 import pandas as pd
-from pandas.tseries.offsets import MonthEnd
 import patoolib
 import requests
 from bs4 import BeautifulSoup
+from pandas.tseries.offsets import MonthEnd
 
 from econuy.resources import updates, columns
 from econuy.resources.lstrings import fiscal_url, fiscal_sheets
@@ -43,8 +43,8 @@ def get(update_dir: Union[str, PathLike, bool] = False, revise_rows: int = 0,
     update_threshold = 25
 
     if update_dir is not False:
-        update_path = updates.paths(update_dir, multiple=True,
-                                    multname="fiscal_nfps")
+        update_path = updates._paths(update_dir, multiple=True,
+                                     multname="fiscal_nfps")
         modified = dt.datetime.fromtimestamp(path.getmtime(update_path))
         delta = (dt.datetime.now() - modified).days
 
@@ -53,9 +53,9 @@ def get(update_dir: Union[str, PathLike, bool] = False, revise_rows: int = 0,
                   f" Skipping download...")
             output = {}
             for metadata in fiscal_sheets.values():
-                update_path = updates.paths(update_dir, multiple=True,
-                                            multname=metadata["Name"])
-                delta, previous_data = updates.check_modified(update_path)
+                update_path = updates._paths(update_dir, multiple=True,
+                                             multname=metadata["Name"])
+                delta, previous_data = updates._check_modified(update_path)
                 output.update({metadata["Name"]: previous_data})
             return output
 
@@ -83,22 +83,22 @@ def get(update_dir: Union[str, PathLike, bool] = False, revise_rows: int = 0,
                 data.columns = metadata["Colnames"]
 
                 if update_dir is not False:
-                    update_path = updates.paths(update_dir, multiple=True,
-                                                multname=metadata["Name"])
-                    delta, previous_data = updates.check_modified(update_path)
-                    data = updates.revise(new_data=data,
-                                          prev_data=previous_data,
-                                          revise_rows=revise_rows)
+                    update_path = updates._paths(update_dir, multiple=True,
+                                                 multname=metadata["Name"])
+                    delta, previous_data = updates._check_modified(update_path)
+                    data = updates._revise(new_data=data,
+                                           prev_data=previous_data,
+                                           revise_rows=revise_rows)
                 data = data.apply(pd.to_numeric, errors="coerce")
-                columns.set_metadata(
+                columns._setmeta(
                     data, area="Cuentas fiscales y deuda", currency="UYU",
                     inf_adj="No", index="No", seas_adj="NSA", ts_type="Flujo",
                     cumperiods=1
                 )
 
                 if save_dir is not False:
-                    save_path = updates.paths(save_dir, multiple=True,
-                                              multname=metadata["Name"])
+                    save_path = updates._paths(save_dir, multiple=True,
+                                               multname=metadata["Name"])
                     data.to_csv(save_path)
 
                 output.update({metadata["Name"]: data})

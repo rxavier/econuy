@@ -57,8 +57,8 @@ def freq_resample(df: pd.DataFrame, target: str, operation: str = "sum",
             input_notna = df.iloc[:, 0].count()
             output_notna = resampled_df.iloc[:, 0].count()
             cum_adj = round(output_notna / input_notna)
-            columns.set_metadata(resampled_df,
-                                 cumperiods=int(cum_periods * cum_adj))
+            columns._setmeta(resampled_df,
+                             cumperiods=int(cum_periods * cum_adj))
 
     elif df.columns.get_level_values("Tipo")[0] == "Stock":
         resampled_df = df.resample(target, convention="end").asfreq()
@@ -67,7 +67,7 @@ def freq_resample(df: pd.DataFrame, target: str, operation: str = "sum",
         raise ValueError("Dataframe needs to have a Type of either"
                          "'Flujo' or 'Stock'")
 
-    columns.set_metadata(resampled_df)
+    columns._setmeta(resampled_df)
 
     return resampled_df
 
@@ -108,6 +108,6 @@ def rolling(df: pd.DataFrame, periods: Optional[int] = None,
 
     rolling_df = df.apply(window_operation[operation])
 
-    columns.set_metadata(rolling_df, cumperiods=periods)
+    columns._setmeta(rolling_df, cumperiods=periods)
 
     return rolling_df

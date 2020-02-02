@@ -1,16 +1,16 @@
+import datetime as dt
 from os import PathLike
 from typing import Union
-import datetime as dt
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import requests
 from pandas.tseries.offsets import MonthEnd
 
-from econuy.retrieval import cpi, nxr
 from econuy.processing import index
 from econuy.resources import updates, columns
 from econuy.resources.lstrings import reer_url, ar_cpi_url, ar_cpi_payload
+from econuy.retrieval import cpi, nxr
 
 
 def official(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
@@ -40,9 +40,9 @@ def official(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
     update_threshold = 25
 
     if update is not None:
-        update_path = updates.paths(update, multiple=False,
-                                    name="rxr_official.csv")
-        delta, previous_data = updates.check_modified(update_path)
+        update_path = updates._paths(update, multiple=False,
+                                     name="rxr_official.csv")
+        delta, previous_data = updates._check_modified(update_path)
 
         if delta < update_threshold and force_update is False:
             print(f"{update} was modified within {update_threshold} day(s). "
@@ -56,16 +56,16 @@ def official(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
     proc.index = pd.to_datetime(proc.index) + MonthEnd(1)
 
     if update is not False:
-        proc = updates.revise(new_data=proc, prev_data=previous_data,
-                              revise_rows=revise_rows)
+        proc = updates._revise(new_data=proc, prev_data=previous_data,
+                               revise_rows=revise_rows)
 
-    columns.set_metadata(proc, area="Precios y salarios", currency="-",
-                         inf_adj="No", index="2017", seas_adj="NSA",
-                         ts_type="-", cumperiods=1)
+    columns._setmeta(proc, area="Precios y salarios", currency="-",
+                     inf_adj="No", index="2017", seas_adj="NSA",
+                     ts_type="-", cumperiods=1)
 
     if save is not None:
-        save_path = updates.paths(save, multiple=False,
-                                  name="rxr_official.csv")
+        save_path = updates._paths(save, multiple=False,
+                                   name="rxr_official.csv")
         proc.to_csv(save_path)
 
     return proc
@@ -98,9 +98,9 @@ def custom(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
     update_threshold = 25
 
     if update is not None:
-        update_path = updates.paths(update, multiple=False,
-                                    name="rxr_custom.csv")
-        delta, previous_data = updates.check_modified(update_path)
+        update_path = updates._paths(update, multiple=False,
+                                     name="rxr_custom.csv")
+        delta, previous_data = updates._check_modified(update_path)
 
         if delta < update_threshold and force_update is False:
             print(f"{update} was modified within {update_threshold} day(s). "
@@ -162,19 +162,19 @@ def custom(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
     output["TCR_BR_US"] = proc["AR_E"] * proc["US_P"] / proc["AR_P"]
     output.drop("UY_E_P", axis=1, inplace=True)
 
-    columns.set_metadata(output, area="Precios y salarios", currency="-",
-                         inf_adj="-", index="-", seas_adj="NSA",
-                         ts_type="Flujo", cumperiods=1)
+    columns._setmeta(output, area="Precios y salarios", currency="-",
+                     inf_adj="-", index="-", seas_adj="NSA",
+                     ts_type="Flujo", cumperiods=1)
     output = index.base_index(output, start_date="2010-01-01",
                               end_date="2010-12-31", base=100)
 
     if update is not False:
-        output = updates.revise(new_data=proc, prev_data=previous_data,
-                                revise_rows=revise_rows)
+        output = updates._revise(new_data=proc, prev_data=previous_data,
+                                 revise_rows=revise_rows)
 
     if save is not False:
-        save_path = updates.paths(save, multiple=False,
-                                  name="rxr_custom.csv")
+        save_path = updates._paths(save, multiple=False,
+                                   name="rxr_custom.csv")
         output.to_csv(save_path, sep=" ")
 
     return output

@@ -36,8 +36,8 @@ def get(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
     update_threshold = 25
 
     if update is not False:
-        update_path = updates.paths(update, multiple=False, name="labor.csv")
-        delta, previous_data = updates.check_modified(update_path)
+        update_path = updates._paths(update, multiple=False, name="labor.csv")
+        delta, previous_data = updates._check_modified(update_path)
 
         if delta < update_threshold and force_update is False:
             print(f"{update} was modified within {update_threshold} day(s). "
@@ -54,16 +54,16 @@ def get(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
                      "Tasa de desempleo"]
 
     if update is not False:
-        labor = updates.revise(new_data=labor, prev_data=previous_data,
-                               revise_rows=revise_rows)
+        labor = updates._revise(new_data=labor, prev_data=previous_data,
+                                revise_rows=revise_rows)
 
     labor = labor.apply(pd.to_numeric, errors="coerce")
-    columns.set_metadata(labor, area="Mercado laboral", currency="-",
-                         inf_adj="No", index="No", seas_adj="NSA",
-                         ts_type="-", cumperiods=1)
+    columns._setmeta(labor, area="Mercado laboral", currency="-",
+                     inf_adj="No", index="No", seas_adj="NSA",
+                     ts_type="-", cumperiods=1)
 
     if save is not False:
-        save_path = updates.paths(save, multiple=False, name="labor.csv")
+        save_path = updates._paths(save, multiple=False, name="labor.csv")
         labor.to_csv(save_path)
 
     return labor

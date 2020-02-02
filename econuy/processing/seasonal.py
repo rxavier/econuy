@@ -2,8 +2,8 @@ from os import PathLike, path, getcwd
 from pathlib import Path
 from typing import Union
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from statsmodels.api import tsa
 from statsmodels.tools.sm_exceptions import X13Error
 
@@ -131,8 +131,8 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
     trends.columns = old_columns
     seas_adjs.columns = old_columns
 
-    columns.set_metadata(trends, seas_adj="Tendencia")
+    columns._setmeta(trends, seas_adj="Tendencia")
 
-    columns.set_metadata(seas_adjs, seas_adj="SA")
+    columns._setmeta(seas_adjs, seas_adj="SA")
 
     return trends, seas_adjs
