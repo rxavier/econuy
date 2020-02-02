@@ -167,30 +167,32 @@ def prices(update: Union[str, Path, bool] = False, revise_rows: int = 0,
     soybean = soy_wheat[0]
     wheat = soy_wheat[1]
 
-    milk = []
-    for region, row in {milk1_url: 14, milk2_url: 13}.items():
-        raw_milk = pd.read_excel(region, skiprows=row,
-                                 nrows=dt.datetime.now().year - 2007)
-        raw_milk.dropna(how="all", axis=1, inplace=True)
-        raw_milk.drop(["Promedio ", "Variación"], axis=1, inplace=True)
-        raw_milk.columns = ["Año/Mes"] + list(range(1, 13))
-        proc_milk = pd.melt(raw_milk, id_vars=["Año/Mes"])
-        proc_milk.sort_values(by=["Año/Mes", "variable"], inplace=True)
-        proc_milk.index = pd.date_range(start="2007-01-31",
-                                        periods=len(proc_milk), freq="M")
-        milk.append(proc_milk.iloc[:, 2].to_frame())
-    milk = pd.concat(milk, axis=1).mean(axis=1).to_frame()
-    milk.columns = ["Price"]
-    prev_milk = pd.read_csv(os.path.join(DATA_PATH, "other",
-                                         "milk_oceania_europe_fao.csv"),
-                            index_col=0)
-    prev_milk.index = pd.to_datetime(prev_milk.index,
-                                     format="%b-%y") + MonthEnd(1)
-    prev_milk = prev_milk.replace(",", "", regex=True)
-    prev_milk = pd.to_numeric(prev_milk.squeeze()).to_frame()
-    prev_milk = prev_milk.loc[prev_milk.index < min(milk.index)]
-    prev_milk.columns = ["Price"]
-    milk = prev_milk.append(milk)
+    raw_milk = pd.read_excel(milk1_url, skiprows=13,
+                             nrows=dt.datetime.now().year - 2007)
+    raw_milk.dropna(how="all", axis=1, inplace=True)
+    raw_milk.drop(["Promedio ", "Variación"], axis=1, inplace=True)
+    raw_milk.columns = ["Año/Mes"] + list(range(1, 13))
+    proc_milk = pd.melt(raw_milk, id_vars=["Año/Mes"])
+    proc_milk.sort_values(by=["Año/Mes", "variable"], inplace=True)
+    proc_milk.index = pd.date_range(start="2007-01-31",
+                                    periods=len(proc_milk), freq="M")
+    proc_milk = proc_milk.iloc[:, 2].to_frame()
+
+    prev_milk = pd.read_excel(milk2_url, sheet_name="Dairy Products Prices",
+                              index_col=0, usecols="A,D", skiprows=5)
+    prev_milk = prev_milk.resample("M").mean()
+    eurusd_r = requests.get(
+        "http://fx.sauder.ubc.ca/cgi/fxdata",
+        params=f"b=USD&c=EUR&rd=&fd=1&fm=1&fy=2001&ld=31&lm=12&ly="
+               f"{dt.datetime.now().year}&y=monthly&q=volume&f=html&o=&cu=on"
+    )
+    eurusd = pd.read_html(eurusd_r.content)[0].drop("MMM YYYY", axis=1)
+    eurusd.index = pd.date_range(start="2001-01-31", periods=len(eurusd),
+                                 freq="M")
+    prev_milk = prev_milk.divide(eurusd.values).multiply(10)
+    prev_milk = prev_milk.loc[prev_milk.index < min(proc_milk.index)]
+    prev_milk.columns, proc_milk.columns = ["Price"], ["Price"]
+    milk = prev_milk.append(proc_milk)
 
     raw_imf = pd.read_excel(imf_url)
     raw_imf.columns = raw_imf.iloc[0, :]
