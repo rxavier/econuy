@@ -1,6 +1,5 @@
-import os
+from os import PathLike
 import datetime as dt
-from pathlib import Path
 from typing import Union
 
 import pandas as pd
@@ -10,25 +9,25 @@ from econuy.processing import freqs, convert
 from econuy.resources import updates, columns
 from econuy.resources.lstrings import nat_accounts_metadata
 
-DATA_PATH = os.path.join(ROOT_DIR, "data")
-update_threshold = 80
 
-
-def get(update: bool = False, revise_rows: int = 0,
-        save: bool = False, force_update: bool = False):
+def get(update_dir: Union[str, PathLike, bool] = False, revise_rows: int = 0,
+        save_dir: Union[str, PathLike, bool] = False,
+        force_update: bool = False):
     """Get national accounts data.
 
     Parameters
     ----------
-    update : bool (default is False)
-        If true, try to update existing data on disk.
+    update_dir : str, Path or bool (default is False)
+        Path, path-like string pointing to a directory for updating, or bool,
+        in which case if True, save in predefined file, or False, don't update.
     revise_rows : int (default is 0)
         How many rows of old data to replace with new data.
-    save : bool (default is False)
-        If true, save output dataframe in CSV format.
+    save_dir : str, Path or None (default is None)
+        Path, path-like string pointing to a directory for saving, or bool,
+        in which case if True, save in predefined file, or False, don't save.
     force_update : bool (default is False)
         If True, fetch data and update existing data even if it was modified
-        within its update window (for national accounts data, 80 days)
+        within its update window (for national accounts, 80 days)
 
     Returns
     -------
@@ -36,11 +35,14 @@ def get(update: bool = False, revise_rows: int = 0,
         Each dataframe corresponds to a national accounts table.
 
     """
+    update_threshold = 80
+
     parsed_excels = {}
     for file, metadata in nat_accounts_metadata.items():
 
-        if update is True:
-            update_path = os.path.join(DATA_PATH, metadata['Name'] + ".csv")
+        if update_dir is not False:
+            update_path = updates.paths(update_dir, multiple=True,
+                                        multname=metadata["Name"])
             delta, previous_data = updates.check_modified(update_path)
 
             if delta < update_threshold and force_update is False:
@@ -51,7 +53,7 @@ def get(update: bool = False, revise_rows: int = 0,
 
         raw = pd.read_excel(file, skiprows=9, nrows=metadata["Rows"])
         proc = (raw.drop(columns=["Unnamed: 0"]).
-                       dropna(axis=0, how="all").dropna(axis=1, how="all"))
+                dropna(axis=0, how="all").dropna(axis=1, how="all"))
         proc = proc.transpose()
         proc.columns = metadata["Colnames"]
         proc.drop(["Unnamed: 1"], inplace=True)
@@ -60,19 +62,21 @@ def get(update: bool = False, revise_rows: int = 0,
 
         if metadata["Index"] == "No":
             proc = proc.divide(1000)
-        if update is True:
+        if update_dir is not False:
             proc = updates.revise(new_data=proc, prev_data=previous_data,
                                   revise_rows=revise_rows)
         proc = proc.apply(pd.to_numeric, errors="coerce")
 
         columns.set_metadata(proc, area="Actividad económica", currency="UYU",
                              inf_adj=metadata["Inf. Adj."],
-                             index=metadata["Index"], seas_adj=metadata["Seas"],
-                             ts_type="Flujo", cumperiods=1)
+                             index=metadata["Index"],
+                             seas_adj=metadata["Seas"], ts_type="Flujo",
+                             cumperiods=1)
 
-        if save is True:
-            save_path = os.path.join(DATA_PATH, metadata['Name'] + ".csv")
-            proc.to_csv(save_path, sep=" ")
+        if save_dir is not False:
+            save_path = updates.paths(save_dir, multiple=True,
+                                      multname=metadata["Name"])
+            proc.to_csv(save_path)
 
         parsed_excels.update({metadata["Name"]: proc})
 
@@ -80,17 +84,7 @@ def get(update: bool = False, revise_rows: int = 0,
 
 
 def fix_na_dates(df):
-    """Cleanup dates inplace in BCU national accounts files.
-
-    Parameters
-    ----------
-    df : Pandas dataframe
-
-    Returns
-    -------
-    None
-
-    """
+    """Cleanup dates inplace in BCU national accounts files."""
     df.index = df.index.str.replace("*", "")
     df.index = df.index.str.replace(r"\bI \b", "3-", regex=True)
     df.index = df.index.str.replace(r"\bII \b", "6-", regex=True)
@@ -99,8 +93,8 @@ def fix_na_dates(df):
     df.index = pd.to_datetime(df.index, format="%m-%Y") + MonthEnd(1)
 
 
-def lin_gdp(update: Union[str, Path, None] = None,
-            save: Union[str, Path, None] = None,
+def lin_gdp(update: Union[str, PathLike, bool] = False,
+            save: Union[str, PathLike, bool] = False,
             force_update: bool = False):
     """Get nominal GDP data in UYU and USD with forecasts.
 
@@ -111,11 +105,12 @@ def lin_gdp(update: Union[str, Path, None] = None,
 
     Parameters
     ----------
-    update : str, Path or None (default is None)
-        Path or path-like string pointing to a CSV file for updating.
-    save : str, Path or None (default is None)
-        Path or path-like string where to save the output dataframe in CSV
-        format.
+    update : str, Path or bool (default is False)
+        Path, path-like string pointing to a CSV file for updating, or bool,
+        in which case if True, save in predefined file, or False, don't update.
+    save : str, Path or bool (default is False)
+        Path, path-like string pointing to a CSV file for saving, or bool,
+        in which case if True, save in predefined file, or False, don't saving.
     force_update : bool (default is False)
         If True, fetch data and update existing data even if it was modified
         within its update window (for national accounts data, 80 days)
@@ -126,8 +121,10 @@ def lin_gdp(update: Union[str, Path, None] = None,
         Quarterly GDP in UYU and USD with 1 year forecasts.
 
     """
-    if update is not None:
-        update_path = os.path.join(DATA_PATH, update)
+    update_threshold = 80
+
+    if update is not False:
+        update_path = updates.paths(update, multiple=False, name="lin_gdp.csv")
         delta, previous_data = updates.check_modified(update_path)
 
         if delta < update_threshold and force_update is False:
@@ -135,7 +132,7 @@ def lin_gdp(update: Union[str, Path, None] = None,
                   f"Skipping download...")
             return previous_data
 
-    data_uyu = get(update=True, revise_rows=4, save=True,
+    data_uyu = get(update_dir=True, revise_rows=4, save_dir=True,
                    force_update=False)["na_gdp_cur_nsa"]
     data_uyu = freqs.rolling(data_uyu, periods=4, operation="sum")
     data_usd = convert.usd(data_uyu)
@@ -169,8 +166,8 @@ def lin_gdp(update: Union[str, Path, None] = None,
     output = pd.concat(results, axis=1)
     output = output.resample("Q-DEC").interpolate("linear")
 
-    if save is not None:
-        save_path = os.path.join(DATA_PATH, save)
-        output.to_csv(save_path, sep=" ")
+    if save is not False:
+        save_path = updates.paths(save, multiple=False, name="lin_gdp.csv")
+        output.to_csv(save_path)
 
     return output

@@ -1,29 +1,26 @@
 import datetime as dt
-import os
+from os import PathLike
 import urllib
-from pathlib import Path
 from typing import Union
 
 import pandas as pd
 
-from econuy.config import ROOT_DIR
-from econuy.resources import columns
+from econuy.resources import columns, updates
 from econuy.resources.lstrings import ff_url
 
-DATA_PATH = os.path.join(ROOT_DIR, "data")
 
-
-def get(update: Union[str, Path, None] = None,
-        save: Union[str, Path, None] = None):
+def get(update: Union[str, PathLike, bool] = False,
+        save: Union[str, PathLike, bool] = False):
     """Get future and forwards FX operations by the Central Bank.
 
     Parameters
     ----------
-    update : str, Path or None (default is None)
-        Path or path-like string pointing to a CSV file for updating.
+    update : str, Path or bool (default is False)
+        Path, path-like string pointing to a CSV file for updating, or bool,
+        in which case if True, save in predefined file, or False, don't update.
     save : str, Path or None (default is None)
-        Path or path-like string where to save the output dataframe in CSV
-        format.
+        Path, path-like string pointing to a CSV file for saving, or bool,
+        in which case if True, save in predefined file, or False, don't save.
 
     Returns
     -------
@@ -33,10 +30,11 @@ def get(update: Union[str, Path, None] = None,
     """
     dates = pd.bdate_range("2013-11-01",
                            dt.datetime.today()).strftime("%y%m%d").tolist()
-    if update is not None:
-        update_path = os.path.join(DATA_PATH, update)
-        prev_data = pd.read_csv(update_path, sep=" ", index_col=0,
-                                header=[0, 1, 2, 3, 4, 5, 6, 7, 8])
+    if update is not False:
+        update_path = updates.paths(update, multiple=False,
+                                    name="fx_ff.csv")
+        prev_data = pd.read_csv(update_path, index_col=0,
+                                header=list(range(9)))
         prev_data.columns = ["Futuros", "Forwards"]
         prev_data.index = pd.to_datetime(prev_data.index)
         last_date = prev_data.index[len(prev_data)-1]
@@ -77,16 +75,18 @@ def get(update: Union[str, Path, None] = None,
     operations.set_index("Date", inplace=True)
     operations = operations.divide(1000)
 
-    if update is not None:
+    if update is not False:
         operations = prev_data.append(operations, sort=False)
 
     columns.set_metadata(
         operations, area="Reservas internacionales",  currency="USD",
         inf_adj="No", index="No", seas_adj="NSA", ts_type="Flujo",
-        cumperiods=1)
+        cumperiods=1
+    )
 
     if save is not None:
-        save_path = os.path.join(DATA_PATH, save)
-        operations.to_csv(save_path, sep=" ")
+        save_path = updates.paths(save, multiple=False,
+                                  name="fx_ff.csv")
+        operations.to_csv(save_path)
 
     return operations
