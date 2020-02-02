@@ -58,3 +58,15 @@ def paths(filepath: Union[str, PathLike, bool], multiple: bool = False,
         makedirs(path.dirname(final_path))
 
     return final_path
+
+
+def rsearch(dir_file: Union[str, PathLike], search_term: str, n: int = 2):
+    """Recursively search for a file starting from the n-parent folder of
+    a supplied path."""
+    i = 0
+    while i < n:
+        i += 1
+        dir_file = path.dirname(dir_file)
+    final_path = ([x for x in Path(dir_file).rglob(search_term)][0]
+                  .absolute().as_posix())
+    return final_path

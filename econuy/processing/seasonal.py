@@ -7,11 +7,12 @@ import numpy as np
 from statsmodels.api import tsa
 from statsmodels.tools.sm_exceptions import X13Error
 
-from econuy.resources import columns
+from econuy.resources import columns, updates
 
 
 def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
-              x13_binary: Union[str, PathLike] = "search"):
+              x13_binary: Union[str, PathLike] = "search",
+              search_parents: int = 2):
     """Apply X13 decomposition. Return trend and seasonally adjusted dataframe.
 
     Decompose the series in a Pandas dataframe using the US Census X13
@@ -30,6 +31,10 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
     x13_binary: str or PathLike (default is "search")
         Location of the X13 binary. If "search" is used, will attempt to find
         the binary in the project structure (up to two parent folders).
+    search_parents: int (default is 2)
+        If "search" is chosen for `x13_binary`, this parameter controls how
+        many parent directories to go up before recursively searching for the
+        binary.
 
     Returns
     -------
@@ -39,9 +44,8 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
 
     """
     if x13_binary == "search":
-        wd = path.dirname(path.dirname(getcwd()))
-        binary_path = ([x for x in Path(wd).rglob('x13*')][0]
-                       .absolute().as_posix())
+        binary_path = updates.rsearch(dir_file=getcwd(), n=search_parents,
+                                      search_term="x13*")
     elif isinstance(x13_binary, str):
         binary_path = x13_binary
     else:
