@@ -47,10 +47,14 @@ def paths(filepath: Union[str, PathLike, bool], multiple: bool = False,
             final_path = path.join("econuy-data", name)
     else:
         if isinstance(filepath, PathLike):
-            base = Path(filepath).as_posix().replace(".csv", "")
+            base = Path(filepath).as_posix()
+            if path.isfile(base):
+                base = path.dirname(base)
             final_path = path.join(base, multname + ".csv")
         elif isinstance(filepath, str):
-            base = filepath.replace(".csv", "")
+            base = filepath
+            if path.isfile(base):
+                base = path.dirname(base)
             final_path = path.join(base,  multname + ".csv")
         else:
             final_path = path.join("econuy-data", multname + ".csv")
