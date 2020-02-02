@@ -1,11 +1,12 @@
 from datetime import date
 from typing import Union
+from os import getcwd
 
 import pandas as pd
 
 from econuy.retrieval import cpi, national_accounts, nxr
 from econuy.processing import freqs
-from econuy.resources import columns
+from econuy.resources import columns, updates
 
 
 def usd(df: pd.DataFrame):
@@ -28,8 +29,10 @@ def usd(df: pd.DataFrame):
 
     """
     inferred_freq = pd.infer_freq(df.index)
-    nxr_data = nxr.get(update="nxr.csv", revise_rows=6,
-                       save="nxr.csv", force_update=False)
+    nxr_path = updates.rsearch(dir_file=getcwd(),
+                               search_term="nxr.csv", n=2)
+    nxr_data = nxr.get(update=nxr_path, revise_rows=6,
+                       save=nxr_path, force_update=False)
 
     if df.columns.get_level_values("Tipo")[0] == "Flujo":
         columns.set_metadata(nxr_data, ts_type="Flujo")
@@ -76,8 +79,9 @@ def real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
 
     """
     inferred_freq = pd.infer_freq(df.index)
-
-    cpi_data = cpi.get(update="cpi.csv", revise_rows=6, save="cpi.csv",
+    cpi_path = updates.rsearch(dir_file=getcwd(),
+                               search_term="cpi.csv", n=2)
+    cpi_data = cpi.get(update=cpi_path, revise_rows=6, save=cpi_path,
                        force_update=False)
     columns.set_metadata(cpi_data, ts_type="Flujo")
     cpi_freq = freqs.freq_resample(cpi_data, target=inferred_freq,
@@ -128,8 +132,10 @@ def pcgdp(df: pd.DataFrame, hifreq: bool = True):
 
     """
     inferred_freq = pd.infer_freq(df.index)
-    gdp = national_accounts.lin_gdp(update="lin_gdp.csv",
-                                    save="lin_gdp.csv", force_update=False)
+    lin_path = updates.rsearch(dir_file=getcwd(),
+                               search_term="lin_gdp.csv", n=2)
+    gdp = national_accounts.lin_gdp(update=lin_path,
+                                    save=lin_path, force_update=False)
 
     if hifreq is True:
         gdp = freqs.freq_resample(gdp, target=inferred_freq,
