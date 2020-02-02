@@ -9,7 +9,7 @@ venv/
 
 __pycache__/
 
-econuy/data/
+econuy/econuy-data/
 
 econuy/resources/x13as
 
