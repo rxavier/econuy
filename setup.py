@@ -23,14 +23,24 @@ with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="econuy",
-    version="0.1.1",
+    version="0.2.0",
     description="Download and process Uruguayan economic data.",
     long_description=long_description,
+    long_description_content_type='text/markdown',
     author="Rafael Xavier",
     license="GPL-3.0",
     url="https://github.com/rxavier/uy-econ",
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Financial and Insurance Industry",
+        "Topic :: Office/Business :: Financial",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+    ],
     keywords=["uruguay", "economy", "economic", "statistics", "data"],
     install_requires=pipfile_lock_requirements,
     packages=packages,
-    python_requires=">=3.7"
+    python_requires=">=3.6"
 )
