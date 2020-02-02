@@ -1,21 +1,17 @@
-import os
-import platform
+from os import PathLike, path, getcwd
+from pathlib import Path
+from typing import Union
 
 import pandas as pd
 import numpy as np
 from statsmodels.api import tsa
 from statsmodels.tools.sm_exceptions import X13Error
 
-from econuy.config import ROOT_DIR
 from econuy.resources import columns
 
-X13_PATH = os.path.join(ROOT_DIR, "resources", "x13as")
 
-if platform.system() == "Windows":
-    X13_PATH = X13_PATH + ".exe"
-
-
-def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True):
+def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
+              x13_binary: Union[str, PathLike] = "search"):
     """Apply X13 decomposition. Return trend and seasonally adjusted dataframe.
 
     Decompose the series in a Pandas dataframe using the US Census X13
@@ -31,6 +27,9 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True):
         Whether to automatically detect trading days.
     outlier : bool (default is True)
         Whether to automatically detect outliers.
+    x13_binary: str or PathLike (default is "search")
+        Location of the X13 binary. If "search" is used, will attempt to find
+        the binary in the project structure (up to two parent folders).
 
     Returns
     -------
@@ -39,9 +38,17 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True):
         trend component and the seasonally adjusted series.
 
     """
-    if os.path.isfile(X13_PATH) is False:
-        print("X13 binary missing. Place the relevant binary for your system"
-              "within the 'resources' directory. Please refer to the README"
+    if x13_binary == "search":
+        wd = path.dirname(path.dirname(getcwd()))
+        binary_path = ([x for x in Path(wd).rglob('x13*')][0]
+                       .absolute().as_posix())
+    elif isinstance(x13_binary, str):
+        binary_path = x13_binary
+    else:
+        binary_path = Path(x13_binary).as_posix()
+
+    if path.isfile(binary_path) is False:
+        print("X13 binary missing. Please refer to the README"
               "for instructions on where to get binaries for Windows and Unix,"
               "and how to compile it for macOS.")
         return
@@ -58,7 +65,7 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True):
         try:
             decomposition = tsa.x13_arima_analysis(
                 series, outlier=outlier, trading=trading, forecast_years=0,
-                x12path=X13_PATH, prefer_x13=True
+                x12path=binary_path, prefer_x13=True
             )
             trend = decomposition.trend.reindex(df_proc.index)
             seas_adj = decomposition.seasadj.reindex(df_proc.index)
