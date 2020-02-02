@@ -17,12 +17,12 @@ def get(update_dir: Union[str, PathLike, bool] = False, revise_rows: int = 0,
 
     Parameters
     ----------
-    update_dir : str, Path or bool (default is False)
+    update_dir : str, PathLike or bool (default is False)
         Path, path-like string pointing to a directory for updating, or bool,
         in which case if True, save in predefined file, or False, don't update.
     revise_rows : int (default is 0)
         How many rows of old data to replace with new data.
-    save_dir : str, Path or None (default is None)
+    save_dir : str, PathLike or bool (default is False)
         Path, path-like string pointing to a directory for saving, or bool,
         in which case if True, save in predefined file, or False, don't save.
     force_update : bool (default is False)
@@ -105,10 +105,10 @@ def lin_gdp(update: Union[str, PathLike, bool] = False,
 
     Parameters
     ----------
-    update : str, Path or bool (default is False)
+    update : str, PathLike or bool (default is False)
         Path, path-like string pointing to a CSV file for updating, or bool,
         in which case if True, save in predefined file, or False, don't update.
-    save : str, Path or bool (default is False)
+    save : str, PathLike or bool (default is False)
         Path, path-like string pointing to a CSV file for saving, or bool,
         in which case if True, save in predefined file, or False, don't saving.
     force_update : bool (default is False)

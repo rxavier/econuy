@@ -23,12 +23,12 @@ def weights(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
 
     Parameters
     ----------
-    update : str, Path or bool (default is False)
+    update : str, PathLike or bool (default is False)
         Path, path-like string pointing to a CSV file for updating, or bool,
         in which case if True, save in predefined file, or False, don't update.
     revise_rows : int (default is 0)
         How many rows of old data to replace with new data.
-    save : str, Path or None (default is None)
+    save : str, PathLike or bool (default is False)
         Path, path-like string pointing to a CSV file for saving, or bool,
         in which case if True, save in predefined file, or False, don't save.
     force_update : bool (default is False)
@@ -100,12 +100,12 @@ def prices(update: Union[str, Path, bool] = False, revise_rows: int = 0,
 
     Parameters
     ----------
-    update : str, Path or bool (default is False)
+    update : str, PathLike or bool (default is False)
         Path, path-like string pointing to a CSV file for updating, or bool,
         in which case if True, save in predefined file, or False, don't update.
     revise_rows : int (default is 0)
         How many rows of old data to replace with new data.
-    save : str, Path or None (default is None)
+    save : str, PathLike or bool (default is False)
         Path, path-like string pointing to a CSV file for saving, or bool,
         in which case if True, save in predefined file, or False, don't save.
     force_update : bool (default is False)
@@ -238,12 +238,12 @@ def get(save: Union[str, Path, bool] = False,
 
     Parameters
     ----------
-    save : str, Path or bool (default is False)
+    save : str, PathLike or bool (default is False)
         Path, path-like string pointing to a CSV file for saving, or bool,
         in which case if True, save in predefined file, or False, don't save.
-    update_prices : str, Path or bool (default is False)
+    update_prices : str, PathLike or bool (default is False)
         Whether to update commodity prices with the `prices()` function.
-    update_weights : str, Path or bool (default is False)
+    update_weights : str, PathLike or bool (default is False)
         Whether to update commodity weights with the `weights()` function.
 
     Returns

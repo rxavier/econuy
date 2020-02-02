@@ -28,10 +28,10 @@ def get(files: List[str] = files_, update: Union[str, PathLike, bool] = False,
     files : list of strings
         List of strings of the type '%b%Y', only %b is in Spanish. So 'ene'
         instead of 'jan'. For example, 'oct2017'.
-    update : str, Path or bool (default is False)
+    update : str, PathLike or bool (default is False)
         Path, path-like string pointing to a CSV file for updating, or bool,
         in which case if True, save in predefined file, or False, don't update.
-    save : str, Path or None (default is None)
+    save : str, PathLike or bool (default is False)
         Path, path-like string pointing to a CSV file for saving, or bool,
         in which case if True, save in predefined file, or False, don't save.
 
