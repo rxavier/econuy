@@ -20,3 +20,5 @@ econuy.egg-info/
 dist/
 
 build/
+
+econuy/retrieval/econuy-data/
