@@ -41,12 +41,11 @@ def weights(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
         Export-based weights for relevant commodities to Uruguay.
 
     """
-    weights_path = os.path.join(DATA_PATH, "other",
-                                "commodity_exports_wits.csv")
+    update_threshold = 85
 
     if update is not False:
         update_path = updates.paths(update, multiple=False,
-                      values="TradeValue in 1000 USD")
+                                    name="comm_weights.csv")
         delta, previous_data = updates.check_modified(update_path,
                                                       multiindex=False)
 
@@ -54,6 +53,19 @@ def weights(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
             print(f"{update} was modified within {update_threshold} day(s). "
                   f"Skipping download...")
             return previous_data
+
+    raw = []
+    prods = "%2C".join(["0011", "011", "01251", "01252", "0176", "022", "041",
+                        "042", "043", "2222", "24", "25", "268", "97"])
+    base_url = "http://comtrade.un.org/api/get?max=1000&type=C&freq=A&px=S3&ps"
+    for year in range(1992, dt.datetime.now().year-1):
+        full_url = f"{base_url}={year}&r=all&p=858&rg=1&cc={prods}"
+        un_r = requests.get(full_url)
+        raw.append(pd.DataFrame(un_r.json()["dataset"]))
+    raw = pd.concat(raw, axis=0)
+
+    table = raw.groupby(["period", "cmdDescE"]).sum().reset_index()
+    table = table.pivot(index="period", columns="cmdDescE", values="TradeValue")
     table.fillna(0, inplace=True)
     percentage = table.div(table.sum(axis=1), axis=0)
     percentage.index = (pd.to_datetime(percentage.index, format="%Y")
