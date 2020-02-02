@@ -1,17 +1,15 @@
-import os
+from os import PathLike, getcwd
 from datetime import date
 from typing import Union
 
 import pandas as pd
 
-from econuy.config import ROOT_DIR
 from econuy.retrieval import nxr, national_accounts, cpi, fiscal_accounts, \
     labor
 from econuy.processing import freqs, variations, seasonal, convert
-from econuy.resources import columns
+from econuy.resources import columns, updates
 from econuy.resources.lstrings import fiscal_metadata
 
-DATA_PATH = os.path.join(ROOT_DIR, "data")
 
 
 def inflation():
@@ -24,8 +22,9 @@ def inflation():
         adjusted monthly inflation and trend monthly inflation.
 
     """
-    data = cpi.get(update="cpi.csv", revise_rows=6,
-                   save="cpi.csv", force_update=False)
+    cpi_path = updates.rsearch(dir_file=getcwd(), search_term="cpi.csv", n=2)
+    data = cpi.get(update=cpi_path, revise_rows=6,
+                   save=cpi_path, force_update=False)
     interannual = variations.chg_diff(data, operation="chg", period_op="inter")
     monthly = variations.chg_diff(data, operation="chg", period_op="last")
     trend, seasadj = seasonal.decompose(data, trading=True, outlier=False)
@@ -63,8 +62,9 @@ def exchange_rate(eop: bool = False, sell: bool = True,
     dataframe : Pandas dataframe
 
     """
-    data = nxr.get(update="nxr.csv", revise_rows=6,
-                   save="nxr.csv", force_update=False)
+    nxr_path = updates.rsearch(dir_file=getcwd(), search_term="nxr.csv", n=2)
+    data = nxr.get(update=nxr_path, revise_rows=6,
+                   save=nxr_path, force_update=False)
 
     if eop is False:
         output = data.iloc[:, [2, 3]]
@@ -132,8 +132,10 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     dataframe : Pandas dataframe
 
     """
-    data = fiscal_accounts.get(update=True, revise_rows=12,
-                               save=True, force_update=False)
+    fiscal_path = updates.rsearch(dir_file=getcwd(),
+                                  search_term="fiscal*.csv", n=2)
+    data = fiscal_accounts.get(update_dir=fiscal_path, revise_rows=12,
+                               save_dir=fiscal_path, force_update=False)
     gps = data["fiscal_gps"]
     nfps = data["fiscal_nfps"]
     gc = data["fiscal_gc-bps"]
@@ -214,12 +216,13 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
         output = convert.usd(output)
     elif unit == "real usd":
         output = convert.real(output, start_date=start_date, end_date=end_date)
-        xr = nxr.get(update="nxr.csv", revise_rows=6, save="nxr.csv")
+        xr_path = updates.rsearch(dir_file=getcwd(),
+                                  search_term="nxr.csv", n=2)
+        xr = nxr.get(update=xr_path, revise_rows=6, save=xr_path)
         output = output.divide(xr[start_date:end_date].mean()[3])
         columns.set_metadata(output, currency="USD")
     elif unit == "real":
         output = convert.real(output, start_date=start_date, end_date=end_date)
-
     if seas_adj in ["trend", "seas"] and unit != "gdp" and cum == 1:
         output_trend, output_seasadj = seasonal.decompose(output, trading=True,
                                                           outlier=True)
@@ -252,8 +255,10 @@ def labor_mkt(seas_adj: Union[str, None] = "trend"):
     dataframe : Pandas dataframe
 
     """
-    data = labor.get(update="labor.csv", revise_rows=6,
-                     save="labor.csv", force_update=False)
+    labor_path = updates.rsearch(dir_file=getcwd(),
+                                 search_term="labor.csv", n=2)
+    data = labor.get(update=labor_path, revise_rows=6,
+                     save=labor_path, force_update=False)
     output = data
 
     if seas_adj in ["trend", "seas"]:
@@ -305,8 +310,9 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
         If the combined parameters do not correspond to an available table.
 
     """
-    data = national_accounts.get(update=True, revise_rows=4,
-                                 save=True, force_update=False)
+    na_path = updates.rsearch(dir_file=getcwd(), search_term="na_*.csv", n=2)
+    data = national_accounts.get(update_dir=na_path, revise_rows=4,
+                                 save_dir=na_path, force_update=False)
 
     search_terms = []
     if supply is True:
