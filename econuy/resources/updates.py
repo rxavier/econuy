@@ -19,7 +19,7 @@ def _check_modified(data_path: Union[str, PathLike], multiindex=True):
         previous_data.index = pd.to_datetime(previous_data.index)
     except FileNotFoundError:
         print(f"{data_path} does not exist. No data will be updated")
-        delta = 0
+        delta = 9999
         previous_data = pd.DataFrame()
 
     return delta, previous_data
