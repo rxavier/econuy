@@ -12,7 +12,7 @@ from econuy.resources import columns, updates
 
 def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
               x13_binary: Union[str, PathLike] = "search",
-              search_parents: int = 2):
+              search_parents: int = 1):
     """Apply X13 decomposition. Return trend and seasonally adjusted dataframe.
 
     Decompose the series in a Pandas dataframe using the US Census X13
