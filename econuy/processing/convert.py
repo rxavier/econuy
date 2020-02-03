@@ -30,7 +30,7 @@ def usd(df: pd.DataFrame):
     """
     inferred_freq = pd.infer_freq(df.index)
     nxr_path = updates.rsearch(dir_file=getcwd(),
-                               search_term="nxr.csv", n=2)
+                               search_term="nxr.csv", n=1)
     nxr_data = nxr.get(update=nxr_path, revise_rows=6,
                        save=nxr_path, force_update=False)
 
@@ -80,7 +80,7 @@ def real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     """
     inferred_freq = pd.infer_freq(df.index)
     cpi_path = updates.rsearch(dir_file=getcwd(),
-                               search_term="cpi.csv", n=2)
+                               search_term="cpi.csv", n=1)
     cpi_data = cpi.get(update=cpi_path, revise_rows=6, save=cpi_path,
                        force_update=False)
     columns._setmeta(cpi_data, ts_type="Flujo")
@@ -133,7 +133,7 @@ def pcgdp(df: pd.DataFrame, hifreq: bool = True):
     """
     inferred_freq = pd.infer_freq(df.index)
     lin_path = updates.rsearch(dir_file=getcwd(),
-                               search_term="lin_gdp.csv", n=2)
+                               search_term="lin_gdp.csv", n=1)
     gdp = national_accounts._lin_gdp(update=lin_path,
                                      save=lin_path, force_update=False)
 

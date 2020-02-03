@@ -19,7 +19,7 @@ def _check_modified(data_path: Union[str, PathLike], multiindex=True):
         previous_data.index = pd.to_datetime(previous_data.index)
     except FileNotFoundError:
         print(f"{data_path} does not exist. No data will be updated")
-        delta = 0
+        delta = 9999
         previous_data = pd.DataFrame()
 
     return delta, previous_data
@@ -71,6 +71,9 @@ def rsearch(dir_file: Union[str, PathLike], search_term: str, n: int = 2):
     while i < n:
         i += 1
         dir_file = path.dirname(dir_file)
-    final_path = ([x for x in Path(dir_file).rglob(search_term)][0]
-                  .absolute().as_posix())
+    try:
+        final_path = ([x for x in Path(dir_file).rglob(search_term)][0]
+                      .absolute().as_posix())
+    except IndexError:
+        final_path = True
     return final_path

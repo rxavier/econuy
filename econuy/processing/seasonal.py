@@ -1,18 +1,31 @@
+import platform
 from os import PathLike, path, getcwd
 from pathlib import Path
 from typing import Union
 
 import numpy as np
 import pandas as pd
+from statsmodels.tsa import x13
 from statsmodels.api import tsa
 from statsmodels.tools.sm_exceptions import X13Error
 
 from econuy.resources import columns, updates
 
 
+def _new_open_and_read(fname):
+    with open(fname, 'r', encoding='utf8') as fin:
+        fout = fin.read()
+    return fout
+
+
+# The `_open_and_read` function needs to be monkey-patched to specify the
+# encoding or decomposition will fail on Windows
+x13._open_and_read = _new_open_and_read
+
+
 def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
               x13_binary: Union[str, PathLike] = "search",
-              search_parents: int = 2):
+              search_parents: int = 1):
     """Apply X13 decomposition. Return trend and seasonally adjusted dataframe.
 
     Decompose the series in a Pandas dataframe using the US Census X13
@@ -44,8 +57,11 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
 
     """
     if x13_binary == "search":
+        search_term = "x13as"
+        if platform.system() == "Windows":
+            search_term += ".exe"
         binary_path = updates.rsearch(dir_file=getcwd(), n=search_parents,
-                                      search_term="x13*")
+                                      search_term=search_term)
     elif isinstance(x13_binary, str):
         binary_path = x13_binary
     else:
@@ -68,7 +84,7 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
         series = df_proc.iloc[:, column].dropna()
         try:
             decomposition = tsa.x13_arima_analysis(
-                series, outlier=outlier, trading=trading, forecast_years=0,
+                series, outlier=outlier, trading=trading, forecast_periods=0,
                 x12path=binary_path, prefer_x13=True
             )
             trend = decomposition.trend.reindex(df_proc.index)

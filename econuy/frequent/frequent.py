@@ -27,7 +27,7 @@ def inflation(save: Union[str, PathLike, bool] = False):
         adjusted monthly inflation and trend monthly inflation.
 
     """
-    cpi_path = updates.rsearch(dir_file=getcwd(), search_term="cpi.csv", n=2)
+    cpi_path = updates.rsearch(dir_file=getcwd(), search_term="cpi.csv", n=1)
     data = cpi.get(update=cpi_path, revise_rows=6,
                    save=cpi_path, force_update=False)
     interannual = variations.chg_diff(data, operation="chg", period_op="inter")
@@ -75,7 +75,7 @@ def exchange_rate(eop: bool = False, sell: bool = True,
     dataframe : Pandas dataframe
 
     """
-    nxr_path = updates.rsearch(dir_file=getcwd(), search_term="nxr.csv", n=2)
+    nxr_path = updates.rsearch(dir_file=getcwd(), search_term="nxr.csv", n=1)
     data = nxr.get(update=nxr_path, revise_rows=6,
                    save=nxr_path, force_update=False)
 
@@ -155,7 +155,7 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
 
     """
     fiscal_path = updates.rsearch(dir_file=getcwd(),
-                                  search_term="fiscal*.csv", n=2)
+                                  search_term="fiscal*.csv", n=1)
     data = fiscal_accounts.get(update_dir=fiscal_path, revise_rows=12,
                                save_dir=fiscal_path, force_update=False)
     gps = data["fiscal_gps"]
@@ -239,7 +239,7 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     elif unit == "real usd":
         output = convert.real(output, start_date=start_date, end_date=end_date)
         xr_path = updates.rsearch(dir_file=getcwd(),
-                                  search_term="nxr.csv", n=2)
+                                  search_term="nxr.csv", n=1)
         xr = nxr.get(update=xr_path, revise_rows=6, save=xr_path)
         output = output.divide(xr[start_date:end_date].mean()[3])
         columns._setmeta(output, currency="USD")
@@ -286,7 +286,7 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
 
     """
     labor_path = updates.rsearch(dir_file=getcwd(),
-                                 search_term="labor.csv", n=2)
+                                 search_term="labor.csv", n=1)
     data = labor.get(update=labor_path, revise_rows=6,
                      save=labor_path, force_update=False)
     output = data
@@ -349,7 +349,7 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
         If the combined parameters do not correspond to an available table.
 
     """
-    na_path = updates.rsearch(dir_file=getcwd(), search_term="na_*.csv", n=2)
+    na_path = updates.rsearch(dir_file=getcwd(), search_term="na_*.csv", n=1)
     data = national_accounts.get(update_dir=na_path, revise_rows=4,
                                  save_dir=na_path, force_update=False)
 

@@ -45,19 +45,22 @@ def get(update_dir: Union[str, PathLike, bool] = False, revise_rows: int = 0,
     if update_dir is not False:
         update_path = updates._paths(update_dir, multiple=True,
                                      multname="fiscal_nfps")
-        modified = dt.datetime.fromtimestamp(path.getmtime(update_path))
-        delta = (dt.datetime.now() - modified).days
+        try:
+            modified = dt.datetime.fromtimestamp(path.getmtime(update_path))
+            delta = (dt.datetime.now() - modified).days
 
-        if delta < update_threshold and force_update is False:
-            print(f"Fiscal data was modified within {update_threshold} day(s)."
-                  f" Skipping download...")
-            output = {}
-            for metadata in fiscal_sheets.values():
-                update_path = updates._paths(update_dir, multiple=True,
-                                             multname=metadata["Name"])
-                delta, previous_data = updates._check_modified(update_path)
-                output.update({metadata["Name"]: previous_data})
-            return output
+            if delta < update_threshold and force_update is False:
+                print(f"Fiscal data was modified within {update_threshold} "
+                      f"day(s). Skipping download...")
+                output = {}
+                for metadata in fiscal_sheets.values():
+                    update_path = updates._paths(update_dir, multiple=True,
+                                                 multname=metadata["Name"])
+                    delta, previous_data = updates._check_modified(update_path)
+                    output.update({metadata["Name"]: previous_data})
+                return output
+        except FileNotFoundError:
+            pass
 
     response = requests.get(fiscal_url)
     soup = BeautifulSoup(response.content, "html.parser")
