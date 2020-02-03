@@ -44,10 +44,10 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
         trend component and the seasonally adjusted series.
 
     """
-    search_term = "x13as"
-    if platform.system() == "Windows":
-        search_term += ".exe"
     if x13_binary == "search":
+        search_term = "x13as"
+        if platform.system() == "Windows":
+            search_term += ".exe"
         binary_path = updates.rsearch(dir_file=getcwd(), n=search_parents,
                                       search_term=search_term)
     elif isinstance(x13_binary, str):
