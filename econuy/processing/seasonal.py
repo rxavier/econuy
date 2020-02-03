@@ -1,3 +1,4 @@
+import platform
 from os import PathLike, path, getcwd
 from pathlib import Path
 from typing import Union
@@ -43,9 +44,12 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
         trend component and the seasonally adjusted series.
 
     """
+    search_term = "x13as"
+    if platform.system() == "Windows":
+        search_term += ".exe"
     if x13_binary == "search":
         binary_path = updates.rsearch(dir_file=getcwd(), n=search_parents,
-                                      search_term="x13*")
+                                      search_term=search_term)
     elif isinstance(x13_binary, str):
         binary_path = x13_binary
     else:
