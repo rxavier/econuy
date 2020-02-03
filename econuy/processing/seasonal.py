@@ -5,10 +5,22 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
+from statsmodels.tsa import x13
 from statsmodels.api import tsa
 from statsmodels.tools.sm_exceptions import X13Error
 
 from econuy.resources import columns, updates
+
+
+def _new_open_and_read(fname):
+    with open(fname, 'r', encoding='utf8') as fin:
+        fout = fin.read()
+    return fout
+
+
+# The `_open_and_read` function needs to be monkey-patched to specify the
+# encoding or decomposition will fail on Windows
+x13._open_and_read = _new_open_and_read
 
 
 def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
