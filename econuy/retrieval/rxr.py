@@ -13,9 +13,9 @@ from econuy.resources.lstrings import reer_url, ar_cpi_url, ar_cpi_payload
 from econuy.retrieval import cpi, nxr
 
 
-def official(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
-             save: Union[str, PathLike, bool] = False,
-             force_update: bool = False):
+def get_official(update: Union[str, PathLike, bool] = False,
+                 revise_rows: int = 0, save: Union[str, PathLike, bool] = False,
+                 force_update: bool = False):
     """Get official real exchange rates from the BCU website.
 
     Parameters
@@ -71,9 +71,9 @@ def official(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
     return proc
 
 
-def custom(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
-           save: Union[str, PathLike, bool] = False,
-           force_update: bool = False):
+def get_custom(update: Union[str, PathLike, bool] = False,
+               revise_rows: int = 0, save: Union[str, PathLike, bool] = False,
+               force_update: bool = False):
     """Calculate custom real exchange rates from various sources.
 
     Parameters
