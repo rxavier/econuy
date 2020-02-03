@@ -1,14 +1,14 @@
-from os import PathLike, getcwd
 from datetime import date
+from os import PathLike, getcwd
 from typing import Union
 
 import pandas as pd
 
-from econuy.retrieval import nxr, national_accounts, cpi, fiscal_accounts, \
-    labor
 from econuy.processing import freqs, variations, seasonal, convert
 from econuy.resources import columns, updates
 from econuy.resources.lstrings import fiscal_metadata
+from econuy.retrieval import (nxr, national_accounts, cpi,
+                              fiscal_accounts, labor)
 
 
 def inflation(save: Union[str, PathLike, bool] = False):
@@ -103,8 +103,8 @@ def exchange_rate(eop: bool = False, sell: bool = True,
         output = freqs.rolling(output, periods=cum, operation="average")
 
     if save is not False:
-        save_path = updates.paths(save, multiple=False,
-                                  name="exchange_rate.csv")
+        save_path = updates._paths(save, multiple=False,
+                                   name="exchange_rate.csv")
         output.to_csv(save_path)
 
     return output
@@ -178,7 +178,7 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     proc["Egresos: Totales SPC"] = (proc["Egresos: Totales SPNF"]
                                     + proc["Intereses: BCU"])
     proc["Egresos: Primarios GC-BPS"] = (proc["Egresos: Totales GC-BPS"]
-                                        - proc["Intereses: GC-BPS"])
+                                         - proc["Intereses: GC-BPS"])
     proc["Resultado: Primario intendencias"] = nfps[
         "Resultado: Primario intendencias"
     ]
@@ -227,9 +227,9 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
                                                 + proc["Intereses: FSS"])
 
     output = proc.loc[:, fiscal_metadata[aggregation][fss]]
-    columns.set_metadata(output, area="Cuentas fiscales y deuda",
-                         currency="UYU", inf_adj="No", index="No",
-                         seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+    columns._setmeta(output, area="Cuentas fiscales y deuda",
+                     currency="UYU", inf_adj="No", index="No",
+                     seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
     if unit == "gdp":
         output = freqs.rolling(output, periods=12, operation="sum")
@@ -242,7 +242,7 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
                                   search_term="nxr.csv", n=2)
         xr = nxr.get(update=xr_path, revise_rows=6, save=xr_path)
         output = output.divide(xr[start_date:end_date].mean()[3])
-        columns.set_metadata(output, currency="USD")
+        columns._setmeta(output, currency="USD")
     elif unit == "real":
         output = convert.real(output, start_date=start_date, end_date=end_date)
     if seas_adj in ["trend", "seas"] and unit != "gdp" and cum == 1:
@@ -259,8 +259,8 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
         output = freqs.rolling(output, periods=cum, operation="sum")
 
     if save is not False:
-        save_path = updates.paths(save, multiple=False,
-                                  name="fiscal_accounts.csv")
+        save_path = updates._paths(save, multiple=False,
+                                   name="fiscal_accounts.csv")
         output.to_csv(save_path)
 
     return output
@@ -299,8 +299,8 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
             output = pd.concat([data, seasadj], axis=1)
 
     if save is not False:
-        save_path = updates.paths(save, multiple=False,
-                                  name="labor_market.csv")
+        save_path = updates._paths(save, multiple=False,
+                                   name="labor_market.csv")
         output.to_csv(save_path)
 
     return output
