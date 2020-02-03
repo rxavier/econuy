@@ -10,8 +10,8 @@ pulp_url = (
 soybean_url = "https://www.quandl.com/api/v3/datasets/CHRIS/CME_S1.csv?api_key=3TPxACcrxy9WsE871Lqe"
 what_url = "https://www.quandl.com/api/v3/datasets/CHRIS/CME_W1.csv?api_key=3TPxACcrxy9WsE871Lqe"
 imf_url = "https://www.imf.org/~/media/Files/Research/CommodityPrices/Monthly/ExternalData.ashx"
-milk1_url = "https://www.inale.org/wp-content/uploads/2019/12/Precios-exportaci%C3%B3n-de-Ocean%C3%ADa-1.xls"
-milk2_url = "https://www.inale.org/wp-content/uploads/2019/12/Precios-exportaci%C3%B3n-de-Europa-2.xls"
+milk1_url = "https://www.inale.org/wp-content/uploads/2019/12/Precios-exportaci%C3%B3n-de-Europa-2.xls"
+milk2_url = "https://ec.europa.eu/info/sites/info/files/food-farming-fisheries/farming/documents/eu-milk-historical-price-series_en.xls"
 cpi_url = "http://ine.gub.uy/c/document_library/get_file?uuid=2e92084a-94ec-4fec-b5ca-42b40d5d2826&groupId=10181"
 nxr_url = "http://ine.gub.uy/c/document_library/get_file?uuid=3fbf4ffd-a829-420c-aca9-9f01ecd7919a&groupId=10181"
 labor_url = "http://ine.gub.uy/c/document_library/get_file?uuid=50ae926c-1ddc-4409-afc6-1fecf641e3d0&groupId=10181"
@@ -19,6 +19,8 @@ ff_url = "https://www.bcu.gub.uy/Politica-Economica-y-Mercados/Mercado%20de%20Ca
 fiscal_url = "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos"
 reserves_url = "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Informe%20Diario%20Pasivos%20Monetarios/infd_"
 reer_url = "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Indice_Cambio_Real/eese04d1119.xls"
+missing_reserves_url = "https://docs.google.com/spreadsheets/d/1tXwv8SaigbBrfBSSCVGBjSs88f3dgTq4nIANPn7vjYI/export?format=xlsx&authuser=0"
+
 
 fiscal_sheets = {
     "Sector Público No Financiero":

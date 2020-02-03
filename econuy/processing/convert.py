@@ -1,10 +1,12 @@
 from datetime import date
+from os import getcwd
 from typing import Union
 
 import pandas as pd
 
-from retrieval import nxr, cpi, national_accounts
-from processing import freqs, columns
+from econuy.processing import freqs
+from econuy.resources import columns, updates
+from econuy.retrieval import cpi, national_accounts, nxr
 
 
 def usd(df: pd.DataFrame):
@@ -27,11 +29,13 @@ def usd(df: pd.DataFrame):
 
     """
     inferred_freq = pd.infer_freq(df.index)
-    nxr_data = nxr.get(update="nxr.csv", revise_rows=6,
-                       save="nxr.csv", force_update=False)
+    nxr_path = updates.rsearch(dir_file=getcwd(),
+                               search_term="nxr.csv", n=2)
+    nxr_data = nxr.get(update=nxr_path, revise_rows=6,
+                       save=nxr_path, force_update=False)
 
     if df.columns.get_level_values("Tipo")[0] == "Flujo":
-        columns.set_metadata(nxr_data, ts_type="Flujo")
+        columns._setmeta(nxr_data, ts_type="Flujo")
         nxr_freq = freqs.freq_resample(nxr_data, target=inferred_freq,
                                        operation="average").iloc[:, [1]]
         cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
@@ -39,13 +43,13 @@ def usd(df: pd.DataFrame):
                                  operation="average")
 
     else:
-        columns.set_metadata(nxr_data, ts_type="Stock")
+        columns._setmeta(nxr_data, ts_type="Stock")
         nxr_freq = freqs.freq_resample(nxr_data, target=inferred_freq,
                                        operation="average").iloc[:, [3]]
 
     nxr_to_use = nxr_freq[nxr_freq.index.isin(df.index)].iloc[:, 0]
     converted_df = df.apply(lambda x: x / nxr_to_use)
-    columns.set_metadata(converted_df, currency="USD")
+    columns._setmeta(converted_df, currency="USD")
 
     return converted_df
 
@@ -75,10 +79,11 @@ def real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
 
     """
     inferred_freq = pd.infer_freq(df.index)
-
-    cpi_data = cpi.get(update="cpi.csv", revise_rows=6, save="cpi.csv",
+    cpi_path = updates.rsearch(dir_file=getcwd(),
+                               search_term="cpi.csv", n=2)
+    cpi_data = cpi.get(update=cpi_path, revise_rows=6, save=cpi_path,
                        force_update=False)
-    columns.set_metadata(cpi_data, ts_type="Flujo")
+    columns._setmeta(cpi_data, ts_type="Flujo")
     cpi_freq = freqs.freq_resample(cpi_data, target=inferred_freq,
                                    operation="average").iloc[:, [0]]
     cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
@@ -100,7 +105,7 @@ def real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
         )
         col_text = f"Const. {start_date}_{end_date}"
 
-    columns.set_metadata(converted_df, inf_adj=col_text)
+    columns._setmeta(converted_df, inf_adj=col_text)
 
     return converted_df
 
@@ -127,8 +132,10 @@ def pcgdp(df: pd.DataFrame, hifreq: bool = True):
 
     """
     inferred_freq = pd.infer_freq(df.index)
-    gdp = national_accounts.lin_gdp(update="lin_gdp.csv",
-                                    save="lin_gdp.csv", force_update=False)
+    lin_path = updates.rsearch(dir_file=getcwd(),
+                               search_term="lin_gdp.csv", n=2)
+    gdp = national_accounts._lin_gdp(update=lin_path,
+                                     save=lin_path, force_update=False)
 
     if hifreq is True:
         gdp = freqs.freq_resample(gdp, target=inferred_freq,
@@ -144,6 +151,6 @@ def pcgdp(df: pd.DataFrame, hifreq: bool = True):
     gdp_to_use = gdp[gdp.index.isin(df.index)].iloc[:, 0]
     converted_df = df.apply(lambda x: x / gdp_to_use).multiply(100)
 
-    columns.set_metadata(converted_df, currency="% PBI")
+    columns._setmeta(converted_df, currency="% PBI")
 
     return converted_df

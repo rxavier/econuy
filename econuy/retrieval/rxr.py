@@ -1,47 +1,48 @@
-import os
 import datetime as dt
-from pathlib import Path
+from os import PathLike
 from typing import Union
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import requests
 from pandas.tseries.offsets import MonthEnd
 
-from retrieval import nxr, cpi
-from config import ROOT_DIR
-from processing import columns, updates, index
-from resources.utils import reer_url, ar_cpi_url, ar_cpi_payload
-
-DATA_PATH = os.path.join(ROOT_DIR, "data")
-update_threshold = 25
+from econuy.processing import index
+from econuy.resources import updates, columns
+from econuy.resources.lstrings import reer_url, ar_cpi_url, ar_cpi_payload
+from econuy.retrieval import cpi, nxr
 
 
-def official(update: Union[str, Path, None] = None, revise_rows: int = 0,
-             save: Union[str, Path, None] = None, force_update: bool = False):
+def get_official(update: Union[str, PathLike, bool] = False,
+                 revise_rows: int = 0, save: Union[str, PathLike, bool] = False,
+                 force_update: bool = False):
     """Get official real exchange rates from the BCU website.
 
     Parameters
     ----------
-    update : str, Path or None (default is None)
-        Path or path-like string pointing to a CSV file for updating.
+    update : str, PathLike or bool (default is False)
+        Path, path-like string pointing to a CSV file for updating, or bool,
+        in which case if True, save in predefined file, or False, don't update.
     revise_rows : int (default is 0)
         How many rows of old data to replace with new data.
-    save : str, Path or None (default is None)
-        Path or path-like string where to save the output dataframe in CSV
-        format.
+    save : str, PathLike or bool (default is False)
+        Path, path-like string pointing to a CSV file for saving, or bool,
+        in which case if True, save in predefined file, or False, don't save.
     force_update : bool (default is False)
         If True, fetch data and update existing data even if it was modified
-        within its update window (for CPI, 25 days)
+        within its update window (for RXR, 25 days)
 
     Returns
     -------
     proc : Pandas dataframe
 
     """
+    update_threshold = 25
+
     if update is not None:
-        update_path = os.path.join(DATA_PATH, update)
-        delta, previous_data = updates.check_modified(update_path)
+        update_path = updates._paths(update, multiple=False,
+                                     name="rxr_official.csv")
+        delta, previous_data = updates._check_modified(update_path)
 
         if delta < update_threshold and force_update is False:
             print(f"{update} was modified within {update_threshold} day(s). "
@@ -54,46 +55,52 @@ def official(update: Union[str, Path, None] = None, revise_rows: int = 0,
                     "Argentina", "Brasil", "EEUU"]
     proc.index = pd.to_datetime(proc.index) + MonthEnd(1)
 
-    if update is not None:
-        proc = updates.revise(new_data=proc, prev_data=previous_data,
-                              revise_rows=revise_rows)
+    if update is not False:
+        proc = updates._revise(new_data=proc, prev_data=previous_data,
+                               revise_rows=revise_rows)
 
-    columns.set_metadata(proc, area="Precios y salarios", currency="-",
-                         inf_adj="No", index="2017", seas_adj="NSA",
-                         ts_type="-", cumperiods=1)
+    columns._setmeta(proc, area="Precios y salarios", currency="-",
+                     inf_adj="No", index="2017", seas_adj="NSA",
+                     ts_type="-", cumperiods=1)
 
     if save is not None:
-        save_path = os.path.join(DATA_PATH, save)
-        proc.to_csv(save_path, sep=" ")
+        save_path = updates._paths(save, multiple=False,
+                                   name="rxr_official.csv")
+        proc.to_csv(save_path)
 
     return proc
 
 
-def custom(update: Union[str, Path, None] = None, revise_rows: int = 0,
-           save: Union[str, Path, None] = None, force_update: bool = False):
+def get_custom(update: Union[str, PathLike, bool] = False,
+               revise_rows: int = 0, save: Union[str, PathLike, bool] = False,
+               force_update: bool = False):
     """Calculate custom real exchange rates from various sources.
 
     Parameters
     ----------
-    update : str, Path or None (default is None)
-        Path or path-like string pointing to a CSV file for updating.
+    update : str, PathLike or bool (default is False)
+        Path, path-like string pointing to a CSV file for updating, or bool,
+        in which case if True, save in predefined file, or False, don't update.
     revise_rows : int (default is 0)
         How many rows of old data to replace with new data.
-    save : str, Path or None (default is None)
-        Path or path-like string where to save the output dataframe in CSV
-        format.
+    save : str, PathLike or bool (default is False)
+        Path, path-like string pointing to a CSV file for saving, or bool,
+        in which case if True, save in predefined file, or False, don't save.
     force_update : bool (default is False)
         If True, fetch data and update existing data even if it was modified
-        within its update window (for CPI, 25 days)
+        within its update window (for RXR, 25 days)
 
     Returns
     -------
     output : Pandas dataframe
 
     """
+    update_threshold = 25
+
     if update is not None:
-        update_path = os.path.join(DATA_PATH, update)
-        delta, previous_data = updates.check_modified(update_path)
+        update_path = updates._paths(update, multiple=False,
+                                     name="rxr_custom.csv")
+        delta, previous_data = updates._check_modified(update_path)
 
         if delta < update_threshold and force_update is False:
             print(f"{update} was modified within {update_threshold} day(s). "
@@ -155,18 +162,19 @@ def custom(update: Union[str, Path, None] = None, revise_rows: int = 0,
     output["TCR_BR_US"] = proc["AR_E"] * proc["US_P"] / proc["AR_P"]
     output.drop("UY_E_P", axis=1, inplace=True)
 
-    columns.set_metadata(output, area="Precios y salarios", currency="-",
-                         inf_adj="-", index="-", seas_adj="NSA",
-                         ts_type="Flujo", cumperiods=1)
+    columns._setmeta(output, area="Precios y salarios", currency="-",
+                     inf_adj="-", index="-", seas_adj="NSA",
+                     ts_type="Flujo", cumperiods=1)
     output = index.base_index(output, start_date="2010-01-01",
                               end_date="2010-12-31", base=100)
 
-    if update is not None:
-        output = updates.revise(new_data=proc, prev_data=previous_data,
-                                revise_rows=revise_rows)
+    if update is not False:
+        output = updates._revise(new_data=proc, prev_data=previous_data,
+                                 revise_rows=revise_rows)
 
-    if save is not None:
-        save_path = os.path.join(DATA_PATH, save)
+    if save is not False:
+        save_path = updates._paths(save, multiple=False,
+                                   name="rxr_custom.csv")
         output.to_csv(save_path, sep=" ")
 
     return output

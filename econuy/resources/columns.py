@@ -3,7 +3,7 @@ from typing import Optional
 import pandas as pd
 
 
-def set_metadata(
+def _setmeta(
         df: pd.DataFrame, area: Optional[str] = None,
         currency: Optional[str] = None, inf_adj: Optional[str] = None,
         index: Optional[str] = None, seas_adj: Optional[str] = None,
