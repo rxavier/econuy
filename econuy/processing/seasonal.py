@@ -68,7 +68,7 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
         series = df_proc.iloc[:, column].dropna()
         try:
             decomposition = tsa.x13_arima_analysis(
-                series, outlier=outlier, trading=trading, forecast_years=0,
+                series, outlier=outlier, trading=trading, forecast_periods=0,
                 x12path=binary_path, prefer_x13=True
             )
             trend = decomposition.trend.reindex(df_proc.index)
