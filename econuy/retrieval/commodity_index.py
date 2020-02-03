@@ -16,9 +16,9 @@ from econuy.resources.lstrings import (beef_url, pulp_url, soybean_url,
                                        what_url, imf_url, milk1_url, milk2_url)
 
 
-def weights(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
-            save: Union[str, PathLike, bool] = False,
-            force_update: bool = False):
+def _weights(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
+             save: Union[str, PathLike, bool] = False,
+             force_update: bool = False):
     """Get weights for the commodity price index from the UN COMTRADE database.
 
     Parameters
@@ -94,8 +94,8 @@ def weights(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
     return output
 
 
-def prices(update: Union[str, Path, bool] = False, revise_rows: int = 0,
-           save: Union[str, Path, bool] = False, force_update: bool = False):
+def _prices(update: Union[str, Path, bool] = False, revise_rows: int = 0,
+            save: Union[str, Path, bool] = False, force_update: bool = False):
     """Prepare prices for the commodity price index.
 
     Parameters
@@ -252,17 +252,17 @@ def get(save: Union[str, Path, bool] = False,
         Export-weighted average of commodity prices relevant to Uruguay.
 
     """
-    prices_ = prices(update=update_prices, revise_rows=3,
+    prices = _prices(update=update_prices, revise_rows=3,
                      save=True, force_update=False)
-    prices_ = prices_.interpolate(method="linear", limit=1).dropna(how="any")
-    prices_ = prices_.pct_change(periods=1)
-    weights_ = weights(update=update_weights, revise_rows=24,
+    prices = prices.interpolate(method="linear", limit=1).dropna(how="any")
+    prices = prices.pct_change(periods=1)
+    weights = _weights(update=update_weights, revise_rows=24,
                        save=True, force_update=False)
-    weights_ = weights_[prices_.columns]
-    weights_ = weights_.reindex(prices_.index, method="ffill")
+    weights = weights[prices.columns]
+    weights = weights.reindex(prices.index, method="ffill")
 
-    product = pd.DataFrame(prices_.values * weights_.values,
-                           columns=prices_.columns, index=prices_.index)
+    product = pd.DataFrame(prices.values * weights.values,
+                           columns=prices.columns, index=prices.index)
     product = product.sum(axis=1).add(1).to_frame().cumprod()
 
     if save is not False:
