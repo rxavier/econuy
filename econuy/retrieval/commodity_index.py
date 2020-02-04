@@ -189,6 +189,7 @@ def _prices(update: Union[str, Path, bool] = False, revise_rows: int = 0,
     eurusd = pd.read_html(eurusd_r.content)[0].drop("MMM YYYY", axis=1)
     eurusd.index = pd.date_range(start="2001-01-31", periods=len(eurusd),
                                  freq="M")
+    eurusd = eurusd.reindex(prev_milk.index)
     prev_milk = prev_milk.divide(eurusd.values).multiply(10)
     prev_milk = prev_milk.loc[prev_milk.index < min(proc_milk.index)]
     prev_milk.columns, proc_milk.columns = ["Price"], ["Price"]
