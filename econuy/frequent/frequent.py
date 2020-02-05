@@ -1,6 +1,7 @@
 from datetime import date
 from os import PathLike, getcwd
-from typing import Union
+from typing import Union, Optional
+from pathlib import Path
 
 import pandas as pd
 
@@ -11,7 +12,9 @@ from econuy.retrieval import (nxr, national_accounts, cpi,
                               fiscal_accounts, labor)
 
 
-def inflation(save: Union[str, PathLike, bool] = False):
+def inflation(update: Union[str, PathLike, None] = None,
+              save: Union[str, PathLike, None] = None,
+              name: Optional[str] = None):
     """Update CPI data and return common inflation measures.
 
     Parameters
@@ -27,9 +30,10 @@ def inflation(save: Union[str, PathLike, bool] = False):
         adjusted monthly inflation and trend monthly inflation.
 
     """
-    cpi_path = updates.rsearch(dir_file=getcwd(), search_term="cpi.csv", n=1)
-    data = cpi.get(update=cpi_path, revise_rows=6,
-                   save=cpi_path, force_update=False)
+    if name is None:
+        name = "tfm_prices"
+    data = cpi.get(update=update, revise_rows=6,
+                   save=save, force_update=False)
     interannual = variations.chg_diff(data, operation="chg", period_op="inter")
     monthly = variations.chg_diff(data, operation="chg", period_op="last")
     trend, seasadj = seasonal.decompose(data, trading=True, outlier=False)
@@ -40,9 +44,8 @@ def inflation(save: Union[str, PathLike, bool] = False):
     output = pd.concat([data, interannual, monthly,
                         monthly_sa, monthly_trend], axis=1)
 
-    if save is not False:
-        save_path = updates._paths(save, multiple=False,
-                                   name="cpi_inflation.csv")
+    if save is not None:
+        save_path = (Path(save) / name).with_suffix(".csv")
         output.to_csv(save_path)
 
     return output
@@ -50,7 +53,9 @@ def inflation(save: Union[str, PathLike, bool] = False):
 
 def exchange_rate(eop: bool = False, sell: bool = True,
                   seas_adj: Union[str, None] = None, cum: int = 1,
-                  save: Union[str, PathLike, bool] = False):
+                  update: Union[str, PathLike, None] = None,
+                  save: Union[str, PathLike, None] = None,
+                  name: Optional[str] = None):
     """Get nominal exchange rate data.
 
     Allow choosing end of period or average (monthly), sell/buy rates,
@@ -75,9 +80,10 @@ def exchange_rate(eop: bool = False, sell: bool = True,
     dataframe : Pandas dataframe
 
     """
-    nxr_path = updates.rsearch(dir_file=getcwd(), search_term="nxr.csv", n=1)
-    data = nxr.get(update=nxr_path, revise_rows=6,
-                   save=nxr_path, force_update=False)
+    if name is None:
+        name = "tfm_nxr"
+    data = nxr.get(update=update, revise_rows=6,
+                   save=save, force_update=False)
 
     if eop is False:
         output = data.iloc[:, [2, 3]]
@@ -102,20 +108,21 @@ def exchange_rate(eop: bool = False, sell: bool = True,
     if cum != 1:
         output = freqs.rolling(output, periods=cum, operation="average")
 
-    if save is not False:
-        save_path = updates._paths(save, multiple=False,
-                                   name="exchange_rate.csv")
+    if save is not None:
+        save_path = (Path(save) / name).with_suffix(".csv")
         output.to_csv(save_path)
 
     return output
 
 
-def fiscal(aggregation: str = "gps", fss: bool = True,
+def fiscal(update: Union[str, PathLike, None] = None,
+           save: Union[str, PathLike, None] = None,
+           name: Optional[str] = None,
+           aggregation: str = "gps", fss: bool = True,
            unit: Union[str, None] = "gdp",
            start_date: Union[str, date, None] = None,
            end_date: Union[str, date, None] = None, cum: int = 1,
-           seas_adj: Union[str, None] = None,
-           save: Union[str, PathLike, bool] = False):
+           seas_adj: Union[str, None] = None):
     """Get fiscal accounts data.
 
     Allow choosing government aggregation, whether to exclude the FSS
@@ -154,13 +161,13 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     dataframe : Pandas dataframe
 
     """
-    fiscal_path = updates.rsearch(dir_file=getcwd(),
-                                  search_term="fiscal*.csv", n=1)
-    data = fiscal_accounts.get(update_dir=fiscal_path, revise_rows=12,
-                               save=fiscal_path, force_update=False)
-    gps = data["fiscal_gps"]
-    nfps = data["fiscal_nfps"]
-    gc = data["fiscal_gc-bps"]
+    if name is None:
+        name = "tfm_fiscal"
+    data = fiscal_accounts.get(update=update, revise_rows=12,
+                               save=save, force_update=False)
+    gps = data["gps"]
+    nfps = data["nfps"]
+    gc = data["gc-bps"]
 
     proc = pd.DataFrame(index=gps.index)
     proc["Ingresos: SPNF-SPC"] = nfps["Ingresos: SPNF"]
@@ -238,9 +245,7 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
         output = convert.usd(output)
     elif unit == "real usd":
         output = convert.real(output, start_date=start_date, end_date=end_date)
-        xr_path = updates.rsearch(dir_file=getcwd(),
-                                  search_term="nxr.csv", n=1)
-        xr = nxr.get(update=xr_path, revise_rows=6, save=xr_path)
+        xr = nxr.get(update=update, revise_rows=6, save=save)
         output = output.divide(xr[start_date:end_date].mean()[3])
         columns._setmeta(output, currency="USD")
     elif unit == "real":
@@ -259,15 +264,16 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
         output = freqs.rolling(output, periods=cum, operation="sum")
 
     if save is not False:
-        save_path = updates._paths(save, multiple=False,
-                                   name="fiscal_accounts.csv")
+        save_path = (Path(save) / name).with_suffix(".csv")
         output.to_csv(save_path)
 
     return output
 
 
 def labor_mkt(seas_adj: Union[str, None] = "trend",
-              save: Union[str, PathLike, bool] = False):
+              update: Union[str, PathLike, None] = None,
+              save: Union[str, PathLike, None] = None,
+              name: Optional[str] = None):
     """Get labor market data.
 
     Allow choosing seasonal adjustment.
@@ -285,10 +291,10 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
     dataframe : Pandas dataframe
 
     """
-    labor_path = updates.rsearch(dir_file=getcwd(),
-                                 search_term="labor.csv", n=1)
-    data = labor.get(update=labor_path, revise_rows=6,
-                     save=labor_path, force_update=False)
+    if name is None:
+        name = "tfm_labor"
+    data = labor.get(update=update, revise_rows=6,
+                     save=save, force_update=False)
     output = data
 
     if seas_adj in ["trend", "seas"]:
@@ -298,19 +304,20 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
         elif seas_adj == "seas":
             output = pd.concat([data, seasadj], axis=1)
 
-    if save is not False:
-        save_path = updates._paths(save, multiple=False,
-                                   name="labor_market.csv")
+    if save is not None:
+        save_path = (Path(save) / name).with_suffix(".csv")
         output.to_csv(save_path)
 
     return output
 
 
 def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
-                 seas_adj: bool = True, usd: bool = False, cum: int = 1,
+                 seas_adj: bool = False, usd: bool = False, cum: int = 1,
                  cust_seas_adj: Union[str, None] = None,
                  variation: Union[str, None] = None,
-                 save: Union[str, PathLike, bool] = False):
+                 update: Union[str, PathLike, None] = None,
+                 save: Union[str, PathLike, None] = None,
+                 name: Optional[str] = None):
     """Get national accounts data.
 
     Attempt to find one of the available data tables with the selected
@@ -349,9 +356,10 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
         If the combined parameters do not correspond to an available table.
 
     """
-    na_path = updates.rsearch(dir_file=getcwd(), search_term="na_*.csv", n=1)
-    data = national_accounts.get(update_dir=na_path, revise_rows=4,
-                                 save=na_path, force_update=False)
+    if name is None:
+        name = "tfm_na"
+    data = national_accounts.get(update=update, revise_rows=4,
+                                 save=save, force_update=False)
 
     search_terms = []
     if supply is True:
@@ -369,7 +377,7 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
     else:
         search_terms += ["nsa"]
 
-    table = f"na_{'_'.join(search_terms)}"
+    table = "_".join(search_terms)
 
     try:
         output = data[table]
@@ -400,9 +408,8 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
         print("Only 'last', 'inter' and 'annual' are "
               "possible values for 'variation'")
 
-    if save is not False:
-        save_path = updates._paths(save, multiple=False,
-                                   name="national_accounts.csv")
+    if save is not None:
+        save_path = (Path(save) / name).with_suffix(".csv")
         output.to_csv(save_path)
 
     return output

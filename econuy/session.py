@@ -112,6 +112,51 @@ class Session(object):
 
         return output
 
+    def get_tfm(self,
+                dataset: str,
+                update: bool = True,
+                save: bool = True,
+                override: Optional[str] = None,
+                **kwargs):
+
+        if update is True:
+            update_path = Path(self.location)
+        else:
+            update_path = None
+        if save is True:
+            save_path = Path(self.location)
+        else:
+            save_path = None
+
+        if dataset == "inflation":
+            output = inflation(update=update_path,
+                               save=save_path,
+                               name=override)
+        elif dataset == "fiscal":
+            output = fiscal(update=update_path,
+                            save=save_path,
+                            name=override,
+                            **kwargs)
+        elif dataset == "nxr":
+            output = exchange_rate(update=update_path,
+                                   save=save_path,
+                                   name=override,
+                                   **kwargs)
+        elif dataset == "naccounts" or dataset == "na":
+            output = nat_accounts(update=update_path,
+                                  save=save_path,
+                                  name=override,
+                                  **kwargs)
+        elif dataset == "labor" or dataset == "labour":
+            output = labor_mkt(update=update_path,
+                               save=save_path,
+                               name=override,
+                               **kwargs)
+        else:
+            output = None
+
+        return output
+
 
 @pf.register_dataframe_method
 def chg_diff(df: pd.DataFrame, operation: str = "chg",
