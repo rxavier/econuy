@@ -24,7 +24,7 @@ missing_reserves_url = "https://docs.google.com/spreadsheets/d/1tXwv8SaigbBrfBSS
 
 fiscal_sheets = {
     "Sector Público No Financiero":
-        {"Name": "fiscal_nfps",
+        {"Name": "nfps",
          "Colnames": ["Ingresos: SPNF",
                       "Ingresos: Gobierno central",
                       "Ingresos: DGI", "Ingresos: IRP",
@@ -47,7 +47,7 @@ fiscal_sheets = {
                       "Intereses: BSE",
                       "Resultado: Global SPNF"]},
     "Sector Público Consolidado":
-        {"Name": "fiscal_gps",
+        {"Name": "gps",
          "Colnames": ["Resultado: Primario SPNF",
                       "Intereses: SPNF", "Resultado: Global SPNF",
                       "Resultado: Primario BCU", "Intereses: BCU",
@@ -55,7 +55,7 @@ fiscal_sheets = {
                       "Resultado: Primario SPC",
                       "Resultado: Global SPC"]},
     "Gobierno Central - BPS":
-        {"Name": "fiscal_gc-bps",
+        {"Name": "gc-bps",
          "Colnames": ["Ingresos: GC-BPS", "Ingresos: GC",
                       "Ingresos: Comercio ext.", "Ingresos: DGI",
                       "Ingresos: DGI bruto", "Ingresos: DGI CDI",
@@ -108,7 +108,7 @@ fiscal_sheets = {
                       "Intereses: BPS-FSS",
                       "Resultado: Global GC-BPS"]},
     "Empresas Públicas Consolidado":
-        {"Name": "fiscal_pe",
+        {"Name": "pe",
          "Colnames": ["Ingresos",
                       "Ingresos: Venta bienes y servicios",
                       "Ingresos: Otros",
@@ -123,7 +123,7 @@ fiscal_sheets = {
                       "Egresos: Dividendo",
                       "Resultado: Global"]},
     "ANCAP":
-        {"Name": "fiscal_ancap",
+        {"Name": "ancap",
          "Colnames": ["Ingresos",
                       "Ingresos: Venta bienes y servicios",
                       "Ingresos: Otros",
@@ -139,7 +139,7 @@ fiscal_sheets = {
                       "Egresos: Otros", "Egresos: Dividendo",
                       "Resultado: Global"]},
     "ANTEL":
-        {"Name": "fiscal_antel",
+        {"Name": "antel",
          "Colnames": ["Ingresos",
                       "Ingresos: Venta bienes y servicios",
                       "Ingresos: Otros",
@@ -153,7 +153,7 @@ fiscal_sheets = {
                       "Egresos: Inversiones",
                       "Egresos: Dividendo", "Resultado: Global"]},
     "OSE":
-        {"Name": "fiscal_ose",
+        {"Name": "ose",
          "Colnames": ["Ingresos",
                       "Ingresos: Venta bienes y servicios",
                       "Ingresos: Otros",
@@ -168,7 +168,7 @@ fiscal_sheets = {
                       "Egresos: Dividendo",
                       "Resultado: Global"]},
     "UTE":
-        {"Name": "fiscal_ute",
+        {"Name": "ute",
          "Colnames": ["Ingresos",
                       "Ingresos: Venta bienes y servicios",
                       "Ingresos: Otros",
@@ -187,7 +187,7 @@ fiscal_sheets = {
 nat_accounts_metadata = {
     "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_101t.xls":
         {"Rows": 12, "Inf. Adj.": "Const. 2005", "Index": "No", "Seas": "NSA",
-         "Name": "na_ind_con_nsa",
+         "Name": "ind_con_nsa",
          "Colnames": ["PBI: Actividades primarias",
                       "PBI: Agricultura, ganadería, caza y silvucultura",
                       "PBI: Industrias manufactureras",
@@ -200,7 +200,7 @@ nat_accounts_metadata = {
                       "PBI"]},
     "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_100t.xls":
         {"Rows": 12, "Inf. Adj.": "Corriente", "Index": "No", "Seas": "NSA",
-         "Name": "na_ind_cur_nsa",
+         "Name": "ind_cur_nsa",
          "Colnames": ["PBI: Actividades primarias",
                       "PBI: Agricultura, ganadería, caza y silvucultura",
                       "PBI: Industrias manufactureras",
@@ -213,7 +213,7 @@ nat_accounts_metadata = {
                       "PBI"]},
     "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_104t.xls":
         {"Rows": 10, "Inf. Adj.": "Const. 2005", "Index": "No", "Seas": "NSA",
-         "Name": "na_gas_con_nsa",
+         "Name": "gas_con_nsa",
          "Colnames": ["PBI: Gasto total", "PBI: Gasto privado",
                       "PBI: Gasto público",
                       "PBI: Formación bruta de capital",
@@ -224,7 +224,7 @@ nat_accounts_metadata = {
                       "PBI: Importaciones", "PBI"]},
     "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_132t.xls":
         {"Rows": 12, "Inf. Adj.": "Const. 2005", "Index": "2005=100",
-         "Seas": "NSA", "Name": "na_ind_con_idx_nsa",
+         "Seas": "NSA", "Name": "ind_con_idx_nsa",
          "Colnames": ["PBI: Actividades primarias",
                       "PBI: Agricultura, ganadería, caza y silvucultura",
                       "PBI: Industrias manufactureras",
@@ -237,7 +237,7 @@ nat_accounts_metadata = {
                       "PBI"]},
     "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_133t.xls":
         {"Rows": 12, "Inf. Adj.": "Const. 2005", "Index": "2005=100",
-         "Seas": "SA", "Name": "na_ind_con_idx_sa",
+         "Seas": "SA", "Name": "ind_con_idx_sa",
          "Colnames": ["PBI: Actividades primarias",
                       "PBI: Agricultura, ganadería, caza y silvucultura",
                       "PBI: Industrias manufactureras",
@@ -250,7 +250,7 @@ nat_accounts_metadata = {
                       "PBI"]},
     "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_130t.xls":
         {"Rows": 2, "Inf. Adj.": "Corriente", "Index": "No", "Seas": "NSA",
-         "Name": "na_gdp_cur_nsa",
+         "Name": "gdp_cur_nsa",
          "Colnames": ["PBI"]}}
 
 reserves_cols = [

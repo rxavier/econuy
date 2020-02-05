@@ -1,6 +1,7 @@
 import datetime as dt
 from os import PathLike
 from typing import Union
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -13,9 +14,9 @@ from econuy.resources.lstrings import reer_url, ar_cpi_url, ar_cpi_payload
 from econuy.retrieval import cpi, nxr
 
 
-def get_official(update: Union[str, PathLike, bool] = False,
-                 revise_rows: int = 0, save: Union[str, PathLike, bool] = False,
-                 force_update: bool = False):
+def get_official(update: Union[str, PathLike, None] = None,
+                 revise_rows: int = 0, save: Union[str, PathLike, None] = None,
+                 force_update: bool = False, name: Union[str, None] = None):
     """Get official real exchange rates from the BCU website.
 
     Parameters
@@ -38,15 +39,16 @@ def get_official(update: Union[str, PathLike, bool] = False,
 
     """
     update_threshold = 25
+    if name is None:
+        name = "rxr_official"
 
     if update is not None:
-        update_path = updates._paths(update, multiple=False,
-                                     name="rxr_official.csv")
+        update_path = (Path(update) / name).with_suffix(".csv")
         delta, previous_data = updates._check_modified(update_path)
 
         if delta < update_threshold and force_update is False:
-            print(f"{update} was modified within {update_threshold} day(s). "
-                  f"Skipping download...")
+            print(f"{update_path} was modified within {update_threshold} "
+                  f"day(s). Skipping download...")
             return previous_data
 
     raw = pd.read_excel(reer_url, skiprows=8, usecols="B:H", index_col=0)
@@ -55,7 +57,7 @@ def get_official(update: Union[str, PathLike, bool] = False,
                     "Argentina", "Brasil", "EEUU"]
     proc.index = pd.to_datetime(proc.index) + MonthEnd(1)
 
-    if update is not False:
+    if update is not None:
         proc = updates._revise(new_data=proc, prev_data=previous_data,
                                revise_rows=revise_rows)
 
@@ -64,16 +66,15 @@ def get_official(update: Union[str, PathLike, bool] = False,
                      ts_type="-", cumperiods=1)
 
     if save is not None:
-        save_path = updates._paths(save, multiple=False,
-                                   name="rxr_official.csv")
+        save_path = (Path(save) / name).with_suffix(".csv")
         proc.to_csv(save_path)
 
     return proc
 
 
-def get_custom(update: Union[str, PathLike, bool] = False,
-               revise_rows: int = 0, save: Union[str, PathLike, bool] = False,
-               force_update: bool = False):
+def get_custom(update: Union[str, PathLike, None] = None,
+               revise_rows: int = 0, save: Union[str, PathLike, None] = None,
+               force_update: bool = False, name: Union[str, None] = None):
     """Calculate custom real exchange rates from various sources.
 
     Parameters
@@ -96,10 +97,11 @@ def get_custom(update: Union[str, PathLike, bool] = False,
 
     """
     update_threshold = 25
+    if name is None:
+        name = "rxr_custom"
 
     if update is not None:
-        update_path = updates._paths(update, multiple=False,
-                                     name="rxr_custom.csv")
+        update_path = (Path(update) / name).with_suffix(".csv")
         delta, previous_data = updates._check_modified(update_path)
 
         if delta < update_threshold and force_update is False:
@@ -143,10 +145,10 @@ def get_custom(update: Union[str, PathLike, bool] = False,
     proc["AR.ENDA_XDC_USD_RATE_black"] = ar_black_xr.iloc[:, 0]
     proc["AR_E_A"] = proc.iloc[:, [5, 6]].mean(axis=1)
 
-    uy_cpi = cpi.get(update="cpi.csv", revise_rows=6,
-                     save="cpi.csv", force_update=False)
-    uy_e = nxr.get(update="nxr.csv", revise_rows=6,
-                   save="nxr.csv", force_update=False).iloc[:, [3]]
+    uy_cpi = cpi.get(update=update, revise_rows=6,
+                     save=save, force_update=False)
+    uy_e = nxr.get(update=update, revise_rows=6,
+                   save=save, force_update=False).iloc[:, [3]]
     proc = pd.concat([proc, uy_cpi, uy_e], axis=1)
     proc = proc.interpolate(method="linear", limit_area="inside")
     proc = proc.dropna(how="any")
@@ -168,14 +170,13 @@ def get_custom(update: Union[str, PathLike, bool] = False,
     output = index.base_index(output, start_date="2010-01-01",
                               end_date="2010-12-31", base=100)
 
-    if update is not False:
+    if update is not None:
         output = updates._revise(new_data=proc, prev_data=previous_data,
                                  revise_rows=revise_rows)
 
-    if save is not False:
-        save_path = updates._paths(save, multiple=False,
-                                   name="rxr_custom.csv")
-        output.to_csv(save_path, sep=" ")
+    if save is not None:
+        save_path = (Path(save) / name).with_suffix(".csv")
+        output.to_csv(save_path)
 
     return output
 

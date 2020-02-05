@@ -157,7 +157,7 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     fiscal_path = updates.rsearch(dir_file=getcwd(),
                                   search_term="fiscal*.csv", n=1)
     data = fiscal_accounts.get(update_dir=fiscal_path, revise_rows=12,
-                               save_dir=fiscal_path, force_update=False)
+                               save=fiscal_path, force_update=False)
     gps = data["fiscal_gps"]
     nfps = data["fiscal_nfps"]
     gc = data["fiscal_gc-bps"]
@@ -351,7 +351,7 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
     """
     na_path = updates.rsearch(dir_file=getcwd(), search_term="na_*.csv", n=1)
     data = national_accounts.get(update_dir=na_path, revise_rows=4,
-                                 save_dir=na_path, force_update=False)
+                                 save=na_path, force_update=False)
 
     search_terms = []
     if supply is True:

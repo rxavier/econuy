@@ -16,9 +16,9 @@ from econuy.resources.lstrings import (beef_url, pulp_url, soybean_url,
                                        what_url, imf_url, milk1_url, milk2_url)
 
 
-def _weights(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
-             save: Union[str, PathLike, bool] = False,
-             force_update: bool = False):
+def _weights(update: Union[str, PathLike, None] = None, revise_rows: int = 0,
+             save: Union[str, PathLike, None] = None,
+             force_update: bool = False, name: Union[str, None] = None):
     """Get weights for the commodity price index from the UN COMTRADE database.
 
     Parameters
@@ -42,16 +42,17 @@ def _weights(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
 
     """
     update_threshold = 85
+    if name is None:
+        name = "commodity_weights"
 
-    if update is not False:
-        update_path = updates._paths(update, multiple=False,
-                                     name="comm_weights.csv")
+    if update is not None:
+        update_path = (Path(update) / name).with_suffix(".csv")
         delta, previous_data = updates._check_modified(update_path,
                                                        multiindex=False)
 
         if delta < update_threshold and force_update is False:
-            print(f"{update} was modified within {update_threshold} day(s). "
-                  f"Skipping download...")
+            print(f"{update_path} was modified within {update_threshold} "
+                  f"day(s). Skipping download...")
             return previous_data
 
     raw = []
@@ -82,20 +83,20 @@ def _weights(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
     output.columns = ["Barley", "Wood", "Gold", "Milk", "Pulp",
                       "Rice", "Soybeans", "Wheat", "Wool", "Beef"]
 
-    if update is not False:
+    if update is not None:
         output = updates._revise(new_data=output, prev_data=previous_data,
                                  revise_rows=revise_rows)
 
-    if save is not False:
-        save_path = updates._paths(save, multiple=False,
-                                   name="comm_weights.csv")
+    if save is not None:
+        save_path = (Path(save) / name).with_suffix(".csv")
         output.to_csv(save_path)
 
     return output
 
 
-def _prices(update: Union[str, Path, bool] = False, revise_rows: int = 0,
-            save: Union[str, Path, bool] = False, force_update: bool = False):
+def _prices(update: Union[str, Path, None] = None, revise_rows: int = 0,
+            save: Union[str, Path, None] = None, force_update: bool = False,
+            name: Union[str, None] = None):
     """Prepare prices for the commodity price index.
 
     Parameters
@@ -120,16 +121,17 @@ def _prices(update: Union[str, Path, bool] = False, revise_rows: int = 0,
     """
     update_threshold = 10
     bushel_conv = 36.74 / 100
+    if name is None:
+        name = "commodity_prices"
 
-    if update is not False:
-        update_path = updates._paths(update, multiple=False,
-                                     name="comm_prices.csv")
+    if update is not None:
+        update_path = (Path(update) / name).with_suffix(".csv")
         delta, previous_data = updates._check_modified(update_path,
                                                        multiindex=False)
 
         if delta < update_threshold and force_update is False:
-            print(f"{update} was modified within {update_threshold} day(s). "
-                  f"Skipping download...")
+            print(f"{update_path} was modified within {update_threshold} "
+                  f"day(s). Skipping download...")
             return previous_data
 
     raw_beef = (pd.read_excel(beef_url, header=4, index_col=0)
@@ -220,21 +222,19 @@ def _prices(update: Union[str, Path, bool] = False, revise_rows: int = 0,
     complete.columns = ["Beef", "Pulp", "Soybeans", "Milk", "Rice", "Wood",
                         "Wool", "Barley", "Gold", "Wheat"]
 
-    if update is not False:
+    if update is not None:
         complete = updates._revise(new_data=complete, prev_data=previous_data,
                                    revise_rows=revise_rows)
 
-    if save is not False:
-        save_path = updates._paths(save, multiple=False,
-                                   name="comm_prices.csv")
+    if save is not None:
+        save_path = (Path(save) / name).with_suffix(".csv")
         complete.to_csv(save_path)
 
     return complete
 
 
-def get(save: Union[str, Path, bool] = False,
-        update_prices: Union[str, Path, bool] = False,
-        update_weights: Union[str, Path, bool] = False):
+def get(update: Union[str, Path, None] = None,
+        save: Union[str, Path, None] = None, name: Union[str, None] = None):
     """Get the commodity price index.
 
     Parameters
@@ -253,12 +253,14 @@ def get(save: Union[str, Path, bool] = False,
         Export-weighted average of commodity prices relevant to Uruguay.
 
     """
-    prices = _prices(update=update_prices, revise_rows=3,
-                     save=True, force_update=False)
+    if name is None:
+        name = "commodity_index"
+    prices = _prices(update=update, revise_rows=3,
+                     save=save, force_update=False)
     prices = prices.interpolate(method="linear", limit=1).dropna(how="any")
     prices = prices.pct_change(periods=1)
-    weights = _weights(update=update_weights, revise_rows=24,
-                       save=True, force_update=False)
+    weights = _weights(update=update, revise_rows=24,
+                       save=save, force_update=False)
     weights = weights[prices.columns]
     weights = weights.reindex(prices.index, method="ffill")
 
@@ -266,9 +268,8 @@ def get(save: Union[str, Path, bool] = False,
                            columns=prices.columns, index=prices.index)
     product = product.sum(axis=1).add(1).to_frame().cumprod()
 
-    if save is not False:
-        save_path = updates._paths(save, multiple=False,
-                                   name="commodity_index.csv")
+    if save is not None:
+        save_path = (Path(save) / name).with_suffix(".csv")
         product.to_csv(save_path)
 
     return product

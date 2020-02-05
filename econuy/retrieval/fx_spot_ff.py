@@ -1,16 +1,21 @@
 from os import PathLike
 from typing import Union
+from pathlib import Path
 
 import pandas as pd
 
-from econuy.resources import columns, updates
+from econuy.resources import columns
 from econuy.retrieval import fx_ff, reserves_chg
 
 
-def get(save: Union[str, PathLike, bool] = False):
+def get(update: Union[str, PathLike, None] = None,
+        save: Union[str, PathLike, None] = None,
+        name: Union[str, None] = None):
     """Get spot, future and forwards FX operations by the Central Bank."""
-    changes = reserves_chg.get(update=True, save=True)
-    ff = fx_ff.get(update=True, save=True)
+    if name is None:
+        name = "fx_spot_ff"
+    changes = reserves_chg.get(update=update, save=save)
+    ff = fx_ff.get(update=update, save=save)
     spot = changes.iloc[:, 0]
     fx_ops = pd.merge(spot, ff, how="outer", left_index=True, right_index=True)
     fx_ops = fx_ops.loc[(fx_ops.index >= ff.index.min()) &
@@ -23,9 +28,8 @@ def get(save: Union[str, PathLike, bool] = False):
                      currency="USD", inf_adj="No", index="No",
                      seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
-    if save is not False:
-        save_path = updates._paths(save, multiple=False,
-                                   name="fx_spot_ff.csv")
+    if save is not None:
+        save_path = (Path(save) / name).with_suffix(".csv")
         fx_ops.to_csv(save_path)
 
     return fx_ops

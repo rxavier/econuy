@@ -2,6 +2,7 @@ import datetime as dt
 import urllib
 from os import PathLike
 from typing import Union
+from pathlib import Path
 
 import pandas as pd
 
@@ -9,8 +10,9 @@ from econuy.resources import columns, updates
 from econuy.resources.lstrings import ff_url
 
 
-def get(update: Union[str, PathLike, bool] = False,
-        save: Union[str, PathLike, bool] = False):
+def get(update: Union[str, PathLike, None] = None,
+        save: Union[str, PathLike, None] = None,
+        name: Union[str, None] = None):
     """Get future and forwards FX operations by the Central Bank.
 
     Parameters
@@ -28,18 +30,24 @@ def get(update: Union[str, PathLike, bool] = False,
         Daily future and forward FX operations since november 2013.
 
     """
+    if name is None:
+        name = "fx_ff"
     dates = pd.bdate_range("2013-11-01",
                            dt.datetime.today()).strftime("%y%m%d").tolist()
-    if update is not False:
-        update_path = updates._paths(update, multiple=False,
-                                     name="fx_ff.csv")
-        prev_data = pd.read_csv(update_path, index_col=0,
-                                header=list(range(9)))
-        prev_data.columns = ["Futuros", "Forwards"]
-        prev_data.index = pd.to_datetime(prev_data.index)
-        last_date = prev_data.index[len(prev_data)-1]
-        dates = pd.bdate_range(last_date,
-                               dt.datetime.today()).strftime("%y%m%d").tolist()
+    if update is not None:
+        update_path = (Path(update) / name).with_suffix(".csv")
+        try:
+            prev_data = pd.read_csv(update_path, index_col=0,
+                                    header=list(range(9)))
+            prev_data.columns = ["Futuros", "Forwards"]
+            prev_data.index = pd.to_datetime(prev_data.index)
+            last_date = prev_data.index[len(prev_data)-1]
+            dates = pd.bdate_range(
+                last_date, dt.datetime.today()
+            ).strftime("%y%m%d").tolist()
+        except FileNotFoundError:
+            prev_data = pd.DataFrame()
+            pass
 
     reports = []
     for date in dates:
@@ -75,7 +83,7 @@ def get(update: Union[str, PathLike, bool] = False,
     operations.set_index("Date", inplace=True)
     operations = operations.divide(1000)
 
-    if update is not False:
+    if update is not None:
         operations = prev_data.append(operations, sort=False)
 
     columns._setmeta(
@@ -85,8 +93,7 @@ def get(update: Union[str, PathLike, bool] = False,
     )
 
     if save is not None:
-        save_path = updates._paths(save, multiple=False,
-                                   name="fx_ff.csv")
+        save_path = (Path(save) / name).with_suffix(".csv")
         operations.to_csv(save_path)
 
     return operations

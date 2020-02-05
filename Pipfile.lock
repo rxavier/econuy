@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "8037eb3610b8248f434c7d38f349687464ae61290ecf758595843411dcda8082"
+            "sha256": "cbf0bc983e64371a9397d1a5e637eb85bf3f936e2413225cdd7a2715f5d9f2ef"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -194,6 +194,14 @@
             "index": "pypi",
             "version": "==0.25.3"
         },
+        "pandas-flavor": {
+            "hashes": [
+                "sha256:7871655816de22dc766e916697ccc67449e1863c090ef5fd40d4d0fbd056e489",
+                "sha256:ce4d3640a89435c27eb2369305455865f043464ee5ae450e5388f4fb30eae241"
+            ],
+            "index": "pypi",
+            "version": "==0.2.0"
+        },
         "patool": {
             "hashes": [
                 "sha256:3f642549c9a78f5b8bef1af92df385b521d360520d1f34e4dba3fd1dee2a21bc",
@@ -312,6 +320,13 @@
             ],
             "version": "==1.25.8"
         },
+        "xarray": {
+            "hashes": [
+                "sha256:b136ed823a37231058d5a197893f16b32e97f2e448746a9618c3807e927ccb05",
+                "sha256:c72d160c970725201f769e80fb91cbad68d6ebf21d68fcc371385a6c950459c3"
+            ],
+            "version": "==0.15.0"
+        },
         "xlrd": {
             "hashes": [
                 "sha256:546eb36cee8db40c3eaa46c351e67ffee6eeb5fa2650b71bc4c758a29a1b29b2",
@@ -368,10 +383,10 @@
         },
         "parso": {
             "hashes": [
-                "sha256:1376bdc8cb81377ca481976933773295218a2df47d3e1182ba76d372b1acb128",
-                "sha256:597f36de5102a8db05ffdf7ecdc761838b86565a4a111604c6e78beaedf1b045"
+                "sha256:56b2105a80e9c4df49de85e125feb6be69f49920e121406f15e7acde6c9dfc57",
+                "sha256:951af01f61e6dccd04159042a0706a31ad437864ec6e25d0d7a96a9fbb9b0095"
             ],
-            "version": "==0.6.0"
+            "version": "==0.6.1"
         },
         "pexpect": {
             "hashes": [

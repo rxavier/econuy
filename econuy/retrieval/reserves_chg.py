@@ -1,23 +1,20 @@
 import datetime as dt
 import urllib
 from os import PathLike
-from typing import List, Union
+from typing import Union
+from pathlib import Path
 
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
-from econuy.resources import columns, updates
+from econuy.resources import columns
 from econuy.resources.lstrings import (reserves_cols, reserves_url,
                                        missing_reserves_url)
 
-months = ["ene", "feb", "mar", "abr", "may", "jun",
-          "jul", "ago", "set", "oct", "nov", "dic"]
-years = list(range(2013, dt.datetime.now().year + 1))
-files_ = [month + str(year) for year in years for month in months]
 
-
-def get(files: List[str] = files_, update: Union[str, PathLike, bool] = False,
-        save: Union[str, PathLike, bool] = False):
+def get(update: Union[str, PathLike, None] = None,
+        save: Union[str, PathLike, None] = None,
+        name: Union[str, None] = None):
     """Get international reserves change data from online sources.
 
     Use as input a list of strings of the format %b%Y, each representing a
@@ -25,9 +22,6 @@ def get(files: List[str] = files_, update: Union[str, PathLike, bool] = False,
 
     Parameters
     ----------
-    files : list of strings
-        List of strings of the type '%b%Y', only %b is in Spanish. So 'ene'
-        instead of 'jan'. For example, 'oct2017'.
     update : str, PathLike or bool (default is False)
         Path, path-like string pointing to a CSV file for updating, or bool,
         in which case if True, save in predefined file, or False, don't update.
@@ -40,19 +34,29 @@ def get(files: List[str] = files_, update: Union[str, PathLike, bool] = False,
     reserves : Pandas dataframe
 
     """
+    if name is None:
+        name = "reserves_chg"
+    months = ["ene", "feb", "mar", "abr", "may", "jun",
+              "jul", "ago", "set", "oct", "nov", "dic"]
+    years = list(range(2013, dt.datetime.now().year + 1))
+    files = [month + str(year) for year in years for month in months]
+
     urls = [f"{reserves_url}{file}.xls" for file in files]
     wrong_may14 = f"{reserves_url}may2014.xls"
     fixed_may14 = f"{reserves_url}mayo2014.xls"
     urls = [fixed_may14 if x == wrong_may14 else x for x in urls]
 
-    if update is not False:
-        update_path = updates._paths(update, multiple=False,
-                                     name="reserves_chg.csv")
-        previous_data = pd.read_csv(update_path, index_col=0,
-                                    header=list(range(9)))
-        previous_data.columns = reserves_cols[1:46]
-        previous_data.index = pd.to_datetime(previous_data.index)
-        urls = urls[-18:]
+    if update is not None:
+        update_path = (Path(update) / name).with_suffix(".csv")
+        try:
+            previous_data = pd.read_csv(update_path, index_col=0,
+                                        header=list(range(9)))
+            previous_data.columns = reserves_cols[1:46]
+            previous_data.index = pd.to_datetime(previous_data.index)
+            urls = urls[-18:]
+        except FileNotFoundError:
+            previous_data = pd.DataFrame()
+            pass
 
     reports = []
     for url in urls:
@@ -85,7 +89,7 @@ def get(files: List[str] = files_, update: Union[str, PathLike, bool] = False,
     mar14.columns = reserves_cols[1:46]
     reserves = pd.concat(reports + [mar14], sort=False).sort_index()
 
-    if update is not False:
+    if update is not None:
         reserves = previous_data.append(reserves, sort=False)
         reserves = reserves.loc[~reserves.index.duplicated(keep="last")]
 
@@ -94,9 +98,8 @@ def get(files: List[str] = files_, update: Union[str, PathLike, bool] = False,
                      currency="USD", inf_adj="No", index="No",
                      seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
-    if save is not False:
-        save_path = updates._paths(save, multiple=False,
-                                   name="reserves_chg.csv")
+    if save is not None:
+        save_path = (Path(save) / name).with_suffix(".csv")
         reserves.to_csv(save_path)
 
     return reserves

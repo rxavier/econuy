@@ -1,5 +1,6 @@
 from os import PathLike
 from typing import Union
+from pathlib import Path
 
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
@@ -8,8 +9,9 @@ from econuy.resources import updates, columns
 from econuy.resources.lstrings import nxr_url
 
 
-def get(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
-        save: Union[str, PathLike, bool] = False, force_update: bool = False):
+def get(update: Union[str, PathLike, None] = None, revise_rows: int = 0,
+        save: Union[str, PathLike, None] = None, force_update: bool = False,
+        name: Union[str, None] = None):
     """Get nominal exchange rate data.
 
     Parameters
@@ -32,14 +34,16 @@ def get(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
 
     """
     update_threshold = 25
+    if name is None:
+        name = "nxr"
 
-    if update is not False:
-        update_path = updates._paths(update, multiple=False, name="nxr.csv")
+    if update is not None:
+        update_path = (Path(update) / name).with_suffix(".csv")
         delta, previous_data = updates._check_modified(update_path)
 
         if delta < update_threshold and force_update is False:
-            print(f"{update} was modified within {update_threshold} day(s). "
-                  f"Skipping download...")
+            print(f"{update_path} was modified within {update_threshold} "
+                  f"day(s). Skipping download...")
             return previous_data
 
     nxr_raw = pd.read_excel(nxr_url, skiprows=4)
@@ -51,7 +55,7 @@ def get(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
                    "Tipo de cambio venta, promedio"]
     nxr.index = nxr.index + MonthEnd(1)
 
-    if update is not False:
+    if update is not None:
         nxr = updates._revise(new_data=nxr, prev_data=previous_data,
                               revise_rows=revise_rows)
 
@@ -60,8 +64,8 @@ def get(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
                      inf_adj="No", index="No", seas_adj="NSA",
                      ts_type="-", cumperiods=1)
 
-    if save is not False:
-        save_path = updates._paths(save, multiple=False, name="nxr.csv")
+    if save is not None:
+        save_path = (Path(save) / name).with_suffix(".csv")
         nxr.to_csv(save_path)
 
     return nxr
