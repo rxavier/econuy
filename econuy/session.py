@@ -3,6 +3,8 @@ from os import PathLike, path, makedirs
 from pathlib import Path
 from typing import Union, Optional
 
+import pandas as pd
+
 from econuy.frequent.frequent import (inflation, fiscal, nat_accounts,
                                       exchange_rate, labor_mkt)
 from econuy.processing import variations, freqs, seasonal, convert, index
@@ -36,11 +38,11 @@ class Session(object):
             final: bool = False):
 
         if update is True:
-            update_path = Path(self.location)
+            update_path = Path(self.loc_dir)
         else:
             update_path = None
         if save is True:
-            save_path = Path(self.location)
+            save_path = Path(self.loc_dir)
         else:
             save_path = None
 
@@ -121,11 +123,11 @@ class Session(object):
                 **kwargs):
 
         if update is True:
-            update_path = Path(self.location)
+            update_path = Path(self.loc_dir)
         else:
             update_path = None
         if save is True:
-            save_path = Path(self.location)
+            save_path = Path(self.loc_dir)
         else:
             save_path = None
 
@@ -240,3 +242,10 @@ class Session(object):
             return self.dataset
         else:
             return self
+
+    def save(self, name: str):
+        save_path = (Path(self.loc_dir) / name).with_suffix(".csv")
+        pd.to_csv(save_path)
+
+    def final(self):
+        return self.dataset
