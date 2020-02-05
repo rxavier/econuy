@@ -5,9 +5,9 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
-from statsmodels.tsa import x13
 from statsmodels.api import tsa
 from statsmodels.tools.sm_exceptions import X13Error
+from statsmodels.tsa import x13
 
 from econuy.resources import columns, updates
 

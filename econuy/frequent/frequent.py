@@ -1,12 +1,12 @@
 from datetime import date
-from os import PathLike, getcwd
-from typing import Union, Optional
+from os import PathLike
 from pathlib import Path
+from typing import Union, Optional
 
 import pandas as pd
 
 from econuy.processing import freqs, variations, seasonal, convert
-from econuy.resources import columns, updates
+from econuy.resources import columns
 from econuy.resources.lstrings import fiscal_metadata
 from econuy.retrieval import (nxr, national_accounts, cpi,
                               fiscal_accounts, labor)

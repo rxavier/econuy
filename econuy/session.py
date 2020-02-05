@@ -6,12 +6,12 @@ from typing import Union, Optional
 import pandas as pd
 import pandas_flavor as pf
 
+from econuy.frequent.frequent import (inflation, fiscal, nat_accounts,
+                                      exchange_rate, labor_mkt)
 from econuy.processing import variations, freqs, seasonal, convert, index
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
                               labor, rxr, commodity_index, reserves_chg,
                               fx_spot_ff)
-from econuy.frequent.frequent import (inflation, fiscal, nat_accounts,
-                                      exchange_rate, labor_mkt)
 
 
 class Session(object):

@@ -2,8 +2,8 @@ import datetime as dt
 import re
 import tempfile
 from os import PathLike, path, listdir
-from typing import Union
 from pathlib import Path
+from typing import Union
 
 import pandas as pd
 import patoolib

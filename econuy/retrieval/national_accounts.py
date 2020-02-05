@@ -1,7 +1,7 @@
 import datetime as dt
 from os import PathLike
-from typing import Union
 from pathlib import Path
+from typing import Union
 
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd

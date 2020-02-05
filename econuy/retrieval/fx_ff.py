@@ -1,12 +1,12 @@
 import datetime as dt
 import urllib
 from os import PathLike
-from typing import Union
 from pathlib import Path
+from typing import Union
 
 import pandas as pd
 
-from econuy.resources import columns, updates
+from econuy.resources import columns
 from econuy.resources.lstrings import ff_url
 
 

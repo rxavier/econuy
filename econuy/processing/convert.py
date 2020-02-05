@@ -5,7 +5,7 @@ from typing import Union
 import pandas as pd
 
 from econuy.processing import freqs
-from econuy.resources import columns, updates
+from econuy.resources import columns
 from econuy.retrieval import cpi, national_accounts, nxr
 
 

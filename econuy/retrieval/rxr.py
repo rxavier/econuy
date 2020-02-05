@@ -1,7 +1,7 @@
 import datetime as dt
 from os import PathLike
-from typing import Union
 from pathlib import Path
+from typing import Union
 
 import numpy as np
 import pandas as pd

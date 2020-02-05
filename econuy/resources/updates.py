@@ -1,5 +1,5 @@
 import datetime as dt
-from os import path, makedirs, PathLike
+from os import path, PathLike
 from pathlib import Path
 from typing import Union
 
@@ -35,33 +35,6 @@ def _revise(new_data: pd.DataFrame, prev_data: pd.DataFrame, revise_rows: int):
     updated = non_revised.append(revised, sort=False)
 
     return updated
-
-
-def _paths(filepath: Union[str, PathLike, bool], multiple: bool = False,
-           name: str = None, multname: str = None):
-    """Take a path-like object or bool and return a full path."""
-    if multiple is False:
-        if isinstance(filepath, PathLike) or isinstance(filepath, str):
-            final_path = filepath
-        else:
-            final_path = path.join("econuy-data", name)
-    else:
-        if isinstance(filepath, PathLike):
-            base = Path(filepath).as_posix()
-            if path.isfile(base):
-                base = path.dirname(base)
-            final_path = path.join(base, multname + ".csv")
-        elif isinstance(filepath, str):
-            base = filepath
-            if path.isfile(base):
-                base = path.dirname(base)
-            final_path = path.join(base,  multname + ".csv")
-        else:
-            final_path = path.join("econuy-data", multname + ".csv")
-    if not path.exists(path.dirname(final_path)):
-        makedirs(path.dirname(final_path))
-
-    return final_path
 
 
 def rsearch(dir_file: Union[str, PathLike], search_term: str, n: int = 2):
