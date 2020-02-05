@@ -194,15 +194,15 @@ def decompose(df: pd.DataFrame, flavor: Optional[str] = None,
 
 
 @pf.register_dataframe_method
-def convert(df: pd.DataFrame, flavor: str,
-            start_date: Union[str, date, None] = None,
-            end_date: Union[str, date, None] = None, hifreq: bool = True):
-    if flavor == "usd:":
-        output = convert.usd(df)
+def unit_conv(df: pd.DataFrame, flavor: str,
+              update: Union[str, PathLike, None] = None,
+              save: Union[str, PathLike, None] = None, **kwargs):
+    if flavor == "usd":
+        output = convert.usd(df, update=update, save=save)
     elif flavor == "real":
-        output = convert.real(df, start_date=start_date, end_date=end_date)
+        output = convert.real(df, update=update, save=save, **kwargs)
     elif flavor == "pcgdp":
-        output = convert.pcgdp(df, hifreq=hifreq)
+        output = convert.pcgdp(df, update=update, save=save, **kwargs)
     else:
         output = None
 
