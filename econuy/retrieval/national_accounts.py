@@ -127,7 +127,7 @@ def _lin_gdp(update: Union[str, PathLike, None] = None,
     update_threshold = 80
     name = "lin_gdp"
 
-    if update is not False:
+    if update is not None:
         update_path = (Path(update) / name).with_suffix(".csv")
         delta, previous_data = updates._check_modified(update_path)
 
@@ -137,7 +137,7 @@ def _lin_gdp(update: Union[str, PathLike, None] = None,
             return previous_data
 
     data_uyu = get(update=update, revise_rows=4, save=save,
-                   force_update=False)["na_gdp_cur_nsa"]
+                   force_update=False)["gdp_cur_nsa"]
     data_uyu = freqs.rolling(data_uyu, periods=4, operation="sum")
     data_usd = convert.usd(data_uyu)
 
@@ -170,8 +170,8 @@ def _lin_gdp(update: Union[str, PathLike, None] = None,
     output = pd.concat(results, axis=1)
     output = output.resample("Q-DEC").interpolate("linear")
 
-    if save is not False:
-        save_path = updates._paths(save, multiple=False, name="lin_gdp.csv")
+    if save is not None:
+        save_path = (Path(save) / name).with_suffix(".csv")
         output.to_csv(save_path)
 
     return output
