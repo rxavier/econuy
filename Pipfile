@@ -4,7 +4,6 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-ipython = "==7.11.1"
 
 [packages]
 pandas = "~=0.25.0"
@@ -16,7 +15,6 @@ beautifulsoup4 = "==4.8.1"
 patool = "==1.12"
 numpy = "==1.17.4"
 lxml = "==4.4.2"
-pandas-flavor = "==0.2.0"
 
 [requires]
 python_version = "3.7"

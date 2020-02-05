@@ -3,9 +3,6 @@ from os import PathLike, path, makedirs
 from pathlib import Path
 from typing import Union, Optional
 
-import pandas as pd
-import pandas_flavor as pf
-
 from econuy.frequent.frequent import (inflation, fiscal, nat_accounts,
                                       exchange_rate, labor_mkt)
 from econuy.processing import variations, freqs, seasonal, convert, index
@@ -35,7 +32,8 @@ class Session(object):
             dataset: str,
             update: bool = True,
             save: bool = True,
-            override: Optional[str] = None):
+            override: Optional[str] = None,
+            final: bool = False):
 
         if update is True:
             update_path = Path(self.location)
@@ -106,17 +104,20 @@ class Session(object):
                                     save=save_path,
                                     name=override)
         else:
-            raise ValueError("Invalid value set for `dataset`")
-
+            output = None
         self.dataset = output
 
-        return output
+        if final is True:
+            return self.dataset
+        else:
+            return self
 
     def get_tfm(self,
                 dataset: str,
                 update: bool = True,
                 save: bool = True,
                 override: Optional[str] = None,
+                final: bool = False,
                 **kwargs):
 
         if update is True:
@@ -154,64 +155,88 @@ class Session(object):
                                **kwargs)
         else:
             output = None
+        self.dataset = output
 
-        return output
+        if final is True:
+            return self.dataset
+        else:
+            return self
 
+    def freq_resample(self, target: str, operation: str = "sum",
+                      interpolation: str = "linear", final: bool = False):
+        output = freqs.freq_resample(self.dataset, target=target,
+                                     operation=operation,
+                                     interpolation=interpolation)
+        self.dataset = output
 
-@pf.register_dataframe_method
-def chg_diff(df: pd.DataFrame, operation: str = "chg",
-             period_op: str = "last"):
-    output = variations.chg_diff(df, operation=operation, period_op=period_op)
-    return output
+        if final is True:
+            return self.dataset
+        else:
+            return self
 
+    def chg_diff(self, operation: str = "chg",
+                 period_op: str = "last", final: bool = False):
+        output = variations.chg_diff(self.dataset, operation=operation,
+                                     period_op=period_op)
+        self.dataset = output
 
-@pf.register_dataframe_method
-def freq_resample(df: pd.DataFrame, target: str, operation: str = "sum",
-                  interpolation: str = "linear"):
-    output = freqs.freq_resample(df, target=target, operation=operation,
-                                 interpolation=interpolation)
-    return output
+        if final is True:
+            return self.dataset
+        else:
+            return self
 
+    def decompose(self, flavor: Optional[str] = None,
+                  trading: bool = True, outlier: bool = True,
+                  x13_binary: Union[str, PathLike] = "search",
+                  search_parents: int = 1, final: bool = False):
+        result = seasonal.decompose(self.dataset,
+                                    trading=trading,
+                                    outlier=outlier,
+                                    x13_binary=x13_binary,
+                                    search_parents=search_parents)
+        if flavor == "trend":
+            output = result[0]
+        elif flavor == "seas" or type == "seasonal":
+            output = result[1]
+        else:
+            output = result
 
-@pf.register_dataframe_method
-def decompose(df: pd.DataFrame, flavor: Optional[str] = None,
-              trading: bool = True, outlier: bool = True,
-              x13_binary: Union[str, PathLike] = "search",
-              search_parents: int = 1):
-    result = seasonal.decompose(df,
-                                trading=trading,
-                                outlier=outlier,
-                                x13_binary=x13_binary,
-                                search_parents=search_parents)
-    if flavor == "trend":
-        output = result[0]
-    elif flavor == "seas" or type == "seasonal":
-        output = result[1]
-    else:
-        output = result
+        self.dataset = output
 
-    return output
+        if final is True:
+            return self.dataset
+        else:
+            return self
 
+    def unit_conv(self, flavor: str, update: Union[str, PathLike, None] = None,
+                  save: Union[str, PathLike, None] = None,
+                  final: bool = False, **kwargs):
+        if flavor == "usd":
+            output = convert.usd(self.dataset, update=update,
+                                 save=save)
+        elif flavor == "real":
+            output = convert.real(self.dataset, update=update,
+                                  save=save, **kwargs)
+        elif flavor == "pcgdp":
+            output = convert.pcgdp(self.dataset, update=update,
+                                   save=save, **kwargs)
+        else:
+            output = None
+        self.dataset = output
 
-@pf.register_dataframe_method
-def unit_conv(df: pd.DataFrame, flavor: str,
-              update: Union[str, PathLike, None] = None,
-              save: Union[str, PathLike, None] = None, **kwargs):
-    if flavor == "usd":
-        output = convert.usd(df, update=update, save=save)
-    elif flavor == "real":
-        output = convert.real(df, update=update, save=save, **kwargs)
-    elif flavor == "pcgdp":
-        output = convert.pcgdp(df, update=update, save=save, **kwargs)
-    else:
-        output = None
+        if final is True:
+            return self.dataset
+        else:
+            return self
 
-    return output
+    def base_index(self, start_date: Union[str, date],
+                   end_date: Union[str, date, None] = None,
+                   base: float = 100, final: bool = False):
+        output = index.base_index(self.dataset, start_date=start_date,
+                                  end_date=end_date, base=base)
+        self.dataset = output
 
-
-@pf.register_dataframe_method
-def base_index(df: pd.DataFrame, start_date: Union[str, date],
-               end_date: Union[str, date, None] = None, base: float = 100):
-    output = index.base_index(df, start_date=start_date,
-                              end_date=end_date, base=base)
-    return output
+        if final is True:
+            return self.dataset
+        else:
+            return self
