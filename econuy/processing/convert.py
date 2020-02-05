@@ -1,5 +1,5 @@
 from datetime import date
-from os import getcwd
+from os import PathLike
 from typing import Union
 
 import pandas as pd
@@ -9,7 +9,9 @@ from econuy.resources import columns, updates
 from econuy.retrieval import cpi, national_accounts, nxr
 
 
-def usd(df: pd.DataFrame):
+def usd(df: pd.DataFrame,
+        update: Union[str, PathLike, None] = None,
+        save: Union[str, PathLike, None] = None):
     """Convert dataframe from UYU to USD.
 
     Convert a dataframe's columns from Uruguayan pesos to US dollars. Call the
@@ -29,10 +31,8 @@ def usd(df: pd.DataFrame):
 
     """
     inferred_freq = pd.infer_freq(df.index)
-    nxr_path = updates.rsearch(dir_file=getcwd(),
-                               search_term="nxr.csv", n=1)
-    nxr_data = nxr.get(update=nxr_path, revise_rows=6,
-                       save=nxr_path, force_update=False)
+    nxr_data = nxr.get(update=update, revise_rows=6,
+                       save=save, force_update=False)
 
     if df.columns.get_level_values("Tipo")[0] == "Flujo":
         columns._setmeta(nxr_data, ts_type="Flujo")
@@ -55,7 +55,9 @@ def usd(df: pd.DataFrame):
 
 
 def real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
-         end_date: Union[str, date, None] = None):
+         end_date: Union[str, date, None] = None,
+         update: Union[str, PathLike, None] = None,
+         save: Union[str, PathLike, None] = None):
     """Convert dataframe to real prices.
 
     Convert a dataframe's columns to real prices. Call the `cpi.get()`
@@ -79,9 +81,7 @@ def real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
 
     """
     inferred_freq = pd.infer_freq(df.index)
-    cpi_path = updates.rsearch(dir_file=getcwd(),
-                               search_term="cpi.csv", n=1)
-    cpi_data = cpi.get(update=cpi_path, revise_rows=6, save=cpi_path,
+    cpi_data = cpi.get(update=update, revise_rows=6, save=save,
                        force_update=False)
     columns._setmeta(cpi_data, ts_type="Flujo")
     cpi_freq = freqs.freq_resample(cpi_data, target=inferred_freq,
@@ -110,7 +110,9 @@ def real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     return converted_df
 
 
-def pcgdp(df: pd.DataFrame, hifreq: bool = True):
+def pcgdp(df: pd.DataFrame, hifreq: bool = True,
+          update: Union[str, PathLike, None] = None,
+          save: Union[str, PathLike, None] = None):
     """Calculate dataframe as percentage of GDP.
 
     Convert a dataframe's columns to percentage of GDP. Call the
@@ -132,10 +134,8 @@ def pcgdp(df: pd.DataFrame, hifreq: bool = True):
 
     """
     inferred_freq = pd.infer_freq(df.index)
-    lin_path = updates.rsearch(dir_file=getcwd(),
-                               search_term="lin_gdp.csv", n=1)
-    gdp = national_accounts._lin_gdp(update=lin_path,
-                                     save=lin_path, force_update=False)
+    gdp = national_accounts._lin_gdp(update=update,
+                                     save=save, force_update=False)
 
     if hifreq is True:
         gdp = freqs.freq_resample(gdp, target=inferred_freq,
