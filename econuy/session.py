@@ -13,20 +13,20 @@ from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
 
 class Session(object):
     def __init__(self,
-                 location: Union[str, PathLike] = "econuy-data",
+                 loc_dir: Union[str, PathLike] = "econuy-data",
                  monthly_revise: int = 12,
                  quarterly_revise: int = 4,
                  annual_revise: int = 3,
                  force_update: bool = False):
-        self.location = location
+        self.loc_dir = loc_dir
         self.revise_rows = {"monthly": monthly_revise,
                             "quarterly": quarterly_revise,
                             "annual": annual_revise}
         self.force_update = force_update
         self.dataset = None
 
-        if not path.exists(self.location):
-            makedirs(self.location)
+        if not path.exists(self.loc_dir):
+            makedirs(self.loc_dir)
 
     def get(self,
             dataset: str,
