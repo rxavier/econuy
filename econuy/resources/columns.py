@@ -59,7 +59,6 @@ def _setmeta(
             names=names
         )
     else:
-
         arrays = []
         for level in range(0, 9):
             arrays.append(list(df.columns.get_level_values(level)))
