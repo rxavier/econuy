@@ -243,6 +243,17 @@ class Session(object):
         else:
             return self
 
+    def rollwindow(self, periods: Optional[int] = None,
+                   operation: str = "sum", final: bool = False):
+        output = freqs.rolling(self.dataset, periods=periods,
+                               operation=operation)
+        self.dataset = output
+
+        if final is True:
+            return self.dataset
+        else:
+            return self
+
     def save(self, name: str):
         save_path = (Path(self.loc_dir) / name).with_suffix(".csv")
         pd.to_csv(save_path)
