@@ -25,7 +25,7 @@ class Session(object):
                             "quarterly": quarterly_revise,
                             "annual": annual_revise}
         self.force_update = force_update
-        self.dataset = None
+        self.dataset = pd.DataFrame()
 
         if not path.exists(self.loc_dir):
             makedirs(self.loc_dir)
@@ -106,7 +106,7 @@ class Session(object):
                                     save=save_path,
                                     name=override)
         else:
-            output = None
+            output = pd.DataFrame()
         self.dataset = output
 
         if final is True:
@@ -156,7 +156,7 @@ class Session(object):
                                name=override,
                                **kwargs)
         else:
-            output = None
+            output = pd.DataFrame()
         self.dataset = output
 
         if final is True:
@@ -166,10 +166,17 @@ class Session(object):
 
     def freq_resample(self, target: str, operation: str = "sum",
                       interpolation: str = "linear", final: bool = False):
-        output = freqs.freq_resample(self.dataset, target=target,
-                                     operation=operation,
-                                     interpolation=interpolation)
-        self.dataset = output
+        if isinstance(self.dataset, dict):
+            for key, value in self.dataset.items():
+                output = freqs.freq_resample(value, target=target,
+                                             operation=operation,
+                                             interpolation=interpolation)
+                self.dataset.update({key: output})
+        else:
+            output = freqs.freq_resample(self.dataset, target=target,
+                                         operation=operation,
+                                         interpolation=interpolation)
+            self.dataset = output
 
         if final is True:
             return self.dataset
@@ -178,9 +185,15 @@ class Session(object):
 
     def chg_diff(self, operation: str = "chg",
                  period_op: str = "last", final: bool = False):
-        output = variations.chg_diff(self.dataset, operation=operation,
-                                     period_op=period_op)
-        self.dataset = output
+        if isinstance(self.dataset, dict):
+            for key, value in self.dataset.items():
+                output = variations.chg_diff(value, operation=operation,
+                                             period_op=period_op)
+                self.dataset.update({key: output})
+        else:
+            output = variations.chg_diff(self.dataset, operation=operation,
+                                         period_op=period_op)
+            self.dataset = output
 
         if final is True:
             return self.dataset
@@ -191,19 +204,34 @@ class Session(object):
                   trading: bool = True, outlier: bool = True,
                   x13_binary: Union[str, PathLike] = "search",
                   search_parents: int = 1, final: bool = False):
-        result = seasonal.decompose(self.dataset,
-                                    trading=trading,
-                                    outlier=outlier,
-                                    x13_binary=x13_binary,
-                                    search_parents=search_parents)
-        if flavor == "trend":
-            output = result[0]
-        elif flavor == "seas" or type == "seasonal":
-            output = result[1]
+        if isinstance(self.dataset, dict):
+            for key, value in self.dataset.items():
+                result = seasonal.decompose(value,
+                                            trading=trading,
+                                            outlier=outlier,
+                                            x13_binary=x13_binary,
+                                            search_parents=search_parents)
+                if flavor == "trend":
+                    output = result[0]
+                elif flavor == "seas" or type == "seasonal":
+                    output = result[1]
+                else:
+                    output = result
+                self.dataset.update({key: output})
         else:
-            output = result
+            result = seasonal.decompose(self.dataset,
+                                        trading=trading,
+                                        outlier=outlier,
+                                        x13_binary=x13_binary,
+                                        search_parents=search_parents)
+            if flavor == "trend":
+                output = result[0]
+            elif flavor == "seas" or type == "seasonal":
+                output = result[1]
+            else:
+                output = result
 
-        self.dataset = output
+            self.dataset = output
 
         if final is True:
             return self.dataset
@@ -213,18 +241,33 @@ class Session(object):
     def unit_conv(self, flavor: str, update: Union[str, PathLike, None] = None,
                   save: Union[str, PathLike, None] = None,
                   final: bool = False, **kwargs):
-        if flavor == "usd":
-            output = convert.usd(self.dataset, update=update,
-                                 save=save)
-        elif flavor == "real":
-            output = convert.real(self.dataset, update=update,
-                                  save=save, **kwargs)
-        elif flavor == "pcgdp":
-            output = convert.pcgdp(self.dataset, update=update,
-                                   save=save, **kwargs)
+        if isinstance(self.dataset, dict):
+            for key, value in self.dataset.items():
+                if flavor == "usd":
+                    output = convert.usd(value, update=update,
+                                         save=save)
+                elif flavor == "real":
+                    output = convert.real(value, update=update,
+                                          save=save, **kwargs)
+                elif flavor == "pcgdp":
+                    output = convert.pcgdp(value, update=update,
+                                           save=save, **kwargs)
+                else:
+                    output = pd.DataFrame()
+                self.dataset.update({key: output})
         else:
-            output = None
-        self.dataset = output
+            if flavor == "usd":
+                output = convert.usd(self.dataset, update=update,
+                                     save=save)
+            elif flavor == "real":
+                output = convert.real(self.dataset, update=update,
+                                      save=save, **kwargs)
+            elif flavor == "pcgdp":
+                output = convert.pcgdp(self.dataset, update=update,
+                                       save=save, **kwargs)
+            else:
+                output = pd.DataFrame()
+            self.dataset = output
 
         if final is True:
             return self.dataset
@@ -234,9 +277,15 @@ class Session(object):
     def base_index(self, start_date: Union[str, date],
                    end_date: Union[str, date, None] = None,
                    base: float = 100, final: bool = False):
-        output = index.base_index(self.dataset, start_date=start_date,
-                                  end_date=end_date, base=base)
-        self.dataset = output
+        if isinstance(self.dataset, dict):
+            for key, value in self.dataset.items():
+                output = index.base_index(value, start_date=start_date,
+                                          end_date=end_date, base=base)
+                self.dataset.update({key: output})
+        else:
+            output = index.base_index(self.dataset, start_date=start_date,
+                                      end_date=end_date, base=base)
+            self.dataset = output
 
         if final is True:
             return self.dataset
@@ -245,9 +294,15 @@ class Session(object):
 
     def rollwindow(self, periods: Optional[int] = None,
                    operation: str = "sum", final: bool = False):
-        output = freqs.rolling(self.dataset, periods=periods,
-                               operation=operation)
-        self.dataset = output
+        if isinstance(self.dataset, dict):
+            for key, value in self.dataset.items():
+                output = freqs.rolling(value, periods=periods,
+                                       operation=operation)
+                self.dataset.update({key: output})
+        else:
+            output = freqs.rolling(self.dataset, periods=periods,
+                                   operation=operation)
+            self.dataset = output
 
         if final is True:
             return self.dataset
@@ -255,8 +310,13 @@ class Session(object):
             return self
 
     def save(self, name: str):
-        save_path = (Path(self.loc_dir) / name).with_suffix(".csv")
-        pd.to_csv(save_path)
+        if isinstance(self.dataset, dict):
+            for key, value in self.dataset.items():
+                save_path = (Path(self.loc_dir) / key).with_suffix(".csv")
+                value.to_csv(save_path)
+        else:
+            save_path = (Path(self.loc_dir) / name).with_suffix(".csv")
+            self.dataset.to_csv(save_path)
 
     def final(self):
         return self.dataset
