@@ -22,3 +22,5 @@ dist/
 build/
 
 econuy/retrieval/econuy-data/
+
+.vscode/
