@@ -16,14 +16,10 @@ from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
 class Session(object):
     def __init__(self,
                  loc_dir: Union[str, PathLike] = "econuy-data",
-                 monthly_revise: int = 12,
-                 quarterly_revise: int = 4,
-                 annual_revise: int = 3,
+                 revise_rows: Union[int, str] = "nodup",
                  force_update: bool = False):
         self.loc_dir = loc_dir
-        self.revise_rows = {"monthly": monthly_revise,
-                            "quarterly": quarterly_revise,
-                            "annual": annual_revise}
+        self.revise_rows = revise_rows
         self.force_update = force_update
         self.dataset = pd.DataFrame()
 
@@ -48,48 +44,43 @@ class Session(object):
 
         if dataset == "cpi" or dataset == "prices":
             output = cpi.get(update=update_path,
-                             revise_rows=self.revise_rows["monthly"],
+                             revise_rows=self.revise_rows,
                              save=save_path,
                              force_update=self.force_update,
                              name=override)
         elif dataset == "fiscal":
             output = fiscal_accounts.get(update=update_path,
-                                         revise_rows=self.revise_rows[
-                                             "monthly"],
+                                         revise_rows=self.revise_rows,
                                          save=save_path,
                                          force_update=self.force_update,
                                          name=override)
         elif dataset == "nxr":
             output = nxr.get(update=update_path,
-                             revise_rows=self.revise_rows["monthly"],
+                             revise_rows=self.revise_rows,
                              save=save_path,
                              force_update=self.force_update,
                              name=override)
         elif dataset == "naccounts" or dataset == "na":
             output = national_accounts.get(update=update_path,
-                                           revise_rows=self.revise_rows[
-                                               "quarterly"],
+                                           revise_rows=self.revise_rows,
                                            save=save_path,
                                            force_update=self.force_update,
                                            name=override)
         elif dataset == "labor" or dataset == "labour":
             output = labor.get(update=update_path,
-                               revise_rows=self.revise_rows[
-                                   "monthly"],
+                               revise_rows=self.revise_rows,
                                save=save_path,
                                force_update=self.force_update,
                                name=override)
         elif dataset == "rxr_custom" or dataset == "rxr-custom":
             output = rxr.get_custom(update=update_path,
-                                    revise_rows=self.revise_rows[
-                                        "monthly"],
+                                    revise_rows=self.revise_rows,
                                     save=save_path,
                                     force_update=self.force_update,
                                     name=override)
         elif dataset == "rxr_official" or dataset == "rxr-official":
             output = rxr.get_official(update=update_path,
-                                      revise_rows=self.revise_rows[
-                                          "monthly"],
+                                      revise_rows=self.revise_rows,
                                       save=save_path,
                                       force_update=self.force_update,
                                       name=override)
