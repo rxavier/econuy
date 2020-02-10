@@ -11,7 +11,7 @@ import pandas as pd
 import requests
 from pandas.tseries.offsets import YearEnd
 
-from econuy.resources import updates
+from econuy.resources import updates, columns
 from econuy.resources.lstrings import (beef_url, pulp_url, soybean_url,
                                        what_url, imf_url, milk1_url, milk2_url)
 
@@ -277,6 +277,11 @@ def get(update: Union[str, PathLike, None] = None,
     product = pd.DataFrame(prices.values * weights.values,
                            columns=prices.columns, index=prices.index)
     product = product.sum(axis=1).add(1).to_frame().cumprod()
+    product.columns = ["Índice de precios de productos primarios"]
+
+    columns._setmeta(product, area="Sector externo", currency="-",
+                     inf_adj="No", index="2002-01-31", seas_adj="NSA",
+                     ts_type="-", cumperiods=1)
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
