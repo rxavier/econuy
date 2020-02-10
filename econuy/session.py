@@ -31,7 +31,8 @@ class Session(object):
             update: bool = True,
             save: bool = True,
             override: Optional[str] = None,
-            final: bool = False):
+            final: bool = False,
+            **kwargs):
 
         if update is True:
             update_path = Path(self.loc_dir)
@@ -87,7 +88,8 @@ class Session(object):
         elif dataset == "commodity_index" or dataset == "comm_index":
             output = commodity_index.get(update=update_path,
                                          save=save_path,
-                                         name=override)
+                                         name=override,
+                                         **kwargs)
         elif dataset == "reserves":
             output = reserves_chg.get(update=update_path,
                                       save=save_path,
