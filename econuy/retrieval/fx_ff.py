@@ -17,12 +17,14 @@ def get(update: Union[str, PathLike, None] = None,
 
     Parameters
     ----------
-    update : str, PathLike or bool (default is False)
-        Path, path-like string pointing to a CSV file for updating, or bool,
-        in which case if True, save in predefined file, or False, don't update.
-    save : str, PathLike or bool (default is False)
-        Path, path-like string pointing to a CSV file for saving, or bool,
-        in which case if True, save in predefined file, or False, don't save.
+    update : str, PathLike or None, default is None
+        Path or path-like string pointing to a directory where to find a CSV 
+        for updating, or None, don't update.
+    save : str, PathLike or None, default is None
+        Path or path-like string pointing to a directory where to save the CSV, 
+        or None, don't update.
+    name : str or None, default is None
+        CSV filename for updating and/or saving.
 
     Returns
     -------

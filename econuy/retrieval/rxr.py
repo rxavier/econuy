@@ -14,24 +14,27 @@ from econuy.resources.lstrings import reer_url, ar_cpi_url, ar_cpi_payload
 from econuy.retrieval import cpi, nxr
 
 
-def get_official(update: Union[str, PathLike, None] = None,
-                 revise_rows: int = 0, save: Union[str, PathLike, None] = None,
+def get_official(update: Union[str, PathLike, None] = None, 
+                 revise_rows: Union[str, int] = 0,
+                 save: Union[str, PathLike, None] = None,
                  force_update: bool = False, name: Union[str, None] = None):
     """Get official real exchange rates from the BCU website.
 
     Parameters
     ----------
-    update : str, PathLike or bool (default is False)
-        Path, path-like string pointing to a CSV file for updating, or bool,
-        in which case if True, save in predefined file, or False, don't update.
-    revise_rows : int (default is 0)
+    update : str, PathLike or None, default is None
+        Path or path-like string pointing to a directory where to find a CSV 
+        for updating, or None, don't update.
+    revise_rows : str or int, default is 0
         How many rows of old data to replace with new data.
-    save : str, PathLike or bool (default is False)
-        Path, path-like string pointing to a CSV file for saving, or bool,
-        in which case if True, save in predefined file, or False, don't save.
-    force_update : bool (default is False)
+    save : str, PathLike or None, default is None
+        Path or path-like string pointing to a directory where to save the CSV, 
+        or None, don't update.
+    force_update : bool, default is False
         If True, fetch data and update existing data even if it was modified
-        within its update window (for RXR, 25 days)
+        within its update window (for real exchange rate, 25 days).
+    name : str or None, default is None
+        CSV filename for updating and/or saving.
 
     Returns
     -------
@@ -72,24 +75,27 @@ def get_official(update: Union[str, PathLike, None] = None,
     return proc
 
 
-def get_custom(update: Union[str, PathLike, None] = None,
-               revise_rows: int = 0, save: Union[str, PathLike, None] = None,
+def get_custom(update: Union[str, PathLike, None] = None, 
+               revise_rows: Union[str, int] = 0,
+               save: Union[str, PathLike, None] = None, 
                force_update: bool = False, name: Union[str, None] = None):
     """Calculate custom real exchange rates from various sources.
 
     Parameters
     ----------
-    update : str, PathLike or bool (default is False)
-        Path, path-like string pointing to a CSV file for updating, or bool,
-        in which case if True, save in predefined file, or False, don't update.
-    revise_rows : int (default is 0)
+    update : str, PathLike or None, default is None
+        Path or path-like string pointing to a directory where to find a CSV 
+        for updating, or None, don't update.
+    revise_rows : str or int, default is 0
         How many rows of old data to replace with new data.
-    save : str, PathLike or bool (default is False)
-        Path, path-like string pointing to a CSV file for saving, or bool,
-        in which case if True, save in predefined file, or False, don't save.
-    force_update : bool (default is False)
+    save : str, PathLike or None, default is None
+        Path or path-like string pointing to a directory where to save the CSV, 
+        or None, don't update.
+    force_update : bool, default is False
         If True, fetch data and update existing data even if it was modified
-        within its update window (for RXR, 25 days)
+        within its update window (for real exchange rate, 25 days).
+    name : str or None, default is None
+        CSV filename for updating and/or saving.
 
     Returns
     -------
