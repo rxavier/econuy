@@ -13,7 +13,8 @@ def _check_modified(data_path: Union[str, PathLike], multiindex=True):
         delta = (dt.datetime.now() - modified_time).days
         if multiindex is True:
             previous_data = pd.read_csv(data_path, index_col=0,
-                                        header=list(range(9)))
+                                        header=list(range(9)),
+                                        float_precision="high")
         else:
             previous_data = pd.read_csv(data_path, index_col=0)
         previous_data.index = pd.to_datetime(previous_data.index)
@@ -30,16 +31,14 @@ def _revise(new_data: pd.DataFrame, prev_data: pd.DataFrame,
     """Replace n rows of data at the end of a dataframe with new data."""
     if len(prev_data) == 0:
         return new_data
-    new_rows = len(new_data) - len(prev_data)
     frequency = pd.infer_freq(prev_data.index)
     freq_table = {"A": 3, "Q": 4, "Q-DEC": 4, "M": 12}
+    new_data = new_data.apply(pd.to_numeric, errors="coerce")
 
     if revise_rows in "noduplicate":
+        prev_data.columns = new_data.columns
         updated = prev_data.append(new_data)
-        updated.drop_duplicates(keep="first", inplace=True)
-        mod_rows = len(updated) - new_rows
-        print(f"{mod_rows} rows have been modified. Replacing...")
-        updated = updated.loc[~updated.index.duplicated(keep="last")]
+        updated = updated.loc[updated.index.duplicated(keep="last")]
         updated.sort_index(inplace=True)
         return updated
     
@@ -50,13 +49,12 @@ def _revise(new_data: pd.DataFrame, prev_data: pd.DataFrame,
             revise_rows = 12
             if len(prev_data) <= 12 or len(new_data) <= 12:
                 revise_rows = 3
+
     elif isinstance(revise_rows, int):
         revise_rows = revise_rows
     else:
         raise ValueError("`revise_rows` accepts int, 'nodup' or 'auto'")
 
-    print(f"{new_rows} rows have been added. Replacing last "
-          f"{revise_rows} with new data.")
     non_revised = prev_data[:len(prev_data)-revise_rows]
     revised = new_data[len(prev_data)-revise_rows:]
     non_revised.columns = new_data.columns
