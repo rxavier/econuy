@@ -11,29 +11,30 @@ import pandas as pd
 import requests
 from pandas.tseries.offsets import YearEnd
 
-from econuy.resources import updates
+from econuy.resources import updates, columns
 from econuy.resources.lstrings import (beef_url, pulp_url, soybean_url,
                                        what_url, imf_url, milk1_url, milk2_url)
 
 
-def _weights(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
-             save: Union[str, PathLike, bool] = False,
+def _weights(update: Union[str, PathLike, None] = None, 
+             revise_rows: Union[str, int] = 0,
+             save: Union[str, PathLike, None] = None,
              force_update: bool = False):
     """Get weights for the commodity price index from the UN COMTRADE database.
 
     Parameters
     ----------
-    update : str, PathLike or bool (default is False)
-        Path, path-like string pointing to a CSV file for updating, or bool,
-        in which case if True, save in predefined file, or False, don't update.
-    revise_rows : int (default is 0)
+    update : str, PathLike or None, default is None
+        Path or path-like string pointing to a directory where to find a CSV 
+        for updating, or None, don't update.
+    revise_rows : str or int, default is 0
         How many rows of old data to replace with new data.
-    save : str, PathLike or bool (default is False)
-        Path, path-like string pointing to a CSV file for saving, or bool,
-        in which case if True, save in predefined file, or False, don't save.
-    force_update : bool (default is False)
+    save : str, PathLike or None, default is None
+        Path or path-like string pointing to a directory where to save the CSV, 
+        or None, don't update.
+    force_update : bool, default is False
         If True, fetch data and update existing data even if it was modified
-        within its update window (for commodity weights, 85 days)
+        within its update window (for commodity weights, 85 days).
 
     Returns
     -------
@@ -42,16 +43,16 @@ def _weights(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
 
     """
     update_threshold = 85
+    name = "commodity_weights"
 
-    if update is not False:
-        update_path = updates._paths(update, multiple=False,
-                                     name="comm_weights.csv")
+    if update is not None:
+        update_path = (Path(update) / name).with_suffix(".csv")
         delta, previous_data = updates._check_modified(update_path,
                                                        multiindex=False)
 
         if delta < update_threshold and force_update is False:
-            print(f"{update} was modified within {update_threshold} day(s). "
-                  f"Skipping download...")
+            print(f"{update_path} was modified within {update_threshold} "
+                  f"day(s). Skipping download...")
             return previous_data
 
     raw = []
@@ -82,35 +83,36 @@ def _weights(update: Union[str, PathLike, bool] = False, revise_rows: int = 0,
     output.columns = ["Barley", "Wood", "Gold", "Milk", "Pulp",
                       "Rice", "Soybeans", "Wheat", "Wool", "Beef"]
 
-    if update is not False:
+    if update is not None:
         output = updates._revise(new_data=output, prev_data=previous_data,
                                  revise_rows=revise_rows)
 
-    if save is not False:
-        save_path = updates._paths(save, multiple=False,
-                                   name="comm_weights.csv")
+    if save is not None:
+        save_path = (Path(save) / name).with_suffix(".csv")
         output.to_csv(save_path)
 
     return output
 
 
-def _prices(update: Union[str, Path, bool] = False, revise_rows: int = 0,
-            save: Union[str, Path, bool] = False, force_update: bool = False):
+def _prices(update: Union[str, PathLike, None] = None, 
+            revise_rows: Union[str, int] = 0,
+            save: Union[str, PathLike, None] = None, 
+            force_update: bool = False):
     """Prepare prices for the commodity price index.
 
     Parameters
     ----------
-    update : str, PathLike or bool (default is False)
-        Path, path-like string pointing to a CSV file for updating, or bool,
-        in which case if True, save in predefined file, or False, don't update.
-    revise_rows : int (default is 0)
+    update : str, PathLike or None, default is None
+        Path or path-like string pointing to a directory where to find a CSV 
+        for updating, or None, don't update.
+    revise_rows : str or int, default is 0
         How many rows of old data to replace with new data.
-    save : str, PathLike or bool (default is False)
-        Path, path-like string pointing to a CSV file for saving, or bool,
-        in which case if True, save in predefined file, or False, don't save.
-    force_update : bool (default is False)
+    save : str, PathLike or None, default is None
+        Path or path-like string pointing to a directory where to save the CSV, 
+        or None, don't update.
+    force_update : bool, default is False
         If True, fetch data and update existing data even if it was modified
-        within its update window (for commodity prices, 10 days)
+        within its update window (for commodity prices, 10 days).
 
     Returns
     -------
@@ -120,16 +122,16 @@ def _prices(update: Union[str, Path, bool] = False, revise_rows: int = 0,
     """
     update_threshold = 10
     bushel_conv = 36.74 / 100
+    name = "commodity_prices"
 
-    if update is not False:
-        update_path = updates._paths(update, multiple=False,
-                                     name="comm_prices.csv")
+    if update is not None:
+        update_path = (Path(update) / name).with_suffix(".csv")
         delta, previous_data = updates._check_modified(update_path,
                                                        multiindex=False)
 
         if delta < update_threshold and force_update is False:
-            print(f"{update} was modified within {update_threshold} day(s). "
-                  f"Skipping download...")
+            print(f"{update_path} was modified within {update_threshold} "
+                  f"day(s). Skipping download...")
             return previous_data
 
     raw_beef = (pd.read_excel(beef_url, header=4, index_col=0)
@@ -189,6 +191,7 @@ def _prices(update: Union[str, Path, bool] = False, revise_rows: int = 0,
     eurusd = pd.read_html(eurusd_r.content)[0].drop("MMM YYYY", axis=1)
     eurusd.index = pd.date_range(start="2001-01-31", periods=len(eurusd),
                                  freq="M")
+    eurusd = eurusd.reindex(prev_milk.index)
     prev_milk = prev_milk.divide(eurusd.values).multiply(10)
     prev_milk = prev_milk.loc[prev_milk.index < min(proc_milk.index)]
     prev_milk.columns, proc_milk.columns = ["Price"], ["Price"]
@@ -219,32 +222,39 @@ def _prices(update: Union[str, Path, bool] = False, revise_rows: int = 0,
     complete.columns = ["Beef", "Pulp", "Soybeans", "Milk", "Rice", "Wood",
                         "Wool", "Barley", "Gold", "Wheat"]
 
-    if update is not False:
+    if update is not None:
         complete = updates._revise(new_data=complete, prev_data=previous_data,
                                    revise_rows=revise_rows)
 
-    if save is not False:
-        save_path = updates._paths(save, multiple=False,
-                                   name="comm_prices.csv")
+    if save is not None:
+        save_path = (Path(save) / name).with_suffix(".csv")
         complete.to_csv(save_path)
 
     return complete
 
 
-def get(save: Union[str, Path, bool] = False,
-        update_prices: Union[str, Path, bool] = False,
-        update_weights: Union[str, Path, bool] = False):
+def get(update: Union[str, PathLike, None] = None,
+        save: Union[str, PathLike, None] = None, 
+        force_update_prices: bool = True, force_update_weights: bool = False,
+        name: Union[str, None] = None):
     """Get the commodity price index.
 
     Parameters
     ----------
-    save : str, PathLike or bool (default is False)
-        Path, path-like string pointing to a CSV file for saving, or bool,
-        in which case if True, save in predefined file, or False, don't save.
-    update_prices : str, PathLike or bool (default is False)
-        Whether to update commodity prices with the `prices()` function.
-    update_weights : str, PathLike or bool (default is False)
-        Whether to update commodity weights with the `weights()` function.
+    update : str, PathLike or None, default is None
+        Path or path-like string pointing to a directory where to find a CSV 
+        for updating, or None, don't update.
+    save : str, PathLike or None, default is None
+        Path or path-like string pointing to a directory where to save the CSV, 
+        or None, don't update.
+    force_update_prices : bool, default is False
+        If True, fetch data and update existing data even if it was modified
+        within its update window for commodity prices.
+    force_update_weights : bool, default is False
+        If True, fetch data and update existing data even if it was modified
+        within its update window for commodity weights.
+    name : str or None, default is None
+        CSV filename for updating and/or saving.
 
     Returns
     -------
@@ -252,22 +262,29 @@ def get(save: Union[str, Path, bool] = False,
         Export-weighted average of commodity prices relevant to Uruguay.
 
     """
-    prices = _prices(update=update_prices, revise_rows=3,
-                     save=True, force_update=False)
+    if name is None:
+        name = "commodity_index"
+        
+    prices = _prices(update=update, revise_rows="nodup",
+                     save=save, force_update=force_update_prices)
     prices = prices.interpolate(method="linear", limit=1).dropna(how="any")
     prices = prices.pct_change(periods=1)
-    weights = _weights(update=update_weights, revise_rows=24,
-                       save=True, force_update=False)
+    weights = _weights(update=update, revise_rows="nodup",
+                       save=save, force_update=force_update_weights)
     weights = weights[prices.columns]
     weights = weights.reindex(prices.index, method="ffill")
 
     product = pd.DataFrame(prices.values * weights.values,
                            columns=prices.columns, index=prices.index)
     product = product.sum(axis=1).add(1).to_frame().cumprod()
+    product.columns = ["Índice de precios de productos primarios"]
 
-    if save is not False:
-        save_path = updates._paths(save, multiple=False,
-                                   name="commodity_index.csv")
+    columns._setmeta(product, area="Sector externo", currency="-",
+                     inf_adj="No", index="2002-01-31", seas_adj="NSA",
+                     ts_type="-", cumperiods=1)
+
+    if save is not None:
+        save_path = (Path(save) / name).with_suffix(".csv")
         product.to_csv(save_path)
 
     return product

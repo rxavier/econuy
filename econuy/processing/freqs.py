@@ -40,6 +40,10 @@ def freq_resample(df: pd.DataFrame, target: str, operation: str = "sum",
         dataframe does not have a Type level in its column multiindex.
 
     """
+    if df.columns.get_level_values("Tipo")[0] == "-":
+        print("Dataframe has no Type, setting to 'Flujo'")
+        df.columns = df.columns.set_levels(["Flujo"], level="Tipo")
+
     if df.columns.get_level_values("Tipo")[0] == "Flujo":
         if operation == "sum":
             resampled_df = df.resample(target).sum()
@@ -64,8 +68,8 @@ def freq_resample(df: pd.DataFrame, target: str, operation: str = "sum",
         resampled_df = df.resample(target, convention="end").asfreq()
         resampled_df = resampled_df.interpolate(method=interpolation)
     else:
-        raise ValueError("Dataframe needs to have a Type of either"
-                         "'Flujo' or 'Stock'")
+        raise ValueError("Dataframe needs to have a valid Type ('Flujo', "
+                         "'Stock' or '-'")
 
     columns._setmeta(resampled_df)
 

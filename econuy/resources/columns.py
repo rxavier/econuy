@@ -46,38 +46,39 @@ def _setmeta(
     if inferred_freq is None:
         print("Frequency could not be inferred from the index.")
         inferred_freq = "-"
-
+    names = [
+        "Indicador", "Área", "Frecuencia", "Unidad/Moneda",
+        "Inf. adj.", "Índice", "Seas. Adj.", "Tipo", "Acum. períodos"
+    ]
     if not isinstance(df.columns, pd.MultiIndex):
         df.columns = pd.MultiIndex.from_product(
             [
                 colnames, [area], [inferred_freq], [currency], [inf_adj],
                 [index], [seas_adj], [ts_type], [cumperiods]
             ],
-            names=[
-                "Indicador", "Área", "Frecuencia", "Unidad/Moneda",
-                "Inf. adj.", "Índice", "Seas. Adj.", "Tipo", "Acum. períodos"
-            ]
+            names=names
         )
     else:
-        df.columns = df.columns.set_levels([inferred_freq], level=2)
+        arrays = []
+        for level in range(0, 9):
+            arrays.append(list(df.columns.get_level_values(level)))
 
+        arrays[2] = [inferred_freq] * len(df.columns)
         if area is not None:
-            df.columns = df.columns.set_levels([area], level=1)
-
+            arrays[1] = [area] * len(df.columns)
         if currency is not None:
-            df.columns = df.columns.set_levels([currency], level=3)
-
+            arrays[3] = [currency] * len(df.columns)
         if inf_adj is not None:
-            df.columns = df.columns.set_levels([inf_adj], level=4)
-
+            arrays[4] = [inf_adj] * len(df.columns)
         if index is not None:
-            df.columns = df.columns.set_levels([index], level=5)
-
+            arrays[5] = [index] * len(df.columns)
         if seas_adj is not None:
-            df.columns = df.columns.set_levels([seas_adj], level=6)
-
+            arrays[6] = [seas_adj] * len(df.columns)
         if ts_type is not None:
-            df.columns = df.columns.set_levels([ts_type], level=7)
-
+            arrays[7] = [ts_type] * len(df.columns)
         if cumperiods is not None:
-            df.columns = df.columns.set_levels([cumperiods], level=8)
+            arrays[8] = [cumperiods] * len(df.columns)
+
+        tuples = list(zip(*arrays))
+        index = pd.MultiIndex.from_tuples(tuples, names=names)
+        df.columns = index

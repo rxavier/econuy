@@ -1,5 +1,5 @@
 import datetime as dt
-from os import path, makedirs, PathLike
+from os import path, PathLike
 from pathlib import Path
 from typing import Union
 
@@ -13,7 +13,8 @@ def _check_modified(data_path: Union[str, PathLike], multiindex=True):
         delta = (dt.datetime.now() - modified_time).days
         if multiindex is True:
             previous_data = pd.read_csv(data_path, index_col=0,
-                                        header=list(range(9)))
+                                        header=list(range(9)),
+                                        float_precision="high")
         else:
             previous_data = pd.read_csv(data_path, index_col=0)
         previous_data.index = pd.to_datetime(previous_data.index)
@@ -25,43 +26,41 @@ def _check_modified(data_path: Union[str, PathLike], multiindex=True):
     return delta, previous_data
 
 
-def _revise(new_data: pd.DataFrame, prev_data: pd.DataFrame, revise_rows: int):
+def _revise(new_data: pd.DataFrame, prev_data: pd.DataFrame,
+            revise_rows: Union[int, str]):
     """Replace n rows of data at the end of a dataframe with new data."""
     if len(prev_data) == 0:
         return new_data
+    frequency = pd.infer_freq(prev_data.index)
+    freq_table = {"A": 3, "Q": 4, "Q-DEC": 4, "M": 12}
+    new_data = new_data.apply(pd.to_numeric, errors="coerce")
+
+    if revise_rows in "noduplicate":
+        prev_data.columns = new_data.columns
+        updated = prev_data.append(new_data)
+        updated = updated.loc[~updated.index.duplicated(keep="last")]
+        updated.sort_index(inplace=True)
+        return updated
+    
+    elif revise_rows in "automatic":
+        try:
+            revise_rows = freq_table[frequency]
+        except KeyError:
+            revise_rows = 12
+            if len(prev_data) <= 12 or len(new_data) <= 12:
+                revise_rows = 3
+
+    elif isinstance(revise_rows, int):
+        revise_rows = revise_rows
+    else:
+        raise ValueError("`revise_rows` accepts int, 'nodup' or 'auto'")
+
     non_revised = prev_data[:len(prev_data)-revise_rows]
     revised = new_data[len(prev_data)-revise_rows:]
     non_revised.columns = new_data.columns
     updated = non_revised.append(revised, sort=False)
 
     return updated
-
-
-def _paths(filepath: Union[str, PathLike, bool], multiple: bool = False,
-           name: str = None, multname: str = None):
-    """Take a path-like object or bool and return a full path."""
-    if multiple is False:
-        if isinstance(filepath, PathLike) or isinstance(filepath, str):
-            final_path = filepath
-        else:
-            final_path = path.join("econuy-data", name)
-    else:
-        if isinstance(filepath, PathLike):
-            base = Path(filepath).as_posix()
-            if path.isfile(base):
-                base = path.dirname(base)
-            final_path = path.join(base, multname + ".csv")
-        elif isinstance(filepath, str):
-            base = filepath
-            if path.isfile(base):
-                base = path.dirname(base)
-            final_path = path.join(base,  multname + ".csv")
-        else:
-            final_path = path.join("econuy-data", multname + ".csv")
-    if not path.exists(path.dirname(final_path)):
-        makedirs(path.dirname(final_path))
-
-    return final_path
 
 
 def rsearch(dir_file: Union[str, PathLike], search_term: str, n: int = 2):
