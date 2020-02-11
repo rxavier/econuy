@@ -29,7 +29,7 @@ setup(
     long_description_content_type="text/markdown",
     author="Rafael Xavier",
     license="GPL-3.0",
-    url="https://github.com/rxavier/uy-econ",
+    url="https://github.com/rxavier/econuy",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Financial and Insurance Industry",
