@@ -32,9 +32,7 @@ This is the main entry point for the package. It allows setting up the common be
 ```
 from econuy.session import Session
 
-session = Session(loc_dir="econuy-data",
-                  revise_rows="nodup",
-                  force_update=False)
+session = Session(loc_dir="econuy-data", revise_rows="nodup", force_update=False)
 ```
 
 The `Session()` object is initialized with the `loc_dir`, `revise_rows` and `force_update` attributes, plus the `dataset` attribute, which initially holds an empty Pandas dataframe. After each download and transformation method, `dataset` will hold the current working dataset.
@@ -45,7 +43,7 @@ The `Session()` object is initialized with the `loc_dir`, `revise_rows` and `for
 
 #### Methods
 
-**get()** downloads the basic datasets.
+**`get()`** downloads the basic datasets.
 ```
 session.get(self, dataset: str, update: bool = True, save: bool = True, 
             override: Optional[str] = None, final: bool = False, **kwargs)
@@ -60,7 +58,7 @@ df = session.get(dataset=cpi, final=True)
 df = session.get(dataset=cpi).dataset
 ```
 
-**get_tfm()** gives access to predefined data pipelines that output frequently used data.
+**`get_tfm()`** gives access to predefined data pipelines that output frequently used data.
 ```
 session.get_tfm(self, dataset: str, update: bool = True, save: bool = True,
                 override: Optional[str] = None, final: bool = False, **kwargs)
