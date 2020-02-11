@@ -14,6 +14,23 @@ from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
 
 
 class Session(object):
+    """
+    Main class to access download and processing methods.
+
+    Attributes
+    ----------
+    loc_dir : str or PathLike, default 'econuy-data'
+        Directory indicating where data will be saved to and retrieved from.
+    revise_rows : int or str, default 'nodup'
+        Defines how to process data updates. An integer indicates how many rows
+        to from the tail of the dataframe to replace with new data. String
+        can either be 'auto', which automatically determines number of rows
+        to replace from the inferred data frequency, or 'nodup', which replaces
+        existing periods with new data.
+    force_update : bool, default is False
+        Whether to force download even if data was recently modified.
+
+    """
     def __init__(self,
                  loc_dir: Union[str, PathLike] = "econuy-data",
                  revise_rows: Union[int, str] = "nodup",
@@ -33,7 +50,30 @@ class Session(object):
             override: Optional[str] = None,
             final: bool = False,
             **kwargs):
+        """
+        Main download method.
 
+        Parameters
+        ----------
+        dataset : str
+            Type of data to download. Available datasets are 'cpi', 'nxr',
+            'fiscal', 'naccounts', 'labor', 'comm_index', 'rxr_custom',
+            'rxr_official', 'reserves' and 'fx_spot_ff'.
+        update : bool, default is True
+            Whether to update an existing dataset.
+        save : bool, default is True
+            Whether to save the dataset.
+        override : str or None, default is None
+            If not None, overrides the saved dataset's default filename.
+        final : bool, default is False
+            If True, return the dataframe, else return the Session object.
+
+        Returns
+        -------
+        Session() object or Pandas dataframe.
+
+
+        """
         if update is True:
             update_path = Path(self.loc_dir)
         else:
@@ -114,7 +154,29 @@ class Session(object):
                 override: Optional[str] = None,
                 final: bool = False,
                 **kwargs):
+        """
+        Get frequently used datasets.
 
+        Parameters
+        ----------
+        dataset : str
+            Type of data to download. Available datasets are 'inflation',
+            'fiscal', 'nxr', 'naccounts' and 'labor'.
+        update : bool, default is True
+            Whether to update an existing dataset.
+        save : bool, default is True
+            Whether to save the dataset.
+        override : str or None, default is None
+            If not None, overrides the saved dataset's default filename.
+        final : bool, default is False
+            If True, return the dataframe, else return the Session object.
+
+        Returns
+        -------
+        Session() object or Pandas dataframe.
+
+
+        """
         if update is True:
             update_path = Path(self.loc_dir)
         else:
@@ -159,6 +221,12 @@ class Session(object):
 
     def freq_resample(self, target: str, operation: str = "sum",
                       interpolation: str = "linear", final: bool = False):
+        """
+        Resample to target frequencies.
+
+        See also: freqs.freq_resample()
+
+        """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
                 output = freqs.freq_resample(value, target=target,
@@ -178,6 +246,12 @@ class Session(object):
 
     def chg_diff(self, operation: str = "chg",
                  period_op: str = "last", final: bool = False):
+        """
+        Calculate pct change or difference.
+
+        See also: variations.chg_diff()
+
+        """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
                 output = variations.chg_diff(value, operation=operation,
@@ -197,6 +271,12 @@ class Session(object):
                   trading: bool = True, outlier: bool = True,
                   x13_binary: Union[str, PathLike] = "search",
                   search_parents: int = 1, final: bool = False):
+        """
+        Use X-13 ARIMA to decompose time series.
+
+        See also: seasonal.decompose()
+
+        """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
                 result = seasonal.decompose(value,
@@ -234,6 +314,12 @@ class Session(object):
     def unit_conv(self, flavor: str, update: Union[str, PathLike, None] = None,
                   save: Union[str, PathLike, None] = None,
                   final: bool = False, **kwargs):
+        """
+        Convert to other units.
+
+        See also: convert.usd(), convert.real() and convert.pcgdp().
+
+        """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
                 if flavor == "usd":
@@ -270,6 +356,12 @@ class Session(object):
     def base_index(self, start_date: Union[str, date],
                    end_date: Union[str, date, None] = None,
                    base: float = 100, final: bool = False):
+        """
+        Scale to a period or range of periods.
+
+        See also: index.base_index()
+
+        """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
                 output = index.base_index(value, start_date=start_date,
@@ -287,6 +379,12 @@ class Session(object):
 
     def rollwindow(self, periods: Optional[int] = None,
                    operation: str = "sum", final: bool = False):
+        """
+        Calculate rolling averages or sums.
+
+        See also: freqs.rolling()
+
+        """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
                 output = freqs.rolling(value, periods=periods,
@@ -303,6 +401,7 @@ class Session(object):
             return self
 
     def save(self, name: str):
+        """Save dataset attribute to a CSV."""
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
                 save_path = (Path(self.loc_dir) / key).with_suffix(".csv")
@@ -312,4 +411,5 @@ class Session(object):
             self.dataset.to_csv(save_path)
 
     def final(self):
+        """Return dataset attribute."""
         return self.dataset
