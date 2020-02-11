@@ -1,3 +1,6 @@
+![GitHub Pipenv locked Python version](https://img.shields.io/github/pipenv/locked/python-version/rxavier/uy-econ)
+[![PyPI version](https://badge.fury.io/py/econuy.svg)](https://badge.fury.io/py/econuy)
+
 # ECON-UY
 
 This project aims at simplifying gathering, processing and visualization (in the future) of Uruguay economic statistics. Data is retrieved from (mostly) government sources and can be transformed in several ways (converting to dollars, calculating rolling averages, resampling to other frequencies, etc.).
@@ -14,59 +17,73 @@ pip install econuy
 * Git:
 
 ```
-git clone https://github.com/rxavier/uy-econ.git your-directory
-cd your-directory
+git clone https://github.com/rxavier/uy-econ.git
 python setup.py install
 ```
 
 ## Usage
 
-### Retrieval
+### The `Session()` class
 
-Getting data as-is is as simple as `from econuy.retrieval import [x]`, where [x] can be
-* `cpi` | available methods: `get()`
-* `nxr` | available methods: `get()`
-* `rxr` | available methods: `get_official()` and `get_custom()`
-* `fiscal_accounts` | available methods: `get()`
-* `national_accounts` | available methods: `get()`
-* `labor` | available methods: `get()`
-* `reserves_chg` | available methods: `get()`
-* `fx_spot_ff` | available methods: `get()`
-* `commodity_index` | available methods: `get()`
+#### Basics
 
-So if you want to download CPI data, load it into a Pandas dataframe and save it on disk as a CSV, you would do
+This is the main entry point for the package. It allows setting up the common behavior for downloads, and holds the current working dataset.
 
 ```
-from econuy,retrevial import cpi
+from econuy.session import Session
 
-data = cpi.get(update=False, save=True)
+session = Session(loc_dir="econuy-data",
+                  revise_rows="nodup",
+                  force_update=False)
 ```
 
-#### Update and save parameters
+The `Session()` object is initialized with the `loc_dir`, `revise_rows` and `force_update` attributes, plus the `dataset` attribute, which initially holds an empty Pandas dataframe. After each download and transformation method, `dataset` will hold the current working dataset.
 
-All the `get()` functions under `retrieval` take these parameters (in the case of `fiscal_accounts` and `national_accounts`, these are actually `update_dir` and `save_dir`, but their behavior is analogous).
+* `loc_dir` controls where data will be saved and where it will be looked for when updating. It defaults to "econuy-data", and will create the directory if it doesn't exist.
+* `revise_rows` controls the updating mechanism. It can be an integer, denoting how many rows from the data held on disk to replace with new data, or a string. In the latter case, `auto` indicates that the amount of rows to be replaced will be determined from the inferred data frequency, while `nodup` replaces existing data with new data for each time period found in both.
+* `force_update` controls whether whether to redownload data even if existing data in disk was modified recently.
 
-They can be a path-like string, a PathLike object from the `pathlib` package or bool. The first two simply indicate a path where to find files for updating or where to save output files. If `False`, no updating/saving will take place, i.e., data will be downloaded and that's it. If `True`, paths are set to default locations, specifically a `econuy-data` directory will be created within the working directory and files will be saved with preset names (nominal exchange will be saved as `econuy-data/nxr.csv`)
+#### Methods
 
-`update` is used for two reasons: 
-1) To avoid downloading data if a file on disk has been modified within some set amount of time. For example, 25 days in the case of CPI data. Can be overriden if `force_update=True` is passed to these functions.
-2) If there is new data to download, allow the user to "revise" only some rows of the old data, replacing it with newly downloaded data. This is controlled by the `revise_rows` parameter. So if `revise_rows=6`, existing CPI data on disk will have its last 6 months removed, which will be replaced with newly downloaded data.
+**get()** downloads the basic datasets.
+```
+session.get(self, dataset: str, update: bool = True, save: bool = True, 
+            override: Optional[str] = None, final: bool = False, **kwargs)
+```
+Available options for the `dataset` argument are "cpi", "fiscal", "nxr", "nacciounts", "labor", "rxr_custom", "rxr_official", "commodity_index", "reserves" and "fx_spot_ff". Most are self explanatory.
 
-`save` is more straightforward, in that it simply indicates where to put the CSV.
+`override` allows setting the CSV's filename to a different one than default (each dataset has a default, for example, "cpi.csv"). `final` controls whether to return the `Session()` object (if False), or to return the dataframe held by the object (if True). In any case, the following are equivalent, and will return a dataframe with consumer price index data:
 
-### Processing
+```
+df = session.get(dataset=cpi, final=True)
 
-Once data has been loaded it can be transformed. These functions are all under `processing` and allow the following:
+df = session.get(dataset=cpi).dataset
+```
 
-* `convert` | available methods: `usd()`, `real()` and `pcgdp()`
-* `seasonal` | available methods: `decompose()`
-* `index` | available methods: `base_index()`
-* `variations` | available methods: `chg_diff()`
-* `freqs` | available methods: `freq_resample()` and `rolling()`
+**get_tfm()** gives access to predefined data pipelines that output frequently used data.
+```
+session.get_tfm(self, dataset: str, update: bool = True, save: bool = True,
+                override: Optional[str] = None, final: bool = False, **kwargs)
+```
+For example, `session.get_tfm(dataset="inflation")` downloads CPI data, calculates annual inflation (pct change from a year ago), monthly inflation, and seasonally adjusted and trend monthly inflation.
+
+**Transformation methods** take a `Session()` object with a valid dataset and allow performing preset transformation pipelines. For example:
+```
+df = session.get(dataset="nxr").decompose(flavor="trend", outlier=True, trading=False, final=True)
+```
+will return a dataframe holding the trend component of nominal exchange rate.
+
+Available transformation methods are 
+* `freq_resample()` - resample data to a different frequency, taking into account whether data is of stock or flow type.
+* `chg_diff()` - calculate percent changes or differences for same period last year, last period or at annual rate.
+* `decompose()` - use X13-ARIMA to decompose series into trend and seasonally adjusted components.
+* `unit_conv()` - convert to US dollars, constant prices or percent of GDP.
+* `base_index()` - set a period or window as 100, scale rest accordingly
+* `rollwindow()` - calculate rolling windows, either average or sum.
 
 #### X13 ARIMA binary
 
-If you want to use the seasonal `decompose()` function under `seasonal`  you will need to supply the X13 binary (or place it somewhere reasonable and set `x13_binary="search"`). You can get it [from here](https://www.census.gov/srd/www/x13as/x13down_pc.html) for Windows or [from here](https://www.census.gov/srd/www/x13as/x13down_unix.html) for UNIX systems. For macOS you can compile it using the instructions found [here](https://github.com/christophsax/seasonal/wiki/Compiling-X-13ARIMA-SEATS-from-Source-for-OS-X) or use my version (working under macOS Catalina) from [here](https://drive.google.com/open?id=1HxFoi57TWaBMV90NoOAbM8hWdZS9uoz_).
+If you want to use the `decompose()` method  you will need to supply the X13 binary (or place it somewhere reasonable and set `x13_binary="search"`). You can get it [from here](https://www.census.gov/srd/www/x13as/x13down_pc.html) for Windows or [from here](https://www.census.gov/srd/www/x13as/x13down_unix.html) for UNIX systems. For macOS you can compile it using the instructions found [here](https://github.com/christophsax/seasonal/wiki/Compiling-X-13ARIMA-SEATS-from-Source-for-OS-X) (choose the non-html version) or use my version (working under macOS Catalina) from [here](https://drive.google.com/open?id=1HxFoi57TWaBMV90NoOAbM8hWdZS9uoz_).
 
 #### Dataframe/CSV headers
 
@@ -82,13 +99,13 @@ Metadata for each dataset is held in Pandas MultiIndexes with the following:
 8) Type (stock or flow)
 9) Cumulative periods
 
-### Frequently used
+## Word of warning
 
-`from econuy.frequent import frequent` gives access to a number of functions that combine retrieval and processing pipelines, and output frequently used datasets. For example, `inflation()` will download CPI data, calculate interannual inflation, monthly inflation, seasonally adjusted monthly inflation and trend monthly inflation.
+This project is heavily based on getting data from online sources that could change without notice, causing methods that download data to fail. While I try to stay on my toes and fix these quickly, it helps if you create an issue when you find one of these (or even submit a fix!).
 
 ## What next
 
-* I now realize this project would greatly benefit from OOP and plan to implement it next.
+* ~~I now realize this project would greatly benefit from OOP and plan to implement it next.~~
 * Tests.
 * CLI.
 * Handling everything with column multi-indexes really doesn't seem like the best way to go around this.
