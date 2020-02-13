@@ -141,7 +141,7 @@ def get_custom(update: Union[str, PathLike, None] = None,
             raw.append(data)
     raw = pd.concat(raw, axis=1, sort=True).apply(pd.to_numeric)
 
-    ar_black_xr, ar_cpi = missing_ar()
+    ar_black_xr, ar_cpi = _missing_ar()
     proc = raw.copy()
     proc["AR.PCPI_IX"] = ar_cpi
     ar_black_xr = pd.concat([ar_black_xr, proc["AR.ENDA_XDC_USD_RATE"]], axis=1)
@@ -187,7 +187,7 @@ def get_custom(update: Union[str, PathLike, None] = None,
     return output
 
 
-def missing_ar():
+def _missing_ar():
     """Get Argentina's non-official exchange rate and CPI."""
     today_fmt = dt.datetime.now().strftime("%d-%m-%Y")
     black_url = (f"https://mercados.ambito.com/dolar/informal/"

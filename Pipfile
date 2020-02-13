@@ -5,6 +5,11 @@ verify_ssl = true
 
 [dev-packages]
 notebook = "*"
+sphinx-autobuild = "*"
+sphinx-autodoc-typehints = "*"
+mock = "*"
+autodoc = "*"
+Sphinx = "*"
 
 [packages]
 pandas = "~=0.25.0"
