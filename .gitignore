@@ -24,3 +24,9 @@ build/
 econuy/retrieval/econuy-data/
 
 .vscode/
+
+docs/docs-requirements.txt
+
+docs/make.bat
+
+docs/Makefile
