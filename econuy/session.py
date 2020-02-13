@@ -36,11 +36,12 @@ class Session(object):
     def __init__(self,
                  loc_dir: Union[str, PathLike] = "econuy-data",
                  revise_rows: Union[int, str] = "nodup",
-                 force_update: bool = False):
+                 force_update: bool = False,
+                 dataset: pd.DataFrame = pd.DataFrame()):
         self.loc_dir = loc_dir
         self.revise_rows = revise_rows
         self.force_update = force_update
-        self.dataset = pd.DataFrame()
+        self.dataset = dataset
 
         if not path.exists(self.loc_dir):
             makedirs(self.loc_dir)
