@@ -23,12 +23,14 @@ class Session(object):
         Directory indicating where data will be saved to and retrieved from.
     revise_rows : {'nodup', 'auto', int}
         Defines how to process data updates. An integer indicates how many rows
-        to from the tail of the dataframe to replace with new data. String
-        can either be 'auto', which automatically determines number of rows
-        to replace from the inferred data frequency, or 'nodup', which replaces
-        existing periods with new data.
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be 'auto', which automatically determines number of
+        rows to replace from the inferred data frequency, or 'nodup',
+        which replaces existing periods with new data.
     force_update : bool, default False
         Whether to force download even if data was recently modified.
+    dataset : pandas.DataFrame
+        Current working dataset. Initialized with an empty dataframe.
 
     """
     def __init__(self,
@@ -63,13 +65,18 @@ class Session(object):
         override : str, default None
             If not None, overrides the saved dataset's default filename.
         **kwargs
-            These arguments are passed to `commodity_index.get()`.
+            These arguments are passed to
+            :func:`econuy.retrieval.commodity_index.get`. There's only two
+            options: `force_update_weights: bool` and
+            `force_update_prices: bool` which are self-explanatory. Generally
+            you will need to update prices but not weights since the latter are
+            annual and take a long time to download.
 
         Returns
         -------
         Session()
-            Loads the pandas.DataFrame into the `dataset` attribute.
-
+            Loads the pandas.DataFrame output into the :attr:`dataset`
+            attribute.
 
         """
         if update is True:
@@ -162,13 +169,13 @@ class Session(object):
         override : str, default None
             If not None, overrides the saved dataset's default filename.
         **kwargs
-            Keyword arguments passed to `frequent` methods.
+            Keyword arguments passed to functions in
+            :mod:`econuy.frequent.frequent`.
 
         Returns
         -------
-        Session() object
-            Loads the downloaded dataframe into the `dataset` attribute.
-
+        Session()
+            Loads the downloaded dataframe into the :attr:`dataset` attribute.
 
         """
         if update is True:
@@ -217,7 +224,7 @@ class Session(object):
 
         See Also
         --------
-        freqs.freq_resample()
+        :func:`~econuy.processing.freqs.freq_resample`
 
         """
         if isinstance(self.dataset, dict):
@@ -240,7 +247,7 @@ class Session(object):
 
         See Also
         --------
-        variations.chg_diff()
+        :func:`~econuy.processing.variations.chg_diff`
 
         """
         if isinstance(self.dataset, dict):
@@ -260,11 +267,12 @@ class Session(object):
                   x13_binary: Union[str, PathLike] = "search",
                   search_parents: int = 1):
         """
-        Use X-13 ARIMA to decompose time series.
+        Use `X-13 ARIMA <https://www.census.gov/srd/www/x13as/>`_ to
+        decompose time series.
 
         See Also
         --------
-        seasonal.decompose()
+        :func:`~econuy.processing.seasonal.decompose`
 
         """
         if isinstance(self.dataset, dict):
@@ -305,7 +313,9 @@ class Session(object):
 
         See Also
         --------
-        convert.usd(), convert.real() and convert.pcgdp()
+        :func:`~econuy.processing.convert.usd`,
+        :func:`~econuy.processing.convert.real`,
+        :func:`~econuy.processing.convert.pcgdp`
 
         """
         if isinstance(self.dataset, dict):
@@ -345,7 +355,7 @@ class Session(object):
 
         See Also
         --------
-        index.base_index()
+        :func:`~econuy.processing.index.base_index`
 
         """
         if isinstance(self.dataset, dict):
@@ -367,7 +377,7 @@ class Session(object):
 
         See Also
         --------
-        freqs.rolling()
+        :func:`~econuy.processing.freqs.rolling`
 
         """
         if isinstance(self.dataset, dict):
@@ -384,7 +394,7 @@ class Session(object):
 
     def save(self, name: str):
         """
-        Save dataset attribute to a CSV.
+        Save :attr:`dataset` attribute to a CSV.
 
         """
         if isinstance(self.dataset, dict):
@@ -397,7 +407,7 @@ class Session(object):
 
     def dataset(self):
         """
-        Return dataset attribute.
+        Return :attr:`dataset` attribute.
         
         """
         return self.dataset
