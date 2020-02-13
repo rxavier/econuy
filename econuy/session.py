@@ -406,7 +406,7 @@ class Session(object):
             save_path = (Path(self.loc_dir) / name).with_suffix(".csv")
             self.dataset.to_csv(save_path)
 
-    def dataset(self):
+    def final(self):
         """
         Return :attr:`dataset` attribute.
         
