@@ -63,7 +63,7 @@ def _revise(new_data: pd.DataFrame, prev_data: pd.DataFrame,
     return updated
 
 
-def rsearch(dir_file: Union[str, PathLike], search_term: str, n: int = 2):
+def _rsearch(dir_file: Union[str, PathLike], search_term: str, n: int = 2):
     """Recursively search for a file starting from the n-parent folder of
     a supplied path."""
     i = 0
