@@ -169,6 +169,7 @@ def get_custom(update: Union[str, PathLike, None] = None,
     output["TCR_AR_US"] = proc["BR_E"] * proc["US_P"] / proc["BR_P"]
     output["TCR_BR_US"] = proc["AR_E"] * proc["US_P"] / proc["AR_P"]
     output.drop("UY_E_P", axis=1, inplace=True)
+    output.rename_axis(None, inplace=True)
 
     columns._setmeta(output, area="Precios y salarios", currency="-",
                      inf_adj="-", index="-", seas_adj="NSA",
