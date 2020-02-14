@@ -1,6 +1,6 @@
 from os import PathLike
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
 
 import pandas as pd
 
@@ -10,8 +10,25 @@ from econuy.retrieval import fx_ff, reserves_chg
 
 def get(update: Union[str, PathLike, None] = None,
         save: Union[str, PathLike, None] = None,
-        name: Union[str, None] = None):
-    """Get spot, future and forwards FX operations by the Central Bank."""
+        name: Optional[str] = None) -> pd.DataFrame:
+    """Get spot, future and forwards FX operations by the Central Bank.
+
+    Parameters
+    ----------
+    update : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to find a CSV
+        for updating, or None, don't update.
+    save : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to save the CSV,
+        or None, don't save.
+    name : str, default None
+        CSV filename for updating and/or saving.
+
+    Returns
+    -------
+    Daily spot, future and forwards foreign exchange operations : pd.DataFrame
+
+    """
     if name is None:
         name = "fx_spot_ff"
     changes = reserves_chg.get(update=update, save=save)

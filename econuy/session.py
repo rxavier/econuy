@@ -29,7 +29,7 @@ class Session(object):
         which replaces existing periods with new data.
     force_update : bool, default False
         Whether to force download even if data was recently modified.
-    dataset : pandas.DataFrame
+    dataset : pd.DataFrame
         Current working dataset. Initialized with an empty dataframe.
 
     """
@@ -75,8 +75,8 @@ class Session(object):
 
         Returns
         -------
-        Session()
-            Loads the pandas.DataFrame output into the :attr:`dataset`
+        :class:`~econuy.session.Session`
+            Loads the pd.DataFrame output into the :attr:`dataset`
             attribute.
 
         """
@@ -175,7 +175,7 @@ class Session(object):
 
         Returns
         -------
-        Session()
+        :class:`~econuy.session.Session`
             Loads the downloaded dataframe into the :attr:`dataset` attribute.
 
         """

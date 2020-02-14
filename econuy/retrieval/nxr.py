@@ -1,6 +1,6 @@
 from os import PathLike
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
 
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
@@ -9,31 +9,37 @@ from econuy.resources import updates, columns
 from econuy.resources.lstrings import nxr_url
 
 
-def get(update: Union[str, PathLike, None] = None, 
-        revise_rows: Union[str, int] = 0,
-        save: Union[str, PathLike, None] = None, 
-        force_update: bool = False, name: Union[str, None] = None):
+def get(update: Union[str, PathLike, None] = None,
+        revise_rows: Union[str, int] = "nodup",
+        save: Union[str, PathLike, None] = None,
+        force_update: bool = False,
+        name: Optional[str] = None) -> pd.DataFrame:
     """Get nominal exchange rate data.
 
     Parameters
     ----------
-    update : str, PathLike or None, default is None
-        Path or path-like string pointing to a directory where to find a CSV 
+    update : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to find a CSV
         for updating, or None, don't update.
-    revise_rows : str or int, default is 0
-        How many rows of old data to replace with new data.
-    save : str, PathLike or None, default is None
-        Path or path-like string pointing to a directory where to save the CSV, 
-        or None, don't update.
-    force_update : bool, default is False
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be 'auto', which automatically determines number of
+        rows to replace from the inferred data frequency, or 'nodup',
+        which replaces existing periods with new data.
+    save : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to save the CSV,
+        or None, don't save.
+    force_update : bool, default False
         If True, fetch data and update existing data even if it was modified
-        within its update window (for nominal exchange rate, 25 days).
-    name : str or None, default is None
+        within its update window (for nominal exchange rates, 25 days).
+    name : str, default None
         CSV filename for updating and/or saving.
 
     Returns
     -------
-    nxr : Pandas dataframe
+    Monthly nominal exchange rates : pd.DataFrame
+        Buy and sell, and monthly average and end of period.
 
     """
     update_threshold = 25

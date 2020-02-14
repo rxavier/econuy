@@ -1,7 +1,7 @@
 import datetime as dt
 from os import PathLike
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
 
 import numpy as np
 import pandas as pd
@@ -14,31 +14,37 @@ from econuy.resources.lstrings import reer_url, ar_cpi_url, ar_cpi_payload
 from econuy.retrieval import cpi, nxr
 
 
-def get_official(update: Union[str, PathLike, None] = None, 
-                 revise_rows: Union[str, int] = 0,
+def get_official(update: Union[str, PathLike, None] = None,
+                 revise_rows: Union[str, int] = "nodup",
                  save: Union[str, PathLike, None] = None,
-                 force_update: bool = False, name: Union[str, None] = None):
+                 force_update: bool = False,
+                 name: Optional[str] = None) -> pd.DataFrame:
     """Get official real exchange rates from the BCU website.
 
     Parameters
     ----------
-    update : str, PathLike or None, default is None
-        Path or path-like string pointing to a directory where to find a CSV 
+    update : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to find a CSV
         for updating, or None, don't update.
-    revise_rows : str or int, default is 0
-        How many rows of old data to replace with new data.
-    save : str, PathLike or None, default is None
-        Path or path-like string pointing to a directory where to save the CSV, 
-        or None, don't update.
-    force_update : bool, default is False
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be 'auto', which automatically determines number of
+        rows to replace from the inferred data frequency, or 'nodup',
+        which replaces existing periods with new data.
+    save : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to save the CSV,
+        or None, don't save.
+    force_update : bool, default False
         If True, fetch data and update existing data even if it was modified
-        within its update window (for real exchange rate, 25 days).
-    name : str or None, default is None
+        within its update window (for real exchange rates, 25 days).
+    name : str, default None
         CSV filename for updating and/or saving.
 
     Returns
     -------
-    proc : Pandas dataframe
+    Monthly real exchange rates vs select countries/regions : pd.DataFrame
+        Available: global, regional, extraregional, Argentina, Brazil, US.
 
     """
     update_threshold = 25
@@ -75,31 +81,37 @@ def get_official(update: Union[str, PathLike, None] = None,
     return proc
 
 
-def get_custom(update: Union[str, PathLike, None] = None, 
-               revise_rows: Union[str, int] = 0,
-               save: Union[str, PathLike, None] = None, 
-               force_update: bool = False, name: Union[str, None] = None):
-    """Calculate custom real exchange rates from various sources.
+def get_custom(update: Union[str, PathLike, None] = None,
+               revise_rows: Union[str, int] = "nodup",
+               save: Union[str, PathLike, None] = None,
+               force_update: bool = False,
+               name: Optional[str] = None) -> pd.DataFrame:
+    """Get official real exchange rates from the BCU website.
 
     Parameters
     ----------
-    update : str, PathLike or None, default is None
-        Path or path-like string pointing to a directory where to find a CSV 
+    update : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to find a CSV
         for updating, or None, don't update.
-    revise_rows : str or int, default is 0
-        How many rows of old data to replace with new data.
-    save : str, PathLike or None, default is None
-        Path or path-like string pointing to a directory where to save the CSV, 
-        or None, don't update.
-    force_update : bool, default is False
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be 'auto', which automatically determines number of
+        rows to replace from the inferred data frequency, or 'nodup',
+        which replaces existing periods with new data.
+    save : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to save the CSV,
+        or None, don't save.
+    force_update : bool, default False
         If True, fetch data and update existing data even if it was modified
-        within its update window (for real exchange rate, 25 days).
-    name : str or None, default is None
+        within its update window (for real exchange rates, 25 days).
+    name : str, default None
         CSV filename for updating and/or saving.
 
     Returns
     -------
-    output : Pandas dataframe
+    Monthly real exchange rates vs select countries : pd.DataFrame
+        Available: Argentina, Brazil, US.
 
     """
     update_threshold = 25

@@ -4,7 +4,7 @@ import zipfile
 from io import BytesIO
 from os import PathLike, path
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
 
 import numpy as np
 import pandas as pd
@@ -17,28 +17,32 @@ from econuy.resources.lstrings import (beef_url, pulp_url, soybean_url,
 
 
 def _weights(update: Union[str, PathLike, None] = None, 
-             revise_rows: Union[str, int] = 0,
+             revise_rows: Union[str, int] = "nodup",
              save: Union[str, PathLike, None] = None,
-             force_update: bool = False):
-    """Get weights for the commodity price index from the UN COMTRADE database.
+             force_update: bool = False) -> pd.DataFrame:
+    """Get commodity export weights for Uruguay.
 
     Parameters
     ----------
-    update : str, PathLike or None, default is None
-        Path or path-like string pointing to a directory where to find a CSV 
+    update : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to find a CSV
         for updating, or None, don't update.
-    revise_rows : str or int, default is 0
-        How many rows of old data to replace with new data.
-    save : str, PathLike or None, default is None
-        Path or path-like string pointing to a directory where to save the CSV, 
-        or None, don't update.
-    force_update : bool, default is False
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be 'auto', which automatically determines number of
+        rows to replace from the inferred data frequency, or 'nodup',
+        which replaces existing periods with new data.
+    save : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to save the CSV,
+        or None, don't save.
+    force_update : bool, default False
         If True, fetch data and update existing data even if it was modified
         within its update window (for commodity weights, 85 days).
 
     Returns
     -------
-    output : Pandas dataframe
+    Commodity weights : pd.DataFrame
         Export-based weights for relevant commodities to Uruguay.
 
     """
@@ -95,28 +99,32 @@ def _weights(update: Union[str, PathLike, None] = None,
 
 
 def _prices(update: Union[str, PathLike, None] = None, 
-            revise_rows: Union[str, int] = 0,
+            revise_rows: Union[str, int] = "nodup",
             save: Union[str, PathLike, None] = None, 
-            force_update: bool = False):
-    """Prepare prices for the commodity price index.
+            force_update: bool = False) -> pd.DataFrame:
+    """Get commodity prices for Uruguay.
 
     Parameters
     ----------
-    update : str, PathLike or None, default is None
-        Path or path-like string pointing to a directory where to find a CSV 
+    update : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to find a CSV
         for updating, or None, don't update.
-    revise_rows : str or int, default is 0
-        How many rows of old data to replace with new data.
-    save : str, PathLike or None, default is None
-        Path or path-like string pointing to a directory where to save the CSV, 
-        or None, don't update.
-    force_update : bool, default is False
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be 'auto', which automatically determines number of
+        rows to replace from the inferred data frequency, or 'nodup',
+        which replaces existing periods with new data.
+    save : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to save the CSV,
+        or None, don't save.
+    force_update : bool, default False
         If True, fetch data and update existing data even if it was modified
         within its update window (for commodity prices, 10 days).
 
     Returns
     -------
-    complete : Pandas dataframe
+    Commodity prices : pd.DataFrame
         Prices and price indexes of relevant commodities for Uruguay.
 
     """
@@ -236,29 +244,29 @@ def _prices(update: Union[str, PathLike, None] = None,
 def get(update: Union[str, PathLike, None] = None,
         save: Union[str, PathLike, None] = None, 
         force_update_prices: bool = True, force_update_weights: bool = False,
-        name: Union[str, None] = None):
-    """Get the commodity price index.
+        name: Optional[str] = None) -> pd.DataFrame:
+    """Get export-weighted commodity price index for Uruguay.
 
     Parameters
     ----------
-    update : str, PathLike or None, default is None
+    update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV 
         for updating, or None, don't update.
-    save : str, PathLike or None, default is None
+    save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV, 
         or None, don't update.
-    force_update_prices : bool, default is False
+    force_update_prices : bool, default False
         If True, fetch data and update existing data even if it was modified
         within its update window for commodity prices.
-    force_update_weights : bool, default is False
+    force_update_weights : bool, default False
         If True, fetch data and update existing data even if it was modified
         within its update window for commodity weights.
-    name : str or None, default is None
+    name : str, default None
         CSV filename for updating and/or saving.
 
     Returns
     -------
-    product : Pandas dataframe
+    Monthly export-weighted commodity index : pd.DataFrame
         Export-weighted average of commodity prices relevant to Uruguay.
 
     """

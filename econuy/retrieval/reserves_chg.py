@@ -2,7 +2,7 @@ import datetime as dt
 import urllib
 from os import PathLike
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
 
 import pandas as pd
 from dateutil.relativedelta import relativedelta
@@ -14,7 +14,7 @@ from econuy.resources.lstrings import (reserves_cols, reserves_url,
 
 def get(update: Union[str, PathLike, None] = None,
         save: Union[str, PathLike, None] = None,
-        name: Union[str, None] = None):
+        name: Optional[str] = None) -> pd.DataFrame:
     """Get international reserves change data from online sources.
 
     Use as input a list of strings of the format %b%Y, each representing a
@@ -22,18 +22,18 @@ def get(update: Union[str, PathLike, None] = None,
 
     Parameters
     ----------
-    update : str, PathLike or None, default is None
-        Path or path-like string pointing to a directory where to find a CSV 
+    update : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to find a CSV
         for updating, or None, don't update.
-    save : str, PathLike or None, default is None
-        Path or path-like string pointing to a directory where to save the CSV, 
-        or None, don't update.
-    name : str or None, default is None
+    save : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to save the CSV,
+        or None, don't save.
+    name : str, default None
         CSV filename for updating and/or saving.
 
     Returns
     -------
-    reserves : Pandas dataframe
+    Daily international reserves changes : pd.DataFrame
 
     """
     if name is None:
