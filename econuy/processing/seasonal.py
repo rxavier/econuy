@@ -60,8 +60,8 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
         search_term = "x13as"
         if platform.system() == "Windows":
             search_term += ".exe"
-        binary_path = updates.rsearch(dir_file=getcwd(), n=search_parents,
-                                      search_term=search_term)
+        binary_path = updates._rsearch(dir_file=getcwd(), n=search_parents,
+                                       search_term=search_term)
     elif isinstance(x13_binary, str):
         binary_path = x13_binary
     else:
