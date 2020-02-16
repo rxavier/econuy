@@ -5,6 +5,7 @@ from typing import Union, Optional
 
 import pandas as pd
 
+import econuy.processing.transform
 from econuy.frequent.frequent import (inflation, fiscal, nat_accounts,
                                       exchange_rate, labor_mkt)
 from econuy.processing import variations, freqs, seasonal, transform, index
@@ -231,14 +232,14 @@ class Session(object):
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                output = freqs.freq_resample(value, target=target,
-                                             operation=operation,
-                                             interpolation=interpolation)
+                output = econuy.processing.transform.freq_resample(value, target=target,
+                                                                   operation=operation,
+                                                                   interpolation=interpolation)
                 self.dataset.update({key: output})
         else:
-            output = freqs.freq_resample(self.dataset, target=target,
-                                         operation=operation,
-                                         interpolation=interpolation)
+            output = econuy.processing.transform.freq_resample(self.dataset, target=target,
+                                                               operation=operation,
+                                                               interpolation=interpolation)
             self.dataset = output
 
         return self
@@ -384,12 +385,12 @@ class Session(object):
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                output = freqs.rolling(value, periods=periods,
-                                       operation=operation)
+                output = econuy.processing.transform.rolling(value, periods=periods,
+                                                             operation=operation)
                 self.dataset.update({key: output})
         else:
-            output = freqs.rolling(self.dataset, periods=periods,
-                                   operation=operation)
+            output = econuy.processing.transform.rolling(self.dataset, periods=periods,
+                                                         operation=operation)
             self.dataset = output
 
         return self

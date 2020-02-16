@@ -1,5 +1,6 @@
 import pandas as pd
 
+import econuy.processing.transform
 from econuy.processing import freqs
 from econuy.resources import columns
 
@@ -74,7 +75,7 @@ def chg_diff(df: pd.DataFrame, operation: str = "chg",
         if df.columns.get_level_values("Tipo")[0] == "Stock":
             output = df.apply(type_change[period_op][operation][0]).multiply(100)
         else:
-            output = freqs.rolling(df, operation="sum")
+            output = econuy.processing.transform.rolling(df, operation="sum")
             output = output.apply(type_change[period_op][operation][0]).multiply(100)
 
         columns._setmeta(output, index=type_change[period_op][operation][1])

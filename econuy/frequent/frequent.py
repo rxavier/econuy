@@ -5,6 +5,7 @@ from typing import Union, Optional
 
 import pandas as pd
 
+import econuy.processing.transform
 from econuy.processing import freqs, variations, seasonal, transform
 from econuy.resources import columns
 from econuy.resources.lstrings import fiscal_metadata
@@ -118,7 +119,7 @@ def exchange_rate(eop: bool = False, sell: bool = True,
                   "possible values for 'seas_adj'")
 
     if cum != 1:
-        output = freqs.rolling(output, periods=cum, operation="average")
+        output = econuy.processing.transform.rolling(output, periods=cum, operation="average")
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
@@ -259,7 +260,7 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
                      seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
     if unit == "gdp":
-        output = freqs.rolling(output, periods=12, operation="sum")
+        output = econuy.processing.transform.rolling(output, periods=12, operation="sum")
         output = transform.convert_gdp(output, hifreq=True)
     elif unit == "usd":
         output = transform.convert_usd(output)
@@ -281,7 +282,7 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
             print("Only 'trend', 'seas' and None are "
                   "possible values for 'seas_adj'")
     if cum != 1:
-        output = freqs.rolling(output, periods=cum, operation="sum")
+        output = econuy.processing.transform.rolling(output, periods=cum, operation="sum")
 
     if save is not False:
         save_path = (Path(save) / name).with_suffix(".csv")
@@ -431,7 +432,7 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
                   "possible values for 'seas_adj'")
 
     if cum != 1:
-        output = freqs.rolling(output, periods=cum, operation="sum")
+        output = econuy.processing.transform.rolling(output, periods=cum, operation="sum")
 
     if variation in ["last", "inter", "annual"]:
         output = variations.chg_diff(output, operation="chg",

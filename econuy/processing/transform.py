@@ -1,6 +1,6 @@
 from datetime import date
 from os import PathLike
-from typing import Union
+from typing import Union, Optional
 
 import pandas as pd
 
@@ -45,16 +45,16 @@ def convert_usd(df: pd.DataFrame,
 
     if df.columns.get_level_values("Tipo")[0] == "Flujo":
         columns._setmeta(nxr_data, ts_type="Flujo")
-        nxr_freq = freqs.freq_resample(nxr_data, target=inferred_freq,
-                                       operation="average").iloc[:, [1]]
+        nxr_freq = freq_resample(nxr_data, target=inferred_freq,
+                                 operation="average").iloc[:, [1]]
         cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
-        nxr_freq = freqs.rolling(nxr_freq, periods=cum_periods,
-                                 operation="average")
+        nxr_freq = rolling(nxr_freq, periods=cum_periods,
+                           operation="average")
 
     else:
         columns._setmeta(nxr_data, ts_type="Stock")
-        nxr_freq = freqs.freq_resample(nxr_data, target=inferred_freq,
-                                       operation="average").iloc[:, [3]]
+        nxr_freq = freq_resample(nxr_data, target=inferred_freq,
+                                 operation="average").iloc[:, [3]]
 
     nxr_to_use = nxr_freq[nxr_freq.index.isin(df.index)].iloc[:, 0]
     converted_df = df.apply(lambda x: x / nxr_to_use)
@@ -101,11 +101,11 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     cpi_data = cpi.get(update=update, revise_rows=6, save=save,
                        force_update=False)
     columns._setmeta(cpi_data, ts_type="Flujo")
-    cpi_freq = freqs.freq_resample(cpi_data, target=inferred_freq,
-                                   operation="average").iloc[:, [0]]
+    cpi_freq = freq_resample(cpi_data, target=inferred_freq,
+                             operation="average").iloc[:, [0]]
     cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
-    cpi_freq = freqs.rolling(cpi_freq, periods=cum_periods,
-                             operation="average")
+    cpi_freq = rolling(cpi_freq, periods=cum_periods,
+                       operation="average")
     cpi_to_use = cpi_freq[cpi_freq.index.isin(df.index)].iloc[:, 0]
 
     if start_date is None:
@@ -164,8 +164,8 @@ def convert_gdp(df: pd.DataFrame, hifreq: bool = True,
                                      save=save, force_update=False)
 
     if hifreq is True:
-        gdp = freqs.freq_resample(gdp, target=inferred_freq,
-                                  operation="upsample", interpolation="linear")
+        gdp = freq_resample(gdp, target=inferred_freq,
+                            operation="upsample", interpolation="linear")
     else:
         gdp = gdp.resample(inferred_freq, convention="end").asfreq()
 
@@ -180,3 +180,124 @@ def convert_gdp(df: pd.DataFrame, hifreq: bool = True,
     columns._setmeta(converted_df, currency="% PBI")
 
     return converted_df
+
+
+def freq_resample(df: pd.DataFrame, target: str, operation: str = "sum",
+                  interpolation: str = "linear") -> pd.DataFrame:
+    """
+    Wrapper for the `resample method <https://pandas.pydata.org/pandas-docs
+    stable/reference/api/pandas.DataFrame.resample.html>`_ in Pandas.
+
+    Resample taking into account dataframe ``Type`` so that stock data is not
+    averaged or summed when resampling; only last value of target frequency
+    is considered.
+
+    Parameters
+    ----------
+    df : Pandas dataframe
+        Input dataframe.
+    target : str
+        Target frequency to resample to. See
+        `Pandas offset aliases <https://pandas.pydata.org/pandas-docs/stable/
+        user_guide/timeseries.html#offset-aliases>`_
+    operation : {'sum', 'average', 'upsample'}
+        Operation to use for resampling.
+    interpolation : bool, default True
+        Method to use when missing data are produced as a result of resampling.
+        See `Pandas interpolation method <https://pandas.pydata.org/pandas-docs
+        /stable/reference/api/pandas.Series.interpolate.html>`_
+
+    Returns
+    -------
+    Input dataframe at the frequency defined in ``target`` : pd.DataFrame
+
+    Raises
+    ------
+    ValueError:
+        If ``operation`` is not one of available options and if the input
+        dataframe does not have a ``Type`` level in its column multiindex.
+
+    """
+    if df.columns.get_level_values("Tipo")[0] == "-":
+        print("Dataframe has no Type, setting to 'Flujo'")
+        df.columns = df.columns.set_levels(["Flujo"], level="Tipo")
+
+    if df.columns.get_level_values("Tipo")[0] == "Flujo":
+        if operation == "sum":
+            resampled_df = df.resample(target).sum()
+        elif operation == "average":
+            resampled_df = df.resample(target).mean()
+        elif operation == "upsample":
+            resampled_df = df.resample(target).asfreq()
+            resampled_df = resampled_df.interpolate(method=interpolation)
+        else:
+            raise ValueError("Only sum, average and upsample "
+                             "are accepted operations")
+
+        cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
+        if cum_periods != 1:
+            input_notna = df.iloc[:, 0].count()
+            output_notna = resampled_df.iloc[:, 0].count()
+            cum_adj = round(output_notna / input_notna)
+            columns._setmeta(resampled_df,
+                             cumperiods=int(cum_periods * cum_adj))
+
+    elif df.columns.get_level_values("Tipo")[0] == "Stock":
+        resampled_df = df.resample(target, convention="end").asfreq()
+        resampled_df = resampled_df.interpolate(method=interpolation)
+    else:
+        raise ValueError("Dataframe needs to have a valid Type ('Flujo', "
+                         "'Stock' or '-'")
+
+    columns._setmeta(resampled_df)
+
+    return resampled_df
+
+
+def rolling(df: pd.DataFrame, periods: Optional[int] = None,
+            operation: str = "sum") -> pd.DataFrame:
+    """
+    Wrapper for the `rolling method <hhttps://pandas.pydata.org/pandas-docs/
+    stable/reference/api/pandas.DataFrame.rolling.html>`_ in Pandas.
+
+    If ``periods`` is ``None``, try to infer the frequency and set ``periods``
+    according to the following logic: ``{'A': 1, 'Q-DEC': 4, 'M': 12}``.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input dataframe.
+    periods : int, default None
+        How many periods the window should cover.
+    operation : {'sum', 'average'}
+        Operation used to calculate rolling windows.
+
+    Returns
+    -------
+    Input dataframe with rolling windows : pd.DataFrame
+
+    """
+    pd_frequencies = {"A": 1,
+                      "Q-DEC": 4,
+                      "M": 12}
+
+    window_operation = {
+        "sum": lambda x: x.rolling(window=periods,
+                                   min_periods=periods).sum(),
+        "average": lambda x: x.rolling(window=periods,
+                                       min_periods=periods).mean()
+    }
+
+    if df.columns.get_level_values("Tipo")[0] == "Stock":
+        raise Warning("Rolling operations shouldn't be "
+                      "calculated on stock variables")
+
+    if periods is None:
+        inferred_freq = pd.infer_freq(df.index)
+        periods = pd_frequencies[inferred_freq]
+
+    rolling_df = df.apply(window_operation[operation])
+
+    columns._setmeta(rolling_df, cumperiods=periods)
+
+    return rolling_df

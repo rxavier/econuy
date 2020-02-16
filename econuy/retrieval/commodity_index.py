@@ -11,6 +11,7 @@ import pandas as pd
 import requests
 from pandas.tseries.offsets import YearEnd
 
+import econuy.processing.transform
 from econuy.resources import updates, columns
 from econuy.resources.lstrings import (beef_url, pulp_url, soybean_url,
                                        what_url, imf_url, milk1_url, milk2_url)
@@ -75,7 +76,7 @@ def _weights(update: Union[str, PathLike, None] = None,
     percentage = table.div(table.sum(axis=1), axis=0)
     percentage.index = (pd.to_datetime(percentage.index, format="%Y")
                         + YearEnd(1))
-    rolling = percentage.rolling(window=3, min_periods=3).mean()
+    rolling = econuy.processing.transform.rolling(window=3, min_periods=3).mean()
     output = rolling.resample("M").bfill()
 
     beef = ["BOVINE MEAT", "Edible offal of bovine animals, fresh or chilled",
