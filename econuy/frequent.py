@@ -350,7 +350,7 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
                  variation: Union[str, None] = None,
                  update: Union[str, PathLike, None] = None,
                  save: Union[str, PathLike, None] = None,
-                 name: Optional[str] = None) -> pd.DataFrame:
+                 name: Optional[str] = None) -> Optional[pd.DataFrame]:
     """Get national accounts data.
 
     Attempt to find one of the available data tables with the selected
@@ -387,7 +387,7 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
 
     Returns
     -------
-    Selected national accounts : pd.DataFrame
+    Selected national accounts : pd.DataFrame or None
 
     Raises
     ------
