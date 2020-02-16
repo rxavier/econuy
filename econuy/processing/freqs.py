@@ -10,34 +10,39 @@ PD_FREQUENCIES = {"A": 1,
 
 
 def freq_resample(df: pd.DataFrame, target: str, operation: str = "sum",
-                  interpolation: str = "linear"):
-    """Wrapper for the resample method in Pandas.
+                  interpolation: str = "linear") -> pd.DataFrame:
+    """
+    Wrapper for the `resample method <https://pandas.pydata.org/pandas-docs
+    stable/reference/api/pandas.DataFrame.resample.html>`_ in Pandas.
 
-    Resample taking into account dataframe `type` so that stock data is not
+    Resample taking into account dataframe ``Type`` so that stock data is not
     averaged or summed when resampling; only last value of target frequency
     is considered.
 
     Parameters
     ----------
     df : Pandas dataframe
+        Input dataframe.
     target : str
         Target frequency to resample to. See
-        https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
-    operation : str (default is 'sum')
-        'sum', 'average' and 'upsample' are allowed.
-    interpolation : bool (default is True)
+        `Pandas offset aliases <https://pandas.pydata.org/pandas-docs/stable/
+        user_guide/timeseries.html#offset-aliases>`_
+    operation : {'sum', 'average', 'upsample'}
+        Operation to use for resampling.
+    interpolation : bool, default True
         Method to use when missing data are produced as a result of resampling.
-        See https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.interpolate.html
+        See `Pandas interpolation method <https://pandas.pydata.org/pandas-docs
+        /stable/reference/api/pandas.Series.interpolate.html>`_
 
     Returns
     -------
-    resampled_df : Pandas dataframe
+    Input dataframe at the frequency defined in ``target`` : pd.DataFrame
 
     Raises
     ------
     ValueError:
-        If `operation` is not one of available options and if the input
-        dataframe does not have a Type level in its column multiindex.
+        If ``operation`` is not one of available options and if the input
+        dataframe does not have a ``Type`` level in its column multiindex.
 
     """
     if df.columns.get_level_values("Tipo")[0] == "-":
@@ -77,22 +82,26 @@ def freq_resample(df: pd.DataFrame, target: str, operation: str = "sum",
 
 
 def rolling(df: pd.DataFrame, periods: Optional[int] = None,
-            operation: str = "sum"):
-    """Wrapper for the rolling method in Pandas.
+            operation: str = "sum") -> pd.DataFrame:
+    """
+    Wrapper for the `rolling method <hhttps://pandas.pydata.org/pandas-docs/
+    stable/reference/api/pandas.DataFrame.rolling.html>`_ in Pandas.
 
-    If `periods` is None, try to infer the frequency and set `periods`
-    according to the following logic: `{'A': 1, 'Q-DEC': 4, 'M': 12}`.
+    If ``periods`` is ``None``, try to infer the frequency and set ``periods``
+    according to the following logic: ``{'A': 1, 'Q-DEC': 4, 'M': 12}``.
 
     Parameters
     ----------
-    df : Pandas dataframe
-    periods : Optional[int] (default is None)
-    operation : str (default is 'sum')
-        'sum' and 'average' are allowed.
+    df : pd.DataFrame
+        Input dataframe.
+    periods : int, default None
+        How many periods the window should cover.
+    operation : {'sum', 'average'}
+        Operation used to calculate rolling windows.
 
     Returns
     -------
-    rolling_df : Pandas dataframe
+    Input dataframe with rolling windows : pd.DataFrame
 
     """
     window_operation = {

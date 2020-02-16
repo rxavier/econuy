@@ -1,7 +1,7 @@
 import platform
 from os import PathLike, path, getcwd
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -25,35 +25,37 @@ x13._open_and_read = _new_open_and_read
 
 def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
               x13_binary: Union[str, PathLike] = "search",
-              search_parents: int = 1):
-    """Apply X13 decomposition. Return trend and seasonally adjusted dataframe.
+              search_parents: int = 1) -> Optional[Tuple[pd.DataFrame, pd.DataFrame]]:
+    """
+    Apply X13 decomposition. Return trend and seasonally adjusted dataframes.
 
     Decompose the series in a Pandas dataframe using the US Census X13
-    methodology. Will try different combinations of the `trading` and `outlier`
-    arguments if an X13 error is raised. Requires having the X13 binary in the
-    `resources` folder. Please refer to the README for instructions on where
-    to get this binary.
+    methodology. Will try different combinations of the ``trading`` and
+    ``outlier`` arguments if an X13 error is raised. Requires providing the X13
+    binary. Please refer to the README for instructions on where to get this
+    binary.
 
     Parameters
     ----------
-    df : Pandas dataframe
-    trading : bool (default is True)
+    df : pd.DataFrame
+        Input dataframe.
+    trading : bool, default True
         Whether to automatically detect trading days.
-    outlier : bool (default is True)
+    outlier : bool, default True
         Whether to automatically detect outliers.
-    x13_binary: str or PathLike (default is "search")
-        Location of the X13 binary. If "search" is used, will attempt to find
-        the binary in the project structure (up to two parent folders).
-    search_parents: int (default is 2)
-        If "search" is chosen for `x13_binary`, this parameter controls how
+    x13_binary: str or os.PathLike, default 'search'
+        Location of the X13 binary. If ``search`` is used, will attempt to find
+        the binary in the project structure.
+    search_parents: int, default 2
+        If ``search`` is chosen for ``x13_binary``, this parameter controls how
         many parent directories to go up before recursively searching for the
         binary.
 
     Returns
     -------
-    trend, seas_adj : Pandas dataframe
-        Dataframes of the same shape of the input dataframe, containing the
-        trend component and the seasonally adjusted series.
+    Decomposed dataframes : Tuple[pd.DataFrame, pd.DataFrame] or None
+        Tuple containing the trend component and the seasonally adjusted
+        series.
 
     """
     if x13_binary == "search":

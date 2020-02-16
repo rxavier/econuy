@@ -5,29 +5,34 @@ from econuy.resources import columns
 
 
 def chg_diff(df: pd.DataFrame, operation: str = "chg",
-             period_op: str = "last"):
-    """Wrapper for the pct_change and diff Pandas methods.
+             period_op: str = "last") -> pd.DataFrame:
+    """
+    Wrapper for the `pct_change <https://pandas.pydata.org/pandas-docs/stable/
+    reference/api/pandas.DataFrame.pct_change.html>`_ and `diff <https://pandas
+    .pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.diff.html>`_
+    Pandas methods.
 
-    Calculate percentage change or difference for dataframes. The `period`
+    Calculate percentage change or difference for dataframes. The ``period``
     argument takes into account the frequency of the dataframe, i.e.,
-    `inter` (for interannual) will calculate pct change/differences with
-    `periods=4` for quarterly frequency, but `periods=12` for monthly
+    ``inter`` (for interannual) will calculate pct change/differences with
+    ``periods=4`` for quarterly frequency, but ``periods=12`` for monthly
     frequency.
 
     Parameters
     ----------
-    df : Pandas dataframe
-    operation : str (default is 'chg')
-        'chg' for percent change or 'diff' for differences.
-    period_op : str (default is 'last')
-        Period with which to calculate change or difference. 'last' for
-        previous period (last month for monthly data), 'inter' for same period
-        last year, 'annual' for same period last year but taking annual
-        averages/sums.
+    df : pd.DataFrame
+        Input dataframe.
+    operation : {'chg', 'dif'}
+        ``chg`` for percent change or ``diff`` for differences.
+    period_op : {'last', 'inter', 'annual'}
+        Period with which to calculate change or difference. ``last`` for
+        previous period (last month for monthly data), ``inter`` for same
+        period last year, ``annual`` for same period last year but taking
+        annual averages/sums.
 
     Returns
     -------
-    output : Pandas dataframe
+    Percent change or differences dataframe : pd.DataFrame
 
     Raises
     ------

@@ -7,24 +7,26 @@ from econuy.resources import columns
 
 
 def base_index(df: pd.DataFrame, start_date: Union[str, date],
-               end_date: Union[str, date, None] = None, base: float = 100):
+               end_date: Union[str, date, None] = None,
+               base: float = 100) -> pd.DataFrame:
     """Rebase all dataframe columns to a date or range of dates.
 
     Parameters
     ----------
-    df : Pandas dataframe
-    start_date : string or date
+    df : pd.DataFrame
+        Input dataframe.
+    start_date : string or datetime.date
         Date to which series will be rebased.
-    end_date : string or date (default is `None`)
-        If specified, series will be rebased to the average between start_date
-        and end_date.
-    base : float (default is 100)
-        Float for which start_date == float or average between start_date and
-        end_date == float.
+    end_date : string or datetime.date, default None
+        If specified, series will be rebased to the average between
+        ``start_date`` and ``end_date``.
+    base : float, default 100
+        Float for which ``start_date`` == ``base`` or average between
+        ``start_date`` and ``end_date`` == ``base``.
 
     Returns
     -------
-    indexed : Pandas dataframe
+    Input dataframe with a base period index : pd.DataFrame
 
     """
     if end_date is None:

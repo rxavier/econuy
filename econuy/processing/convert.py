@@ -11,23 +11,32 @@ from econuy.retrieval import cpi, national_accounts, nxr
 
 def usd(df: pd.DataFrame,
         update: Union[str, PathLike, None] = None,
-        save: Union[str, PathLike, None] = None):
-    """Convert dataframe from UYU to USD.
+        save: Union[str, PathLike, None] = None) -> pd.DataFrame:
+    """
+    Convert dataframe from UYU to USD.
 
     Convert a dataframe's columns from Uruguayan pesos to US dollars. Call the
-    `nxr.get()` function to obtain nominal exchange rates, and take into
-    account whether the input dataframe's `Type`, as defined by its multiindex,
-    is flow or stock, in order to choose end of period or monthly average NXR.
-    Also take into account the input dataframe's frequency and whether columns
-    represent rolling averages or sums.
+    :func:`econuy.retrieval.nxr.get` function to obtain nominal
+    exchange rates, and take into account whether the input dataframe's
+    ``Type``, as defined by its multiindex, is flow or stock, in order to `
+    choose end of period or monthly average NXR. Also take into account the
+    input dataframe's frequency and whether columns represent rolling averages
+    or sums.
 
     Parameters
     ----------
-    df : Pandas dataframe
+    df : pd.DataFrame
+        Input dataframe.
+    update : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to find a CSV
+        for updating, or None, don't update.
+    save : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to save the CSV,
+        or None, don't save.
 
     Returns
     -------
-    converted_df : Pandas dataframe
+    Input dataframe measured in US dollars : pd.DataFrame
 
     """
     inferred_freq = pd.infer_freq(df.index)
@@ -57,27 +66,35 @@ def usd(df: pd.DataFrame,
 def real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
          end_date: Union[str, date, None] = None,
          update: Union[str, PathLike, None] = None,
-         save: Union[str, PathLike, None] = None):
-    """Convert dataframe to real prices.
+         save: Union[str, PathLike, None] = None) -> pd.DataFrame:
+    """
+    Convert dataframe to real prices.
 
-    Convert a dataframe's columns to real prices. Call the `cpi.get()`
-    function to obtain the consumer price index. take into account the input
-    dataframe's frequency and whether columns represent rolling averages or
-    sums. Allow choosing a single period, a range of dates or no period as a
-    base (i.e., period for which the average/sum of input dataframe and output
-    dataframe is the same).
+    Convert a dataframe's columns to real prices. Call the
+    :func:`econuy.retrieval.cpi.get` function to obtain the consumer price
+    index. take into account the input dataframe's frequency and whether
+    columns represent rolling averages or sums. Allow choosing a single period,
+    a range of dates or no period as a base (i.e., period for which the
+    average/sum of input dataframe and output dataframe is the same).
 
     Parameters
     ----------
-    df : Pandas dataframe
-    start_date : str, date or None (default is None)
-        If set to a date-like string or a date, and `end_date` is None, the
-        base period will be `start_date`.
-    end_date : str, date or None (default is None)
+    df : pd.DataFrame
+        Input dataframe.
+    start_date : str, datetime.date or None, default None
+        If set to a date-like string or a date, and ``end_date`` is None, the
+        base period will be ``start_date``.
+    end_date : str, datetime.date or None, default None
+    update : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to find a CSV
+        for updating, or None, don't update.
+    save : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to save the CSV,
+        or None, don't save.
 
     Returns
     -------
-    converted_df : Pandas dataframe
+    Input dataframe measured at constant prices : pd.DataFrame
 
     """
     inferred_freq = pd.infer_freq(df.index)
@@ -112,25 +129,34 @@ def real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
 
 def pcgdp(df: pd.DataFrame, hifreq: bool = True,
           update: Union[str, PathLike, None] = None,
-          save: Union[str, PathLike, None] = None):
-    """Calculate dataframe as percentage of GDP.
+          save: Union[str, PathLike, None] = None) -> pd.DataFrame:
+    """
+    Calculate dataframe as percentage of GDP.
 
     Convert a dataframe's columns to percentage of GDP. Call the
-    `national_accounts.lin_gdp()` function to obtain UYU and USD quarterly GDP
-    series. Take into account the input dataframe's currency for chossing UYU
-    or USD GDP. If `hifreq` is set to `True`, GDP will be upsampled and linear
-    interpolation will be performed to complete missing data.
+    :func:`econuy.retrieval.national_accounts._lin_gdp` function to obtain UYU
+    and USD quarterly GDP series. Take into account the input dataframe's
+    currency for chossing UYU or USD GDP. If ``hifreq`` is set to ``True``,
+    GDP will be upsampled and linear interpolation will be performed to
+    complete missing data.
 
     Parameters
     ----------
-    df : Pandas dataframe
-    hifreq : bool (default is True)
+    df : pd.DataFrame
+        Input dataframe.
+    hifreq : bool, default True
         If True, the input dataframe's frequency is assumed to be 'higher' than
-        quarterly (`Q` or `Q-DEC`) and will trigger GDP upsampling.
+        quarterly (``Q`` or ``Q-DEC``) and will trigger GDP upsampling.
+    update : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to find a CSV
+        for updating, or None, don't update.
+    save : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to save the CSV,
+        or None, don't save.
 
     Returns
     -------
-    converted_df : Pandas dataframe
+    Input dataframe as a percentage of GDP : pd.DataFrame
 
     """
     inferred_freq = pd.infer_freq(df.index)
