@@ -5,12 +5,11 @@ from typing import Union, Optional
 
 import pandas as pd
 
+from econuy import transform
 from econuy.resources import columns
 from econuy.resources.lstrings import fiscal_metadata
 from econuy.retrieval import (nxr, national_accounts, cpi,
                               fiscal_accounts, labor)
-from econuy.transform import (convert_gdp, convert_real, convert_usd,
-                              rolling, decompose, chg_diff)
 
 
 def inflation(update: Union[str, PathLike, None] = None,
@@ -41,13 +40,13 @@ def inflation(update: Union[str, PathLike, None] = None,
         name = "tfm_prices"
     data = cpi.get(update=update, revise_rows=6,
                    save=save, force_update=False)
-    interannual = chg_diff(data, operation="chg", period_op="inter")
-    monthly = chg_diff(data, operation="chg", period_op="last")
-    trend, seasadj = decompose(data, trading=True, outlier=False)
-    monthly_sa = chg_diff(seasadj, operation="chg",
-                          period_op="last")
-    monthly_trend = chg_diff(trend, operation="chg",
-                             period_op="last")
+    interannual = transform.chg_diff(data, operation="chg", period_op="inter")
+    monthly = transform.chg_diff(data, operation="chg", period_op="last")
+    trend, seasadj = transform.decompose(data, trading=True, outlier=False)
+    monthly_sa = transform.chg_diff(seasadj, operation="chg",
+                                    period_op="last")
+    monthly_trend = transform.chg_diff(trend, operation="chg",
+                                       period_op="last")
     output = pd.concat([data, interannual, monthly,
                         monthly_sa, monthly_trend], axis=1)
 
@@ -109,7 +108,8 @@ def exchange_rate(eop: bool = False, sell: bool = True,
         output = output.iloc[:, 0].to_frame()
 
     if seas_adj in ["trend", "seas"] and cum == 1:
-        trend, seasadj = decompose(output, trading=True, outlier=True)
+        trend, seasadj = transform.decompose(output, trading=True,
+                                             outlier=True)
         if seas_adj == "trend":
             output = pd.concat([output, trend], axis=1)
         elif seas_adj == "seas":
@@ -119,7 +119,7 @@ def exchange_rate(eop: bool = False, sell: bool = True,
                   "possible values for 'seas_adj'")
 
     if cum != 1:
-        output = rolling(output, periods=cum, operation="average")
+        output = transform.rolling(output, periods=cum, operation="average")
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
@@ -239,8 +239,8 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     proc["Egresos: Totales GC-BPS aj. FSS"] = (proc["Egresos: Totales GC-BPS"]
                                                - proc["Intereses: FSS"])
     proc["Resultado: Primario SPNF aj. FSS"] = (
-                proc["Resultado: Primario SPNF"]
-                - proc["Ingresos: FSS"])
+            proc["Resultado: Primario SPNF"]
+            - proc["Ingresos: FSS"])
     proc["Resultado: Global SPNF aj. FSS"] = (proc["Resultado: Global SPNF"]
                                               - proc["Ingresos: FSS"]
                                               + proc["Intereses: FSS"])
@@ -250,12 +250,12 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
                                              - proc["Ingresos: FSS"]
                                              + proc["Intereses: FSS"])
     proc["Resultado: Primario GC-BPS aj. FSS"] = (
-                proc["Resultado: Primario GC-BPS"]
-                - proc["Ingresos: FSS"])
+            proc["Resultado: Primario GC-BPS"]
+            - proc["Ingresos: FSS"])
     proc["Resultado: Global GC-BPS aj. FSS"] = (
-                proc["Resultado: Global GC-BPS"]
-                - proc["Ingresos: FSS"]
-                + proc["Intereses: FSS"])
+            proc["Resultado: Global GC-BPS"]
+            - proc["Ingresos: FSS"]
+            + proc["Intereses: FSS"])
 
     output = proc.loc[:, fiscal_metadata[aggregation][fss]]
     columns._setmeta(output, area="Cuentas fiscales y deuda",
@@ -263,20 +263,23 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
                      seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
     if unit == "gdp":
-        output = rolling(output, periods=12, operation="sum")
-        output = convert_gdp(output, hifreq=True)
+        output = transform.rolling(output, periods=12, operation="sum")
+        output = transform.convert_gdp(output, hifreq=True)
     elif unit == "usd":
-        output = convert_usd(output)
+        output = transform.convert_usd(output)
     elif unit == "real usd":
-        output = convert_real(output, start_date=start_date, end_date=end_date)
+        output = transform.convert_real(output, start_date=start_date,
+                                        end_date=end_date)
         xr = nxr.get(update=update, revise_rows=6, save=save)
         output = output.divide(xr[start_date:end_date].mean()[3])
         columns._setmeta(output, currency="USD")
     elif unit == "real":
-        output = convert_real(output, start_date=start_date, end_date=end_date)
+        output = transform.convert_real(output, start_date=start_date,
+                                        end_date=end_date)
     if seas_adj in ["trend", "seas"] and unit != "gdp" and cum == 1:
-        output_trend, output_seasadj = decompose(output, trading=True,
-                                                 outlier=True)
+        output_trend, output_seasadj = transform.decompose(output,
+                                                           trading=True,
+                                                           outlier=True)
         if seas_adj == "trend":
             output = output_trend
         elif seas_adj == "seas":
@@ -285,7 +288,7 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
             print("Only 'trend', 'seas' and None are "
                   "possible values for 'seas_adj'")
     if cum != 1:
-        output = rolling(output, periods=cum, operation="sum")
+        output = transform.rolling(output, periods=cum, operation="sum")
 
     if save is not False:
         save_path = (Path(save) / name).with_suffix(".csv")
@@ -328,7 +331,7 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
     output = data
 
     if seas_adj in ["trend", "seas"]:
-        trend, seasadj = decompose(data, trading=True, outlier=True)
+        trend, seasadj = transform.decompose(data, trading=True, outlier=True)
         if seas_adj == "trend":
             output = pd.concat([data, trend], axis=1)
         elif seas_adj == "seas":
@@ -422,10 +425,11 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
         return
 
     if usd is True:
-        output = convert_usd(output)
+        output = transform.convert_usd(output)
 
     if cust_seas_adj is not None and seas_adj is False and cum == 1:
-        trend, seasadj = decompose(output, trading=True, outlier=True)
+        trend, seasadj = transform.decompose(output, trading=True,
+                                             outlier=True)
         if cust_seas_adj == "trend":
             output = trend
         elif cust_seas_adj == "seas":
@@ -435,11 +439,11 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
                   "possible values for 'seas_adj'")
 
     if cum != 1:
-        output = rolling(output, periods=cum, operation="sum")
+        output = transform.rolling(output, periods=cum, operation="sum")
 
     if variation in ["last", "inter", "annual"]:
-        output = chg_diff(output, operation="chg",
-                          period_op=variation)
+        output = transform.chg_diff(output, operation="chg",
+                                    period_op=variation)
     elif variation is not None:
         print("Only 'last', 'inter' and 'annual' are "
               "possible values for 'variation'")
