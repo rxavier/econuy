@@ -4,10 +4,6 @@ import pandas as pd
 
 from econuy.resources import columns
 
-PD_FREQUENCIES = {"A": 1,
-                  "Q-DEC": 4,
-                  "M": 12}
-
 
 def freq_resample(df: pd.DataFrame, target: str, operation: str = "sum",
                   interpolation: str = "linear") -> pd.DataFrame:
@@ -104,6 +100,10 @@ def rolling(df: pd.DataFrame, periods: Optional[int] = None,
     Input dataframe with rolling windows : pd.DataFrame
 
     """
+    pd_frequencies = {"A": 1,
+                      "Q-DEC": 4,
+                      "M": 12}
+
     window_operation = {
         "sum": lambda x: x.rolling(window=periods,
                                    min_periods=periods).sum(),
@@ -117,7 +117,7 @@ def rolling(df: pd.DataFrame, periods: Optional[int] = None,
 
     if periods is None:
         inferred_freq = pd.infer_freq(df.index)
-        periods = PD_FREQUENCIES[inferred_freq]
+        periods = pd_frequencies[inferred_freq]
 
     rolling_df = df.apply(window_operation[operation])
 
