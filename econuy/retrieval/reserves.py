@@ -12,9 +12,9 @@ from econuy.resources.lstrings import (reserves_url, reserves_cols,
                                        missing_reserves_url, ff_url)
 
 
-def get(update: Union[str, PathLike, None] = None,
-        save: Union[str, PathLike, None] = None,
-        name: Optional[str] = None) -> pd.DataFrame:
+def get_operations(update: Union[str, PathLike, None] = None,
+                   save: Union[str, PathLike, None] = None,
+                   name: Optional[str] = None) -> pd.DataFrame:
     """Get spot, future and forwards FX operations by the Central Bank.
 
     Parameters
