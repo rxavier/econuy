@@ -10,6 +10,7 @@ sphinx-autodoc-typehints = "*"
 mock = "*"
 autodoc = "*"
 Sphinx = "*"
+sphinx-rtd-theme = "*"
 
 [packages]
 pandas = "~=0.25.0"

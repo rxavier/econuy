@@ -1,6 +1,7 @@
 import os
-from setuptools import setup, find_packages
 import json
+from setuptools import setup, find_packages
+from econuy import __version__
 
 
 def get_requirements_from_pipfile_lock(pipfile_lock=None):
@@ -20,10 +21,11 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
+version = "0.3.1"
 
 setup(
     name="econuy",
-    version="0.3.0",
+    version=__version__,
     description="Download and process Uruguayan economic data.",
     long_description=long_description,
     long_description_content_type="text/markdown",
