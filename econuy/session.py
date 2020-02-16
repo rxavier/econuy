@@ -171,7 +171,7 @@ class Session(object):
             If not None, overrides the saved dataset's default filename.
         **kwargs
             Keyword arguments passed to functions in
-            :mod:`econuy.frequent.frequent`.
+            :mod:`econuy.frequent`.
 
         Returns
         -------

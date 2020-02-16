@@ -151,7 +151,7 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
         ``nfps`` (non-financial public sector) or ``gc`` (central government).
     fss : bool, default True
         If ``True``, exclude the `FSS's <https://www.impo.com.uy/bases/decretos
-        /71-2018/25>_` income from gov't revenues and the FSS's
+        /71-2018/25>`_ income from gov't revenues and the FSS's
         interest revenues from gov't interest payments.
     unit : {'gdp', 'usd', 'real', 'real usd'}
         Unit in which data should be expressed. Possible values are ``real``,
