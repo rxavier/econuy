@@ -57,7 +57,9 @@ class Session(object):
 
         Parameters
         ----------
-        dataset : {'cpi', 'nxr', 'fiscal', 'naccounts', 'labor', 'comm_index', 'rxr_custom', 'rxr_official', 'reserves', 'fx_spot_ff'}
+        dataset : {'cpi', 'nxr', 'fiscal', 'naccounts', 'labor', \
+                'comm_index', 'rxr_custom', 'rxr_official', 'reserves', \
+                'fx_spot_ff'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
