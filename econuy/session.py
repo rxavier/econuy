@@ -218,8 +218,8 @@ class Session(object):
 
         return self
 
-    def freq_resample(self, target: str, operation: str = "sum",
-                      interpolation: str = "linear"):
+    def resample(self, target: str, operation: str = "sum",
+                 interpolation: str = "linear"):
         """
         Resample to target frequencies.
 
@@ -307,8 +307,8 @@ class Session(object):
 
         return self
 
-    def unit_conv(self, flavor: str, update: Union[str, PathLike, None] = None,
-                  save: Union[str, PathLike, None] = None, **kwargs):
+    def convert(self, flavor: str, update: Union[str, PathLike, None] = None,
+                save: Union[str, PathLike, None] = None, **kwargs):
         """
         Convert to other units.
 
@@ -371,8 +371,8 @@ class Session(object):
 
         return self
 
-    def rollwindow(self, periods: Optional[int] = None,
-                   operation: str = "sum"):
+    def rolling(self, periods: Optional[int] = None,
+                operation: str = "sum"):
         """
         Calculate rolling averages or sums.
 
