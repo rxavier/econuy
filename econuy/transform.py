@@ -357,7 +357,8 @@ x13._open_and_read = _new_open_and_read
 
 def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
               x13_binary: Union[str, PathLike] = "search",
-              search_parents: int = 1) -> Optional[Tuple[pd.DataFrame, pd.DataFrame]]:
+              search_parents: int = 1) -> Optional[Tuple[pd.DataFrame,
+                                                         pd.DataFrame]]:
     """
     Apply X13 decomposition. Return trend and seasonally adjusted dataframes.
 
