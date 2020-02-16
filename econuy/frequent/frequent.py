@@ -14,18 +14,24 @@ from econuy.retrieval import (nxr, national_accounts, cpi,
 
 def inflation(update: Union[str, PathLike, None] = None,
               save: Union[str, PathLike, None] = None,
-              name: Optional[str] = None):
-    """Update CPI data and return common inflation measures.
+              name: Optional[str] = None) -> pd.DataFrame:
+    """
+    Get common inflation measures.
 
     Parameters
     ----------
-    save : str, PathLike or bool (default is False)
-        Path, path-like string pointing to a CSV file for saving, or bool,
-        in which case if True, save in predefined file, or False, don't save.
+    update : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to find a CSV
+        for updating, or None, don't update.
+    save : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to save the CSV,
+        or None, don't save.
+    name : str, default None
+        CSV filename for updating and/or saving.
 
     Returns
     -------
-    dataframe : Pandas dataframe
+    Prices measures : pd.DataFrame
         Columns: CPI index, annual inflation, monthly inflation, seasonally
         adjusted monthly inflation and trend monthly inflation.
 
@@ -55,29 +61,35 @@ def exchange_rate(eop: bool = False, sell: bool = True,
                   seas_adj: Union[str, None] = None, cum: int = 1,
                   update: Union[str, PathLike, None] = None,
                   save: Union[str, PathLike, None] = None,
-                  name: Optional[str] = None):
-    """Get nominal exchange rate data.
+                  name: Optional[str] = None) -> pd.DataFrame:
+    """
+    Get nominal exchange rate data.
 
     Allow choosing end of period or average (monthly), sell/buy rates,
     calculating seasonal decomposition and rolling averages.
 
     Parameters
     ----------
-    eop : bool (default is False)
+    eop : bool, default False
         End of period data.
-    sell : bool (default is True)
-        Sellr ate.
-    seas_adj : str or None (default is None)
-        Allowed strings: 'trend' or 'seas'.
-    cum : int (default is 1)
+    sell : bool, default True
+        Sell rate.
+    seas_adj : {None, 'trend', 'seas'}
+        Whether to seasonally adjust.
+    cum : int, default 1
         How many periods to accumulate for rolling averages.
-    save : str, PathLike or bool (default is False)
-        Path, path-like string pointing to a CSV file for saving, or bool,
-        in which case if True, save in predefined file, or False, don't save.
+    update : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to find a CSV
+        for updating, or None, don't update.
+    save : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to save the CSV,
+        or None, don't save.
+    name : str, default None
+        CSV filename for updating and/or saving.
 
     Returns
     -------
-    dataframe : Pandas dataframe
+    Nominal exchange rate : pd.DataFrame
 
     """
     if name is None:
@@ -115,15 +127,16 @@ def exchange_rate(eop: bool = False, sell: bool = True,
     return output
 
 
-def fiscal(update: Union[str, PathLike, None] = None,
-           save: Union[str, PathLike, None] = None,
-           name: Optional[str] = None,
-           aggregation: str = "gps", fss: bool = True,
+def fiscal(aggregation: str = "gps", fss: bool = True,
            unit: Union[str, None] = "gdp",
            start_date: Union[str, date, None] = None,
            end_date: Union[str, date, None] = None, cum: int = 1,
-           seas_adj: Union[str, None] = None):
-    """Get fiscal accounts data.
+           seas_adj: Union[str, None] = None,
+           update: Union[str, PathLike, None] = None,
+           save: Union[str, PathLike, None] = None,
+           name: Optional[str] = None) -> pd.DataFrame:
+    """
+    Get fiscal accounts data.
 
     Allow choosing government aggregation, whether to exclude the FSS
     (Fideicomiso  de la Seguridad Social, Social Security Trust Fund), the unit
@@ -132,33 +145,40 @@ def fiscal(update: Union[str, PathLike, None] = None,
 
     Parameters
     ----------
-    aggregation : str (default is 'gps')
-        Government aggregation. Can be 'gps' (consolidated public sector),
-        'nfps' (non-financial public sector) or 'gc' (central government).
-    fss : bool (default is True)
-        If True, exclude the FSS's income from gov't revenues and the FSS's
+    aggregation : {'gps', 'nfps', 'gc'}
+        Government aggregation. Can be ``gps`` (consolidated public sector),
+        ``nfps`` (non-financial public sector) or ``gc`` (central government).
+    fss : bool, default True
+        If ``True``, exclude the `FSS's <https://www.impo.com.uy/bases/decretos
+        /71-2018/25>_` income from gov't revenues and the FSS's
         interest revenues from gov't interest payments.
-    unit : str or None (default is 'gdp')
-        Unit in which data should be expressed. Possible values are 'real',
-        'usd', 'real usd' and 'gdp'. If None or another string is set, no unit
-        calculations will be performed, rendering the data as is (current UYU).
-    start_date : str, date or None (default is None)
-        If `unit` is set to 'real' or 'real usd', this parameter and `end_date`
-        control how deflation is calculated.
+    unit : {'gdp', 'usd', 'real', 'real usd'}
+        Unit in which data should be expressed. Possible values are ``real``,
+        ``usd``, ``real usd`` and ``gdp``. If None or another string is set,
+        no unit calculations will be performed, rendering the data as is
+        (current UYU).
+    start_date : str, datetime.date or None, default None
+        If ``unit`` is set to ``real`` or ``real usd``, this parameter and
+        ``end_date`` control how deflation is calculated.
     end_date :
-        If `unit` is set to 'real' or 'real usd', this parameter and
-        `start_date` control how deflation is calculated.
-    cum : int (default is 1)
+        If ``unit`` is set to ``real`` or ``real usd``, this parameter and
+        ``start_date`` control how deflation is calculated.
+    cum : int, default 1
         How many periods to accumulate for rolling sums.
-    seas_adj :
-        Allowed strings: 'trend' or 'seas'.
-    save : str, PathLike or bool (default is False)
-        Path, path-like string pointing to a CSV file for saving, or bool,
-        in which case if True, save in predefined file, or False, don't save.
+    seas_adj : {None, 'trend', 'seas'}
+        Whether to seasonally adjust.
+    update : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to find a CSV
+        for updating, or None, don't update.
+    save : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to save the CSV,
+        or None, don't save.
+    name : str, default None
+        CSV filename for updating and/or saving.
 
     Returns
     -------
-    dataframe : Pandas dataframe
+    Fiscal aggregation : pd.DataFrame
 
     """
     if name is None:
@@ -273,22 +293,28 @@ def fiscal(update: Union[str, PathLike, None] = None,
 def labor_mkt(seas_adj: Union[str, None] = "trend",
               update: Union[str, PathLike, None] = None,
               save: Union[str, PathLike, None] = None,
-              name: Optional[str] = None):
-    """Get labor market data.
+              name: Optional[str] = None) -> pd.DataFrame:
+    """
+    Get labor market data.
 
     Allow choosing seasonal adjustment.
 
     Parameters
     ----------
-    seas_adj :
-        Allowed strings: 'trend' or 'seas'.
-    save : str, PathLike or bool (default is False)
-        Path, path-like string pointing to a CSV file for saving, or bool,
-        in which case if True, save in predefined file, or False, don't save.
+    seas_adj : {'trend', 'seas', None}
+        Whether to seasonally adjust.
+    update : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to find a CSV
+        for updating, or None, don't update.
+    save : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to save the CSV,
+        or None, don't save.
+    name : str, default None
+        CSV filename for updating and/or saving.
 
     Returns
     -------
-    dataframe : Pandas dataframe
+    Labor market data : Pandas dataframe
 
     """
     if name is None:
@@ -317,42 +343,48 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
                  variation: Union[str, None] = None,
                  update: Union[str, PathLike, None] = None,
                  save: Union[str, PathLike, None] = None,
-                 name: Optional[str] = None):
+                 name: Optional[str] = None) -> pd.DataFrame:
     """Get national accounts data.
 
     Attempt to find one of the available data tables with the selected
-    combination of parameters (`supply`, `real`. `index` and `seas_adj`).
+    combination of parameters (``supply``, ``real``. ``index`` and
+    ``seas_adj``).
 
     Parameters
     ----------
-    supply : bool (default is True)
+    supply : bool, default True
         Supply or demand side.
-    real : bool (default is True)
+    real : bool, default True
         Constant or current.
-    index : bool (default is False)
+    index : bool, default False
         Base 100 index or not.
-    seas_adj : bool (default is True)
+    seas_adj : bool, default True
         Seasonally adjusted or not.
-    usd : bool (default is False)
+    usd : bool, default False
         If True, convert to USD.
-    cum : int (default is 1)
+    cum : int, default 1
         How many periods to accumulate for rolling sums.
-    cust_seas_adj : str or None (default is None)
-        Allowed strings: 'trend' or 'seas'.
-    variation : str or None (default is None)
-        Type of percentage change to calculate. Can be 'last', 'inter' or
-        'annual'.
-    save : str, PathLike or bool (default is False)
-        Path, path-like string pointing to a CSV file for saving, or bool,
-        in which case if True, save in predefined file, or False, don't save.
+    cust_seas_adj : {None, 'trend', 'seas'}
+        Whether to seasonally adjust.
+    variation : {None, 'last', 'inter', 'annual}
+        Type of percentage change to calculate. Can be ``last``, ``inter`` or
+        ``annual``.
+    update : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to find a CSV
+        for updating, or None, don't update.
+    save : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to save the CSV,
+        or None, don't save.
+    name : str, default None
+        CSV filename for updating and/or saving.
 
     Returns
     -------
-    dataframe : Pandas dataframe
+    Selected national accounts : pd.DataFrame
 
     Raises
     ------
-    KeyError
+    KeyError:
         If the combined parameters do not correspond to an available table.
 
     """
