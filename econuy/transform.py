@@ -264,7 +264,7 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
 def rolling(df: pd.DataFrame, periods: Optional[int] = None,
             operation: str = "sum") -> pd.DataFrame:
     """
-    Wrapper for the `rolling method <hhttps://pandas.pydata.org/pandas-docs/
+    Wrapper for the `rolling method <https://pandas.pydata.org/pandas-docs/
     stable/reference/api/pandas.DataFrame.rolling.html>`_ in Pandas.
 
     If ``periods`` is ``None``, try to infer the frequency and set ``periods``
