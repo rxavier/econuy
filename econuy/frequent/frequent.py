@@ -41,13 +41,13 @@ def inflation(update: Union[str, PathLike, None] = None,
         name = "tfm_prices"
     data = cpi.get(update=update, revise_rows=6,
                    save=save, force_update=False)
-    interannual = variations.chg_diff(data, operation="chg", period_op="inter")
-    monthly = variations.chg_diff(data, operation="chg", period_op="last")
-    trend, seasadj = seasonal.decompose(data, trading=True, outlier=False)
-    monthly_sa = variations.chg_diff(seasadj, operation="chg",
-                                     period_op="last")
-    monthly_trend = variations.chg_diff(trend, operation="chg",
-                                        period_op="last")
+    interannual = econuy.processing.transform.chg_diff(data, operation="chg", period_op="inter")
+    monthly = econuy.processing.transform.chg_diff(data, operation="chg", period_op="last")
+    trend, seasadj = econuy.processing.transform.decompose(data, trading=True, outlier=False)
+    monthly_sa = econuy.processing.transform.chg_diff(seasadj, operation="chg",
+                                                      period_op="last")
+    monthly_trend = econuy.processing.transform.chg_diff(trend, operation="chg",
+                                                         period_op="last")
     output = pd.concat([data, interannual, monthly,
                         monthly_sa, monthly_trend], axis=1)
 
@@ -109,7 +109,7 @@ def exchange_rate(eop: bool = False, sell: bool = True,
         output = output.iloc[:, 0].to_frame()
 
     if seas_adj in ["trend", "seas"] and cum == 1:
-        trend, seasadj = seasonal.decompose(output, trading=True, outlier=True)
+        trend, seasadj = econuy.processing.transform.decompose(output, trading=True, outlier=True)
         if seas_adj == "trend":
             output = pd.concat([output, trend], axis=1)
         elif seas_adj == "seas":
@@ -272,8 +272,8 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     elif unit == "real":
         output = transform.convert_real(output, start_date=start_date, end_date=end_date)
     if seas_adj in ["trend", "seas"] and unit != "gdp" and cum == 1:
-        output_trend, output_seasadj = seasonal.decompose(output, trading=True,
-                                                          outlier=True)
+        output_trend, output_seasadj = econuy.processing.transform.decompose(output, trading=True,
+                                                                             outlier=True)
         if seas_adj == "trend":
             output = output_trend
         elif seas_adj == "seas":
@@ -325,7 +325,7 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
     output = data
 
     if seas_adj in ["trend", "seas"]:
-        trend, seasadj = seasonal.decompose(data, trading=True, outlier=True)
+        trend, seasadj = econuy.processing.transform.decompose(data, trading=True, outlier=True)
         if seas_adj == "trend":
             output = pd.concat([data, trend], axis=1)
         elif seas_adj == "seas":
@@ -422,7 +422,7 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
         output = transform.convert_usd(output)
 
     if cust_seas_adj is not None and seas_adj is False and cum == 1:
-        trend, seasadj = seasonal.decompose(output, trading=True, outlier=True)
+        trend, seasadj = econuy.processing.transform.decompose(output, trading=True, outlier=True)
         if cust_seas_adj == "trend":
             output = trend
         elif cust_seas_adj == "seas":
@@ -435,8 +435,8 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
         output = econuy.processing.transform.rolling(output, periods=cum, operation="sum")
 
     if variation in ["last", "inter", "annual"]:
-        output = variations.chg_diff(output, operation="chg",
-                                     period_op=variation)
+        output = econuy.processing.transform.chg_diff(output, operation="chg",
+                                                      period_op=variation)
     elif variation is not None:
         print("Only 'last', 'inter' and 'annual' are "
               "possible values for 'variation'")

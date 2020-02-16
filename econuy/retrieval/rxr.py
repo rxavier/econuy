@@ -8,6 +8,7 @@ import pandas as pd
 import requests
 from pandas.tseries.offsets import MonthEnd
 
+import econuy.processing.transform
 from econuy.processing import index
 from econuy.resources import updates, columns
 from econuy.resources.lstrings import reer_url, ar_cpi_url, ar_cpi_payload
@@ -186,8 +187,8 @@ def get_custom(update: Union[str, PathLike, None] = None,
     columns._setmeta(output, area="Precios y salarios", currency="-",
                      inf_adj="-", index="-", seas_adj="NSA",
                      ts_type="Flujo", cumperiods=1)
-    output = index.base_index(output, start_date="2010-01-01",
-                              end_date="2010-12-31", base=100)
+    output = econuy.processing.transform.base_index(output, start_date="2010-01-01",
+                                                    end_date="2010-12-31", base=100)
 
     if update is not None:
         output = updates._revise(new_data=proc, prev_data=previous_data,

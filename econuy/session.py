@@ -255,12 +255,12 @@ class Session(object):
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                output = variations.chg_diff(value, operation=operation,
-                                             period_op=period_op)
+                output = econuy.processing.transform.chg_diff(value, operation=operation,
+                                                              period_op=period_op)
                 self.dataset.update({key: output})
         else:
-            output = variations.chg_diff(self.dataset, operation=operation,
-                                         period_op=period_op)
+            output = econuy.processing.transform.chg_diff(self.dataset, operation=operation,
+                                                          period_op=period_op)
             self.dataset = output
 
         return self
@@ -280,11 +280,11 @@ class Session(object):
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                result = seasonal.decompose(value,
-                                            trading=trading,
-                                            outlier=outlier,
-                                            x13_binary=x13_binary,
-                                            search_parents=search_parents)
+                result = econuy.processing.transform.decompose(value,
+                                                               trading=trading,
+                                                               outlier=outlier,
+                                                               x13_binary=x13_binary,
+                                                               search_parents=search_parents)
                 if flavor == "trend":
                     output = result[0]
                 elif flavor == "seas" or type == "seasonal":
@@ -293,11 +293,11 @@ class Session(object):
                     output = result
                 self.dataset.update({key: output})
         else:
-            result = seasonal.decompose(self.dataset,
-                                        trading=trading,
-                                        outlier=outlier,
-                                        x13_binary=x13_binary,
-                                        search_parents=search_parents)
+            result = econuy.processing.transform.decompose(self.dataset,
+                                                           trading=trading,
+                                                           outlier=outlier,
+                                                           x13_binary=x13_binary,
+                                                           search_parents=search_parents)
             if flavor == "trend":
                 output = result[0]
             elif flavor == "seas" or type == "seasonal":
@@ -363,12 +363,12 @@ class Session(object):
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                output = index.base_index(value, start_date=start_date,
-                                          end_date=end_date, base=base)
+                output = econuy.processing.transform.base_index(value, start_date=start_date,
+                                                                end_date=end_date, base=base)
                 self.dataset.update({key: output})
         else:
-            output = index.base_index(self.dataset, start_date=start_date,
-                                      end_date=end_date, base=base)
+            output = econuy.processing.transform.base_index(self.dataset, start_date=start_date,
+                                                            end_date=end_date, base=base)
             self.dataset = output
 
         return self
