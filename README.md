@@ -23,6 +23,8 @@ python setup.py install
 
 ## Usage
 
+**[Read the documentation](https://econuy.readthedocs.io/)**
+
 ### The `Session()` class
 
 #### Basics
