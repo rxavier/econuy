@@ -24,8 +24,8 @@ class Session(object):
     revise_rows : {'nodup', 'auto', int}
         Defines how to process data updates. An integer indicates how many rows
         to remove from the tail of the dataframe and replace with new data.
-        String can either be 'auto', which automatically determines number of
-        rows to replace from the inferred data frequency, or 'nodup',
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
     force_update : bool, default False
         Whether to force download even if data was recently modified.
@@ -68,8 +68,8 @@ class Session(object):
         **kwargs
             These arguments are passed to
             :func:`econuy.retrieval.commodity_index.get`. There's only two
-            options: `force_update_weights: bool` and
-            `force_update_prices: bool` which are self-explanatory. Generally
+            options: ``force_update_weights: bool`` and
+            ``force_update_prices: bool`` which are self-explanatory. Generally
             you will need to update prices but not weights since the latter are
             annual and take a long time to download.
 

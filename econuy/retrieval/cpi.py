@@ -24,8 +24,8 @@ def get(update: Union[str, PathLike, None] = None,
     revise_rows : {'nodup', 'auto', int}
         Defines how to process data updates. An integer indicates how many rows
         to remove from the tail of the dataframe and replace with new data.
-        String can either be 'auto', which automatically determines number of
-        rows to replace from the inferred data frequency, or 'nodup',
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
