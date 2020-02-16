@@ -5,12 +5,13 @@ from typing import Union, Optional
 
 import pandas as pd
 
-import econuy.processing.transform
 from econuy.frequent.frequent import (inflation, fiscal, nat_accounts,
                                       exchange_rate, labor_mkt)
-from econuy.processing import variations, freqs, seasonal, transform, index
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
                               labor, rxr, commodity_index, reserves)
+from econuy.transform import (convert_gdp, convert_real, convert_usd,
+                              rolling, freq_resample, decompose, base_index,
+                              chg_diff)
 
 
 class Session(object):
@@ -33,6 +34,7 @@ class Session(object):
         Current working dataset. Initialized with an empty dataframe.
 
     """
+
     def __init__(self,
                  loc_dir: Union[str, PathLike] = "econuy-data",
                  revise_rows: Union[int, str] = "nodup",
@@ -232,14 +234,14 @@ class Session(object):
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                output = econuy.processing.transform.freq_resample(value, target=target,
-                                                                   operation=operation,
-                                                                   interpolation=interpolation)
+                output = freq_resample(value, target=target,
+                                       operation=operation,
+                                       interpolation=interpolation)
                 self.dataset.update({key: output})
         else:
-            output = econuy.processing.transform.freq_resample(self.dataset, target=target,
-                                                               operation=operation,
-                                                               interpolation=interpolation)
+            output = freq_resample(self.dataset, target=target,
+                                   operation=operation,
+                                   interpolation=interpolation)
             self.dataset = output
 
         return self
@@ -255,12 +257,12 @@ class Session(object):
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                output = econuy.processing.transform.chg_diff(value, operation=operation,
-                                                              period_op=period_op)
+                output = chg_diff(value, operation=operation,
+                                  period_op=period_op)
                 self.dataset.update({key: output})
         else:
-            output = econuy.processing.transform.chg_diff(self.dataset, operation=operation,
-                                                          period_op=period_op)
+            output = chg_diff(self.dataset, operation=operation,
+                              period_op=period_op)
             self.dataset = output
 
         return self
@@ -280,11 +282,11 @@ class Session(object):
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                result = econuy.processing.transform.decompose(value,
-                                                               trading=trading,
-                                                               outlier=outlier,
-                                                               x13_binary=x13_binary,
-                                                               search_parents=search_parents)
+                result = decompose(value,
+                                   trading=trading,
+                                   outlier=outlier,
+                                   x13_binary=x13_binary,
+                                   search_parents=search_parents)
                 if flavor == "trend":
                     output = result[0]
                 elif flavor == "seas" or type == "seasonal":
@@ -293,11 +295,11 @@ class Session(object):
                     output = result
                 self.dataset.update({key: output})
         else:
-            result = econuy.processing.transform.decompose(self.dataset,
-                                                           trading=trading,
-                                                           outlier=outlier,
-                                                           x13_binary=x13_binary,
-                                                           search_parents=search_parents)
+            result = decompose(self.dataset,
+                               trading=trading,
+                               outlier=outlier,
+                               x13_binary=x13_binary,
+                               search_parents=search_parents)
             if flavor == "trend":
                 output = result[0]
             elif flavor == "seas" or type == "seasonal":
@@ -324,27 +326,27 @@ class Session(object):
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
                 if flavor == "usd":
-                    output = transform.convert_usd(value, update=update,
-                                                   save=save)
+                    output = convert_usd(value, update=update,
+                                         save=save)
                 elif flavor == "real":
-                    output = transform.convert_real(value, update=update,
-                                                    save=save, **kwargs)
+                    output = convert_real(value, update=update,
+                                          save=save, **kwargs)
                 elif flavor == "pcgdp":
-                    output = transform.convert_gdp(value, update=update,
-                                                   save=save, **kwargs)
+                    output = convert_gdp(value, update=update,
+                                         save=save, **kwargs)
                 else:
                     output = pd.DataFrame()
                 self.dataset.update({key: output})
         else:
             if flavor == "usd":
-                output = transform.convert_usd(self.dataset, update=update,
-                                               save=save)
+                output = convert_usd(self.dataset, update=update,
+                                     save=save)
             elif flavor == "real":
-                output = transform.convert_real(self.dataset, update=update,
-                                                save=save, **kwargs)
+                output = convert_real(self.dataset, update=update,
+                                      save=save, **kwargs)
             elif flavor == "pcgdp":
-                output = transform.convert_gdp(self.dataset, update=update,
-                                               save=save, **kwargs)
+                output = convert_gdp(self.dataset, update=update,
+                                     save=save, **kwargs)
             else:
                 output = pd.DataFrame()
             self.dataset = output
@@ -363,12 +365,12 @@ class Session(object):
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                output = econuy.processing.transform.base_index(value, start_date=start_date,
-                                                                end_date=end_date, base=base)
+                output = base_index(value, start_date=start_date,
+                                    end_date=end_date, base=base)
                 self.dataset.update({key: output})
         else:
-            output = econuy.processing.transform.base_index(self.dataset, start_date=start_date,
-                                                            end_date=end_date, base=base)
+            output = base_index(self.dataset, start_date=start_date,
+                                end_date=end_date, base=base)
             self.dataset = output
 
         return self
@@ -385,12 +387,12 @@ class Session(object):
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                output = econuy.processing.transform.rolling(value, periods=periods,
-                                                             operation=operation)
+                output = rolling(value, periods=periods,
+                                 operation=operation)
                 self.dataset.update({key: output})
         else:
-            output = econuy.processing.transform.rolling(self.dataset, periods=periods,
-                                                         operation=operation)
+            output = rolling(self.dataset, periods=periods,
+                             operation=operation)
             self.dataset = output
 
         return self

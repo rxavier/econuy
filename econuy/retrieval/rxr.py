@@ -8,11 +8,10 @@ import pandas as pd
 import requests
 from pandas.tseries.offsets import MonthEnd
 
-import econuy.processing.transform
-from econuy.processing import index
 from econuy.resources import updates, columns
 from econuy.resources.lstrings import reer_url, ar_cpi_url, ar_cpi_payload
 from econuy.retrieval import cpi, nxr
+from econuy.transform import base_index
 
 
 def get_official(update: Union[str, PathLike, None] = None,
@@ -157,7 +156,8 @@ def get_custom(update: Union[str, PathLike, None] = None,
     ar_black_xr, ar_cpi = _missing_ar()
     proc = raw.copy()
     proc["AR.PCPI_IX"] = ar_cpi
-    ar_black_xr = pd.concat([ar_black_xr, proc["AR.ENDA_XDC_USD_RATE"]], axis=1)
+    ar_black_xr = pd.concat([ar_black_xr, proc["AR.ENDA_XDC_USD_RATE"]],
+                            axis=1)
     ar_black_xr[0] = np.where(pd.isna(ar_black_xr[0]),
                               ar_black_xr["AR.ENDA_XDC_USD_RATE"],
                               ar_black_xr[0])
@@ -187,8 +187,8 @@ def get_custom(update: Union[str, PathLike, None] = None,
     columns._setmeta(output, area="Precios y salarios", currency="-",
                      inf_adj="-", index="-", seas_adj="NSA",
                      ts_type="Flujo", cumperiods=1)
-    output = econuy.processing.transform.base_index(output, start_date="2010-01-01",
-                                                    end_date="2010-12-31", base=100)
+    output = base_index(output, start_date="2010-01-01",
+                        end_date="2010-12-31", base=100)
 
     if update is not None:
         output = updates._revise(new_data=proc, prev_data=previous_data,
