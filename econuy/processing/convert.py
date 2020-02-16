@@ -9,9 +9,9 @@ from econuy.resources import columns
 from econuy.retrieval import cpi, national_accounts, nxr
 
 
-def usd(df: pd.DataFrame,
-        update: Union[str, PathLike, None] = None,
-        save: Union[str, PathLike, None] = None) -> pd.DataFrame:
+def convert_usd(df: pd.DataFrame,
+                update: Union[str, PathLike, None] = None,
+                save: Union[str, PathLike, None] = None) -> pd.DataFrame:
     """
     Convert dataframe from UYU to USD.
 
@@ -63,10 +63,10 @@ def usd(df: pd.DataFrame,
     return converted_df
 
 
-def real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
-         end_date: Union[str, date, None] = None,
-         update: Union[str, PathLike, None] = None,
-         save: Union[str, PathLike, None] = None) -> pd.DataFrame:
+def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
+                 end_date: Union[str, date, None] = None,
+                 update: Union[str, PathLike, None] = None,
+                 save: Union[str, PathLike, None] = None) -> pd.DataFrame:
     """
     Convert dataframe to real prices.
 
@@ -127,9 +127,9 @@ def real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     return converted_df
 
 
-def pcgdp(df: pd.DataFrame, hifreq: bool = True,
-          update: Union[str, PathLike, None] = None,
-          save: Union[str, PathLike, None] = None) -> pd.DataFrame:
+def convert_gdp(df: pd.DataFrame, hifreq: bool = True,
+                update: Union[str, PathLike, None] = None,
+                save: Union[str, PathLike, None] = None) -> pd.DataFrame:
     """
     Calculate dataframe as percentage of GDP.
 

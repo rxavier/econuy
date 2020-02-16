@@ -315,35 +315,35 @@ class Session(object):
 
         See Also
         --------
-        :func:`~econuy.processing.convert.usd`,
-        :func:`~econuy.processing.convert.real`,
-        :func:`~econuy.processing.convert.pcgdp`
+        :func:`~econuy.processing.convert.convert_usd`,
+        :func:`~econuy.processing.convert.convert_real`,
+        :func:`~econuy.processing.convert.convert_gdp`
 
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
                 if flavor == "usd":
-                    output = convert.usd(value, update=update,
-                                         save=save)
+                    output = convert.convert_usd(value, update=update,
+                                                 save=save)
                 elif flavor == "real":
-                    output = convert.real(value, update=update,
-                                          save=save, **kwargs)
+                    output = convert.convert_real(value, update=update,
+                                                  save=save, **kwargs)
                 elif flavor == "pcgdp":
-                    output = convert.pcgdp(value, update=update,
-                                           save=save, **kwargs)
+                    output = convert.convert_gdp(value, update=update,
+                                                 save=save, **kwargs)
                 else:
                     output = pd.DataFrame()
                 self.dataset.update({key: output})
         else:
             if flavor == "usd":
-                output = convert.usd(self.dataset, update=update,
-                                     save=save)
+                output = convert.convert_usd(self.dataset, update=update,
+                                             save=save)
             elif flavor == "real":
-                output = convert.real(self.dataset, update=update,
-                                      save=save, **kwargs)
+                output = convert.convert_real(self.dataset, update=update,
+                                              save=save, **kwargs)
             elif flavor == "pcgdp":
-                output = convert.pcgdp(self.dataset, update=update,
-                                       save=save, **kwargs)
+                output = convert.convert_gdp(self.dataset, update=update,
+                                             save=save, **kwargs)
             else:
                 output = pd.DataFrame()
             self.dataset = output

@@ -109,7 +109,7 @@ def _lin_gdp(update: Union[str, PathLike, None] = None,
              force_update: bool = False):
     """Get nominal GDP data in UYU and USD with forecasts.
 
-    Update nominal GDP data for use in the `convert.pcgdp()` function.
+    Update nominal GDP data for use in the `convert.convert_gdp()` function.
     Get IMF forecasts for year of last available data point and the next
     year (for example, if the last period available at the BCU website is
     september 2019, fetch forecasts for 2019 and 2020).
@@ -147,7 +147,7 @@ def _lin_gdp(update: Union[str, PathLike, None] = None,
     data_uyu = get(update=update, revise_rows=4, save=save,
                    force_update=False)["gdp_cur_nsa"]
     data_uyu = freqs.rolling(data_uyu, periods=4, operation="sum")
-    data_usd = convert.usd(data_uyu)
+    data_usd = convert.convert_usd(data_uyu)
 
     data = [data_uyu, data_usd]
     last_year = data_uyu.index.max().year
