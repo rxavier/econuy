@@ -6,9 +6,9 @@ from typing import Union, Optional, Dict
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
+from econuy import transform
 from econuy.resources import updates, columns
 from econuy.resources.lstrings import nat_accounts_metadata
-from econuy.transform import convert_usd, rolling
 
 
 def get(update: Union[str, PathLike, None] = None,
@@ -146,8 +146,8 @@ def _lin_gdp(update: Union[str, PathLike, None] = None,
 
     data_uyu = get(update=update, revise_rows=4, save=save,
                    force_update=False)["gdp_cur_nsa"]
-    data_uyu = rolling(data_uyu, periods=4, operation="sum")
-    data_usd = convert_usd(data_uyu)
+    data_uyu = transform.rolling(data_uyu, periods=4, operation="sum")
+    data_usd = transform.convert_usd(data_uyu)
 
     data = [data_uyu, data_usd]
     last_year = data_uyu.index.max().year

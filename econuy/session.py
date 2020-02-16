@@ -5,13 +5,9 @@ from typing import Union, Optional
 
 import pandas as pd
 
-from econuy.frequent.frequent import (inflation, fiscal, nat_accounts,
-                                      exchange_rate, labor_mkt)
+from econuy import frequent, transform
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
                               labor, rxr, commodity_index, reserves)
-from econuy.transform import (convert_gdp, convert_real, convert_usd,
-                              rolling, freq_resample, decompose, base_index,
-                              chg_diff)
 
 
 class Session(object):
@@ -193,29 +189,29 @@ class Session(object):
             save_path = None
 
         if dataset == "inflation":
-            output = inflation(update=update_path,
-                               save=save_path,
-                               name=override)
+            output = frequent.inflation(update=update_path,
+                                        save=save_path,
+                                        name=override)
         elif dataset == "fiscal":
-            output = fiscal(update=update_path,
-                            save=save_path,
-                            name=override,
-                            **kwargs)
+            output = frequent.fiscal(update=update_path,
+                                     save=save_path,
+                                     name=override,
+                                     **kwargs)
         elif dataset == "nxr":
-            output = exchange_rate(update=update_path,
-                                   save=save_path,
-                                   name=override,
-                                   **kwargs)
+            output = frequent.exchange_rate(update=update_path,
+                                            save=save_path,
+                                            name=override,
+                                            **kwargs)
         elif dataset == "naccounts" or dataset == "na":
-            output = nat_accounts(update=update_path,
-                                  save=save_path,
-                                  name=override,
-                                  **kwargs)
+            output = frequent.nat_accounts(update=update_path,
+                                           save=save_path,
+                                           name=override,
+                                           **kwargs)
         elif dataset == "labor" or dataset == "labour":
-            output = labor_mkt(update=update_path,
-                               save=save_path,
-                               name=override,
-                               **kwargs)
+            output = frequent.labor_mkt(update=update_path,
+                                        save=save_path,
+                                        name=override,
+                                        **kwargs)
         else:
             output = pd.DataFrame()
         self.dataset = output
@@ -229,19 +225,19 @@ class Session(object):
 
         See Also
         --------
-        :func:`~econuy.processing.freqs.freq_resample`
+        :func:`~econuy.transform.freq_resample`
 
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                output = freq_resample(value, target=target,
-                                       operation=operation,
-                                       interpolation=interpolation)
+                output = transform.freq_resample(value, target=target,
+                                                 operation=operation,
+                                                 interpolation=interpolation)
                 self.dataset.update({key: output})
         else:
-            output = freq_resample(self.dataset, target=target,
-                                   operation=operation,
-                                   interpolation=interpolation)
+            output = transform.freq_resample(self.dataset, target=target,
+                                             operation=operation,
+                                             interpolation=interpolation)
             self.dataset = output
 
         return self
@@ -252,17 +248,17 @@ class Session(object):
 
         See Also
         --------
-        :func:`~econuy.processing.variations.chg_diff`
+        :func:`~econuy.transform.chg_diff`
 
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                output = chg_diff(value, operation=operation,
-                                  period_op=period_op)
+                output = transform.chg_diff(value, operation=operation,
+                                            period_op=period_op)
                 self.dataset.update({key: output})
         else:
-            output = chg_diff(self.dataset, operation=operation,
-                              period_op=period_op)
+            output = transform.chg_diff(self.dataset, operation=operation,
+                                        period_op=period_op)
             self.dataset = output
 
         return self
@@ -277,16 +273,16 @@ class Session(object):
 
         See Also
         --------
-        :func:`~econuy.processing.seasonal.decompose`
+        :func:`~econuy.transform.decompose`
 
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                result = decompose(value,
-                                   trading=trading,
-                                   outlier=outlier,
-                                   x13_binary=x13_binary,
-                                   search_parents=search_parents)
+                result = transform.decompose(value,
+                                             trading=trading,
+                                             outlier=outlier,
+                                             x13_binary=x13_binary,
+                                             search_parents=search_parents)
                 if flavor == "trend":
                     output = result[0]
                 elif flavor == "seas" or type == "seasonal":
@@ -295,11 +291,11 @@ class Session(object):
                     output = result
                 self.dataset.update({key: output})
         else:
-            result = decompose(self.dataset,
-                               trading=trading,
-                               outlier=outlier,
-                               x13_binary=x13_binary,
-                               search_parents=search_parents)
+            result = transform.decompose(self.dataset,
+                                         trading=trading,
+                                         outlier=outlier,
+                                         x13_binary=x13_binary,
+                                         search_parents=search_parents)
             if flavor == "trend":
                 output = result[0]
             elif flavor == "seas" or type == "seasonal":
@@ -318,35 +314,35 @@ class Session(object):
 
         See Also
         --------
-        :func:`~econuy.processing.transform.convert_usd`,
-        :func:`~econuy.processing.transform.convert_real`,
-        :func:`~econuy.processing.transform.convert_gdp`
+        :func:`~econuy.transform.convert_usd`,
+        :func:`~econuy.transform.convert_real`,
+        :func:`~econuy.transform.convert_gdp`
 
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
                 if flavor == "usd":
-                    output = convert_usd(value, update=update,
-                                         save=save)
+                    output = transform.convert_usd(value, update=update,
+                                                   save=save)
                 elif flavor == "real":
-                    output = convert_real(value, update=update,
-                                          save=save, **kwargs)
+                    output = transform.convert_real(value, update=update,
+                                                    save=save, **kwargs)
                 elif flavor == "pcgdp":
-                    output = convert_gdp(value, update=update,
-                                         save=save, **kwargs)
+                    output = transform.convert_gdp(value, update=update,
+                                                   save=save, **kwargs)
                 else:
                     output = pd.DataFrame()
                 self.dataset.update({key: output})
         else:
             if flavor == "usd":
-                output = convert_usd(self.dataset, update=update,
-                                     save=save)
+                output = transform.convert_usd(self.dataset, update=update,
+                                               save=save)
             elif flavor == "real":
-                output = convert_real(self.dataset, update=update,
-                                      save=save, **kwargs)
+                output = transform.convert_real(self.dataset, update=update,
+                                                save=save, **kwargs)
             elif flavor == "pcgdp":
-                output = convert_gdp(self.dataset, update=update,
-                                     save=save, **kwargs)
+                output = transform.convert_gdp(self.dataset, update=update,
+                                               save=save, **kwargs)
             else:
                 output = pd.DataFrame()
             self.dataset = output
@@ -360,17 +356,17 @@ class Session(object):
 
         See Also
         --------
-        :func:`~econuy.processing.index.base_index`
+        :func:`~econuy.transform.base_index`
 
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                output = base_index(value, start_date=start_date,
-                                    end_date=end_date, base=base)
+                output = transform.base_index(value, start_date=start_date,
+                                              end_date=end_date, base=base)
                 self.dataset.update({key: output})
         else:
-            output = base_index(self.dataset, start_date=start_date,
-                                end_date=end_date, base=base)
+            output = transform.base_index(self.dataset, start_date=start_date,
+                                          end_date=end_date, base=base)
             self.dataset = output
 
         return self
@@ -382,17 +378,17 @@ class Session(object):
 
         See Also
         --------
-        :func:`~econuy.processing.freqs.rolling`
+        :func:`~econuy.transform.rolling`
 
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                output = rolling(value, periods=periods,
-                                 operation=operation)
+                output = transform.rolling(value, periods=periods,
+                                           operation=operation)
                 self.dataset.update({key: output})
         else:
-            output = rolling(self.dataset, periods=periods,
-                             operation=operation)
+            output = transform.rolling(self.dataset, periods=periods,
+                                       operation=operation)
             self.dataset = output
 
         return self
