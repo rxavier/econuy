@@ -50,16 +50,16 @@ def convert_usd(df: pd.DataFrame,
 
     if df.columns.get_level_values("Tipo")[0] == "Flujo":
         columns._setmeta(nxr_data, ts_type="Flujo")
-        nxr_freq = freq_resample(nxr_data, target=inferred_freq,
-                                 operation="average").iloc[:, [1]]
+        nxr_freq = resample(nxr_data, target=inferred_freq,
+                            operation="average").iloc[:, [1]]
         cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
         nxr_freq = rolling(nxr_freq, periods=cum_periods,
                            operation="average")
 
     else:
         columns._setmeta(nxr_data, ts_type="Stock")
-        nxr_freq = freq_resample(nxr_data, target=inferred_freq,
-                                 operation="average").iloc[:, [3]]
+        nxr_freq = resample(nxr_data, target=inferred_freq,
+                            operation="average").iloc[:, [3]]
 
     nxr_to_use = nxr_freq[nxr_freq.index.isin(df.index)].iloc[:, 0]
     converted_df = df.apply(lambda x: x / nxr_to_use)
@@ -90,6 +90,8 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
         If set to a date-like string or a date, and ``end_date`` is None, the
         base period will be ``start_date``.
     end_date : str, datetime.date or None, default None
+        If ``start_date`` is set, calculate so that the data is in constant
+        prices of ``start_date``-``end_date``.
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or None, don't update.
@@ -106,8 +108,8 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     cpi_data = cpi.get(update=update, revise_rows=6, save=save,
                        force_update=False)
     columns._setmeta(cpi_data, ts_type="Flujo")
-    cpi_freq = freq_resample(cpi_data, target=inferred_freq,
-                             operation="average").iloc[:, [0]]
+    cpi_freq = resample(cpi_data, target=inferred_freq,
+                        operation="average").iloc[:, [0]]
     cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
     cpi_freq = rolling(cpi_freq, periods=cum_periods,
                        operation="average")
@@ -169,8 +171,8 @@ def convert_gdp(df: pd.DataFrame, hifreq: bool = True,
                                      save=save, force_update=False)
 
     if hifreq is True:
-        gdp = freq_resample(gdp, target=inferred_freq,
-                            operation="upsample", interpolation="linear")
+        gdp = resample(gdp, target=inferred_freq,
+                       operation="upsample", interpolation="linear")
     else:
         gdp = gdp.resample(inferred_freq, convention="end").asfreq()
 
@@ -187,8 +189,8 @@ def convert_gdp(df: pd.DataFrame, hifreq: bool = True,
     return converted_df
 
 
-def freq_resample(df: pd.DataFrame, target: str, operation: str = "sum",
-                  interpolation: str = "linear") -> pd.DataFrame:
+def resample(df: pd.DataFrame, target: str, operation: str = "sum",
+             interpolation: str = "linear") -> pd.DataFrame:
     """
     Wrapper for the `resample method <https://pandas.pydata.org/pandas-docs
     stable/reference/api/pandas.DataFrame.resample.html>`_ in Pandas.
@@ -504,7 +506,7 @@ def chg_diff(df: pd.DataFrame, operation: str = "chg",
     ----------
     df : pd.DataFrame
         Input dataframe.
-    operation : {'chg', 'dif'}
+    operation : {'chg', 'diff'}
         ``chg`` for percent change or ``diff`` for differences.
     period_op : {'last', 'inter', 'annual'}
         Period with which to calculate change or difference. ``last`` for
@@ -554,10 +556,12 @@ def chg_diff(df: pd.DataFrame, operation: str = "chg",
     if period_op == "annual":
 
         if df.columns.get_level_values("Tipo")[0] == "Stock":
-            output = df.apply(type_change[period_op][operation][0]).multiply(100)
+            output = df.apply(type_change[period_op][operation][0]).multiply(
+                100)
         else:
             output = rolling(df, operation="sum")
-            output = output.apply(type_change[period_op][operation][0]).multiply(100)
+            output = output.apply(
+                type_change[period_op][operation][0]).multiply(100)
 
         columns._setmeta(output, index=type_change[period_op][operation][1])
 

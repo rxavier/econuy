@@ -225,19 +225,19 @@ class Session(object):
 
         See Also
         --------
-        :func:`~econuy.transform.freq_resample`
+        :func:`~econuy.transform.resample`
 
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                output = transform.freq_resample(value, target=target,
-                                                 operation=operation,
-                                                 interpolation=interpolation)
+                output = transform.resample(value, target=target,
+                                            operation=operation,
+                                            interpolation=interpolation)
                 self.dataset.update({key: output})
         else:
-            output = transform.freq_resample(self.dataset, target=target,
-                                             operation=operation,
-                                             interpolation=interpolation)
+            output = transform.resample(self.dataset, target=target,
+                                        operation=operation,
+                                        interpolation=interpolation)
             self.dataset = output
 
         return self
