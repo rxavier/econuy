@@ -12,8 +12,8 @@
 #
 import os
 import sys
-from econuy import __version__
 sys.path.insert(0, os.path.abspath('../../'))
+from econuy import __version__
 
 
 # -- Project information -----------------------------------------------------
