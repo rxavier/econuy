@@ -314,7 +314,7 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
 
     Returns
     -------
-    Labor market data : Pandas dataframe
+    Labor market data : pd.DataFrame
 
     """
     if name is None:

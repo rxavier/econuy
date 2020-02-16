@@ -37,41 +37,41 @@ from econuy.session import Session
 session = Session(loc_dir="econuy-data", revise_rows="nodup", force_update=False)
 ```
 
-The `Session()` object is initialized with the `loc_dir`, `revise_rows` and `force_update` attributes, plus the `dataset` attribute, which initially holds an empty Pandas dataframe. After each download and transformation method, `dataset` will hold the current working dataset.
+The `Session()` object is initialized with the `loc_dir`, `revise_rows`,  `force_update` and `dataset` attributes.
 
 * `loc_dir` controls where data will be saved and where it will be looked for when updating. It defaults to "econuy-data", and will create the directory if it doesn't exist.
 * `revise_rows` controls the updating mechanism. It can be an integer, denoting how many rows from the data held on disk to replace with new data, or a string. In the latter case, `auto` indicates that the amount of rows to be replaced will be determined from the inferred data frequency, while `nodup` replaces existing data with new data for each time period found in both.
 * `force_update` controls whether whether to redownload data even if existing data in disk was modified recently.
+* `dataset` holds the current working dataset and is initialized with an empty Pandas dataframe.
 
 #### Methods
 
 **`get()`** downloads the basic datasets.
 ```
 session.get(self, dataset: str, update: bool = True, save: bool = True, 
-            override: Optional[str] = None, final: bool = False, **kwargs)
+            override: Optional[str] = None, **kwargs)
 ```
-Available options for the `dataset` argument are "cpi", "fiscal", "nxr", "nacciounts", "labor", "rxr_custom", "rxr_official", "commodity_index", "reserves" and "fx_spot_ff". Most are self explanatory.
+Available options for the `dataset` argument are "cpi", "fiscal", "nxr", "naccounts", "labor", "rxr_custom", "rxr_official", "commodity_index", "reserves" and "fx_spot_ff". Most are self explanatory.
 
-`override` allows setting the CSV's filename to a different one than default (each dataset has a default, for example, "cpi.csv"). `final` controls whether to return the `Session()` object (if False), or to return the dataframe held by the object (if True). In any case, the following are equivalent, and will return a dataframe with consumer price index data:
+`override` allows setting the CSV's filename to a different one than default (each dataset has a default, for example, "cpi.csv").
 
 ```
-df = session.get(dataset=cpi, final=True)
-
 df = session.get(dataset=cpi).dataset
 ```
+Note that the previous code block accessed the `dataset` attribute in order to get a dataframe. Alternatively, one could also call the `final()` method.
 
 **`get_tfm()`** gives access to predefined data pipelines that output frequently used data.
 ```
 session.get_tfm(self, dataset: str, update: bool = True, save: bool = True,
-                override: Optional[str] = None, final: bool = False, **kwargs)
+                override: Optional[str] = None, **kwargs)
 ```
 For example, `session.get_tfm(dataset="inflation")` downloads CPI data, calculates annual inflation (pct change from a year ago), monthly inflation, and seasonally adjusted and trend monthly inflation.
 
 **Transformation methods** take a `Session()` object with a valid dataset and allow performing preset transformation pipelines. For example:
 ```
-df = session.get(dataset="nxr").decompose(flavor="trend", outlier=True, trading=False, final=True)
+df = session.get(dataset="nxr").decompose(flavor="trend", outlier=True, trading=False)
 ```
-will return a dataframe holding the trend component of nominal exchange rate.
+will return a the Session object, with the dataset attribute holding the trend component of nominal exchange rate.
 
 Available transformation methods are 
 * `freq_resample()` - resample data to a different frequency, taking into account whether data is of stock or flow type.
