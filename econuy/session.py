@@ -7,7 +7,7 @@ import pandas as pd
 
 from econuy.frequent.frequent import (inflation, fiscal, nat_accounts,
                                       exchange_rate, labor_mkt)
-from econuy.processing import variations, freqs, seasonal, convert, index
+from econuy.processing import variations, freqs, seasonal, transform, index
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
                               labor, rxr, commodity_index, reserves)
 
@@ -315,35 +315,35 @@ class Session(object):
 
         See Also
         --------
-        :func:`~econuy.processing.convert.convert_usd`,
-        :func:`~econuy.processing.convert.convert_real`,
-        :func:`~econuy.processing.convert.convert_gdp`
+        :func:`~econuy.processing.transform.convert_usd`,
+        :func:`~econuy.processing.transform.convert_real`,
+        :func:`~econuy.processing.transform.convert_gdp`
 
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
                 if flavor == "usd":
-                    output = convert.convert_usd(value, update=update,
-                                                 save=save)
+                    output = transform.convert_usd(value, update=update,
+                                                   save=save)
                 elif flavor == "real":
-                    output = convert.convert_real(value, update=update,
-                                                  save=save, **kwargs)
+                    output = transform.convert_real(value, update=update,
+                                                    save=save, **kwargs)
                 elif flavor == "pcgdp":
-                    output = convert.convert_gdp(value, update=update,
-                                                 save=save, **kwargs)
+                    output = transform.convert_gdp(value, update=update,
+                                                   save=save, **kwargs)
                 else:
                     output = pd.DataFrame()
                 self.dataset.update({key: output})
         else:
             if flavor == "usd":
-                output = convert.convert_usd(self.dataset, update=update,
-                                             save=save)
+                output = transform.convert_usd(self.dataset, update=update,
+                                               save=save)
             elif flavor == "real":
-                output = convert.convert_real(self.dataset, update=update,
-                                              save=save, **kwargs)
+                output = transform.convert_real(self.dataset, update=update,
+                                                save=save, **kwargs)
             elif flavor == "pcgdp":
-                output = convert.convert_gdp(self.dataset, update=update,
-                                             save=save, **kwargs)
+                output = transform.convert_gdp(self.dataset, update=update,
+                                               save=save, **kwargs)
             else:
                 output = pd.DataFrame()
             self.dataset = output

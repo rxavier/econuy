@@ -5,7 +5,7 @@ from typing import Union, Optional
 
 import pandas as pd
 
-from econuy.processing import freqs, variations, seasonal, convert
+from econuy.processing import freqs, variations, seasonal, transform
 from econuy.resources import columns
 from econuy.resources.lstrings import fiscal_metadata
 from econuy.retrieval import (nxr, national_accounts, cpi,
@@ -260,16 +260,16 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
 
     if unit == "gdp":
         output = freqs.rolling(output, periods=12, operation="sum")
-        output = convert.convert_gdp(output, hifreq=True)
+        output = transform.convert_gdp(output, hifreq=True)
     elif unit == "usd":
-        output = convert.convert_usd(output)
+        output = transform.convert_usd(output)
     elif unit == "real usd":
-        output = convert.convert_real(output, start_date=start_date, end_date=end_date)
+        output = transform.convert_real(output, start_date=start_date, end_date=end_date)
         xr = nxr.get(update=update, revise_rows=6, save=save)
         output = output.divide(xr[start_date:end_date].mean()[3])
         columns._setmeta(output, currency="USD")
     elif unit == "real":
-        output = convert.convert_real(output, start_date=start_date, end_date=end_date)
+        output = transform.convert_real(output, start_date=start_date, end_date=end_date)
     if seas_adj in ["trend", "seas"] and unit != "gdp" and cum == 1:
         output_trend, output_seasadj = seasonal.decompose(output, trading=True,
                                                           outlier=True)
@@ -418,7 +418,7 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
         return
 
     if usd is True:
-        output = convert.convert_usd(output)
+        output = transform.convert_usd(output)
 
     if cust_seas_adj is not None and seas_adj is False and cum == 1:
         trend, seasadj = seasonal.decompose(output, trading=True, outlier=True)
