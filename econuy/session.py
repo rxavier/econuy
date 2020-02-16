@@ -5,6 +5,7 @@ from typing import Union, Optional
 
 import pandas as pd
 
+import econuy.retrieval.fx_spot_ff
 from econuy.frequent.frequent import (inflation, fiscal, nat_accounts,
                                       exchange_rate, labor_mkt)
 from econuy.processing import variations, freqs, seasonal, convert, index
@@ -139,9 +140,9 @@ class Session(object):
                                          name=override,
                                          **kwargs)
         elif dataset == "reserves":
-            output = reserves_chg.get(update=update_path,
-                                      save=save_path,
-                                      name=override)
+            output = econuy.retrieval.fx_spot_ff.get_chg(update=update_path,
+                                                         save=save_path,
+                                                         name=override)
         elif dataset == "fx_spot_ff" or dataset == "spot_ff":
             output = fx_spot_ff.get(update=update_path,
                                     save=save_path,
