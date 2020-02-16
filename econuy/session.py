@@ -30,7 +30,6 @@ class Session(object):
         Current working dataset. Initialized with an empty dataframe.
 
     """
-
     def __init__(self,
                  loc_dir: Union[str, PathLike] = "econuy-data",
                  revise_rows: Union[int, str] = "nodup",
@@ -57,7 +56,7 @@ class Session(object):
         ----------
         dataset : {'cpi', 'nxr', 'fiscal', 'naccounts', 'labor', \
                 'comm_index', 'rxr_custom', 'rxr_official', 'reserves', \
-                'fx_spot_ff'}
+                'fx_ops'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -140,7 +139,7 @@ class Session(object):
             output = reserves.get_chg(update=update_path,
                                       save=save_path,
                                       name=override)
-        elif dataset == "fx_spot_ff" or dataset == "spot_ff":
+        elif dataset == "fx_ops" or dataset == "fxops":
             output = reserves.get_operations(update=update_path,
                                              save=save_path,
                                              name=override)
