@@ -47,45 +47,21 @@ Retrieval functions
    :members:
    :undoc-members:
    :show-inheritance:
-.. automodule:: econuy.retrieval.reserves_chg
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.fx_ff
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.fx_spot_ff
+.. automodule:: econuy.retrieval.reserves
    :members:
    :undoc-members:
    :show-inheritance:
 
 Processing functions
 ====================
-.. automodule:: econuy.processing.freqs
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.processing.index
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.processing.variations
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.processing.seasonal
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.processing.convert
+.. automodule:: econuy.transform
    :members:
    :undoc-members:
    :show-inheritance:
 
 Frequent functions
 ==================
-.. automodule:: econuy.frequent.frequent
+.. automodule:: econuy.frequent
    :members:
    :undoc-members:
    :show-inheritance:

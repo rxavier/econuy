@@ -75,8 +75,8 @@ def _weights(update: Union[str, PathLike, None] = None,
     percentage = table.div(table.sum(axis=1), axis=0)
     percentage.index = (pd.to_datetime(percentage.index, format="%Y")
                         + YearEnd(1))
-    rolling = percentage.rolling(window=3, min_periods=3).mean()
-    output = rolling.resample("M").bfill()
+    roll = percentage.rolling(window=3, min_periods=3).mean()
+    output = roll.resample("M").bfill()
 
     beef = ["BOVINE MEAT", "Edible offal of bovine animals, fresh or chilled",
             "Meat and offal (other than liver), of bovine animals, "

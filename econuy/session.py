@@ -5,12 +5,9 @@ from typing import Union, Optional
 
 import pandas as pd
 
-from econuy.frequent.frequent import (inflation, fiscal, nat_accounts,
-                                      exchange_rate, labor_mkt)
-from econuy.processing import variations, freqs, seasonal, convert, index
+from econuy import frequent, transform
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
-                              labor, rxr, commodity_index, reserves_chg,
-                              fx_spot_ff)
+                              labor, rxr, commodity_index, reserves)
 
 
 class Session(object):
@@ -57,7 +54,9 @@ class Session(object):
 
         Parameters
         ----------
-        dataset : {'cpi', 'nxr', 'fiscal', 'naccounts', 'labor', 'comm_index', 'rxr_custom', 'rxr_official', 'reserves', 'fx_spot_ff'}
+        dataset : {'cpi', 'nxr', 'fiscal', 'naccounts', 'labor', \
+                'comm_index', 'rxr_custom', 'rxr_official', 'reserves', \
+                'fx_ops'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -137,13 +136,13 @@ class Session(object):
                                          name=override,
                                          **kwargs)
         elif dataset == "reserves":
-            output = reserves_chg.get(update=update_path,
+            output = reserves.get_chg(update=update_path,
                                       save=save_path,
                                       name=override)
-        elif dataset == "fx_spot_ff" or dataset == "spot_ff":
-            output = fx_spot_ff.get(update=update_path,
-                                    save=save_path,
-                                    name=override)
+        elif dataset == "fx_ops" or dataset == "fxops":
+            output = reserves.get_operations(update=update_path,
+                                             save=save_path,
+                                             name=override)
         else:
             output = pd.DataFrame()
         self.dataset = output
@@ -171,7 +170,7 @@ class Session(object):
             If not None, overrides the saved dataset's default filename.
         **kwargs
             Keyword arguments passed to functions in
-            :mod:`econuy.frequent.frequent`.
+            :mod:`econuy.frequent`.
 
         Returns
         -------
@@ -189,55 +188,55 @@ class Session(object):
             save_path = None
 
         if dataset == "inflation":
-            output = inflation(update=update_path,
-                               save=save_path,
-                               name=override)
+            output = frequent.inflation(update=update_path,
+                                        save=save_path,
+                                        name=override)
         elif dataset == "fiscal":
-            output = fiscal(update=update_path,
-                            save=save_path,
-                            name=override,
-                            **kwargs)
+            output = frequent.fiscal(update=update_path,
+                                     save=save_path,
+                                     name=override,
+                                     **kwargs)
         elif dataset == "nxr":
-            output = exchange_rate(update=update_path,
-                                   save=save_path,
-                                   name=override,
-                                   **kwargs)
+            output = frequent.exchange_rate(update=update_path,
+                                            save=save_path,
+                                            name=override,
+                                            **kwargs)
         elif dataset == "naccounts" or dataset == "na":
-            output = nat_accounts(update=update_path,
-                                  save=save_path,
-                                  name=override,
-                                  **kwargs)
+            output = frequent.nat_accounts(update=update_path,
+                                           save=save_path,
+                                           name=override,
+                                           **kwargs)
         elif dataset == "labor" or dataset == "labour":
-            output = labor_mkt(update=update_path,
-                               save=save_path,
-                               name=override,
-                               **kwargs)
+            output = frequent.labor_mkt(update=update_path,
+                                        save=save_path,
+                                        name=override,
+                                        **kwargs)
         else:
             output = pd.DataFrame()
         self.dataset = output
 
         return self
 
-    def freq_resample(self, target: str, operation: str = "sum",
-                      interpolation: str = "linear"):
+    def resample(self, target: str, operation: str = "sum",
+                 interpolation: str = "linear"):
         """
         Resample to target frequencies.
 
         See Also
         --------
-        :func:`~econuy.processing.freqs.freq_resample`
+        :func:`~econuy.transform.resample`
 
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                output = freqs.freq_resample(value, target=target,
-                                             operation=operation,
-                                             interpolation=interpolation)
+                output = transform.resample(value, target=target,
+                                            operation=operation,
+                                            interpolation=interpolation)
                 self.dataset.update({key: output})
         else:
-            output = freqs.freq_resample(self.dataset, target=target,
-                                         operation=operation,
-                                         interpolation=interpolation)
+            output = transform.resample(self.dataset, target=target,
+                                        operation=operation,
+                                        interpolation=interpolation)
             self.dataset = output
 
         return self
@@ -248,17 +247,17 @@ class Session(object):
 
         See Also
         --------
-        :func:`~econuy.processing.variations.chg_diff`
+        :func:`~econuy.transform.chg_diff`
 
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                output = variations.chg_diff(value, operation=operation,
-                                             period_op=period_op)
+                output = transform.chg_diff(value, operation=operation,
+                                            period_op=period_op)
                 self.dataset.update({key: output})
         else:
-            output = variations.chg_diff(self.dataset, operation=operation,
-                                         period_op=period_op)
+            output = transform.chg_diff(self.dataset, operation=operation,
+                                        period_op=period_op)
             self.dataset = output
 
         return self
@@ -273,16 +272,16 @@ class Session(object):
 
         See Also
         --------
-        :func:`~econuy.processing.seasonal.decompose`
+        :func:`~econuy.transform.decompose`
 
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                result = seasonal.decompose(value,
-                                            trading=trading,
-                                            outlier=outlier,
-                                            x13_binary=x13_binary,
-                                            search_parents=search_parents)
+                result = transform.decompose(value,
+                                             trading=trading,
+                                             outlier=outlier,
+                                             x13_binary=x13_binary,
+                                             search_parents=search_parents)
                 if flavor == "trend":
                     output = result[0]
                 elif flavor == "seas" or type == "seasonal":
@@ -291,11 +290,11 @@ class Session(object):
                     output = result
                 self.dataset.update({key: output})
         else:
-            result = seasonal.decompose(self.dataset,
-                                        trading=trading,
-                                        outlier=outlier,
-                                        x13_binary=x13_binary,
-                                        search_parents=search_parents)
+            result = transform.decompose(self.dataset,
+                                         trading=trading,
+                                         outlier=outlier,
+                                         x13_binary=x13_binary,
+                                         search_parents=search_parents)
             if flavor == "trend":
                 output = result[0]
             elif flavor == "seas" or type == "seasonal":
@@ -307,42 +306,42 @@ class Session(object):
 
         return self
 
-    def unit_conv(self, flavor: str, update: Union[str, PathLike, None] = None,
-                  save: Union[str, PathLike, None] = None, **kwargs):
+    def convert(self, flavor: str, update: Union[str, PathLike, None] = None,
+                save: Union[str, PathLike, None] = None, **kwargs):
         """
         Convert to other units.
 
         See Also
         --------
-        :func:`~econuy.processing.convert.usd`,
-        :func:`~econuy.processing.convert.real`,
-        :func:`~econuy.processing.convert.pcgdp`
+        :func:`~econuy.transform.convert_usd`,
+        :func:`~econuy.transform.convert_real`,
+        :func:`~econuy.transform.convert_gdp`
 
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
                 if flavor == "usd":
-                    output = convert.usd(value, update=update,
-                                         save=save)
+                    output = transform.convert_usd(value, update=update,
+                                                   save=save)
                 elif flavor == "real":
-                    output = convert.real(value, update=update,
-                                          save=save, **kwargs)
+                    output = transform.convert_real(value, update=update,
+                                                    save=save, **kwargs)
                 elif flavor == "pcgdp":
-                    output = convert.pcgdp(value, update=update,
-                                           save=save, **kwargs)
+                    output = transform.convert_gdp(value, update=update,
+                                                   save=save, **kwargs)
                 else:
                     output = pd.DataFrame()
                 self.dataset.update({key: output})
         else:
             if flavor == "usd":
-                output = convert.usd(self.dataset, update=update,
-                                     save=save)
+                output = transform.convert_usd(self.dataset, update=update,
+                                               save=save)
             elif flavor == "real":
-                output = convert.real(self.dataset, update=update,
-                                      save=save, **kwargs)
+                output = transform.convert_real(self.dataset, update=update,
+                                                save=save, **kwargs)
             elif flavor == "pcgdp":
-                output = convert.pcgdp(self.dataset, update=update,
-                                       save=save, **kwargs)
+                output = transform.convert_gdp(self.dataset, update=update,
+                                               save=save, **kwargs)
             else:
                 output = pd.DataFrame()
             self.dataset = output
@@ -356,39 +355,39 @@ class Session(object):
 
         See Also
         --------
-        :func:`~econuy.processing.index.base_index`
+        :func:`~econuy.transform.base_index`
 
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                output = index.base_index(value, start_date=start_date,
-                                          end_date=end_date, base=base)
+                output = transform.base_index(value, start_date=start_date,
+                                              end_date=end_date, base=base)
                 self.dataset.update({key: output})
         else:
-            output = index.base_index(self.dataset, start_date=start_date,
-                                      end_date=end_date, base=base)
+            output = transform.base_index(self.dataset, start_date=start_date,
+                                          end_date=end_date, base=base)
             self.dataset = output
 
         return self
 
-    def rollwindow(self, periods: Optional[int] = None,
-                   operation: str = "sum"):
+    def rolling(self, periods: Optional[int] = None,
+                operation: str = "sum"):
         """
         Calculate rolling averages or sums.
 
         See Also
         --------
-        :func:`~econuy.processing.freqs.rolling`
+        :func:`~econuy.transform.rolling`
 
         """
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                output = freqs.rolling(value, periods=periods,
-                                       operation=operation)
+                output = transform.rolling(value, periods=periods,
+                                           operation=operation)
                 self.dataset.update({key: output})
         else:
-            output = freqs.rolling(self.dataset, periods=periods,
-                                   operation=operation)
+            output = transform.rolling(self.dataset, periods=periods,
+                                       operation=operation)
             self.dataset = output
 
         return self
