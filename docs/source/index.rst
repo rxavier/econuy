@@ -52,8 +52,8 @@ Retrieval functions
    :undoc-members:
    :show-inheritance:
 
-Processing functions
-====================
+Transformation functions
+========================
 .. automodule:: econuy.transform
    :members:
    :undoc-members:
