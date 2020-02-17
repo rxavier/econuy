@@ -29,7 +29,7 @@ python setup.py install
 
 #### Basics
 
-This is the main entry point for the package. It allows setting up the common behavior for downloads, and holds the current working dataset.
+This is the recommended entry point for the package. It allows setting up the common behavior for downloads, and holds the current working dataset.
 
 ```
 from econuy.session import Session
@@ -46,21 +46,21 @@ The `Session()` object is initialized with the `loc_dir`, `revise_rows`,  `force
 
 #### Methods
 
-**`get()`** downloads the basic datasets.
+**`get()`** downloads the basic datasets. These are basically as provided by official sources, except various Pandas transformations are performed to render nice looking dataframes with appropiate column names, time indexes and properly defined values.
 ```
 session.get(self, dataset: str, update: bool = True, save: bool = True, 
             override: Optional[str] = None, **kwargs)
 ```
-Available options for the `dataset` argument are "cpi", "fiscal", "nxr", "naccounts", "labor", "rxr_custom", "rxr_official", "commodity_index", "reserves" and "fx_spot_ff". Most are self explanatory.
+Available options for the `dataset` argument are "cpi", "fiscal", "nxr", "naccounts", "labor", "rxr_custom", "rxr_official", "commodity_index", "reserves" and "fx_ops". Most are self explanatory but all are explained in the documentation.
 
-`override` allows setting the CSV's filename to a different one than default (each dataset has a default, for example, "cpi.csv").
+`override` allows setting the CSV's filename to a different one than default (each dataset has a default, for example, "cpi.csv"). If you wanted CPI data:
 
 ```
-df = session.get(dataset=cpi).dataset
+df = session.get(dataset="cpi").dataset
 ```
-Note that the previous code block accessed the `dataset` attribute in order to get a dataframe. Alternatively, one could also call the `final()` method.
+Note that the previous code block accessed the `dataset` attribute in order to get a dataframe. Alternatively, one could also call the `final()` method after calling `get()`.
 
-**`get_tfm()`** gives access to predefined data pipelines that output frequently used data.
+**`get_tfm()`** gives access to predefined data pipelines that output frequently used data. These are based on the datasets provided by `get()`, but are transformed to render data that you might find more immediately useful.
 ```
 session.get_tfm(self, dataset: str, update: bool = True, save: bool = True,
                 override: Optional[str] = None, **kwargs)
@@ -74,12 +74,12 @@ df = session.get(dataset="nxr").decompose(flavor="trend", outlier=True, trading=
 will return a the Session object, with the dataset attribute holding the trend component of nominal exchange rate.
 
 Available transformation methods are 
-* `freq_resample()` - resample data to a different frequency, taking into account whether data is of stock or flow type.
+* `resample()` - resample data to a different frequency, taking into account whether data is of stock or flow type.
 * `chg_diff()` - calculate percent changes or differences for same period last year, last period or at annual rate.
 * `decompose()` - use X13-ARIMA to decompose series into trend and seasonally adjusted components.
-* `unit_conv()` - convert to US dollars, constant prices or percent of GDP.
+* `convert()` - convert to US dollars, constant prices or percent of GDP.
 * `base_index()` - set a period or window as 100, scale rest accordingly
-* `rollwindow()` - calculate rolling windows, either average or sum.
+* `rolling()` - calculate rolling windows, either average or sum.
 
 #### X13 ARIMA binary
 
