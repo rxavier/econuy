@@ -3,6 +3,7 @@ from datetime import date
 from os import PathLike, getcwd, path
 from pathlib import Path
 from typing import Union, Optional, Tuple
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -298,8 +299,8 @@ def rolling(df: pd.DataFrame, periods: Optional[int] = None,
     }
 
     if df.columns.get_level_values("Tipo")[0] == "Stock":
-        raise Warning("Rolling operations shouldn't be "
-                      "calculated on stock variables")
+        warnings.warn("Rolling operations shouldn't be "
+                      "calculated on stock variables", UserWarning)
 
     if periods is None:
         inferred_freq = pd.infer_freq(df.index)
