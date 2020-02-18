@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import pytest
 
 from econuy import transform
 from econuy.resources import columns
@@ -41,6 +42,14 @@ def test_diff():
                                rolling(window=4, min_periods=4).
                                sum().
                                diff(periods=4))
+    data_q_annual = dummy_df(freq="Q-DEC", ts_type="Stock")
+    trf_q_annual = transform.chg_diff(data_q_annual, operation="diff",
+                                      period_op="annual")
+    trf_q_annual.columns = data_q_annual.columns
+    assert trf_q_annual.equals(data_q_annual.diff(periods=4))
+    with pytest.raises(ValueError):
+        data_wrong = data_m.iloc[np.random.randint(0, 200, 100)]
+        transform.chg_diff(data_wrong)
 
 
 def test_chg():
@@ -71,3 +80,6 @@ def test_rolling():
     trf_none = transform.rolling(data_m, operation="sum")
     trf_none.columns = data_m.columns
     assert trf_none.equals(data_m.rolling(window=12, min_periods=12).sum())
+    with pytest.warns(UserWarning):
+        data_wrong = dummy_df(freq="M", ts_type="Stock")
+        transform.rolling(data_wrong, periods=4, operation="average")
