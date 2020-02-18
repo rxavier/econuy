@@ -11,6 +11,7 @@ mock = "*"
 autodoc = "*"
 Sphinx = "*"
 sphinx-rtd-theme = "*"
+pytest = "*"
 
 [packages]
 pandas = "~=0.25.0"
