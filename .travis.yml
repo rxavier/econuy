@@ -9,6 +9,6 @@ install:
   - pipenv install
   - pipenv install coverage
 script:
-  - pipenv run coverage run pytest
+  - coverage run pytest
 after_success:
   - bash <(curl -s https://codecov.io/bash)
