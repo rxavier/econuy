@@ -1,14 +1,11 @@
 language: python
 python:
-  - "3.6"
   - "3.7"
-  - "3.8"
 cache: pip
 install:
   - pip install pipenv
   - pipenv install
-  - pipenv install coverage
 script:
-  - coverage run pytest
+  - pipenv run coverage run -m pytest
 after_success:
   - bash <(curl -s https://codecov.io/bash)

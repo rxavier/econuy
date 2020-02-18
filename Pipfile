@@ -12,6 +12,7 @@ autodoc = "*"
 Sphinx = "*"
 sphinx-rtd-theme = "*"
 pytest = "*"
+coverage = "*"
 
 [packages]
 pandas = "~=0.25.0"
