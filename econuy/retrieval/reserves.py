@@ -1,6 +1,6 @@
 import datetime as dt
 import urllib
-from os import PathLike
+from os import PathLike, path, mkdir
 from pathlib import Path
 from typing import Union, Optional
 
@@ -51,6 +51,8 @@ def get_operations(update: Union[str, PathLike, None] = None,
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(save_path)):
+            mkdir(path.dirname(save_path))
         fx_ops.to_csv(save_path)
 
     return fx_ops
@@ -59,7 +61,7 @@ def get_operations(update: Union[str, PathLike, None] = None,
 def get_chg(update: Union[str, PathLike, None] = None,
             save: Union[str, PathLike, None] = None,
             name: Optional[str] = None) -> pd.DataFrame:
-    """Get international reserves change data from online sources.
+    """Get international reserves change data.
 
     Use as input a list of strings of the format %b%Y, each representing a
     month of data.
@@ -146,6 +148,8 @@ def get_chg(update: Union[str, PathLike, None] = None,
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(save_path)):
+            mkdir(path.dirname(save_path))
         reserves.to_csv(save_path)
 
     return reserves
@@ -236,6 +240,8 @@ def get_fut_fwd(update: Union[str, PathLike, None] = None,
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(save_path)):
+            mkdir(path.dirname(save_path))
         operations.to_csv(save_path)
 
     return operations

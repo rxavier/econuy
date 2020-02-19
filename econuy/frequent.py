@@ -1,5 +1,5 @@
 from datetime import date
-from os import PathLike
+from os import PathLike, mkdir, path
 from pathlib import Path
 from typing import Union, Optional
 
@@ -52,6 +52,8 @@ def inflation(update: Union[str, PathLike, None] = None,
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(save_path)):
+            mkdir(path.dirname(save_path))
         output.to_csv(save_path)
 
     return output
@@ -123,6 +125,8 @@ def exchange_rate(eop: bool = False, sell: bool = True,
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(save_path)):
+            mkdir(path.dirname(save_path))
         output.to_csv(save_path)
 
     return output
@@ -292,6 +296,8 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
 
     if save is not False:
         save_path = (Path(save) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(save_path)):
+            mkdir(path.dirname(save_path))
         output.to_csv(save_path)
 
     return output
@@ -339,6 +345,8 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(save_path)):
+            mkdir(path.dirname(save_path))
         output.to_csv(save_path)
 
     return output
@@ -450,6 +458,8 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(save_path)):
+            mkdir(path.dirname(save_path))
         output.to_csv(save_path)
 
     return output

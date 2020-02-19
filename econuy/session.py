@@ -1,5 +1,5 @@
 from datetime import date
-from os import PathLike, path, makedirs
+from os import PathLike, path, makedirs, mkdir
 from pathlib import Path
 from typing import Union, Optional
 
@@ -400,9 +400,13 @@ class Session(object):
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
                 save_path = (Path(self.loc_dir) / key).with_suffix(".csv")
+                if not path.exists(path.dirname(save_path)):
+                    mkdir(path.dirname(save_path))
                 value.to_csv(save_path)
         else:
             save_path = (Path(self.loc_dir) / name).with_suffix(".csv")
+            if not path.exists(path.dirname(save_path)):
+                mkdir(path.dirname(save_path))
             self.dataset.to_csv(save_path)
 
     def final(self):

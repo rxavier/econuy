@@ -1,5 +1,5 @@
 import datetime as dt
-from os import PathLike
+from os import PathLike, path, mkdir
 from pathlib import Path
 from typing import Union, Optional
 
@@ -76,6 +76,8 @@ def get_official(update: Union[str, PathLike, None] = None,
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(save_path)):
+            mkdir(path.dirname(save_path))
         proc.to_csv(save_path)
 
     return proc
@@ -196,6 +198,8 @@ def get_custom(update: Union[str, PathLike, None] = None,
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(save_path)):
+            mkdir(path.dirname(save_path))
         output.to_csv(save_path)
 
     return output
