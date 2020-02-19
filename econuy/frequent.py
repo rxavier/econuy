@@ -121,6 +121,7 @@ def exchange_rate(eop: bool = False, sell: bool = True,
                   "possible values for 'seas_adj'")
 
     if cum != 1:
+        columns._setmeta(output, ts_type="Flujo")
         output = transform.rolling(output, periods=cum, operation="average")
 
     if save is not None:
