@@ -431,8 +431,7 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
     try:
         output = data[table]
     except KeyError:
-        print("No available tables with selected parameters.")
-        return
+        raise KeyError("No available tables with selected parameters.")
 
     if usd is True:
         output = transform.convert_usd(output)
