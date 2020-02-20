@@ -1,5 +1,7 @@
 [![Python 3.6](https://img.shields.io/badge/python-=>3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![PyPI version](https://badge.fury.io/py/econuy.svg)](https://badge.fury.io/py/econuy)
+[![Build Status](https://travis-ci.org/rxavier/econuy.svg?branch=master)](https://travis-ci.org/rxavier/econuy)
+[![codecov](https://codecov.io/gh/rxavier/econuy/branch/master/graph/badge.svg)](https://codecov.io/gh/rxavier/econuy)
 
 # ECON-UY
 
