@@ -1,5 +1,5 @@
 import datetime as dt
-from os import PathLike
+from os import PathLike, path, mkdir
 from pathlib import Path
 from typing import Union, Optional, Dict
 
@@ -87,6 +87,8 @@ def get(update: Union[str, PathLike, None] = None,
         if save is not None:
             save_path = (Path(save) /
                          f"{name}_{metadata['Name']}").with_suffix(".csv")
+            if not path.exists(path.dirname(save_path)):
+                mkdir(path.dirname(save_path))
             proc.to_csv(save_path)
 
         parsed_excels.update({metadata["Name"]: proc})
@@ -180,6 +182,8 @@ def _lin_gdp(update: Union[str, PathLike, None] = None,
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(save_path)):
+            mkdir(path.dirname(save_path))
         output.to_csv(save_path)
 
     return output

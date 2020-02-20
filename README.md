@@ -1,5 +1,7 @@
 [![Python 3.6](https://img.shields.io/badge/python-=>3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![PyPI version](https://badge.fury.io/py/econuy.svg)](https://badge.fury.io/py/econuy)
+[![Build Status](https://travis-ci.org/rxavier/econuy.svg?branch=master)](https://travis-ci.org/rxavier/econuy)
+[![codecov](https://codecov.io/gh/rxavier/econuy/branch/master/graph/badge.svg)](https://codecov.io/gh/rxavier/econuy)
 
 # ECON-UY
 
@@ -53,7 +55,9 @@ session.get(self, dataset: str, update: bool = True, save: bool = True,
 ```
 Available options for the `dataset` argument are "cpi", "fiscal", "nxr", "naccounts", "labor", "rxr_custom", "rxr_official", "commodity_index", "reserves" and "fx_ops". Most are self explanatory but all are explained in the documentation.
 
-`override` allows setting the CSV's filename to a different one than default (each dataset has a default, for example, "cpi.csv"). If you wanted CPI data:
+`override` allows setting the CSV's filename to a different one than default (each dataset has a default, for example, "cpi.csv"). 
+
+If you wanted CPI data:
 
 ```
 df = session.get(dataset="cpi").dataset
@@ -99,6 +103,10 @@ Metadata for each dataset is held in Pandas MultiIndexes with the following:
 8) Type (stock or flow)
 9) Cumulative periods
 
+#### `unrar` libraries
+
+The [patool](https://github.com/wummel/patool) library is used in order to access fiscal data, which is provided by the MEF in `.rar` format. This library requires that you have the unrar binaries in your system. You can get them from [here](https://www.rarlab.com/rar_add.htm).
+
 ## Word of warning
 
 This project is heavily based on getting data from online sources that could change without notice, causing methods that download data to fail. While I try to stay on my toes and fix these quickly, it helps if you create an issue when you find one of these (or even submit a fix!).
@@ -106,7 +114,7 @@ This project is heavily based on getting data from online sources that could cha
 ## What next
 
 * ~~I now realize this project would greatly benefit from OOP and plan to implement it next.~~
-* Tests.
+* ~~Tests.~~
 * CLI.
 * Handling everything with column multi-indexes really doesn't seem like the best way to go around this.
 * Automating data updates.

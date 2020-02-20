@@ -1,7 +1,8 @@
 from datetime import date
-from os import PathLike
+from os import PathLike, mkdir, path
 from pathlib import Path
 from typing import Union, Optional
+import warnings
 
 import pandas as pd
 
@@ -52,6 +53,8 @@ def inflation(update: Union[str, PathLike, None] = None,
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(save_path)):
+            mkdir(path.dirname(save_path))
         output.to_csv(save_path)
 
     return output
@@ -115,14 +118,17 @@ def exchange_rate(eop: bool = False, sell: bool = True,
         elif seas_adj == "seas":
             output = pd.concat([output, seasadj], axis=1)
         else:
-            print("Only 'trend', 'seas' and None are "
-                  "possible values for 'seas_adj'")
+            raise ValueError("Only 'trend', 'seas' and None are available "
+                             "options for seasonal adjustment")
 
     if cum != 1:
+        columns._setmeta(output, ts_type="Flujo")
         output = transform.rolling(output, periods=cum, operation="average")
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(save_path)):
+            mkdir(path.dirname(save_path))
         output.to_csv(save_path)
 
     return output
@@ -285,13 +291,15 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
         elif seas_adj == "seas":
             output = output_seasadj
         else:
-            print("Only 'trend', 'seas' and None are "
-                  "possible values for 'seas_adj'")
+            raise ValueError("Only 'trend', 'seas' and None are available "
+                             "options for seasonal adjustment")
     if cum != 1:
         output = transform.rolling(output, periods=cum, operation="sum")
 
     if save is not False:
         save_path = (Path(save) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(save_path)):
+            mkdir(path.dirname(save_path))
         output.to_csv(save_path)
 
     return output
@@ -339,6 +347,8 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(save_path)):
+            mkdir(path.dirname(save_path))
         output.to_csv(save_path)
 
     return output
@@ -421,8 +431,7 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
     try:
         output = data[table]
     except KeyError:
-        print("No available tables with selected parameters.")
-        return
+        raise KeyError("No available tables with selected parameters.")
 
     if usd is True:
         output = transform.convert_usd(output)
@@ -435,8 +444,8 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
         elif cust_seas_adj == "seas":
             output = seasadj
         else:
-            print("Only 'trend', 'seas' and None are "
-                  "possible values for 'seas_adj'")
+            raise ValueError("Only 'trend', 'seas' and None are available "
+                             "options for seasonal adjustment")
 
     if cum != 1:
         output = transform.rolling(output, periods=cum, operation="sum")
@@ -445,11 +454,13 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
         output = transform.chg_diff(output, operation="chg",
                                     period_op=variation)
     elif variation is not None:
-        print("Only 'last', 'inter' and 'annual' are "
-              "possible values for 'variation'")
+        raise ValueError("Only 'inter', 'last', 'annual' and None are "
+                         "available options for variations")
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(save_path)):
+            mkdir(path.dirname(save_path))
         output.to_csv(save_path)
 
     return output

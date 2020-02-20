@@ -1,7 +1,7 @@
 import datetime as dt
 import re
 import tempfile
-from os import PathLike, path, listdir
+from os import PathLike, path, listdir, mkdir
 from pathlib import Path
 from typing import Union, Optional, Dict
 
@@ -117,6 +117,8 @@ def get(update: Union[str, PathLike, None] = None,
                     save_path = (Path(save)
                                  / f"{name}_"
                                    f"{metadata['Name']}").with_suffix(".csv")
+                    if not path.exists(path.dirname(save_path)):
+                        mkdir(path.dirname(save_path))
                     data.to_csv(save_path)
 
                 output.update({metadata["Name"]: data})

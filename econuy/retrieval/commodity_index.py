@@ -2,7 +2,7 @@ import datetime as dt
 import tempfile
 import zipfile
 from io import BytesIO
-from os import PathLike, path
+from os import PathLike, path, mkdir
 from pathlib import Path
 from typing import Union, Optional
 
@@ -93,6 +93,8 @@ def _weights(update: Union[str, PathLike, None] = None,
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(save_path)):
+            mkdir(path.dirname(save_path))
         output.to_csv(save_path)
 
     return output
@@ -236,6 +238,8 @@ def _prices(update: Union[str, PathLike, None] = None,
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(save_path)):
+            mkdir(path.dirname(save_path))
         complete.to_csv(save_path)
 
     return complete
@@ -293,6 +297,8 @@ def get(update: Union[str, PathLike, None] = None,
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(save_path)):
+            mkdir(path.dirname(save_path))
         product.to_csv(save_path)
 
     return product
