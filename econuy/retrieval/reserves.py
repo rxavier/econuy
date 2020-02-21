@@ -224,10 +224,13 @@ def get_fut_fwd(update: Union[str, PathLike, None] = None,
             print(f"Report for {date} could not be reached.")
             pass
 
-    operations = pd.DataFrame(reports)
-    operations.columns = ["Date", "Futuros", "Forwards"]
-    operations.set_index("Date", inplace=True)
-    operations = operations.divide(1000)
+    try:
+        operations = pd.DataFrame(reports)
+        operations.columns = ["Date", "Futuros", "Forwards"]
+        operations.set_index("Date", inplace=True)
+        operations = operations.divide(1000)
+    except ValueError:
+        return prev_data
 
     if update is not None:
         operations = prev_data.append(operations, sort=False)
