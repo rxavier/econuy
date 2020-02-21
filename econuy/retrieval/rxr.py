@@ -193,7 +193,7 @@ def get_custom(update: Union[str, PathLike, None] = None,
                                   end_date="2010-12-31", base=100)
 
     if update is not None:
-        output = updates._revise(new_data=proc, prev_data=previous_data,
+        output = updates._revise(new_data=output, prev_data=previous_data,
                                  revise_rows=revise_rows)
 
     if save is not None:
