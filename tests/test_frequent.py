@@ -1,4 +1,5 @@
-import shutil
+from os import listdir, remove, path
+from typing import Tuple
 
 import pandas as pd
 import pytest
@@ -11,10 +12,20 @@ from econuy.resources.lstrings import fiscal_metadata
 from econuy.resources import columns
 
 
+def remove_clutter(avoid: Tuple[str] = ("fx_ff.csv", "fx_spot_ff.csv",
+                                        "reserves_chg.csv",
+                                        "commodity_weights.csv")):
+    [remove(path.join("test-data", x)) for x in listdir("test-data")
+     if x not in avoid]
+    return
+
+
 def test_cpi_inflation():
+    remove_clutter()
     inflation = frequent.inflation(update="test-data", save="test-data",
                                    name=None)
-    prices = cpi.get(update=None, save="test-data", name=None)
+    remove_clutter()
+    prices = cpi.get(update="test-data", save="test-data", name=None)
     inter = transform.chg_diff(prices, period_op="inter")
     compare = inflation.iloc[:, [1]]
     inter.columns = compare.columns
@@ -32,14 +43,16 @@ def test_cpi_inflation():
     compare = inflation.iloc[:, [4]]
     monthly_trend.columns = compare.columns
     assert monthly_trend.equals(monthly_trend)
-    shutil.rmtree("test-data")
+    remove_clutter()
 
 
 def test_nxr():
+    remove_clutter()
     nxr_tfm = frequent.exchange_rate(eop=True, sell=False, seas_adj="trend",
-                                     cum=1, update=None,
+                                     cum=1, update="test-data",
                                      save="test-data", name=None)
-    nxr_ = nxr.get(update=None, save="test-data", name=None)
+    remove_clutter()
+    nxr_ = nxr.get(update="test-data", save="test-data", name=None)
     nxr_e_s = nxr_.iloc[:, [0]]
     nxr_e_s_trend, nxr_e_s_sa = transform.decompose(nxr_e_s, trading=True,
                                                     outlier=True)
@@ -62,14 +75,17 @@ def test_nxr():
     compare = transform.rolling(nxr_a_s, periods=12, operation="average")
     compare.columns = nxr_tfm.columns
     assert compare.equals(nxr_tfm)
-    shutil.rmtree("test-data")
+    remove_clutter()
 
 
 def test_fiscal():
+    remove_clutter()
     fiscal_tfm = frequent.fiscal(aggregation="nfps", fss=True, unit="gdp",
-                                 update=None, save="test-data", name=None,
-                                 seas_adj=None)
-    fiscal_ = fiscal_accounts.get(update=None, save="test-data", name=None)
+                                 update="test-data", save="test-data",
+                                 name=None, seas_adj=None)
+    remove_clutter()
+    fiscal_ = fiscal_accounts.get(update="test-data", save="test-data",
+                                  name=None)
     nfps = fiscal_["nfps"]
     gc = fiscal_["gc-bps"]
     proc = pd.DataFrame(index=nfps.index)
@@ -111,6 +127,7 @@ def test_fiscal():
 
     compare_gdp.columns = fiscal_tfm.columns
     assert compare_gdp.equals(fiscal_tfm)
+    remove_clutter()
     fiscal_tfm = frequent.fiscal(aggregation="nfps", fss=True, unit="usd",
                                  update=None, save="test-data", name=None,
                                  seas_adj=None)
@@ -149,36 +166,43 @@ def test_fiscal():
     compare_roll = transform.rolling(compare, periods=12, operation="sum")
     compare_roll.columns = fiscal_tfm.columns
     assert compare_roll.equals(fiscal_tfm)
-    shutil.rmtree("test-data")
+    remove_clutter()
 
 
 def test_labor():
-    labor_tfm = frequent.labor_mkt(seas_adj="trend", update=None,
+    remove_clutter()
+    labor_tfm = frequent.labor_mkt(seas_adj="trend", update="test-data",
                                    save="test-data", name=None)
-    labor_ = labor.get(update=None, save="test-data", name=None)
+    remove_clutter()
+    labor_ = labor.get(update="test-data", save="test-data", name=None)
     labor_trend, labor_sa = transform.decompose(labor_, outlier=True,
                                                 trading=True)
     compare = pd.concat([labor_, labor_trend], axis=1)
     compare.columns = labor_tfm.columns
     assert compare.equals(labor_tfm)
+    remove_clutter()
     labor_tfm = frequent.labor_mkt(seas_adj="seas", update=None,
                                    save="test-data", name=None)
     compare = pd.concat([labor_, labor_sa], axis=1)
     compare.columns = labor_tfm.columns
     assert compare.equals(labor_tfm)
-    shutil.rmtree("test-data")
+    remove_clutter()
 
 
 def test_naccounts():
+    remove_clutter()
     na_tfm = frequent.nat_accounts(supply=True, real=True, index=False,
                                    seas_adj=False, usd=False, cum=1,
                                    cust_seas_adj=None,
-                                   variation=None, update=None,
+                                   variation=None, update="test-data",
                                    save="test-data", name=None)
-    na_ = national_accounts.get(update=None, save="test-data", name=None)
+    remove_clutter()
+    na_ = national_accounts.get(update="test-data", save="test-data",
+                                name=None)
     compare = na_["ind_con_nsa"]
     compare.columns = na_tfm.columns
     assert compare.equals(na_tfm)
+    remove_clutter()
     na_tfm = frequent.nat_accounts(supply=True, real=False, index=False,
                                    seas_adj=False, usd=False, cum=1,
                                    cust_seas_adj=None,
@@ -240,4 +264,4 @@ def test_naccounts():
                               cust_seas_adj=None,
                               variation="wrong", update=None,
                               save="test-data", name=None)
-    shutil.rmtree("test-data")
+    remove_clutter()
