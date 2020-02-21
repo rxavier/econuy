@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 
 from econuy.retrieval import reserves, rxr, commodity_index, national_accounts
-from .test_frequent import remove_clutter
+from .test_session import remove_clutter
 
 CUR_DIR = path.abspath(path.dirname(__file__))
 TEST_DIR = path.join(path.dirname(CUR_DIR), "test-data")

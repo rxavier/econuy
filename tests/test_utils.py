@@ -1,7 +1,7 @@
 import pytest
 
 from econuy.retrieval import cpi
-from .test_frequent import remove_clutter
+from .test_session import remove_clutter
 
 
 def test_revise():
