@@ -2,6 +2,7 @@
 [![PyPI version](https://badge.fury.io/py/econuy.svg)](https://badge.fury.io/py/econuy)
 [![Build Status](https://travis-ci.org/rxavier/econuy.svg?branch=master)](https://travis-ci.org/rxavier/econuy)
 [![codecov](https://codecov.io/gh/rxavier/econuy/branch/master/graph/badge.svg)](https://codecov.io/gh/rxavier/econuy)
+[![Documentation Status](https://readthedocs.org/projects/econuy/badge/?version=latest)](https://econuy.readthedocs.io/en/latest/?badge=latest)
 
 # ECON-UY
 
