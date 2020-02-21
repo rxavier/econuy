@@ -189,7 +189,7 @@ def get_fut_fwd(update: Union[str, PathLike, None] = None,
             prev_data.index = pd.to_datetime(prev_data.index)
             last_date = prev_data.index[len(prev_data)-1]
             dates = pd.bdate_range(
-                last_date, dt.datetime.today()
+                last_date + dt.timedelta(days=1), dt.datetime.today()
             ).strftime("%y%m%d").tolist()
         except FileNotFoundError:
             prev_data = pd.DataFrame()
