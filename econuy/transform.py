@@ -403,10 +403,9 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
         binary_path = Path(x13_binary).as_posix()
 
     if path.isfile(binary_path) is False:
-        print("X13 binary missing. Please refer to the README"
-              "for instructions on where to get binaries for Windows and Unix,"
-              "and how to compile it for macOS.")
-        return
+        ValueError("X13 binary missing. Please refer to the README"
+                   "for instructions on where to get binaries for Windows and "
+                   "Unix, and how to compile it for macOS.")
 
     df_proc = df.copy()
     old_columns = df_proc.columns
