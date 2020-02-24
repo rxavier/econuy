@@ -37,7 +37,7 @@ def get_operations(update: Union[str, PathLike, None] = None,
         name = "fx_spot_ff"
     changes = get_chg(update=update, save=save)
     ff = get_fut_fwd(update=update, save=save)
-    spot = changes.iloc[:, 0]
+    spot = changes.iloc[:, [0]]
     fx_ops = pd.merge(spot, ff, how="outer", left_index=True, right_index=True)
     fx_ops = fx_ops.loc[(fx_ops.index >= ff.index.min()) &
                         (fx_ops.index <= spot.index.max())]
@@ -229,18 +229,17 @@ def get_fut_fwd(update: Union[str, PathLike, None] = None,
         operations = pd.DataFrame(reports)
         operations.columns = ["Date", "Futuros", "Forwards"]
         operations.set_index("Date", inplace=True)
+        columns._setmeta(
+            operations, area="Reservas internacionales",  currency="USD",
+            inf_adj="No", index="No", seas_adj="NSA", ts_type="Flujo",
+            cumperiods=1
+        )
         operations = operations.divide(1000)
     except ValueError:
         return prev_data
 
     if update is not None:
         operations = prev_data.append(operations, sort=False)
-
-    columns._setmeta(
-        operations, area="Reservas internacionales",  currency="USD",
-        inf_adj="No", index="No", seas_adj="NSA", ts_type="Flujo",
-        cumperiods=1
-    )
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
