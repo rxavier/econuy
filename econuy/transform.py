@@ -250,12 +250,9 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
             columns._setmeta(resampled_df,
                              cumperiods=int(cum_periods * cum_adj))
 
-    elif df.columns.get_level_values("Tipo")[0] == "Stock":
+    else:
         resampled_df = df.resample(target, convention="end").asfreq()
         resampled_df = resampled_df.interpolate(method=interpolation)
-    else:
-        raise ValueError("Dataframe needs to have a valid Type ('Flujo', "
-                         "'Stock' or '-'")
 
     columns._setmeta(resampled_df)
 
