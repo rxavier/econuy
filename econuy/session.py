@@ -34,7 +34,7 @@ class Session(object):
                  loc_dir: Union[str, PathLike] = "econuy-data",
                  revise_rows: Union[int, str] = "nodup",
                  force_update: bool = False,
-                 dataset: pd.DataFrame = pd.DataFrame()):
+                 dataset: Union[dict, pd.DataFrame] = pd.DataFrame()):
         self.loc_dir = loc_dir
         self.revise_rows = revise_rows
         self.force_update = force_update
