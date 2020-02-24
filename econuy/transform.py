@@ -227,7 +227,7 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
 
     """
     if df.columns.get_level_values("Tipo")[0] == "-":
-        print("Dataframe has no Type, setting to 'Flujo'")
+        warnings.warn("Dataframe has no Type, setting to 'Flujo'", UserWarning)
         df.columns = df.columns.set_levels(["Flujo"], level="Tipo")
 
     if df.columns.get_level_values("Tipo")[0] == "Flujo":
