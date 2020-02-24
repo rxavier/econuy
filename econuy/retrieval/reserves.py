@@ -98,7 +98,8 @@ def get_chg(update: Union[str, PathLike, None] = None,
         update_path = (Path(update) / name).with_suffix(".csv")
         try:
             previous_data = pd.read_csv(update_path, index_col=0,
-                                        header=list(range(9)))
+                                        header=list(range(9)),
+                                        float_precision="high")
             previous_data.columns = reserves_cols[1:46]
             previous_data.index = pd.to_datetime(previous_data.index)
             urls = urls[-18:]
@@ -184,8 +185,8 @@ def get_fut_fwd(update: Union[str, PathLike, None] = None,
         update_path = (Path(update) / name).with_suffix(".csv")
         try:
             prev_data = pd.read_csv(update_path, index_col=0,
-                                    header=list(range(9)))
-            prev_data.columns = ["Futuros", "Forwards"]
+                                    header=list(range(9)),
+                                    float_precision="high")
             prev_data.index = pd.to_datetime(prev_data.index)
             last_date = prev_data.index[len(prev_data)-1]
             dates = pd.bdate_range(
