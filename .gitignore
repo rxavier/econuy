@@ -30,3 +30,5 @@ docs/docs-requirements.txt
 docs/make.bat
 
 docs/Makefile
+
+pytest.ini
