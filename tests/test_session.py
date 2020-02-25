@@ -264,3 +264,16 @@ def test_naccounts():
                             cust_seas_adj=None,
                             variation="wrong")
     remove_clutter()
+
+
+def test_none():
+    remove_clutter()
+    session = Session(loc_dir=TEST_DIR)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    cpi = session.get(dataset="cpi", update=False, save=False)
+    with pytest.warns(UserWarning):
+        nodata = session.get(dataset="wrong")
+    with pytest.warns(UserWarning):
+        nodata = session.get_tfm(dataset="wrong")
+    remove_clutter()
