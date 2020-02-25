@@ -430,6 +430,8 @@ class Session(object):
         Save :attr:`dataset` attribute to a CSV.
 
         """
+        name = Path(name).with_suffix("").as_posix()
+
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
                 save_path = (Path(self.loc_dir) / key).with_suffix(".csv")
