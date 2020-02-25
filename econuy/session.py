@@ -1,3 +1,4 @@
+import warnings
 from datetime import date
 from os import PathLike, path, makedirs, mkdir
 from pathlib import Path
@@ -262,7 +263,7 @@ class Session(object):
 
         return self
 
-    def decompose(self, flavor: Optional[str] = None,
+    def decompose(self, flavor: str = "both",
                   trading: bool = True, outlier: bool = True,
                   x13_binary: Union[str, PathLike] = "search",
                   search_parents: int = 1):
@@ -286,8 +287,13 @@ class Session(object):
                     output = result[0]
                 elif flavor == "seas" or type == "seasonal":
                     output = result[1]
-                else:
+                elif flavor == "both":
                     output = result
+                else:
+                    warnings.warn("'flavor' can be one of 'both', 'trend', or"
+                                  "'seas'.", UserWarning)
+                    return self
+
                 self.dataset.update({key: output})
         else:
             result = transform.decompose(self.dataset,
@@ -299,8 +305,12 @@ class Session(object):
                 output = result[0]
             elif flavor == "seas" or type == "seasonal":
                 output = result[1]
-            else:
+            elif flavor == "both":
                 output = result
+            else:
+                warnings.warn("'flavor' can be one of 'both', 'trend', or"
+                              "'seas'.", UserWarning)
+                return self
 
             self.dataset = output
 
