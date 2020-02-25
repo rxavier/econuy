@@ -1,3 +1,4 @@
+import warnings
 from datetime import date
 from os import PathLike, path, makedirs, mkdir
 from pathlib import Path
@@ -34,7 +35,7 @@ class Session(object):
                  loc_dir: Union[str, PathLike] = "econuy-data",
                  revise_rows: Union[int, str] = "nodup",
                  force_update: bool = False,
-                 dataset: pd.DataFrame = pd.DataFrame()):
+                 dataset: Union[dict, pd.DataFrame] = pd.DataFrame()):
         self.loc_dir = loc_dir
         self.revise_rows = revise_rows
         self.force_update = force_update
@@ -144,7 +145,10 @@ class Session(object):
                                              save=save_path,
                                              name=override)
         else:
-            output = pd.DataFrame()
+            warnings.warn("Invalid keyword for 'dataset' parameter.",
+                          UserWarning)
+            return self
+
         self.dataset = output
 
         return self
@@ -212,7 +216,10 @@ class Session(object):
                                         name=override,
                                         **kwargs)
         else:
-            output = pd.DataFrame()
+            warnings.warn("Invalid keyword for 'dataset' parameter.",
+                          UserWarning)
+            return self
+        
         self.dataset = output
 
         return self
@@ -262,13 +269,30 @@ class Session(object):
 
         return self
 
-    def decompose(self, flavor: Optional[str] = None,
+    def decompose(self, flavor: str = "both",
                   trading: bool = True, outlier: bool = True,
                   x13_binary: Union[str, PathLike] = "search",
                   search_parents: int = 1):
         """
         Use `X-13 ARIMA <https://www.census.gov/srd/www/x13as/>`_ to
         decompose time series.
+
+        Parameters
+        ----------
+        flavor : {'both', 'trend', 'seas'}
+            Whether to get the trend component, the seasonally adjusted series
+            or both.
+        trading : bool, default True
+            Whether to automatically detect trading days.
+        outlier : bool, default True
+            Whether to automatically detect outliers.
+        x13_binary: str or os.PathLike, default 'search'
+            Location of the X13 binary. If ``search`` is used, will attempt to
+            find the binary in the project structure.
+        search_parents: int, default 1
+            If ``search`` is chosen for ``x13_binary``, this parameter controls
+            how many parent directories to go up before recursively searching
+            for the binary.
 
         See Also
         --------
@@ -286,8 +310,13 @@ class Session(object):
                     output = result[0]
                 elif flavor == "seas" or type == "seasonal":
                     output = result[1]
-                else:
+                elif flavor == "both":
                     output = result
+                else:
+                    warnings.warn("'flavor' can be one of 'both', 'trend', or"
+                                  "'seas'.", UserWarning)
+                    return self
+
                 self.dataset.update({key: output})
         else:
             result = transform.decompose(self.dataset,
@@ -299,8 +328,12 @@ class Session(object):
                 output = result[0]
             elif flavor == "seas" or type == "seasonal":
                 output = result[1]
-            else:
+            elif flavor == "both":
                 output = result
+            else:
+                warnings.warn("'flavor' can be one of 'both', 'trend', or"
+                              "'seas'.", UserWarning)
+                return self
 
             self.dataset = output
 
@@ -330,7 +363,10 @@ class Session(object):
                     output = transform.convert_gdp(value, update=update,
                                                    save=save, **kwargs)
                 else:
-                    output = pd.DataFrame()
+                    warnings.warn("Invalid keyword for 'flavor' parameter.",
+                                  UserWarning)
+                    return self
+
                 self.dataset.update({key: output})
         else:
             if flavor == "usd":
@@ -339,11 +375,14 @@ class Session(object):
             elif flavor == "real":
                 output = transform.convert_real(self.dataset, update=update,
                                                 save=save, **kwargs)
-            elif flavor == "pcgdp":
+            elif flavor == "pcgdp" or flavor == "gdp":
                 output = transform.convert_gdp(self.dataset, update=update,
                                                save=save, **kwargs)
             else:
-                output = pd.DataFrame()
+                warnings.warn("Invalid keyword for 'flavor' parameter.",
+                              UserWarning)
+                return self
+
             self.dataset = output
 
         return self
@@ -397,9 +436,12 @@ class Session(object):
         Save :attr:`dataset` attribute to a CSV.
 
         """
+        name = Path(name).with_suffix("").as_posix()
+
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                save_path = (Path(self.loc_dir) / key).with_suffix(".csv")
+                save_path = (Path(self.loc_dir) /
+                             f"{name}_{key}").with_suffix(".csv")
                 if not path.exists(path.dirname(save_path)):
                     mkdir(path.dirname(save_path))
                 value.to_csv(save_path)

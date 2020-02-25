@@ -228,7 +228,7 @@ def _prices(update: Union[str, PathLike, None] = None,
 
     complete = pd.concat([beef, pulp, soybean, milk, rice, wood, wool, barley,
                           gold, wheat], axis=1)
-    complete = complete.reindex(beef.index).dropna(thresh=9)
+    complete = complete.reindex(beef.index).dropna(thresh=8)
     complete.columns = ["Beef", "Pulp", "Soybeans", "Milk", "Rice", "Wood",
                         "Wool", "Barley", "Gold", "Wheat"]
 

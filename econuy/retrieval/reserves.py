@@ -37,7 +37,7 @@ def get_operations(update: Union[str, PathLike, None] = None,
         name = "fx_spot_ff"
     changes = get_chg(update=update, save=save)
     ff = get_fut_fwd(update=update, save=save)
-    spot = changes.iloc[:, 0]
+    spot = changes.iloc[:, [0]]
     fx_ops = pd.merge(spot, ff, how="outer", left_index=True, right_index=True)
     fx_ops = fx_ops.loc[(fx_ops.index >= ff.index.min()) &
                         (fx_ops.index <= spot.index.max())]
@@ -98,7 +98,8 @@ def get_chg(update: Union[str, PathLike, None] = None,
         update_path = (Path(update) / name).with_suffix(".csv")
         try:
             previous_data = pd.read_csv(update_path, index_col=0,
-                                        header=list(range(9)))
+                                        header=list(range(9)),
+                                        float_precision="high")
             previous_data.columns = reserves_cols[1:46]
             previous_data.index = pd.to_datetime(previous_data.index)
             urls = urls[-18:]
@@ -184,12 +185,12 @@ def get_fut_fwd(update: Union[str, PathLike, None] = None,
         update_path = (Path(update) / name).with_suffix(".csv")
         try:
             prev_data = pd.read_csv(update_path, index_col=0,
-                                    header=list(range(9)))
-            prev_data.columns = ["Futuros", "Forwards"]
+                                    header=list(range(9)),
+                                    float_precision="high")
             prev_data.index = pd.to_datetime(prev_data.index)
             last_date = prev_data.index[len(prev_data)-1]
             dates = pd.bdate_range(
-                last_date, dt.datetime.today()
+                last_date + dt.timedelta(days=1), dt.datetime.today()
             ).strftime("%y%m%d").tolist()
         except FileNotFoundError:
             prev_data = pd.DataFrame()
@@ -224,19 +225,21 @@ def get_fut_fwd(update: Union[str, PathLike, None] = None,
             print(f"Report for {date} could not be reached.")
             pass
 
-    operations = pd.DataFrame(reports)
-    operations.columns = ["Date", "Futuros", "Forwards"]
-    operations.set_index("Date", inplace=True)
-    operations = operations.divide(1000)
+    try:
+        operations = pd.DataFrame(reports)
+        operations.columns = ["Date", "Futuros", "Forwards"]
+        operations.set_index("Date", inplace=True)
+        columns._setmeta(
+            operations, area="Reservas internacionales",  currency="USD",
+            inf_adj="No", index="No", seas_adj="NSA", ts_type="Flujo",
+            cumperiods=1
+        )
+        operations = operations.divide(1000)
+    except ValueError:
+        return prev_data
 
     if update is not None:
         operations = prev_data.append(operations, sort=False)
-
-    columns._setmeta(
-        operations, area="Reservas internacionales",  currency="USD",
-        inf_adj="No", index="No", seas_adj="NSA", ts_type="Flujo",
-        cumperiods=1
-    )
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")

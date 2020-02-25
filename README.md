@@ -2,6 +2,7 @@
 [![PyPI version](https://badge.fury.io/py/econuy.svg)](https://badge.fury.io/py/econuy)
 [![Build Status](https://travis-ci.org/rxavier/econuy.svg?branch=master)](https://travis-ci.org/rxavier/econuy)
 [![codecov](https://codecov.io/gh/rxavier/econuy/branch/master/graph/badge.svg)](https://codecov.io/gh/rxavier/econuy)
+[![Documentation Status](https://readthedocs.org/projects/econuy/badge/?version=latest)](https://econuy.readthedocs.io/en/latest/?badge=latest)
 
 # ECON-UY
 
@@ -44,7 +45,7 @@ The `Session()` object is initialized with the `loc_dir`, `revise_rows`,  `force
 * `loc_dir` controls where data will be saved and where it will be looked for when updating. It defaults to "econuy-data", and will create the directory if it doesn't exist.
 * `revise_rows` controls the updating mechanism. It can be an integer, denoting how many rows from the data held on disk to replace with new data, or a string. In the latter case, `auto` indicates that the amount of rows to be replaced will be determined from the inferred data frequency, while `nodup` replaces existing data with new data for each time period found in both.
 * `force_update` controls whether whether to redownload data even if existing data in disk was modified recently.
-* `dataset` holds the current working dataset and is initialized with an empty Pandas dataframe.
+* `dataset` holds the current working dataset(s) and by default is initialized with an empty Pandas dataframe.
 
 #### Methods
 
@@ -103,9 +104,9 @@ Metadata for each dataset is held in Pandas MultiIndexes with the following:
 8) Type (stock or flow)
 9) Cumulative periods
 
-#### `unrar` libraries
+#### unrar libraries
 
-The [patool](https://github.com/wummel/patool) library is used in order to access fiscal data, which is provided by the MEF in `.rar` format. This library requires that you have the unrar binaries in your system. You can get them from [here](https://www.rarlab.com/rar_add.htm).
+The [patool](https://github.com/wummel/patool) library is used in order to access fiscal data, which is provided by the MEF in `.rar` format. This library requires that you have the unrar binaries in your system, which you can get them from [here](https://www.rarlab.com/rar_add.htm).
 
 ## Word of warning
 

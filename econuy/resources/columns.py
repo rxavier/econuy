@@ -1,4 +1,5 @@
 from typing import Optional
+import warnings
 
 import pandas as pd
 
@@ -44,7 +45,8 @@ def _setmeta(
     colnames = df.columns
     inferred_freq = pd.infer_freq(df.index)
     if inferred_freq is None:
-        print("Frequency could not be inferred from the index.")
+        warnings.warn("Metadata: frequency could not be inferred "
+                      "from the index. Setting to '-'.", UserWarning)
         inferred_freq = "-"
     names = [
         "Indicador", "Área", "Frecuencia", "Unidad/Moneda",

@@ -57,10 +57,12 @@ def convert_usd(df: pd.DataFrame,
         nxr_freq = rolling(nxr_freq, periods=cum_periods,
                            operation="average")
 
-    else:
+    elif df.columns.get_level_values("Tipo")[0] == "Stock":
         columns._setmeta(nxr_data, ts_type="Stock")
         nxr_freq = resample(nxr_data, target=inferred_freq,
                             operation="average").iloc[:, [3]]
+    else:
+        raise ValueError("Dataframe needs to have a valid 'Type'.")
 
     nxr_to_use = nxr_freq[nxr_freq.index.isin(df.index)].iloc[:, 0]
     converted_df = df.apply(lambda x: x / nxr_to_use)
@@ -227,7 +229,7 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
 
     """
     if df.columns.get_level_values("Tipo")[0] == "-":
-        print("Dataframe has no Type, setting to 'Flujo'")
+        warnings.warn("Dataframe has no Type, setting to 'Flujo'", UserWarning)
         df.columns = df.columns.set_levels(["Flujo"], level="Tipo")
 
     if df.columns.get_level_values("Tipo")[0] == "Flujo":
@@ -250,12 +252,9 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
             columns._setmeta(resampled_df,
                              cumperiods=int(cum_periods * cum_adj))
 
-    elif df.columns.get_level_values("Tipo")[0] == "Stock":
+    else:
         resampled_df = df.resample(target, convention="end").asfreq()
         resampled_df = resampled_df.interpolate(method=interpolation)
-    else:
-        raise ValueError("Dataframe needs to have a valid Type ('Flujo', "
-                         "'Stock' or '-'")
 
     columns._setmeta(resampled_df)
 
@@ -382,7 +381,7 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
     x13_binary: str or os.PathLike, default 'search'
         Location of the X13 binary. If ``search`` is used, will attempt to find
         the binary in the project structure.
-    search_parents: int, default 2
+    search_parents: int, default 1
         If ``search`` is chosen for ``x13_binary``, this parameter controls how
         many parent directories to go up before recursively searching for the
         binary.
@@ -406,10 +405,9 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
         binary_path = Path(x13_binary).as_posix()
 
     if path.isfile(binary_path) is False:
-        print("X13 binary missing. Please refer to the README"
-              "for instructions on where to get binaries for Windows and Unix,"
-              "and how to compile it for macOS.")
-        return
+        raise ValueError("X13 binary missing. Please refer to the README "
+                         "for instructions on where to get binaries for "
+                         "Windows and Unix, and how to compile it for macOS.")
 
     df_proc = df.copy()
     old_columns = df_proc.columns

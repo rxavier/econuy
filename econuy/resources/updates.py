@@ -32,17 +32,17 @@ def _revise(new_data: pd.DataFrame, prev_data: pd.DataFrame,
     if len(prev_data) == 0:
         return new_data
     frequency = pd.infer_freq(prev_data.index)
-    freq_table = {"A": 3, "Q": 4, "Q-DEC": 4, "M": 12}
+    freq_table = {"A": 3, "A-DEC": 3, "Q": 4, "Q-DEC": 4, "M": 12}
     new_data = new_data.apply(pd.to_numeric, errors="coerce")
 
-    if revise_rows in "noduplicate":
+    if isinstance(revise_rows, str) and revise_rows in "noduplicate":
         prev_data.columns = new_data.columns
         updated = prev_data.append(new_data)
         updated = updated.loc[~updated.index.duplicated(keep="last")]
         updated.sort_index(inplace=True)
         return updated
     
-    elif revise_rows in "automatic":
+    elif isinstance(revise_rows, str) and revise_rows in "automatic":
         try:
             revise_rows = freq_table[frequency]
         except KeyError:
