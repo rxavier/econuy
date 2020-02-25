@@ -193,7 +193,39 @@ def test_decompose():
     std = out.std()
     assert std["Real"] >= std["Seas"]
     assert std["Real"] >= std["Trend"]
+    session = Session(loc_dir=TEST_DIR, dataset=df[["Real"]])
+    trend = session.decompose(flavor="trend", trading=True,
+                                    outlier=False).dataset
+    seas = session.decompose(flavor="seas", trading=True,
+                                    outlier=False).dataset
+    trend.columns, seas.columns = ["Trend"], ["Seas"]
+    out = pd.concat([df, trend, seas], axis=1)
+    std = out.std()
+    assert std["Real"] >= std["Seas"]
+    assert std["Real"] >= std["Trend"]
+    session = Session(loc_dir=TEST_DIR, dataset={"data1": df[["Real"]],
+                                                 "data2": df[["Real"]]})
+    trend = session.decompose(flavor="trend", trading=True,
+                              outlier=False).dataset["data1"]
+    seas = session.decompose(flavor="seas", trading=True,
+                             outlier=False).dataset["data1"]
+    trend, seas = session.decompose(flavor="both", trading=True,
+                                    outlier=False).dataset["data1"]
+    trend.columns, seas.columns = ["Trend"], ["Seas"]
+    out = pd.concat([df, trend, seas], axis=1)
+    std = out.std()
+    assert std["Real"] >= std["Seas"]
+    assert std["Real"] >= std["Trend"]
     with pytest.raises(ValueError):
         session = Session(loc_dir=TEST_DIR, dataset=df[["Real"]])
         out = session.decompose(flavor="both", trading=True,
                                 outlier=False, x13_binary="wrong").dataset
+    with pytest.warns(UserWarning):
+        session = Session(loc_dir=TEST_DIR, dataset=df[["Real"]])
+        out = session.decompose(flavor="wrong", trading=True,
+                                outlier=False, x13_binary="search").dataset
+    with pytest.warns(UserWarning):
+        session = Session(loc_dir=TEST_DIR, dataset={"data1": df[["Real"]],
+                                                     "data2": df[["Real"]]})
+        out = session.decompose(flavor="wrong", trading=True,
+                                outlier=False, x13_binary="search").dataset
