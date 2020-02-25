@@ -1,5 +1,6 @@
 from os import listdir, remove, path
 from typing import Tuple
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -9,6 +10,7 @@ from econuy.resources import columns
 from econuy.resources.lstrings import fiscal_metadata
 from econuy.retrieval import nxr
 from econuy.session import Session
+from .test_transform import dummy_df
 
 CUR_DIR = path.abspath(path.dirname(__file__))
 TEST_DIR = path.join(path.dirname(CUR_DIR), "test-data")
@@ -276,4 +278,19 @@ def test_none():
         nodata = session.get(dataset="wrong")
     with pytest.warns(UserWarning):
         nodata = session.get_tfm(dataset="wrong")
+    remove_clutter()
+
+
+def test_save():
+    remove_clutter()
+    data = dummy_df(freq="M")
+    session = Session(loc_dir=TEST_DIR, dataset=data)
+    session.save(name="test_save")
+    assert path.isfile(Path(TEST_DIR) / "test_save.csv")
+    remove_clutter()
+    data = dummy_df(freq="M")
+    session = Session(loc_dir=TEST_DIR, dataset={"data1": data, "data2": data})
+    session.save(name="test_save")
+    assert path.isfile(Path(TEST_DIR) / "test_save_data1.csv")
+    assert path.isfile(Path(TEST_DIR) / "test_save_data2.csv")
     remove_clutter()
