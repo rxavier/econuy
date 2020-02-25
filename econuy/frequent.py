@@ -23,10 +23,10 @@ def inflation(update: Union[str, PathLike, None] = None,
     ----------
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
     name : str, default None
         CSV filename for updating and/or saving.
 
@@ -83,10 +83,10 @@ def exchange_rate(eop: bool = False, sell: bool = True,
         How many periods to accumulate for rolling averages.
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
     name : str, default None
         CSV filename for updating and/or saving.
 
@@ -161,8 +161,8 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
         interest revenues from gov't interest payments.
     unit : {'gdp', 'usd', 'real', 'real usd'}
         Unit in which data should be expressed. Possible values are ``real``,
-        ``usd``, ``real usd`` and ``gdp``. If None or another string is set,
-        no unit calculations will be performed, rendering the data as is
+        ``usd``, ``real usd`` and ``gdp``. If ``None`` or another string is
+        set, no unit calculations will be performed, rendering the data as is
         (current UYU).
     start_date : str, datetime.date or None, default None
         If ``unit`` is set to ``real`` or ``real usd``, this parameter and
@@ -176,10 +176,10 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
         Whether to seasonally adjust.
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
     name : str, default None
         CSV filename for updating and/or saving.
 
@@ -320,10 +320,10 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
         Whether to seasonally adjust.
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
     name : str, default None
         CSV filename for updating and/or saving.
 
@@ -378,7 +378,7 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
     seas_adj : bool, default True
         Seasonally adjusted or not.
     usd : bool, default False
-        If True, convert to USD.
+        If ``True``, convert to USD.
     cum : int, default 1
         How many periods to accumulate for rolling sums.
     cust_seas_adj : {None, 'trend', 'seas'}
@@ -388,10 +388,10 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
         ``annual``.
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
     name : str, default None
         CSV filename for updating and/or saving.
 
@@ -401,7 +401,7 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
 
     Raises
     ------
-    KeyError:
+    KeyError
         If the combined parameters do not correspond to an available table.
 
     """
