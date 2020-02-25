@@ -11,7 +11,7 @@ before_script:
 - cp x13as /home/travis/build/rxavier/econuy/econuy/resources
 - sudo apt-get install unrar
 script:
-- pipenv run coverage run -m pytest
+- coverage run -m pytest
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 deploy:
