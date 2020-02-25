@@ -12,14 +12,14 @@ CUR_DIR = path.abspath(path.dirname(__file__))
 TEST_DIR = path.join(path.dirname(CUR_DIR), "test-data")
 
 
-def dummy_df(freq, area="Test", currency="Test",
+def dummy_df(freq, periods=200, area="Test", currency="Test",
              inf_adj="Test", index="Test", seas_adj="Test",
              ts_type="Test", cumperiods=1):
-    dates = pd.date_range("2000-01-31", periods=200, freq=freq)
+    dates = pd.date_range("2000-01-31", periods=periods, freq=freq)
     cols = ["A", "B", "C"]
-    data = np.hstack([np.random.uniform(-100, 100, [200, 1]),
-                      np.random.uniform(1, 50, [200, 1]),
-                      np.random.uniform(-100, -50, [200, 1])])
+    data = np.hstack([np.random.uniform(-100, 100, [periods, 1]),
+                      np.random.uniform(1, 50, [periods, 1]),
+                      np.random.uniform(-100, -50, [periods, 1])])
     output = pd.DataFrame(index=dates, columns=cols, data=data)
     columns._setmeta(output, area=area, currency=currency,
                      inf_adj=inf_adj, index=index, seas_adj=seas_adj,
