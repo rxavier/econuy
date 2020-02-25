@@ -379,7 +379,7 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
     x13_binary: str or os.PathLike, default 'search'
         Location of the X13 binary. If ``search`` is used, will attempt to find
         the binary in the project structure.
-    search_parents: int, default 2
+    search_parents: int, default 1
         If ``search`` is chosen for ``x13_binary``, this parameter controls how
         many parent directories to go up before recursively searching for the
         binary.
