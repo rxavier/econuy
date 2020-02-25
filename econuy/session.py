@@ -434,7 +434,8 @@ class Session(object):
 
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                save_path = (Path(self.loc_dir) / key).with_suffix(".csv")
+                save_path = (Path(self.loc_dir) /
+                             f"{name}_{key}").with_suffix(".csv")
                 if not path.exists(path.dirname(save_path)):
                     mkdir(path.dirname(save_path))
                 value.to_csv(save_path)
