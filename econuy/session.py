@@ -363,7 +363,10 @@ class Session(object):
                     output = transform.convert_gdp(value, update=update,
                                                    save=save, **kwargs)
                 else:
-                    output = pd.DataFrame()
+                    warnings.warn("Invalid keyword for 'flavor' parameter.",
+                                  UserWarning)
+                    return self
+
                 self.dataset.update({key: output})
         else:
             if flavor == "usd":
@@ -372,11 +375,14 @@ class Session(object):
             elif flavor == "real":
                 output = transform.convert_real(self.dataset, update=update,
                                                 save=save, **kwargs)
-            elif flavor == "pcgdp":
+            elif flavor == "pcgdp" or flavor == "gdp":
                 output = transform.convert_gdp(self.dataset, update=update,
                                                save=save, **kwargs)
             else:
-                output = pd.DataFrame()
+                warnings.warn("Invalid keyword for 'flavor' parameter.",
+                              UserWarning)
+                return self
+
             self.dataset = output
 
         return self
