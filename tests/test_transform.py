@@ -220,11 +220,11 @@ def test_decompose():
         session = Session(loc_dir=TEST_DIR, dataset=df[["Real"]])
         out = session.decompose(flavor="both", trading=True,
                                 outlier=False, x13_binary="wrong").dataset
-    with pytest.warns(UserWarning):
+    with pytest.raises(ValueError):
         session = Session(loc_dir=TEST_DIR, dataset=df[["Real"]])
         out = session.decompose(flavor="wrong", trading=True,
                                 outlier=False, x13_binary="search").dataset
-    with pytest.warns(UserWarning):
+    with pytest.raises(ValueError):
         session = Session(loc_dir=TEST_DIR, dataset={"data1": df[["Real"]],
                                                      "data2": df[["Real"]]})
         out = session.decompose(flavor="wrong", trading=True,
@@ -293,11 +293,11 @@ def test_convert():
     pcgdp = session.convert(flavor="pcgdp").dataset["data1"]
     pcgdp.columns = data.columns
     assert np.all(abs(pcgdp) <= abs(data))
-    with pytest.warns(UserWarning):
+    with pytest.raises(ValueError):
         data = dummy_df(freq="Q-DEC", periods=40, currency="USD")
         session = Session(loc_dir=TEST_DIR, dataset=data)
         session.convert(flavor="wrong")
-    with pytest.warns(UserWarning):
+    with pytest.raises(ValueError):
         data = dummy_df(freq="Q-DEC", periods=40, currency="USD")
         session = Session(loc_dir=TEST_DIR,
                           dataset={"data1": data, "data2": data})

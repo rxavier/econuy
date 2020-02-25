@@ -274,9 +274,9 @@ def test_edge():
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
     cpi = session.get(dataset="cpi", update=False, save=False)
-    with pytest.warns(UserWarning):
+    with pytest.raises(ValueError):
         nodata = session.get(dataset="wrong")
-    with pytest.warns(UserWarning):
+    with pytest.raises(ValueError):
         nodata = session.get_tfm(dataset="wrong")
     remove_clutter()
 

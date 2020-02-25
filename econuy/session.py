@@ -1,4 +1,3 @@
-import warnings
 from datetime import date
 from os import PathLike, path, makedirs, mkdir
 from pathlib import Path
@@ -79,6 +78,11 @@ class Session(object):
             Loads the pd.DataFrame output into the :attr:`dataset`
             attribute.
 
+        Raises
+        ------
+        ValueError
+            If an invalid string is given to the ``dataset`` argument.
+
         """
         if update is True:
             update_path = Path(self.loc_dir)
@@ -145,9 +149,7 @@ class Session(object):
                                              save=save_path,
                                              name=override)
         else:
-            warnings.warn("Invalid keyword for 'dataset' parameter.",
-                          UserWarning)
-            return self
+            raise ValueError("Invalid keyword for 'dataset' parameter.")
 
         self.dataset = output
 
@@ -180,6 +182,11 @@ class Session(object):
         -------
         :class:`~econuy.session.Session`
             Loads the downloaded dataframe into the :attr:`dataset` attribute.
+
+        Raises
+        ------
+        ValueError
+            If an invalid string is given to the ``dataset`` argument.
 
         """
         if update is True:
@@ -216,9 +223,7 @@ class Session(object):
                                         name=override,
                                         **kwargs)
         else:
-            warnings.warn("Invalid keyword for 'dataset' parameter.",
-                          UserWarning)
-            return self
+            raise ValueError("Invalid keyword for 'dataset' parameter.")
         
         self.dataset = output
 
@@ -294,6 +299,11 @@ class Session(object):
             how many parent directories to go up before recursively searching
             for the binary.
 
+        Raises
+        ------
+        ValueError
+            If an invalid string is given to the ``flavor`` argument.
+
         See Also
         --------
         :func:`~econuy.transform.decompose`
@@ -313,9 +323,8 @@ class Session(object):
                 elif flavor == "both":
                     output = result
                 else:
-                    warnings.warn("'flavor' can be one of 'both', 'trend', or"
-                                  "'seas'.", UserWarning)
-                    return self
+                    raise ValueError("'flavor' can be one of 'both', 'trend', "
+                                     "or 'seas'.")
 
                 self.dataset.update({key: output})
         else:
@@ -331,9 +340,8 @@ class Session(object):
             elif flavor == "both":
                 output = result
             else:
-                warnings.warn("'flavor' can be one of 'both', 'trend', or"
-                              "'seas'.", UserWarning)
-                return self
+                raise ValueError("'flavor' can be one of 'both', 'trend', or"
+                                 "'seas'.")
 
             self.dataset = output
 
@@ -343,6 +351,11 @@ class Session(object):
                 save: Union[str, PathLike, None] = None, **kwargs):
         """
         Convert to other units.
+
+        Raises
+        ------
+        ValueError
+            If an invalid string is given to the ``flavor`` argument.
 
         See Also
         --------
@@ -363,9 +376,8 @@ class Session(object):
                     output = transform.convert_gdp(value, update=update,
                                                    save=save, **kwargs)
                 else:
-                    warnings.warn("Invalid keyword for 'flavor' parameter.",
-                                  UserWarning)
-                    return self
+                    raise ValueError("'flavor' can be one of 'usd', 'real', "
+                                     "or 'pcgdp'.")
 
                 self.dataset.update({key: output})
         else:
@@ -379,9 +391,8 @@ class Session(object):
                 output = transform.convert_gdp(self.dataset, update=update,
                                                save=save, **kwargs)
             else:
-                warnings.warn("Invalid keyword for 'flavor' parameter.",
-                              UserWarning)
-                return self
+                raise ValueError("'flavor' can be one of 'usd', 'real', "
+                                 "or 'pcgdp'.")
 
             self.dataset = output
 
