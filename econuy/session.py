@@ -27,8 +27,8 @@ class Session(object):
         which replaces existing periods with new data.
     force_update : bool, default False
         Whether to force download even if data was recently modified.
-    dataset : pd.DataFrame
-        Current working dataset. Initialized with an empty dataframe.
+    dataset : pd.DataFrame, default pd.DataFrame(index=[], columns=[])
+        Current working dataset.
 
     """
     def __init__(self,
@@ -66,8 +66,8 @@ class Session(object):
         override : str, default None
             If not None, overrides the saved dataset's default filename.
         **kwargs
-            These arguments are passed to
-            :func:`econuy.retrieval.commodity_index.get`. There's only two
+            These arguments are passed only to
+            :func:`econuy.retrieval.commodity_index.get`. There's two
             options: ``force_update_weights: bool`` and
             ``force_update_prices: bool`` which are self-explanatory. Generally
             you will need to update prices but not weights since the latter are
@@ -166,7 +166,7 @@ class Session(object):
         ----------
         dataset : {'inflation', 'fiscal', 'nxr', 'naccounts', 'labor'}
             Type of data to download.
-        update : bool, default  True
+        update : bool, default True
             Whether to update an existing dataset.
         save : bool, default  True
             Whether to save the dataset.
@@ -359,7 +359,7 @@ class Session(object):
                 elif flavor == "real":
                     output = transform.convert_real(value, update=update,
                                                     save=save, **kwargs)
-                elif flavor == "pcgdp":
+                elif flavor == "pcgdp" or flavor == "gdp":
                     output = transform.convert_gdp(value, update=update,
                                                    save=save, **kwargs)
                 else:
