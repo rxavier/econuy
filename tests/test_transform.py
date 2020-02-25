@@ -142,3 +142,58 @@ def test_resample():
     with pytest.raises(ValueError):
         data_m = dummy_df(freq="M", ts_type="Flujo")
         trf_none = transform.resample(data_m, target="Q-DEC", operation="wrong")
+
+
+def test_decompose():
+    df = pd.DataFrame(index=pd.date_range("2000-01-01", periods=100,
+                                          freq="Q-DEC"),
+                      data=np.random.exponential(2, 100).cumsum(),
+                      columns=["Exponential"])
+    df["Real"] = df["Exponential"]
+    df.loc[df.index.month == 12,
+           "Real"] = (df.loc[df.index.month == 12, "Real"].
+                      multiply(np.random.uniform(1.06, 1.14)))
+    df.loc[df.index.month == 6,
+           "Real"] = (df.loc[df.index.month == 6, "Real"].
+                      multiply(np.random.uniform(0.94, 0.96)))
+    df.loc[df.index.month == 3,
+           "Real"] = (df.loc[df.index.month == 3, "Real"].
+                      multiply(np.random.uniform(1.04, 1.06)))
+    noise = np.random.normal(0, 1, 100)
+    df["Real"] = df["Real"] + noise
+    session = Session(loc_dir=TEST_DIR, dataset=df[["Real"]])
+    trend, seas = session.decompose(flavor="both", trading=True,
+                                    outlier=True).dataset
+    trend.columns, seas.columns = ["Trend"], ["Seas"]
+    out = pd.concat([df, trend, seas], axis=1)
+    std = out.std()
+    assert std["Real"] >= std["Seas"]
+    assert std["Real"] >= std["Trend"]
+    session = Session(loc_dir=TEST_DIR, dataset=df[["Real"]])
+    trend, seas = session.decompose(flavor="both", trading=False,
+                                    outlier=True).dataset
+    trend.columns, seas.columns = ["Trend"], ["Seas"]
+    out = pd.concat([df, trend, seas], axis=1)
+    std = out.std()
+    assert std["Real"] >= std["Seas"]
+    assert std["Real"] >= std["Trend"]
+    session = Session(loc_dir=TEST_DIR, dataset=df[["Real"]])
+    trend, seas = session.decompose(flavor="both", trading=False,
+                                    outlier=False).dataset
+    trend.columns, seas.columns = ["Trend"], ["Seas"]
+    out = pd.concat([df, trend, seas], axis=1)
+    std = out.std()
+    assert std["Real"] >= std["Seas"]
+    assert std["Real"] >= std["Trend"]
+    session = Session(loc_dir=TEST_DIR, dataset=df[["Real"]])
+    trend, seas = session.decompose(flavor="both", trading=True,
+                                    outlier=False).dataset
+    trend.columns, seas.columns = ["Trend"], ["Seas"]
+    out = pd.concat([df, trend, seas], axis=1)
+    std = out.std()
+    assert std["Real"] >= std["Seas"]
+    assert std["Real"] >= std["Trend"]
+    with pytest.raises(ValueError):
+        session = Session(loc_dir=TEST_DIR, dataset=df[["Real"]])
+        out = session.decompose(flavor="both", trading=True,
+                                outlier=False, x13_binary="wrong").dataset
