@@ -35,10 +35,10 @@ def convert_usd(df: pd.DataFrame,
         Input dataframe.
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
 
     Returns
     -------
@@ -94,13 +94,13 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
         base period will be ``start_date``.
     end_date : str, datetime.date or None, default None
         If ``start_date`` is set, calculate so that the data is in constant
-        prices of ``start_date``-``end_date``.
+        prices of ``start_date-end_date``.
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
 
     Returns
     -------
@@ -159,10 +159,10 @@ def convert_gdp(df: pd.DataFrame, hifreq: bool = True,
         quarterly (``Q`` or ``Q-DEC``) and will trigger GDP upsampling.
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
 
     Returns
     -------
@@ -223,9 +223,15 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
 
     Raises
     ------
-    ValueError:
+    ValueError
         If ``operation`` is not one of available options and if the input
         dataframe does not have a ``Type`` level in its column multiindex.
+
+    Warns
+    -----
+    UserWarning
+        If input dataframe has ``-`` as frequency in its metadata, warn and
+        set to flow.
 
     """
     if df.columns.get_level_values("Tipo")[0] == "-":
@@ -241,7 +247,7 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
             resampled_df = df.resample(target).asfreq()
             resampled_df = resampled_df.interpolate(method=interpolation)
         else:
-            raise ValueError("Only sum, average and upsample "
+            raise ValueError("Only 'sum', 'average' and 'upsample' "
                              "are accepted operations")
 
         cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
@@ -282,6 +288,11 @@ def rolling(df: pd.DataFrame, periods: Optional[int] = None,
     Returns
     -------
     Input dataframe with rolling windows : pd.DataFrame
+
+    Warns
+    -----
+    UserWarning
+        If the input dataframe is a stock time series.
 
     """
     pd_frequencies = {"A": 1,
@@ -391,6 +402,11 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
     Decomposed dataframes : Tuple[pd.DataFrame, pd.DataFrame] or None
         Tuple containing the trend component and the seasonally adjusted
         series.
+
+    Raises
+    ------
+    ValueError
+        If the path provided for the X13 binary does not point to a file.
 
     """
     if x13_binary == "search":
@@ -523,8 +539,8 @@ def chg_diff(df: pd.DataFrame, operation: str = "chg",
     Raises
     ------
     ValueError
-        If the dataframe is not of frequency M (month end), Q (quarter end) or
-        A (year end).
+        If the dataframe is not of frequency ``M`` (month), ``Q`` or
+        ``Q-DEC`` (quarter), or ``A`` or ``A-DEC`` (year).
 
     """
     inferred_freq = pd.infer_freq(df.index)
