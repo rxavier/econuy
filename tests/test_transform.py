@@ -256,3 +256,49 @@ def test_base_index():
                               end_date="2000-12-31").dataset
     assert np.all(base["2000-01-31":"2000-12-31"].mean().round(4).values ==
                   np.array([100]*3, dtype="float64"))
+
+
+def test_convert():
+    data = dummy_df(freq="M", ts_type="Stock")
+    session = Session(loc_dir=TEST_DIR, dataset=data)
+    usd = session.convert(flavor="usd").dataset
+    usd.columns = data.columns
+    assert np.all(abs(usd) <= abs(data))
+    data = dummy_df(freq="M", ts_type="Flujo")
+    session = Session(loc_dir=TEST_DIR, dataset={"data1": data, "data2": data})
+    usd = session.convert(flavor="usd").dataset["data1"]
+    usd.columns = data.columns
+    assert np.all(abs(usd) <= abs(data))
+    with pytest.raises(ValueError):
+        data = dummy_df(freq="M", ts_type="wrong")
+        session = Session(loc_dir=TEST_DIR, dataset=data)
+        usd = session.convert(flavor="usd").dataset
+    data = dummy_df(freq="M")
+    session = Session(loc_dir=TEST_DIR, dataset=data)
+    real = session.convert(flavor="real", start_date="2000-01-31").dataset
+    real.columns = data.columns
+    assert np.all(abs(real) <= abs(data))
+    data = dummy_df(freq="M")
+    session = Session(loc_dir=TEST_DIR, dataset={"data1": data, "data2": data})
+    real = session.convert(flavor="real").dataset["data1"]
+    real.columns = data.columns
+    assert np.all(abs(real) <= abs(data))
+    data = dummy_df(freq="Q-DEC", periods=40, currency="USD")
+    session = Session(loc_dir=TEST_DIR, dataset=data)
+    pcgdp = session.convert(flavor="pcgdp", hifreq=False).dataset
+    pcgdp.columns = data.columns
+    assert np.all(abs(pcgdp) <= abs(data))
+    data = dummy_df(freq="Q-DEC", periods=40)
+    session = Session(loc_dir=TEST_DIR, dataset={"data1": data, "data2": data})
+    pcgdp = session.convert(flavor="pcgdp").dataset["data1"]
+    pcgdp.columns = data.columns
+    assert np.all(abs(pcgdp) <= abs(data))
+    with pytest.warns(UserWarning):
+        data = dummy_df(freq="Q-DEC", periods=40, currency="USD")
+        session = Session(loc_dir=TEST_DIR, dataset=data)
+        session.convert(flavor="wrong")
+    with pytest.warns(UserWarning):
+        data = dummy_df(freq="Q-DEC", periods=40, currency="USD")
+        session = Session(loc_dir=TEST_DIR,
+                          dataset={"data1": data, "data2": data})
+        session.convert(flavor="wrong")
