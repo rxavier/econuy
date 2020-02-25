@@ -268,7 +268,7 @@ def test_naccounts():
     remove_clutter()
 
 
-def test_none():
+def test_edge():
     remove_clutter()
     session = Session(loc_dir=TEST_DIR)
     assert isinstance(session, Session)
