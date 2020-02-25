@@ -229,3 +229,30 @@ def test_decompose():
                                                      "data2": df[["Real"]]})
         out = session.decompose(flavor="wrong", trading=True,
                                 outlier=False, x13_binary="search").dataset
+
+
+def test_base_index():
+    data = dummy_df(freq="M")
+    session = Session(loc_dir=TEST_DIR, dataset=data)
+    base = session.base_index(start_date="2000-01-31").final()
+    assert np.all(base.loc["2000-01-31"].values == np.array([100]*3))
+    chg = data.pct_change(periods=1).multiply(100)
+    session = Session(loc_dir=TEST_DIR, dataset=data)
+    comp = session.chg_diff(operation="chg", period_op="last").dataset
+    chg.columns = comp.columns
+    assert chg.equals(comp)
+    data = dummy_df(freq="Q-DEC")
+    session = Session(loc_dir=TEST_DIR, dataset={"data1": data, "data2": data})
+    base = session.base_index(start_date="2000-03-31").final()
+    assert np.all(base["data1"].loc["2000-03-31"].values == np.array([100]*3))
+    chg = data.pct_change(periods=1).multiply(100)
+    session = Session(loc_dir=TEST_DIR, dataset={"data1": data, "data2": data})
+    comp = session.chg_diff(operation="chg", period_op="last").dataset["data1"]
+    chg.columns = comp.columns
+    assert chg.equals(comp)
+    data = dummy_df(freq="M")
+    session = Session(loc_dir=TEST_DIR, dataset=data)
+    base = session.base_index(start_date="2000-01-31",
+                              end_date="2000-12-31").dataset
+    assert np.all(base["2000-01-31":"2000-12-31"].mean().round(4).values ==
+                  np.array([100]*3, dtype="float64"))
