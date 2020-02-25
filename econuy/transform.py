@@ -57,10 +57,12 @@ def convert_usd(df: pd.DataFrame,
         nxr_freq = rolling(nxr_freq, periods=cum_periods,
                            operation="average")
 
-    else:
+    elif df.columns.get_level_values("Tipo")[0] == "Stock":
         columns._setmeta(nxr_data, ts_type="Stock")
         nxr_freq = resample(nxr_data, target=inferred_freq,
                             operation="average").iloc[:, [3]]
+    else:
+        raise ValueError("Dataframe needs to have a valid 'Type'.")
 
     nxr_to_use = nxr_freq[nxr_freq.index.isin(df.index)].iloc[:, 0]
     converted_df = df.apply(lambda x: x / nxr_to_use)
