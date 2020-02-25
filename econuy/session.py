@@ -145,7 +145,10 @@ class Session(object):
                                              save=save_path,
                                              name=override)
         else:
-            output = pd.DataFrame()
+            warnings.warn("Invalid keyword for 'dataset' parameter.",
+                          UserWarning)
+            return self
+
         self.dataset = output
 
         return self
@@ -213,7 +216,10 @@ class Session(object):
                                         name=override,
                                         **kwargs)
         else:
-            output = pd.DataFrame()
+            warnings.warn("Invalid keyword for 'dataset' parameter.",
+                          UserWarning)
+            return self
+        
         self.dataset = output
 
         return self
