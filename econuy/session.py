@@ -271,6 +271,23 @@ class Session(object):
         Use `X-13 ARIMA <https://www.census.gov/srd/www/x13as/>`_ to
         decompose time series.
 
+        Parameters
+        ----------
+        flavor : {'both', 'trend', 'seas'}
+            Whether to get the trend component, the seasonally adjusted series
+            or both.
+        trading : bool, default True
+            Whether to automatically detect trading days.
+        outlier : bool, default True
+            Whether to automatically detect outliers.
+        x13_binary: str or os.PathLike, default 'search'
+            Location of the X13 binary. If ``search`` is used, will attempt to
+            find the binary in the project structure.
+        search_parents: int, default 1
+            If ``search`` is chosen for ``x13_binary``, this parameter controls
+            how many parent directories to go up before recursively searching
+            for the binary.
+
         See Also
         --------
         :func:`~econuy.transform.decompose`
