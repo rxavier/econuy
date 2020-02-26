@@ -20,7 +20,8 @@ pip install econuy
 * Git:
 
 ```
-git clone https://github.com/rxavier/uy-econ.git
+git clone https://github.com/rxavier/econuy.git
+cd econuy
 python setup.py install
 ```
 
