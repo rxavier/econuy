@@ -349,8 +349,8 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
 
 
 def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
-                 seas_adj: bool = False, usd: bool = False, cum: int = 1,
-                 cust_seas_adj: Union[str, None] = None,
+                 off_seas_adj: bool = False, usd: bool = False, cum: int = 1,
+                 seas_adj: Union[str, None] = None,
                  variation: Union[str, None] = None,
                  update: Union[str, PathLike, None] = None,
                  save: Union[str, PathLike, None] = None,
@@ -369,13 +369,13 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
         Constant or current.
     index : bool, default False
         Base 100 index or not.
-    seas_adj : bool, default True
+    off_seas_adj : bool, default True
         Seasonally adjusted or not.
     usd : bool, default False
         If ``True``, convert to USD.
     cum : int, default 1
         How many periods to accumulate for rolling sums.
-    cust_seas_adj : {None, 'trend', 'seas'}
+    seas_adj : {None, 'trend', 'seas'}
         Whether to seasonally adjust.
     variation : {None, 'last', 'inter', 'annual}
         Type of percentage change to calculate. Can be ``last``, ``inter`` or
@@ -415,7 +415,7 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
         search_terms += ["cur"]
     if index is True:
         search_terms += ["idx"]
-    if seas_adj is True:
+    if off_seas_adj is True:
         search_terms += ["sa"]
     else:
         search_terms += ["nsa"]
@@ -430,23 +430,20 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
     if usd is True:
         output = transform.convert_usd(output)
 
-    if cust_seas_adj in ["trend", "seas"] and seas_adj is False and cum == 1:
+    if seas_adj in ["trend", "seas"] and off_seas_adj is False and cum == 1:
         trend, seasadj = transform.decompose(output, trading=True,
                                              outlier=True)
-        if cust_seas_adj == "trend":
+        if seas_adj == "trend":
             output = trend
-        elif cust_seas_adj == "seas":
+        elif seas_adj == "seas":
             output = seasadj
 
     if cum != 1:
         output = transform.rolling(output, periods=cum, operation="sum")
 
-    if variation in ["last", "inter", "annual"]:
+    if variation is not None:
         output = transform.chg_diff(output, operation="chg",
                                     period_op=variation)
-    elif variation is not None:
-        raise ValueError("Only 'inter', 'last', 'annual' and None are "
-                         "available options for variations")
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
