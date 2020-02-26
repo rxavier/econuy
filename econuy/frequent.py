@@ -155,16 +155,16 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
         If ``True``, exclude the `FSS's <https://www.impo.com.uy/bases/decretos
         /71-2018/25>`_ income from gov't revenues and the FSS's
         interest revenues from gov't interest payments.
-    unit : {'gdp', 'usd', 'real', 'real usd'}
+    unit : {'gdp', 'usd', 'real', 'real_usd'}
         Unit in which data should be expressed. Possible values are ``real``,
-        ``usd``, ``real usd`` and ``gdp``. If ``None`` or another string is
+        ``usd``, ``real_usd`` and ``gdp``. If ``None`` or another string is
         set, no unit calculations will be performed, rendering the data as is
         (current UYU).
     start_date : str, datetime.date or None, default None
-        If ``unit`` is set to ``real`` or ``real usd``, this parameter and
+        If ``unit`` is set to ``real`` or ``real_usd``, this parameter and
         ``end_date`` control how deflation is calculated.
     end_date :
-        If ``unit`` is set to ``real`` or ``real usd``, this parameter and
+        If ``unit`` is set to ``real`` or ``real_usd``, this parameter and
         ``start_date`` control how deflation is calculated.
     cum : int, default 1
         How many periods to accumulate for rolling sums.
@@ -269,7 +269,7 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
         output = transform.convert_gdp(output, hifreq=True)
     elif unit == "usd":
         output = transform.convert_usd(output)
-    elif unit == "real usd":
+    elif unit == "real_usd":
         output = transform.convert_real(output, start_date=start_date,
                                         end_date=end_date)
         xr = nxr.get(update=update, revise_rows=6, save=save)
