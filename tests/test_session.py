@@ -85,6 +85,10 @@ def test_exchange_rate():
     compare.columns = nxr_tfm.columns
     assert compare.equals(nxr_tfm)
     remove_clutter()
+    with pytest.raises(ValueError):
+        nxr = session.get_tfm(dataset="nxr", eop=False, sell=True,
+                              seas_adj="wrong")
+    remove_clutter()
 
 
 def test_fiscal():
@@ -177,6 +181,15 @@ def test_fiscal():
     compare_roll.columns = fiscal_tfm.columns
     assert compare_roll.equals(fiscal_tfm)
     remove_clutter()
+    with pytest.raises(ValueError):
+        fiscal_tfm = session.get_tfm(dataset="fiscal", aggregation="nfps",
+                                     unit="wrong")
+    with pytest.raises(ValueError):
+        fiscal_tfm = session.get_tfm(dataset="fiscal", aggregation="nfps",
+                                     seas_adj="wrong")
+    with pytest.raises(ValueError):
+        fiscal_tfm = session.get_tfm(dataset="fiscal", aggregation="wrong")
+    remove_clutter()
 
 
 def test_labor():
@@ -198,6 +211,8 @@ def test_labor():
     compare.columns = labor_tfm.columns
     assert compare.equals(labor_tfm)
     remove_clutter()
+    with pytest.raises(ValueError):
+        lab = session.get_tfm(dataset="labor", seas_adj="wrong")
 
 
 def test_naccounts():

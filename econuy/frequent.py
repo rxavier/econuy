@@ -93,9 +93,18 @@ def exchange_rate(eop: bool = False, sell: bool = True,
     -------
     Nominal exchange rate : pd.DataFrame
 
+    Raises
+    ------
+    ValueError
+        If ``seas_adj`` is given an invalid keyword.
+
     """
     if name is None:
         name = "tfm_nxr"
+
+    if seas_adj not in ["trend", "seas", None]:
+        raise ValueError("'seas_adj' can be 'trend', 'seas' or None.")
+
     data = nxr.get(update=update, revise_rows=6,
                    save=save, force_update=False)
 
@@ -183,9 +192,24 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     -------
     Fiscal aggregation : pd.DataFrame
 
+    Raises
+    ------
+    ValueError
+        If ``seas_adj``, ``unit`` or ``aggregation`` are given an invalid
+        keywords.
+
     """
     if name is None:
         name = "tfm_fiscal"
+
+    if seas_adj not in ["trend", "seas", None]:
+        raise ValueError("'seas_adj' can be 'trend', 'seas' or None.")
+    if unit not in ["gdp", "usd", "real", "real_usd", None]:
+        raise ValueError("'unit' can be 'gdp', 'usd', 'real', 'real_usd' or"
+                         " None.")
+    if aggregation not in ["gps", "nfps", "gc"]:
+        raise ValueError("'aggregation' can be 'gps', 'nfps' or 'gc'.")
+
     data = fiscal_accounts.get(update=update, revise_rows=12,
                                save=save, force_update=False)
     gps = data["gps"]
@@ -325,9 +349,18 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
     -------
     Labor market data : pd.DataFrame
 
+    Raises
+    ------
+    ValueError
+        If ``seas_adj`` is given an invalid keyword.
+
     """
     if name is None:
         name = "tfm_labor"
+
+    if seas_adj not in ["trend", "seas", None]:
+        raise ValueError("'seas_adj' can be 'trend', 'seas' or None.")
+
     data = labor.get(update=update, revise_rows=6,
                      save=save, force_update=False)
     output = data
@@ -397,10 +430,19 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
     ------
     KeyError
         If the combined parameters do not correspond to an available table.
+    ValueError
+        If ``seas_adj`` or ``variation`` are given invalid keywords.
 
     """
     if name is None:
         name = "tfm_na"
+
+    if seas_adj not in ["trend", "seas", None]:
+        raise ValueError("'seas_adj' can be 'trend', 'seas' or None.")
+    if variation not in ["last", "inter", "annual", None]:
+        raise ValueError("'variation' can be 'last', 'inter', 'annual', or"
+                         " None.")
+
     data = national_accounts.get(update=update, revise_rows=4,
                                  save=save, force_update=False)
 
