@@ -2,7 +2,6 @@ from datetime import date
 from os import PathLike, mkdir, path
 from pathlib import Path
 from typing import Union, Optional
-import warnings
 
 import pandas as pd
 
@@ -117,9 +116,6 @@ def exchange_rate(eop: bool = False, sell: bool = True,
             output = pd.concat([output, trend], axis=1)
         elif seas_adj == "seas":
             output = pd.concat([output, seasadj], axis=1)
-        else:
-            raise ValueError("Only 'trend', 'seas' and None are available "
-                             "options for seasonal adjustment")
 
     if cum != 1:
         columns._setmeta(output, ts_type="Flujo")
@@ -290,9 +286,7 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
             output = output_trend
         elif seas_adj == "seas":
             output = output_seasadj
-        else:
-            raise ValueError("Only 'trend', 'seas' and None are available "
-                             "options for seasonal adjustment")
+
     if cum != 1:
         output = transform.rolling(output, periods=cum, operation="sum")
 
@@ -436,16 +430,13 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
     if usd is True:
         output = transform.convert_usd(output)
 
-    if cust_seas_adj is not None and seas_adj is False and cum == 1:
+    if cust_seas_adj in ["trend", "seas"] and seas_adj is False and cum == 1:
         trend, seasadj = transform.decompose(output, trading=True,
                                              outlier=True)
         if cust_seas_adj == "trend":
             output = trend
         elif cust_seas_adj == "seas":
             output = seasadj
-        else:
-            raise ValueError("Only 'trend', 'seas' and None are available "
-                             "options for seasonal adjustment")
 
     if cum != 1:
         output = transform.rolling(output, periods=cum, operation="sum")
