@@ -156,7 +156,7 @@ def test_fiscal():
     start_date = "2010-01-31"
     end_date = "2010-12-31"
     fiscal_tfm = session.get_tfm(dataset="fiscal", aggregation="nfps",
-                                 fss=True, unit="real usd", seas_adj=None,
+                                 fss=True, unit="real_usd", seas_adj=None,
                                  start_date=start_date,
                                  end_date=end_date).dataset
     compare_real_usd = transform.convert_real(compare, start_date=start_date,
