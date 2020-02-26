@@ -35,10 +35,10 @@ def convert_usd(df: pd.DataFrame,
         Input dataframe.
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
 
     Returns
     -------
@@ -94,13 +94,13 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
         base period will be ``start_date``.
     end_date : str, datetime.date or None, default None
         If ``start_date`` is set, calculate so that the data is in constant
-        prices of ``start_date``-``end_date``.
+        prices of ``start_date-end_date``.
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
 
     Returns
     -------
@@ -137,8 +137,7 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     return converted_df
 
 
-def convert_gdp(df: pd.DataFrame, hifreq: bool = True,
-                update: Union[str, PathLike, None] = None,
+def convert_gdp(df: pd.DataFrame, update: Union[str, PathLike, None] = None,
                 save: Union[str, PathLike, None] = None) -> pd.DataFrame:
     """
     Calculate dataframe as percentage of GDP.
@@ -146,38 +145,44 @@ def convert_gdp(df: pd.DataFrame, hifreq: bool = True,
     Convert a dataframe's columns to percentage of GDP. Call the
     :func:`econuy.retrieval.national_accounts._lin_gdp` function to obtain UYU
     and USD quarterly GDP series. Take into account the input dataframe's
-    currency for chossing UYU or USD GDP. If ``hifreq`` is set to ``True``,
-    GDP will be upsampled and linear interpolation will be performed to
-    complete missing data.
+    currency for chossing UYU or USD GDP. If frequency of input dataframe is
+    higher than quarterly, GDP will be upsampled and linear interpolation will
+    be performed to complete missing data.
 
     Parameters
     ----------
     df : pd.DataFrame
         Input dataframe.
-    hifreq : bool, default True
-        If True, the input dataframe's frequency is assumed to be 'higher' than
-        quarterly (``Q`` or ``Q-DEC``) and will trigger GDP upsampling.
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
 
     Returns
     -------
     Input dataframe as a percentage of GDP : pd.DataFrame
+
+    Raises
+    ------
+    ValueError
+        If frequency of input dataframe not any of 'M', 'MS', 'Q', 'Q-DEC', 'A'
+        or 'A-DEC'.
 
     """
     inferred_freq = pd.infer_freq(df.index)
     gdp = national_accounts._lin_gdp(update=update,
                                      save=save, force_update=False)
 
-    if hifreq is True:
+    if inferred_freq in ["M", "MS"]:
         gdp = resample(gdp, target=inferred_freq,
                        operation="upsample", interpolation="linear")
-    else:
+    elif inferred_freq in ["Q", "Q-DEC", "A", "A-DEC"]:
         gdp = gdp.resample(inferred_freq, convention="end").asfreq()
+    else:
+        raise ValueError("Frequency of input dataframe not any of 'M', 'MS', "
+                         "'Q', 'Q-DEC', 'A' or 'A-DEC'.")
 
     if df.columns.get_level_values("Unidad/Moneda")[0] == "USD":
         gdp = gdp.iloc[:, 1].to_frame()
@@ -223,9 +228,15 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
 
     Raises
     ------
-    ValueError:
+    ValueError
         If ``operation`` is not one of available options and if the input
         dataframe does not have a ``Type`` level in its column multiindex.
+
+    Warns
+    -----
+    UserWarning
+        If input dataframe has ``-`` as frequency in its metadata, warn and
+        set to flow.
 
     """
     if df.columns.get_level_values("Tipo")[0] == "-":
@@ -241,7 +252,7 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
             resampled_df = df.resample(target).asfreq()
             resampled_df = resampled_df.interpolate(method=interpolation)
         else:
-            raise ValueError("Only sum, average and upsample "
+            raise ValueError("Only 'sum', 'average' and 'upsample' "
                              "are accepted operations")
 
         cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
@@ -282,6 +293,11 @@ def rolling(df: pd.DataFrame, periods: Optional[int] = None,
     Returns
     -------
     Input dataframe with rolling windows : pd.DataFrame
+
+    Warns
+    -----
+    UserWarning
+        If the input dataframe is a stock time series.
 
     """
     pd_frequencies = {"A": 1,
@@ -391,6 +407,11 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
     Decomposed dataframes : Tuple[pd.DataFrame, pd.DataFrame] or None
         Tuple containing the trend component and the seasonally adjusted
         series.
+
+    Raises
+    ------
+    ValueError
+        If the path provided for the X13 binary does not point to a file.
 
     """
     if x13_binary == "search":
@@ -523,8 +544,8 @@ def chg_diff(df: pd.DataFrame, operation: str = "chg",
     Raises
     ------
     ValueError
-        If the dataframe is not of frequency M (month end), Q (quarter end) or
-        A (year end).
+        If the dataframe is not of frequency ``M`` (month), ``Q`` or
+        ``Q-DEC`` (quarter), or ``A`` or ``A-DEC`` (year).
 
     """
     inferred_freq = pd.infer_freq(df.index)

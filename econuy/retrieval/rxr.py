@@ -25,7 +25,7 @@ def get_official(update: Union[str, PathLike, None] = None,
     ----------
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     revise_rows : {'nodup', 'auto', int}
         Defines how to process data updates. An integer indicates how many rows
         to remove from the tail of the dataframe and replace with new data.
@@ -34,10 +34,10 @@ def get_official(update: Union[str, PathLike, None] = None,
         which replaces existing periods with new data.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
     force_update : bool, default False
-        If True, fetch data and update existing data even if it was modified
-        within its update window (for real exchange rates, 25 days).
+        If ``True``, fetch data and update existing data even if it was
+        modified within its update window (for real exchange rates, 25 days).
     name : str, default None
         CSV filename for updating and/or saving.
 
@@ -94,7 +94,7 @@ def get_custom(update: Union[str, PathLike, None] = None,
     ----------
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     revise_rows : {'nodup', 'auto', int}
         Defines how to process data updates. An integer indicates how many rows
         to remove from the tail of the dataframe and replace with new data.
@@ -103,10 +103,10 @@ def get_custom(update: Union[str, PathLike, None] = None,
         which replaces existing periods with new data.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
     force_update : bool, default False
-        If True, fetch data and update existing data even if it was modified
-        within its update window (for real exchange rates, 25 days).
+        If ``True``, fetch data and update existing data even if it was
+        modified within its update window (for real exchange rates, 25 days).
     name : str, default None
         CSV filename for updating and/or saving.
 

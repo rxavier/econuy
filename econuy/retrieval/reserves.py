@@ -21,10 +21,10 @@ def get_operations(update: Union[str, PathLike, None] = None,
     ----------
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
     name : str, default None
         CSV filename for updating and/or saving.
 
@@ -63,17 +63,14 @@ def get_chg(update: Union[str, PathLike, None] = None,
             name: Optional[str] = None) -> pd.DataFrame:
     """Get international reserves change data.
 
-    Use as input a list of strings of the format %b%Y, each representing a
-    month of data.
-
     Parameters
     ----------
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
     name : str, default None
         CSV filename for updating and/or saving.
 
@@ -165,10 +162,10 @@ def get_fut_fwd(update: Union[str, PathLike, None] = None,
     ----------
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
     name : str, default None
         CSV filename for updating and/or saving.
 

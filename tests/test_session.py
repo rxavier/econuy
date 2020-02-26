@@ -85,6 +85,10 @@ def test_exchange_rate():
     compare.columns = nxr_tfm.columns
     assert compare.equals(nxr_tfm)
     remove_clutter()
+    with pytest.raises(ValueError):
+        nxr = session.get_tfm(dataset="nxr", eop=False, sell=True,
+                              seas_adj="wrong")
+    remove_clutter()
 
 
 def test_fiscal():
@@ -133,7 +137,7 @@ def test_fiscal():
                      currency="UYU", inf_adj="No", index="No",
                      seas_adj="NSA", ts_type="Flujo", cumperiods=1)
     compare_gdp = transform.rolling(compare, periods=12, operation="sum")
-    compare_gdp = transform.convert_gdp(compare_gdp, hifreq=True)
+    compare_gdp = transform.convert_gdp(compare_gdp)
     compare_gdp.columns = fiscal_tfm.columns
     assert compare_gdp.equals(fiscal_tfm)
     remove_clutter()
@@ -152,7 +156,7 @@ def test_fiscal():
     start_date = "2010-01-31"
     end_date = "2010-12-31"
     fiscal_tfm = session.get_tfm(dataset="fiscal", aggregation="nfps",
-                                 fss=True, unit="real usd", seas_adj=None,
+                                 fss=True, unit="real_usd", seas_adj=None,
                                  start_date=start_date,
                                  end_date=end_date).dataset
     compare_real_usd = transform.convert_real(compare, start_date=start_date,
@@ -177,6 +181,15 @@ def test_fiscal():
     compare_roll.columns = fiscal_tfm.columns
     assert compare_roll.equals(fiscal_tfm)
     remove_clutter()
+    with pytest.raises(ValueError):
+        fiscal_tfm = session.get_tfm(dataset="fiscal", aggregation="nfps",
+                                     unit="wrong")
+    with pytest.raises(ValueError):
+        fiscal_tfm = session.get_tfm(dataset="fiscal", aggregation="nfps",
+                                     seas_adj="wrong")
+    with pytest.raises(ValueError):
+        fiscal_tfm = session.get_tfm(dataset="fiscal", aggregation="wrong")
+    remove_clutter()
 
 
 def test_labor():
@@ -198,6 +211,8 @@ def test_labor():
     compare.columns = labor_tfm.columns
     assert compare.equals(labor_tfm)
     remove_clutter()
+    with pytest.raises(ValueError):
+        lab = session.get_tfm(dataset="labor", seas_adj="wrong")
 
 
 def test_naccounts():
@@ -206,8 +221,8 @@ def test_naccounts():
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
     na_tfm = session.get_tfm(dataset="na", supply=True, real=True, index=False,
-                             seas_adj=False, usd=False, cum=1,
-                             cust_seas_adj=None, variation=None).dataset
+                             off_seas_adj=False, usd=False, cum=1,
+                             seas_adj=None, variation=None).dataset
     remove_clutter()
     na_ = session.get(dataset="na").dataset
     compare = na_["ind_con_nsa"]
@@ -215,22 +230,22 @@ def test_naccounts():
     assert compare.equals(na_tfm)
     remove_clutter()
     na_tfm = session.get_tfm(dataset="na", supply=True, real=False,
-                             index=False, seas_adj=False, usd=False, cum=1,
-                             cust_seas_adj=None, variation=None).dataset
+                             index=False, off_seas_adj=False, usd=False, cum=1,
+                             seas_adj=None, variation=None).dataset
     compare = na_["ind_cur_nsa"]
     compare.columns = na_tfm.columns
     assert compare.equals(na_tfm)
     remove_clutter()
     na_tfm = session.get_tfm(dataset="na", supply=False, real=True,
-                             index=False, seas_adj=False, usd=False, cum=1,
-                             cust_seas_adj=None, variation=None).dataset
+                             index=False, off_seas_adj=False, usd=False, cum=1,
+                             seas_adj=None, variation=None).dataset
     compare = na_["gas_con_nsa"]
     compare.columns = na_tfm.columns
     assert compare.equals(na_tfm)
     remove_clutter()
     na_tfm = session.get_tfm(dataset="na", supply=False, real=True,
-                             index=False, seas_adj=False, usd=True, cum=4,
-                             cust_seas_adj=None, variation="inter").dataset
+                             index=False, off_seas_adj=False, usd=True, cum=4,
+                             seas_adj=None, variation="inter").dataset
     compare_mult = transform.convert_usd(compare)
     compare_mult = transform.rolling(compare_mult, periods=4, operation="sum")
     compare_mult = transform.chg_diff(compare_mult, operation="chg",
@@ -239,32 +254,30 @@ def test_naccounts():
     assert compare_mult.equals(na_tfm)
     remove_clutter()
     na_tfm = session.get_tfm(dataset="na", supply=False, real=True,
-                             index=False, seas_adj=False, usd=False, cum=1,
-                             cust_seas_adj="trend", variation=None).dataset
+                             index=False, off_seas_adj=False, usd=False, cum=1,
+                             seas_adj="trend", variation=None).dataset
     compare_trend, compare_sa = transform.decompose(compare, trading=True,
                                                     outlier=True)
     compare_trend.columns = na_tfm.columns
     assert compare_trend.equals(na_tfm)
     remove_clutter()
     na_tfm = session.get_tfm(dataset="na", supply=False, real=True,
-                             index=False, seas_adj=False, usd=False, cum=1,
-                             cust_seas_adj="seas", variation=None).dataset
+                             index=False, off_seas_adj=False, usd=False, cum=1,
+                             seas_adj="seas", variation=None).dataset
     compare_sa.columns = na_tfm.columns
     assert compare_sa.equals(na_tfm)
     with pytest.raises(KeyError):
         t = session.get_tfm(dataset="na", supply=False, real=True, index=True,
-                            seas_adj=True, usd=False, cum=1,
-                            cust_seas_adj=None, variation=None)
+                            off_seas_adj=True, usd=False, cum=1,
+                            seas_adj=None, variation=None)
     with pytest.raises(ValueError):
         t = session.get_tfm(dataset="na", supply=False, real=True, index=False,
-                            seas_adj=False, usd=False, cum=1,
-                            cust_seas_adj="wrong",
-                            variation=None)
+                            off_seas_adj=False, usd=False, cum=1,
+                            seas_adj="wrong", variation=None)
     with pytest.raises(ValueError):
         t = session.get_tfm(dataset="na", supply=False, real=True, index=False,
-                            seas_adj=False, usd=False, cum=1,
-                            cust_seas_adj=None,
-                            variation="wrong")
+                            off_seas_adj=False, usd=False, cum=1,
+                            seas_adj=None, variation="wrong")
     remove_clutter()
 
 
@@ -274,9 +287,9 @@ def test_edge():
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
     cpi = session.get(dataset="cpi", update=False, save=False)
-    with pytest.warns(UserWarning):
+    with pytest.raises(ValueError):
         nodata = session.get(dataset="wrong")
-    with pytest.warns(UserWarning):
+    with pytest.raises(ValueError):
         nodata = session.get_tfm(dataset="wrong")
     remove_clutter()
 

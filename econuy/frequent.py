@@ -2,7 +2,6 @@ from datetime import date
 from os import PathLike, mkdir, path
 from pathlib import Path
 from typing import Union, Optional
-import warnings
 
 import pandas as pd
 
@@ -23,10 +22,10 @@ def inflation(update: Union[str, PathLike, None] = None,
     ----------
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
     name : str, default None
         CSV filename for updating and/or saving.
 
@@ -83,10 +82,10 @@ def exchange_rate(eop: bool = False, sell: bool = True,
         How many periods to accumulate for rolling averages.
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
     name : str, default None
         CSV filename for updating and/or saving.
 
@@ -94,9 +93,18 @@ def exchange_rate(eop: bool = False, sell: bool = True,
     -------
     Nominal exchange rate : pd.DataFrame
 
+    Raises
+    ------
+    ValueError
+        If ``seas_adj`` is given an invalid keyword.
+
     """
     if name is None:
         name = "tfm_nxr"
+
+    if seas_adj not in ["trend", "seas", None]:
+        raise ValueError("'seas_adj' can be 'trend', 'seas' or None.")
+
     data = nxr.get(update=update, revise_rows=6,
                    save=save, force_update=False)
 
@@ -117,9 +125,6 @@ def exchange_rate(eop: bool = False, sell: bool = True,
             output = pd.concat([output, trend], axis=1)
         elif seas_adj == "seas":
             output = pd.concat([output, seasadj], axis=1)
-        else:
-            raise ValueError("Only 'trend', 'seas' and None are available "
-                             "options for seasonal adjustment")
 
     if cum != 1:
         columns._setmeta(output, ts_type="Flujo")
@@ -159,16 +164,16 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
         If ``True``, exclude the `FSS's <https://www.impo.com.uy/bases/decretos
         /71-2018/25>`_ income from gov't revenues and the FSS's
         interest revenues from gov't interest payments.
-    unit : {'gdp', 'usd', 'real', 'real usd'}
+    unit : {'gdp', 'usd', 'real', 'real_usd'}
         Unit in which data should be expressed. Possible values are ``real``,
-        ``usd``, ``real usd`` and ``gdp``. If None or another string is set,
-        no unit calculations will be performed, rendering the data as is
+        ``usd``, ``real_usd`` and ``gdp``. If ``None`` or another string is
+        set, no unit calculations will be performed, rendering the data as is
         (current UYU).
     start_date : str, datetime.date or None, default None
-        If ``unit`` is set to ``real`` or ``real usd``, this parameter and
+        If ``unit`` is set to ``real`` or ``real_usd``, this parameter and
         ``end_date`` control how deflation is calculated.
     end_date :
-        If ``unit`` is set to ``real`` or ``real usd``, this parameter and
+        If ``unit`` is set to ``real`` or ``real_usd``, this parameter and
         ``start_date`` control how deflation is calculated.
     cum : int, default 1
         How many periods to accumulate for rolling sums.
@@ -176,10 +181,10 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
         Whether to seasonally adjust.
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
     name : str, default None
         CSV filename for updating and/or saving.
 
@@ -187,9 +192,24 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     -------
     Fiscal aggregation : pd.DataFrame
 
+    Raises
+    ------
+    ValueError
+        If ``seas_adj``, ``unit`` or ``aggregation`` are given an invalid
+        keywords.
+
     """
     if name is None:
         name = "tfm_fiscal"
+
+    if seas_adj not in ["trend", "seas", None]:
+        raise ValueError("'seas_adj' can be 'trend', 'seas' or None.")
+    if unit not in ["gdp", "usd", "real", "real_usd", None]:
+        raise ValueError("'unit' can be 'gdp', 'usd', 'real', 'real_usd' or"
+                         " None.")
+    if aggregation not in ["gps", "nfps", "gc"]:
+        raise ValueError("'aggregation' can be 'gps', 'nfps' or 'gc'.")
+
     data = fiscal_accounts.get(update=update, revise_rows=12,
                                save=save, force_update=False)
     gps = data["gps"]
@@ -270,10 +290,10 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
 
     if unit == "gdp":
         output = transform.rolling(output, periods=12, operation="sum")
-        output = transform.convert_gdp(output, hifreq=True)
+        output = transform.convert_gdp(output)
     elif unit == "usd":
         output = transform.convert_usd(output)
-    elif unit == "real usd":
+    elif unit == "real_usd":
         output = transform.convert_real(output, start_date=start_date,
                                         end_date=end_date)
         xr = nxr.get(update=update, revise_rows=6, save=save)
@@ -290,9 +310,7 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
             output = output_trend
         elif seas_adj == "seas":
             output = output_seasadj
-        else:
-            raise ValueError("Only 'trend', 'seas' and None are available "
-                             "options for seasonal adjustment")
+
     if cum != 1:
         output = transform.rolling(output, periods=cum, operation="sum")
 
@@ -320,10 +338,10 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
         Whether to seasonally adjust.
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
     name : str, default None
         CSV filename for updating and/or saving.
 
@@ -331,9 +349,18 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
     -------
     Labor market data : pd.DataFrame
 
+    Raises
+    ------
+    ValueError
+        If ``seas_adj`` is given an invalid keyword.
+
     """
     if name is None:
         name = "tfm_labor"
+
+    if seas_adj not in ["trend", "seas", None]:
+        raise ValueError("'seas_adj' can be 'trend', 'seas' or None.")
+
     data = labor.get(update=update, revise_rows=6,
                      save=save, force_update=False)
     output = data
@@ -355,8 +382,8 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
 
 
 def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
-                 seas_adj: bool = False, usd: bool = False, cum: int = 1,
-                 cust_seas_adj: Union[str, None] = None,
+                 off_seas_adj: bool = False, usd: bool = False, cum: int = 1,
+                 seas_adj: Union[str, None] = None,
                  variation: Union[str, None] = None,
                  update: Union[str, PathLike, None] = None,
                  save: Union[str, PathLike, None] = None,
@@ -375,23 +402,23 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
         Constant or current.
     index : bool, default False
         Base 100 index or not.
-    seas_adj : bool, default True
+    off_seas_adj : bool, default True
         Seasonally adjusted or not.
     usd : bool, default False
-        If True, convert to USD.
+        If ``True``, convert to USD.
     cum : int, default 1
         How many periods to accumulate for rolling sums.
-    cust_seas_adj : {None, 'trend', 'seas'}
+    seas_adj : {None, 'trend', 'seas'}
         Whether to seasonally adjust.
     variation : {None, 'last', 'inter', 'annual}
         Type of percentage change to calculate. Can be ``last``, ``inter`` or
         ``annual``.
     update : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
-        for updating, or None, don't update.
+        for updating, or ``None``, don't update.
     save : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
-        or None, don't save.
+        or ``None``, don't save.
     name : str, default None
         CSV filename for updating and/or saving.
 
@@ -401,12 +428,21 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
 
     Raises
     ------
-    KeyError:
+    KeyError
         If the combined parameters do not correspond to an available table.
+    ValueError
+        If ``seas_adj`` or ``variation`` are given invalid keywords.
 
     """
     if name is None:
         name = "tfm_na"
+
+    if seas_adj not in ["trend", "seas", None]:
+        raise ValueError("'seas_adj' can be 'trend', 'seas' or None.")
+    if variation not in ["last", "inter", "annual", None]:
+        raise ValueError("'variation' can be 'last', 'inter', 'annual', or"
+                         " None.")
+
     data = national_accounts.get(update=update, revise_rows=4,
                                  save=save, force_update=False)
 
@@ -421,7 +457,7 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
         search_terms += ["cur"]
     if index is True:
         search_terms += ["idx"]
-    if seas_adj is True:
+    if off_seas_adj is True:
         search_terms += ["sa"]
     else:
         search_terms += ["nsa"]
@@ -436,26 +472,20 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
     if usd is True:
         output = transform.convert_usd(output)
 
-    if cust_seas_adj is not None and seas_adj is False and cum == 1:
+    if seas_adj in ["trend", "seas"] and off_seas_adj is False and cum == 1:
         trend, seasadj = transform.decompose(output, trading=True,
                                              outlier=True)
-        if cust_seas_adj == "trend":
+        if seas_adj == "trend":
             output = trend
-        elif cust_seas_adj == "seas":
+        elif seas_adj == "seas":
             output = seasadj
-        else:
-            raise ValueError("Only 'trend', 'seas' and None are available "
-                             "options for seasonal adjustment")
 
     if cum != 1:
         output = transform.rolling(output, periods=cum, operation="sum")
 
-    if variation in ["last", "inter", "annual"]:
+    if variation is not None:
         output = transform.chg_diff(output, operation="chg",
                                     period_op=variation)
-    elif variation is not None:
-        raise ValueError("Only 'inter', 'last', 'annual' and None are "
-                         "available options for variations")
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
