@@ -285,7 +285,7 @@ def test_convert():
     assert np.all(abs(real) <= abs(data))
     data = dummy_df(freq="Q-DEC", periods=40, currency="USD")
     session = Session(loc_dir=TEST_DIR, dataset=data)
-    pcgdp = session.convert(flavor="pcgdp", hifreq=False).dataset
+    pcgdp = session.convert(flavor="pcgdp").dataset
     pcgdp.columns = data.columns
     assert np.all(abs(pcgdp) <= abs(data))
     data = dummy_df(freq="Q-DEC", periods=40)
@@ -302,3 +302,8 @@ def test_convert():
         session = Session(loc_dir=TEST_DIR,
                           dataset={"data1": data, "data2": data})
         session.convert(flavor="wrong")
+    with pytest.raises(ValueError):
+        data = dummy_df(freq="B", periods=200)
+        session = Session(loc_dir=TEST_DIR,
+                          dataset=data)
+        session.convert(flavor="gdp")

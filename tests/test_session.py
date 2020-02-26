@@ -137,7 +137,7 @@ def test_fiscal():
                      currency="UYU", inf_adj="No", index="No",
                      seas_adj="NSA", ts_type="Flujo", cumperiods=1)
     compare_gdp = transform.rolling(compare, periods=12, operation="sum")
-    compare_gdp = transform.convert_gdp(compare_gdp, hifreq=True)
+    compare_gdp = transform.convert_gdp(compare_gdp)
     compare_gdp.columns = fiscal_tfm.columns
     assert compare_gdp.equals(fiscal_tfm)
     remove_clutter()

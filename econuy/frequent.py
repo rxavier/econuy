@@ -290,7 +290,7 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
 
     if unit == "gdp":
         output = transform.rolling(output, periods=12, operation="sum")
-        output = transform.convert_gdp(output, hifreq=True)
+        output = transform.convert_gdp(output)
     elif unit == "usd":
         output = transform.convert_usd(output)
     elif unit == "real_usd":
