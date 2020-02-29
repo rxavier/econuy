@@ -374,7 +374,7 @@ class Session(object):
                                                     save=save, **kwargs)
                 elif flavor == "pcgdp" or flavor == "gdp":
                     output = transform.convert_gdp(value, update=update,
-                                                   save=save, **kwargs)
+                                                   save=save)
                 else:
                     raise ValueError("'flavor' can be one of 'usd', 'real', "
                                      "or 'pcgdp'.")
@@ -389,7 +389,7 @@ class Session(object):
                                                 save=save, **kwargs)
             elif flavor == "pcgdp" or flavor == "gdp":
                 output = transform.convert_gdp(self.dataset, update=update,
-                                               save=save, **kwargs)
+                                               save=save)
             else:
                 raise ValueError("'flavor' can be one of 'usd', 'real', "
                                  "or 'pcgdp'.")
