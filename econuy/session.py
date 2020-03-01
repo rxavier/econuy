@@ -6,6 +6,7 @@ from typing import Union, Optional
 import pandas as pd
 
 from econuy import frequent, transform
+from econuy.resources import logutil
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
                               labor, rxr, commodity_index, reserves)
 
@@ -34,15 +35,54 @@ class Session(object):
                  loc_dir: Union[str, PathLike] = "econuy-data",
                  revise_rows: Union[int, str] = "nodup",
                  force_update: bool = False,
-                 dataset: Union[dict, pd.DataFrame] = pd.DataFrame()):
+                 dataset: Union[dict, pd.DataFrame] = pd.DataFrame(),
+                 log: Union[int, str] = 1):
         self.loc_dir = loc_dir
         self.revise_rows = revise_rows
         self.force_update = force_update
         self.dataset = dataset
+        self.log = log
 
         if not path.exists(self.loc_dir):
             makedirs(self.loc_dir)
 
+        if isinstance(log, int) and (log < 0 or log > 2):
+            raise ValueError("'log' takes either 0 (don't log info),"
+                             " 1 (log to console), 2 (log to console and"
+                             " default file), or str (log to console and file"
+                             " with filename=str).")
+        elif log == 2:
+            logfile = Path(self.loc_dir) / "info.log"
+            log_obj = logutil.setup(file=logfile)
+            log_method = f"console and file ({logfile.as_posix()})"
+        elif isinstance(log, str):
+            logfile = (Path(self.loc_dir) / log).with_suffix(".log")
+            log_obj = logutil.setup(file=logfile)
+            log_method = f"console and file ({logfile.as_posix()})"
+        elif log == 1:
+            log_obj = logutil.setup(file=None)
+            log_method = "console"
+        else:
+            log_obj = logutil.setup(null=True)
+            log_method = "no logging"
+        self.logger = log_obj
+
+        if (isinstance(dataset, pd.DataFrame) and
+                dataset.equals(pd.DataFrame(columns=[], index=[]))):
+            dataset_message = "empty dataframe"
+        else:
+            dataset_message = "custom dataset"
+        if isinstance(revise_rows, int):
+            revise_method = f"{revise_rows} rows replaced"
+        else:
+            revise_method = revise_rows
+        log_obj.info(f"Created Session object with the following attributes:\n"
+                     f"Directory for downloads and updates: {loc_dir}\n"
+                     f"Update method: {revise_method}\n"
+                     f"Dataset: {dataset_message}\n"
+                     f"Logging method: {log_method}")
+
+    @logutil.log_getter
     def get(self,
             dataset: str,
             update: bool = True,
@@ -92,6 +132,11 @@ class Session(object):
             save_path = Path(self.loc_dir)
         else:
             save_path = None
+
+        if kwargs:
+            keywords = ", ".join(f"{k}={v}" for k, v in kwargs.items())
+            self.logger.info(f"Used the following keyword "
+                             f"arguments: {keywords}")
 
         if dataset == "cpi" or dataset == "prices":
             output = cpi.get(update=update_path,
@@ -155,6 +200,7 @@ class Session(object):
 
         return self
 
+    @logutil.log_getter
     def get_tfm(self,
                 dataset: str,
                 update: bool = True,
@@ -199,25 +245,35 @@ class Session(object):
             save_path = None
 
         if dataset == "inflation":
+            called_args = logutil.get_called_args(frequent.inflation,
+                                                  kwargs)
             output = frequent.inflation(update=update_path,
                                         save=save_path,
                                         name=override)
         elif dataset == "fiscal":
+            called_args = logutil.get_called_args(frequent.fiscal,
+                                                  kwargs)
             output = frequent.fiscal(update=update_path,
                                      save=save_path,
                                      name=override,
                                      **kwargs)
         elif dataset == "nxr":
+            called_args = logutil.get_called_args(frequent.exchange_rate,
+                                                  kwargs)
             output = frequent.exchange_rate(update=update_path,
                                             save=save_path,
                                             name=override,
                                             **kwargs)
         elif dataset == "naccounts" or dataset == "na":
+            called_args = logutil.get_called_args(frequent.nat_accounts,
+                                                  kwargs)
             output = frequent.nat_accounts(update=update_path,
                                            save=save_path,
                                            name=override,
                                            **kwargs)
         elif dataset == "labor" or dataset == "labour":
+            called_args = logutil.get_called_args(frequent.labor_mkt,
+                                                  kwargs)
             output = frequent.labor_mkt(update=update_path,
                                         save=save_path,
                                         name=override,
@@ -226,9 +282,12 @@ class Session(object):
             raise ValueError("Invalid keyword for 'dataset' parameter.")
         
         self.dataset = output
+        self.logger.info(f"Used the following keyword "
+                         f"arguments: {called_args}")
 
         return self
 
+    @logutil.log_transformer
     def resample(self, target: str, operation: str = "sum",
                  interpolation: str = "linear"):
         """
@@ -253,6 +312,7 @@ class Session(object):
 
         return self
 
+    @logutil.log_transformer
     def chg_diff(self, operation: str = "chg", period_op: str = "last"):
         """
         Calculate pct change or difference.
@@ -274,6 +334,7 @@ class Session(object):
 
         return self
 
+    @logutil.log_transformer
     def decompose(self, flavor: str = "both",
                   trading: bool = True, outlier: bool = True,
                   x13_binary: Union[str, PathLike] = "search",
@@ -347,6 +408,7 @@ class Session(object):
 
         return self
 
+    @logutil.log_transformer
     def convert(self, flavor: str, update: Union[str, PathLike, None] = None,
                 save: Union[str, PathLike, None] = None, **kwargs):
         """
@@ -398,6 +460,7 @@ class Session(object):
 
         return self
 
+    @logutil.log_transformer
     def base_index(self, start_date: Union[str, date],
                    end_date: Union[str, date, None] = None, base: float = 100):
         """
@@ -420,6 +483,7 @@ class Session(object):
 
         return self
 
+    @logutil.log_transformer
     def rolling(self, periods: Optional[int] = None,
                 operation: str = "sum"):
         """
@@ -443,10 +507,7 @@ class Session(object):
         return self
 
     def save(self, name: str):
-        """
-        Save :attr:`dataset` attribute to a CSV.
-
-        """
+        """Save :attr:`dataset` attribute to a CSV."""
         name = Path(name).with_suffix("").as_posix()
 
         if isinstance(self.dataset, dict):
@@ -462,9 +523,10 @@ class Session(object):
                 mkdir(path.dirname(save_path))
             self.dataset.to_csv(save_path)
 
+        self.logger.info(f"Saved dataset to directory {self.loc_dir}.")
+
     def final(self):
-        """
-        Return :attr:`dataset` attribute.
-        
-        """
+        """Return :attr:`dataset` attribute."""
+        self.logger.info(f"Retrieved dataset from Session() object.")
+
         return self.dataset
