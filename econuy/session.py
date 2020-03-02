@@ -29,6 +29,10 @@ class Session(object):
         Whether to force download even if data was recently modified.
     dataset : pd.DataFrame, default pd.DataFrame(index=[], columns=[])
         Current working dataset.
+    log : {str, 0, 1, 2}
+        Controls how logging works. ``0``: don't log; ``1``: log to console;
+        ``2``: log to console and file with default file; ``str``: log to
+        console and file with filename=str
 
     """
     def __init__(self,

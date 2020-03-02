@@ -33,6 +33,11 @@ def setup(file: Optional[str] = None, null: bool = False):
 
 
 def log_getter(func):
+    """
+    Decorator for :meth:`~econuy.session.Session.get` and
+    :meth:`~econuy.session.Session.get_tfm`.
+
+    """
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
         name = func.__name__
@@ -43,6 +48,11 @@ def log_getter(func):
 
 
 def log_transformer(func):
+    """
+    Decorator for transformation methods in
+    :class:`~econuy.session.Session`.
+
+    """
     @functools.wraps(func)
     def wrapped(self, *func_args, **func_kwargs):
         name = func.__name__
@@ -62,6 +72,11 @@ def log_transformer(func):
 
 
 def get_called_args(func, keywords):
+    """
+    Helper function for getting arguments passed to
+    :meth:`~econuy.session.Session.get_tfm`
+
+    """
     inspection = inspect.getfullargspec(func)
     kwarg_defaults = dict(zip(inspection[0][-len(inspection[3]):],
                               inspection[3]))
