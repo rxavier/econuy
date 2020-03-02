@@ -292,6 +292,10 @@ def test_edge():
     with pytest.raises(ValueError):
         session.get_tfm(dataset="wrong")
     remove_clutter()
+    Session(loc_dir="new_directory")
+    assert path.isdir("new_directory")
+    Session(loc_dir=TEST_DIR).get_tfm(dataset="cpi", update=False, save=False)
+    remove_clutter()
 
 
 def test_save():
@@ -306,4 +310,12 @@ def test_save():
     session.save(name="test_save")
     assert path.isfile(Path(TEST_DIR) / "test_save_data1.csv")
     assert path.isfile(Path(TEST_DIR) / "test_save_data2.csv")
+    remove_clutter()
+    session.loc_dir = "new_dir"
+    session.save(name="test_save")
+    assert path.isfile(Path(session.loc_dir) / "test_save_data1.csv")
+    assert path.isfile(Path(session.loc_dir) / "test_save_data2.csv")
+    session.dataset = data
+    session.save(name="test_save")
+    assert path.isfile(Path(session.loc_dir) / "test_save.csv")
     remove_clutter()
