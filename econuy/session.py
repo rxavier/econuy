@@ -73,7 +73,7 @@ class Session(object):
         else:
             dataset_message = "custom dataset"
         if isinstance(revise_rows, int):
-            revise_method = f"{revise_rows} rows replaced"
+            revise_method = f"{revise_rows} rows to replace"
         else:
             revise_method = revise_rows
         log_obj.info(f"Created Session object with the following attributes:\n"
