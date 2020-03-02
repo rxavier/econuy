@@ -319,3 +319,28 @@ def test_save():
     session.save(name="test_save")
     assert path.isfile(Path(session.loc_dir) / "test_save.csv")
     remove_clutter()
+
+
+def test_logging(caplog):
+    remove_clutter()
+    caplog.clear()
+    Session(loc_dir=TEST_DIR, log="test")
+    assert path.isfile(path.join(TEST_DIR, "test.log"))
+    remove_clutter()
+    caplog.clear()
+    Session(loc_dir=TEST_DIR, log=2)
+    assert path.isfile(path.join(TEST_DIR, "info.log"))
+    remove_clutter()
+    caplog.clear()
+    with pytest.raises(ValueError):
+        Session(loc_dir=TEST_DIR, log=5)
+    remove_clutter()
+    caplog.clear()
+    Session(loc_dir=TEST_DIR, log=1)
+    assert "Logging method: console" in caplog.text
+    assert "Logging method: console and file" not in caplog.text
+    assert not path.isfile(path.join(TEST_DIR, "info.log"))
+    caplog.clear()
+    remove_clutter()
+    Session(loc_dir=TEST_DIR, log=0)
+    assert caplog.text is ""
