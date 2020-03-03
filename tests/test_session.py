@@ -294,7 +294,8 @@ def test_edge():
     remove_clutter()
     Session(loc_dir="new_directory")
     assert path.isdir("new_directory")
-    Session(loc_dir=TEST_DIR).get_tfm(dataset="cpi", update=False, save=False)
+    Session(loc_dir=TEST_DIR).get_tfm(dataset="inflation",
+                                      update=False, save=False)
     remove_clutter()
 
 
