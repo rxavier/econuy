@@ -81,6 +81,11 @@ def _setmeta(
         if cumperiods is not None:
             arrays[8] = [cumperiods] * len(df.columns)
 
+        try:
+            arrays[8] = list(map(int, arrays[8]))
+        except ValueError:
+            pass
+
         tuples = list(zip(*arrays))
         index = pd.MultiIndex.from_tuples(tuples, names=names)
         df.columns = index

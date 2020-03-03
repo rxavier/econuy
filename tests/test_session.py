@@ -86,8 +86,8 @@ def test_exchange_rate():
     assert compare.equals(nxr_tfm)
     remove_clutter()
     with pytest.raises(ValueError):
-        nxr = session.get_tfm(dataset="nxr", eop=False, sell=True,
-                              seas_adj="wrong")
+        session.get_tfm(dataset="nxr", eop=False, sell=True,
+                        seas_adj="wrong")
     remove_clutter()
 
 
@@ -182,13 +182,13 @@ def test_fiscal():
     assert compare_roll.equals(fiscal_tfm)
     remove_clutter()
     with pytest.raises(ValueError):
-        fiscal_tfm = session.get_tfm(dataset="fiscal", aggregation="nfps",
-                                     unit="wrong")
+        session.get_tfm(dataset="fiscal", aggregation="nfps",
+                        unit="wrong")
     with pytest.raises(ValueError):
-        fiscal_tfm = session.get_tfm(dataset="fiscal", aggregation="nfps",
-                                     seas_adj="wrong")
+        session.get_tfm(dataset="fiscal", aggregation="nfps",
+                        seas_adj="wrong")
     with pytest.raises(ValueError):
-        fiscal_tfm = session.get_tfm(dataset="fiscal", aggregation="wrong")
+        session.get_tfm(dataset="fiscal", aggregation="wrong")
     remove_clutter()
 
 
@@ -212,7 +212,7 @@ def test_labor():
     assert compare.equals(labor_tfm)
     remove_clutter()
     with pytest.raises(ValueError):
-        lab = session.get_tfm(dataset="labor", seas_adj="wrong")
+        session.get_tfm(dataset="labor", seas_adj="wrong")
 
 
 def test_naccounts():
@@ -267,17 +267,17 @@ def test_naccounts():
     compare_sa.columns = na_tfm.columns
     assert compare_sa.equals(na_tfm)
     with pytest.raises(KeyError):
-        t = session.get_tfm(dataset="na", supply=False, real=True, index=True,
-                            off_seas_adj=True, usd=False, cum=1,
-                            seas_adj=None, variation=None)
+        session.get_tfm(dataset="na", supply=False, real=True, index=True,
+                        off_seas_adj=True, usd=False, cum=1,
+                        seas_adj=None, variation=None)
     with pytest.raises(ValueError):
-        t = session.get_tfm(dataset="na", supply=False, real=True, index=False,
-                            off_seas_adj=False, usd=False, cum=1,
-                            seas_adj="wrong", variation=None)
+        session.get_tfm(dataset="na", supply=False, real=True, index=False,
+                        off_seas_adj=False, usd=False, cum=1,
+                        seas_adj="wrong", variation=None)
     with pytest.raises(ValueError):
-        t = session.get_tfm(dataset="na", supply=False, real=True, index=False,
-                            off_seas_adj=False, usd=False, cum=1,
-                            seas_adj=None, variation="wrong")
+        session.get_tfm(dataset="na", supply=False, real=True, index=False,
+                        off_seas_adj=False, usd=False, cum=1,
+                        seas_adj=None, variation="wrong")
     remove_clutter()
 
 
@@ -286,11 +286,16 @@ def test_edge():
     session = Session(loc_dir=TEST_DIR)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    cpi = session.get(dataset="cpi", update=False, save=False)
+    session.get(dataset="cpi", update=False, save=False)
     with pytest.raises(ValueError):
-        nodata = session.get(dataset="wrong")
+        session.get(dataset="wrong")
     with pytest.raises(ValueError):
-        nodata = session.get_tfm(dataset="wrong")
+        session.get_tfm(dataset="wrong")
+    remove_clutter()
+    Session(loc_dir="new_directory")
+    assert path.isdir("new_directory")
+    Session(loc_dir=TEST_DIR).get_tfm(dataset="inflation",
+                                      update=False, save=False)
     remove_clutter()
 
 
@@ -307,3 +312,36 @@ def test_save():
     assert path.isfile(Path(TEST_DIR) / "test_save_data1.csv")
     assert path.isfile(Path(TEST_DIR) / "test_save_data2.csv")
     remove_clutter()
+    session.loc_dir = "new_dir"
+    session.save(name="test_save")
+    assert path.isfile(Path(session.loc_dir) / "test_save_data1.csv")
+    assert path.isfile(Path(session.loc_dir) / "test_save_data2.csv")
+    session.dataset = data
+    session.save(name="test_save")
+    assert path.isfile(Path(session.loc_dir) / "test_save.csv")
+    remove_clutter()
+
+
+def test_logging(caplog):
+    remove_clutter()
+    caplog.clear()
+    Session(loc_dir=TEST_DIR, log="test")
+    assert path.isfile(path.join(TEST_DIR, "test.log"))
+    remove_clutter()
+    caplog.clear()
+    Session(loc_dir=TEST_DIR, log=2)
+    assert path.isfile(path.join(TEST_DIR, "info.log"))
+    remove_clutter()
+    caplog.clear()
+    with pytest.raises(ValueError):
+        Session(loc_dir=TEST_DIR, log=5)
+    remove_clutter()
+    caplog.clear()
+    Session(loc_dir=TEST_DIR, log=1)
+    assert "Logging method: console" in caplog.text
+    assert "Logging method: console and file" not in caplog.text
+    assert not path.isfile(path.join(TEST_DIR, "info.log"))
+    caplog.clear()
+    remove_clutter()
+    Session(loc_dir=TEST_DIR, log=0)
+    assert caplog.text is ""
