@@ -97,6 +97,7 @@ def get_chg(update: Union[str, PathLike, None] = None,
             previous_data = pd.read_csv(update_path, index_col=0,
                                         header=list(range(9)),
                                         float_precision="high")
+            columns._setmeta(previous_data)
             previous_data.columns = reserves_cols[1:46]
             previous_data.index = pd.to_datetime(previous_data.index)
             urls = urls[-18:]
@@ -184,6 +185,7 @@ def get_fut_fwd(update: Union[str, PathLike, None] = None,
             prev_data = pd.read_csv(update_path, index_col=0,
                                     header=list(range(9)),
                                     float_precision="high")
+            columns._setmeta(prev_data)
             prev_data.index = pd.to_datetime(prev_data.index)
             last_date = prev_data.index[len(prev_data)-1]
             dates = pd.bdate_range(
