@@ -38,7 +38,7 @@ This is the recommended entry point for the package. It allows setting up the co
 ```
 from econuy.session import Session
 
-session = Session(loc_dir="econuy-data", revise_rows="nodup", force_update=False)
+session = Session(loc_dir="econuy-data", revise_rows="nodup", force_update=False, log=1, inplace=False)
 ```
 
 The `Session()` object is initialized with the `loc_dir`, `revise_rows`,  `force_update`, `dataset`, `log`, `logger` and `inplace` attributes.
