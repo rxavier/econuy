@@ -41,36 +41,32 @@ from econuy.session import Session
 session = Session(loc_dir="econuy-data", revise_rows="nodup", force_update=False)
 ```
 
-The `Session()` object is initialized with the `loc_dir`, `revise_rows`,  `force_update` and `dataset` attributes.
+The `Session()` object is initialized with the `loc_dir`, `revise_rows`,  `force_update`, `dataset`, `log`, `logger` and `inplace` attributes.
 
 * `loc_dir` controls where data will be saved and where it will be looked for when updating. It defaults to "econuy-data", and will create the directory if it doesn't exist.
 * `revise_rows` controls the updating mechanism. It can be an integer, denoting how many rows from the data held on disk to replace with new data, or a string. In the latter case, `auto` indicates that the amount of rows to be replaced will be determined from the inferred data frequency, while `nodup` replaces existing data with new data for each time period found in both.
 * `force_update` controls whether whether to redownload data even if existing data in disk was modified recently.
 * `dataset` holds the current working dataset(s) and by default is initialized with an empty Pandas dataframe.
+* `log` controls how logging works. `0`, don't log; `1`, log to console; `2`, log to console and file with default file; ``str``, log to console and file with filename=str.
+* `logger` holds the current logger object from the logging module. Generally, the end user shouldn't set this manually.
+* `inplace` controls whether transformation methods modify the current Session object inplace or whether they create a new instance with the same attributes (except `dataset`, of course).
 
 #### Methods
 
 **`get()`** downloads the basic datasets. These are basically as provided by official sources, except various Pandas transformations are performed to render nice looking dataframes with appropiate column names, time indexes and properly defined values.
-```
-session.get(self, dataset: str, update: bool = True, save: bool = True, 
-            override: Optional[str] = None, **kwargs)
-```
+
 Available options for the `dataset` argument are "cpi", "fiscal", "nxr", "naccounts", "labor", "rxr_custom", "rxr_official", "commodity_index", "reserves" and "fx_ops". Most are self explanatory but all are explained in the documentation.
 
 `override` allows setting the CSV's filename to a different one than default (each dataset has a default, for example, "cpi.csv"). 
 
 If you wanted CPI data:
-
 ```
 df = session.get(dataset="cpi").dataset
 ```
 Note that the previous code block accessed the `dataset` attribute in order to get a dataframe. Alternatively, one could also call the `final()` method after calling `get()`.
 
 **`get_tfm()`** gives access to predefined data pipelines that output frequently used data. These are based on the datasets provided by `get()`, but are transformed to render data that you might find more immediately useful.
-```
-session.get_tfm(self, dataset: str, update: bool = True, save: bool = True,
-                override: Optional[str] = None, **kwargs)
-```
+
 For example, `session.get_tfm(dataset="inflation")` downloads CPI data, calculates annual inflation (pct change from a year ago), monthly inflation, and seasonally adjusted and trend monthly inflation.
 
 **Transformation methods** take a `Session()` object with a valid dataset and allow performing preset transformation pipelines. For example:
