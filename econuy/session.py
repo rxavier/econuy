@@ -1,3 +1,4 @@
+import logging
 from datetime import date
 from os import PathLike, path, makedirs, mkdir
 from pathlib import Path
@@ -33,58 +34,73 @@ class Session(object):
         Controls how logging works. ``0``: don't log; ``1``: log to console;
         ``2``: log to console and file with default file; ``str``: log to
         console and file with filename=str
+    logger : logging.Logger, default None
+        Logger object. For most cases this attribute should be ``None``,
+        allowing :attr:`log` to control how logging works.
+    inplace : bool, default False
+        If True, transformation methods will modify the :attr:`dataset`
+        inplace and return the input :class:`Session` instance.
 
     """
+
     def __init__(self,
                  loc_dir: Union[str, PathLike] = "econuy-data",
                  revise_rows: Union[int, str] = "nodup",
                  force_update: bool = False,
                  dataset: Union[dict, pd.DataFrame] = pd.DataFrame(),
-                 log: Union[int, str] = 1):
+                 log: Union[int, str] = 1,
+                 logger: Optional[logging.Logger] = None,
+                 inplace: bool = False):
         self.loc_dir = loc_dir
         self.revise_rows = revise_rows
         self.force_update = force_update
         self.dataset = dataset
         self.log = log
+        self.logger = logger
+        self.inplace = inplace
 
         if not path.exists(self.loc_dir):
             makedirs(self.loc_dir)
 
-        if isinstance(log, int) and (log < 0 or log > 2):
-            raise ValueError("'log' takes either 0 (don't log info),"
-                             " 1 (log to console), 2 (log to console and"
-                             " default file), or str (log to console and file"
-                             " with filename=str).")
-        elif log == 2:
-            logfile = Path(self.loc_dir) / "info.log"
-            log_obj = logutil.setup(file=logfile)
-            log_method = f"console and file ({logfile.as_posix()})"
-        elif isinstance(log, str):
-            logfile = (Path(self.loc_dir) / log).with_suffix(".log")
-            log_obj = logutil.setup(file=logfile)
-            log_method = f"console and file ({logfile.as_posix()})"
-        elif log == 1:
-            log_obj = logutil.setup(file=None)
-            log_method = "console"
+        if logger is not None:
+            self.log = "custom"
         else:
-            log_obj = logutil.setup(null=True)
-            log_method = "no logging"
-        self.logger = log_obj
+            if isinstance(log, int) and (log < 0 or log > 2):
+                raise ValueError("'log' takes either 0 (don't log info),"
+                                 " 1 (log to console), 2 (log to console and"
+                                 " default file), or str (log to console and "
+                                 "file with filename=str).")
+            elif log == 2:
+                logfile = Path(self.loc_dir) / "info.log"
+                log_obj = logutil.setup(file=logfile)
+                log_method = f"console and file ({logfile.as_posix()})"
+            elif isinstance(log, str) and log != "custom":
+                logfile = (Path(self.loc_dir) / log).with_suffix(".log")
+                log_obj = logutil.setup(file=logfile)
+                log_method = f"console and file ({logfile.as_posix()})"
+            elif log == 1:
+                log_obj = logutil.setup(file=None)
+                log_method = "console"
+            else:
+                log_obj = logutil.setup(null=True)
+                log_method = "no logging"
+            self.logger = log_obj
 
-        if (isinstance(dataset, pd.DataFrame) and
-                dataset.equals(pd.DataFrame(columns=[], index=[]))):
-            dataset_message = "empty dataframe"
-        else:
-            dataset_message = "custom dataset"
-        if isinstance(revise_rows, int):
-            revise_method = f"{revise_rows} rows to replace"
-        else:
-            revise_method = revise_rows
-        log_obj.info(f"Created Session object with the following attributes:\n"
-                     f"Directory for downloads and updates: {loc_dir}\n"
-                     f"Update method: {revise_method}\n"
-                     f"Dataset: {dataset_message}\n"
-                     f"Logging method: {log_method}")
+            if (isinstance(dataset, pd.DataFrame) and
+                    dataset.equals(pd.DataFrame(columns=[], index=[]))):
+                dataset_message = "empty dataframe"
+            else:
+                dataset_message = "custom dataset"
+            if isinstance(revise_rows, int):
+                revise_method = f"{revise_rows} rows to replace"
+            else:
+                revise_method = revise_rows
+            log_obj.info(f"Created Session object with the "
+                         f"following attributes:\n"
+                         f"Directory for downloads and updates: {loc_dir}\n"
+                         f"Update method: {revise_method}\n"
+                         f"Dataset: {dataset_message}\n"
+                         f"Logging method: {log_method}")
 
     @logutil.log_getter
     def get(self,
@@ -284,7 +300,7 @@ class Session(object):
                                         **kwargs)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
-        
+
         self.dataset = output
         self.logger.info(f"Used the following keyword "
                          f"arguments: {called_args}")
@@ -303,18 +319,26 @@ class Session(object):
 
         """
         if isinstance(self.dataset, dict):
+            output = {}
             for key, value in self.dataset.items():
-                output = transform.resample(value, target=target,
-                                            operation=operation,
-                                            interpolation=interpolation)
-                self.dataset.update({key: output})
+                table = transform.resample(value, target=target,
+                                           operation=operation,
+                                           interpolation=interpolation)
+                output.update({key: table})
         else:
             output = transform.resample(self.dataset, target=target,
                                         operation=operation,
                                         interpolation=interpolation)
+        if self.inplace is True:
             self.dataset = output
-
-        return self
+            return self
+        else:
+            return Session(loc_dir=self.loc_dir,
+                           revise_rows=self.revise_rows,
+                           force_update=self.force_update,
+                           dataset=output,
+                           logger=self.logger,
+                           inplace=self.inplace)
 
     @logutil.log_transformer
     def chg_diff(self, operation: str = "chg", period_op: str = "last"):
@@ -327,16 +351,24 @@ class Session(object):
 
         """
         if isinstance(self.dataset, dict):
+            output = {}
             for key, value in self.dataset.items():
-                output = transform.chg_diff(value, operation=operation,
-                                            period_op=period_op)
-                self.dataset.update({key: output})
+                table = transform.chg_diff(value, operation=operation,
+                                           period_op=period_op)
+                output.update({key: table})
         else:
             output = transform.chg_diff(self.dataset, operation=operation,
                                         period_op=period_op)
+        if self.inplace is True:
             self.dataset = output
-
-        return self
+            return self
+        else:
+            return Session(loc_dir=self.loc_dir,
+                           revise_rows=self.revise_rows,
+                           force_update=self.force_update,
+                           dataset=output,
+                           logger=self.logger,
+                           inplace=self.inplace)
 
     @logutil.log_transformer
     def decompose(self, flavor: str = "both",
@@ -375,42 +407,49 @@ class Session(object):
 
         """
         if isinstance(self.dataset, dict):
+            output = {}
             for key, value in self.dataset.items():
-                result = transform.decompose(value,
-                                             trading=trading,
-                                             outlier=outlier,
-                                             x13_binary=x13_binary,
-                                             search_parents=search_parents)
+                full = transform.decompose(value,
+                                           trading=trading,
+                                           outlier=outlier,
+                                           x13_binary=x13_binary,
+                                           search_parents=search_parents)
                 if flavor == "trend":
-                    output = result[0]
+                    table = full[0]
                 elif flavor == "seas" or type == "seasonal":
-                    output = result[1]
+                    table = full[1]
                 elif flavor == "both":
-                    output = result
+                    table = full
                 else:
                     raise ValueError("'flavor' can be one of 'both', 'trend', "
                                      "or 'seas'.")
 
-                self.dataset.update({key: output})
+                output.update({key: table})
         else:
-            result = transform.decompose(self.dataset,
-                                         trading=trading,
-                                         outlier=outlier,
-                                         x13_binary=x13_binary,
-                                         search_parents=search_parents)
+            full = transform.decompose(self.dataset,
+                                       trading=trading,
+                                       outlier=outlier,
+                                       x13_binary=x13_binary,
+                                       search_parents=search_parents)
             if flavor == "trend":
-                output = result[0]
+                output = full[0]
             elif flavor == "seas" or type == "seasonal":
-                output = result[1]
+                output = full[1]
             elif flavor == "both":
-                output = result
+                output = full
             else:
                 raise ValueError("'flavor' can be one of 'both', 'trend', or"
                                  "'seas'.")
-
+        if self.inplace is True:
             self.dataset = output
-
-        return self
+            return self
+        else:
+            return Session(loc_dir=self.loc_dir,
+                           revise_rows=self.revise_rows,
+                           force_update=self.force_update,
+                           dataset=output,
+                           logger=self.logger,
+                           inplace=self.inplace)
 
     @logutil.log_transformer
     def convert(self, flavor: str, update: Union[str, PathLike, None] = None,
@@ -431,21 +470,22 @@ class Session(object):
 
         """
         if isinstance(self.dataset, dict):
+            output = {}
             for key, value in self.dataset.items():
                 if flavor == "usd":
-                    output = transform.convert_usd(value, update=update,
-                                                   save=save)
+                    table = transform.convert_usd(value, update=update,
+                                                  save=save)
                 elif flavor == "real":
-                    output = transform.convert_real(value, update=update,
-                                                    save=save, **kwargs)
+                    table = transform.convert_real(value, update=update,
+                                                   save=save, **kwargs)
                 elif flavor == "pcgdp" or flavor == "gdp":
-                    output = transform.convert_gdp(value, update=update,
-                                                   save=save)
+                    table = transform.convert_gdp(value, update=update,
+                                                  save=save)
                 else:
                     raise ValueError("'flavor' can be one of 'usd', 'real', "
                                      "or 'pcgdp'.")
 
-                self.dataset.update({key: output})
+                output.update({key: table})
         else:
             if flavor == "usd":
                 output = transform.convert_usd(self.dataset, update=update,
@@ -459,10 +499,16 @@ class Session(object):
             else:
                 raise ValueError("'flavor' can be one of 'usd', 'real', "
                                  "or 'pcgdp'.")
-
+        if self.inplace is True:
             self.dataset = output
-
-        return self
+            return self
+        else:
+            return Session(loc_dir=self.loc_dir,
+                           revise_rows=self.revise_rows,
+                           force_update=self.force_update,
+                           dataset=output,
+                           logger=self.logger,
+                           inplace=self.inplace)
 
     @logutil.log_transformer
     def base_index(self, start_date: Union[str, date],
@@ -476,16 +522,24 @@ class Session(object):
 
         """
         if isinstance(self.dataset, dict):
+            output = {}
             for key, value in self.dataset.items():
-                output = transform.base_index(value, start_date=start_date,
-                                              end_date=end_date, base=base)
-                self.dataset.update({key: output})
+                table = transform.base_index(value, start_date=start_date,
+                                             end_date=end_date, base=base)
+                output.update({key: table})
         else:
             output = transform.base_index(self.dataset, start_date=start_date,
                                           end_date=end_date, base=base)
+        if self.inplace is True:
             self.dataset = output
-
-        return self
+            return self
+        else:
+            return Session(loc_dir=self.loc_dir,
+                           revise_rows=self.revise_rows,
+                           force_update=self.force_update,
+                           dataset=output,
+                           logger=self.logger,
+                           inplace=self.inplace)
 
     @logutil.log_transformer
     def rolling(self, periods: Optional[int] = None,
@@ -499,16 +553,24 @@ class Session(object):
 
         """
         if isinstance(self.dataset, dict):
+            output = {}
             for key, value in self.dataset.items():
-                output = transform.rolling(value, periods=periods,
-                                           operation=operation)
-                self.dataset.update({key: output})
+                table = transform.rolling(value, periods=periods,
+                                          operation=operation)
+                output.update({key: table})
         else:
             output = transform.rolling(self.dataset, periods=periods,
                                        operation=operation)
+        if self.inplace is True:
             self.dataset = output
-
-        return self
+            return self
+        else:
+            return Session(loc_dir=self.loc_dir,
+                           revise_rows=self.revise_rows,
+                           force_update=self.force_update,
+                           dataset=output,
+                           logger=self.logger,
+                           inplace=self.inplace)
 
     def save(self, name: str):
         """Save :attr:`dataset` attribute to a CSV."""
