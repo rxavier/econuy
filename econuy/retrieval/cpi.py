@@ -9,9 +9,9 @@ from econuy.resources import updates, columns
 from econuy.resources.lstrings import cpi_url
 
 
-def get(update: Union[str, PathLike, None] = None, 
+def get(update: Union[str, PathLike, None] = None,
         revise_rows: Union[str, int] = "nodup",
-        save: Union[str, PathLike, None] = None, 
+        save: Union[str, PathLike, None] = None,
         force_update: bool = False,
         name: Optional[str] = None) -> pd.DataFrame:
     """Get CPI data.

@@ -16,7 +16,7 @@ from econuy.resources.lstrings import (beef_url, pulp_url, soybean_url,
                                        what_url, imf_url, milk1_url, milk2_url)
 
 
-def _weights(update: Union[str, PathLike, None] = None, 
+def _weights(update: Union[str, PathLike, None] = None,
              revise_rows: Union[str, int] = "nodup",
              save: Union[str, PathLike, None] = None,
              force_update: bool = False) -> pd.DataFrame:
@@ -70,7 +70,8 @@ def _weights(update: Union[str, PathLike, None] = None,
     raw = pd.concat(raw, axis=0)
 
     table = raw.groupby(["period", "cmdDescE"]).sum().reset_index()
-    table = table.pivot(index="period", columns="cmdDescE", values="TradeValue")
+    table = table.pivot(index="period", columns="cmdDescE",
+                        values="TradeValue")
     table.fillna(0, inplace=True)
     percentage = table.div(table.sum(axis=1), axis=0)
     percentage.index = (pd.to_datetime(percentage.index, format="%Y")
@@ -100,9 +101,9 @@ def _weights(update: Union[str, PathLike, None] = None,
     return output
 
 
-def _prices(update: Union[str, PathLike, None] = None, 
+def _prices(update: Union[str, PathLike, None] = None,
             revise_rows: Union[str, int] = "nodup",
-            save: Union[str, PathLike, None] = None, 
+            save: Union[str, PathLike, None] = None,
             force_update: bool = False) -> pd.DataFrame:
     """Get commodity prices for Uruguay.
 
@@ -246,7 +247,7 @@ def _prices(update: Union[str, PathLike, None] = None,
 
 
 def get(update: Union[str, PathLike, None] = None,
-        save: Union[str, PathLike, None] = None, 
+        save: Union[str, PathLike, None] = None,
         force_update_prices: bool = True, force_update_weights: bool = False,
         name: Optional[str] = None) -> pd.DataFrame:
     """Get export-weighted commodity price index for Uruguay.
@@ -276,7 +277,7 @@ def get(update: Union[str, PathLike, None] = None,
     """
     if name is None:
         name = "commodity_index"
-        
+
     prices = _prices(update=update, revise_rows="nodup",
                      save=save, force_update=force_update_prices)
     prices = prices.interpolate(method="linear", limit=1).dropna(how="any")

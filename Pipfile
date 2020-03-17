@@ -13,6 +13,8 @@ Sphinx = "*"
 sphinx-rtd-theme = "*"
 pytest = "*"
 coverage = "*"
+flake8 = "*"
+autopep8 = "*"
 
 [packages]
 pandas = "~=0.25.0"

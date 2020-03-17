@@ -44,7 +44,7 @@ def _revise(new_data: pd.DataFrame, prev_data: pd.DataFrame,
         updated = updated.loc[~updated.index.duplicated(keep="last")]
         updated.sort_index(inplace=True)
         return updated
-    
+
     elif isinstance(revise_rows, str) and revise_rows in "automatic":
         try:
             revise_rows = freq_table[frequency]
