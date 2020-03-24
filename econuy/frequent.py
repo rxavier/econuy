@@ -7,7 +7,7 @@ import pandas as pd
 
 from econuy import transform
 from econuy.resources import columns
-from econuy.resources.lstrings import fiscal_metadata
+from econuy.resources.lstrings import fiscal_metadata, wap_url
 from econuy.retrieval import (nxr, national_accounts, cpi,
                               fiscal_accounts, labor)
 
@@ -328,9 +328,7 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
               save: Union[str, PathLike, None] = None,
               name: Optional[str] = None) -> pd.DataFrame:
     """
-    Get labor market data.
-
-    Allow choosing seasonal adjustment.
+    Get labor data, both rates and persons. Allow choosing seasonal adjustment.
 
     Parameters
     ----------
@@ -361,16 +359,31 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
     if seas_adj not in ["trend", "seas", None]:
         raise ValueError("'seas_adj' can be 'trend', 'seas' or None.")
 
-    data = labor.get(update=update, revise_rows=6,
-                     save=save, force_update=False)
-    output = data
+    rates = labor.get(update=update, revise_rows=6,
+                      save=save, force_update=False)
 
-    if seas_adj in ["trend", "seas"]:
-        trend, seasadj = transform.decompose(data, trading=True, outlier=True)
-        if seas_adj == "trend":
-            output = pd.concat([data, trend], axis=1)
-        elif seas_adj == "seas":
-            output = pd.concat([data, seasadj], axis=1)
+    trend, seasadj = transform.decompose(rates, trading=True, outlier=True)
+    if seas_adj == "trend":
+        rates = trend
+    elif seas_adj == "seas":
+        rates = seasadj
+
+    working_age = pd.read_excel(wap_url, skiprows=7,
+                                index_col=0, nrows=92).dropna(how="all")
+    ages = list(range(14, 90)) + ["90 y más"]
+    working_age = working_age.loc[ages].sum()
+    working_age.index = pd.date_range(start="1996-06-30", end="2050-06-30",
+                                      freq="A-JUN")
+    monthly_working_age = working_age.resample("M").interpolate("linear")
+    monthly_working_age = monthly_working_age.loc[rates.index]
+    persons = rates.iloc[:, [0, 1]].div(100).mul(monthly_working_age, axis=0)
+    persons["Desempleados"] = rates.iloc[:, 2].div(100).mul(persons.iloc[:, 0])
+    persons.columns = rates.columns
+    persons.columns = persons.columns.set_levels(["Activos", "Empleados",
+                                                  "Desempleados"], level=0)
+    persons.columns = persons.columns.set_levels(["Personas"], level=3)
+
+    output = pd.concat([rates, persons], axis=1)
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")

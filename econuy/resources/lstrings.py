@@ -15,6 +15,7 @@ milk2_url = "https://ec.europa.eu/info/sites/info/files/food-farming-fisheries/f
 cpi_url = "http://ine.gub.uy/c/document_library/get_file?uuid=2e92084a-94ec-4fec-b5ca-42b40d5d2826&groupId=10181"
 nxr_url = "http://ine.gub.uy/c/document_library/get_file?uuid=3fbf4ffd-a829-420c-aca9-9f01ecd7919a&groupId=10181"
 labor_url = "http://ine.gub.uy/c/document_library/get_file?uuid=50ae926c-1ddc-4409-afc6-1fecf641e3d0&groupId=10181"
+wap_url = "http://www.ine.gub.uy/c/document_library/get_file?uuid=2a5c1e6e-b02f-4a63-963f-925edea7c17e&groupId=10181"
 ff_url = "https://www.bcu.gub.uy/Politica-Economica-y-Mercados/Mercado%20de%20Cambios/informepublico"
 fiscal_url = "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos"
 reserves_url = "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Informe%20Diario%20Pasivos%20Monetarios/infd_"
