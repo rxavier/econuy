@@ -146,7 +146,7 @@ def _prices(update: Union[str, PathLike, None] = None,
             return previous_data
 
     raw_beef = (pd.read_excel(beef_url, header=4, index_col=0)
-                .dropna(how="all").drop(index=0))
+                .dropna(how="all"))
     raw_beef.columns = raw_beef.columns.str.strip()
     proc_beef = raw_beef["Ing. Prom./Ton."].to_frame()
     proc_beef.index = pd.date_range(start="2002-01-04",
