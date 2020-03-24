@@ -20,7 +20,8 @@ fiscal_url = "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadistic
 reserves_url = "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Informe%20Diario%20Pasivos%20Monetarios/infd_"
 reer_url = "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Indice_Cambio_Real/eese04d1119.xls"
 missing_reserves_url = "https://docs.google.com/spreadsheets/d/1tXwv8SaigbBrfBSSCVGBjSs88f3dgTq4nIANPn7vjYI/export?format=xlsx&authuser=0"
-
+ar_cpi_url = "http://www.bcra.gov.ar/PublicacionesEstadisticas/Principales_variables_datos.asp"
+ar_cpi_payload = "fecha_desde=1970-01-01&fecha_hasta=2019-12-31&B1=Enviar&primeravez=1&fecha_desde=19600101&fecha_hasta=20191231&serie=7931&serie1=0&serie2=0&serie3=0&serie4=0&detalle=Inflaci%F3n+mensual%A0%28variaci%F3n+en+%29"
 
 fiscal_sheets = {
     "Sector Público No Financiero":
@@ -334,6 +335,3 @@ fiscal_metadata = {
                    "Resultado: Primario GC-BPS",
                    "Resultado: Global GC-BPS"]}
 }
-
-ar_cpi_url = "http://www.bcra.gov.ar/PublicacionesEstadisticas/Principales_variables_datos.asp"
-ar_cpi_payload = "fecha_desde=1970-01-01&fecha_hasta=2019-12-31&B1=Enviar&primeravez=1&fecha_desde=19600101&fecha_hasta=20191231&serie=7931&serie1=0&serie2=0&serie3=0&serie4=0&detalle=Inflaci%F3n+mensual%A0%28variaci%F3n+en+%29"
