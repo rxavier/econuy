@@ -362,11 +362,12 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
     rates = labor.get(update=update, revise_rows=6,
                       save=save, force_update=False)
 
-    trend, seasadj = transform.decompose(rates, trading=True, outlier=True)
-    if seas_adj == "trend":
-        rates = trend
-    elif seas_adj == "seas":
-        rates = seasadj
+    if seas_adj in ["trend", "seas"]:
+        trend, seasadj = transform.decompose(rates, trading=True, outlier=True)
+        if seas_adj == "trend":
+            rates = trend
+        elif seas_adj == "seas":
+            rates = seasadj
 
     working_age = pd.read_excel(wap_url, skiprows=7,
                                 index_col=0, nrows=92).dropna(how="all")
@@ -378,10 +379,15 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
     monthly_working_age = monthly_working_age.loc[rates.index]
     persons = rates.iloc[:, [0, 1]].div(100).mul(monthly_working_age, axis=0)
     persons["Desempleados"] = rates.iloc[:, 2].div(100).mul(persons.iloc[:, 0])
-    persons.columns = rates.columns
-    persons.columns = persons.columns.set_levels(["Activos", "Empleados",
-                                                  "Desempleados"], level=0)
-    persons.columns = persons.columns.set_levels(["Personas"], level=3)
+    persons.columns = ["Activos", "Empleados", "Desempleados"]
+    seas_text = "NSA"
+    if seas_adj == "trend":
+        seas_text = "Trend"
+    elif seas_adj == "seas":
+        seas_text = "SA"
+    columns._setmeta(persons, area="Mercado laboral", currency="Personas",
+                     inf_adj="No", index="No", seas_adj=seas_text, ts_type="-",
+                     cumperiods=1)
 
     output = pd.concat([rates, persons], axis=1)
 
