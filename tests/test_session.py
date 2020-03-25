@@ -53,44 +53,6 @@ def test_prices_inflation():
     remove_clutter()
 
 
-def test_exchange_rate():
-    remove_clutter()
-    session = Session(loc_dir=TEST_DIR)
-    assert isinstance(session, Session)
-    assert isinstance(session.dataset, pd.DataFrame)
-    nxr_tfm = session.get_tfm(dataset="nxr", eop=True, sell=False,
-                              seas_adj="trend", cum=1).dataset
-    remove_clutter()
-    nxr_ = session.get(dataset="nxr").dataset
-    nxr_e_s = nxr_.iloc[:, [0]]
-    nxr_e_s_trend, nxr_e_s_sa = transform.decompose(nxr_e_s, trading=True,
-                                                    outlier=True)
-    compare = pd.concat([nxr_e_s, nxr_e_s_trend], axis=1)
-    compare.columns = nxr_tfm.columns
-    assert compare.equals(nxr_tfm)
-    remove_clutter()
-    nxr_tfm = session.get_tfm(dataset="nxr", eop=False, sell=True,
-                              seas_adj="seas", cum=1).dataset
-    nxr_e_b = nxr_.iloc[:, [3]]
-    nxr_e_b_trend, nxr_e_b_sa = transform.decompose(nxr_e_b, trading=True,
-                                                    outlier=True)
-    compare = pd.concat([nxr_e_b, nxr_e_b_sa], axis=1)
-    compare.columns = nxr_tfm.columns
-    assert compare.equals(nxr_tfm)
-    remove_clutter()
-    nxr_tfm = session.get_tfm(dataset="nxr", eop=False, sell=True,
-                              seas_adj=None, cum=12).dataset
-    nxr_a_s = nxr_.iloc[:, [3]]
-    compare = transform.rolling(nxr_a_s, periods=12, operation="average")
-    compare.columns = nxr_tfm.columns
-    assert compare.equals(nxr_tfm)
-    remove_clutter()
-    with pytest.raises(ValueError):
-        session.get_tfm(dataset="nxr", eop=False, sell=True,
-                        seas_adj="wrong")
-    remove_clutter()
-
-
 def test_fiscal():
     remove_clutter()
     session = Session(loc_dir=TEST_DIR)
@@ -125,8 +87,8 @@ def test_fiscal():
     proc["Egresos: Totales SPNF aj. FSS"] = (proc["Egresos: Totales SPNF"]
                                              - proc["Intereses: FSS"])
     proc["Resultado: Primario SPNF aj. FSS"] = (
-        proc["Resultado: Primario SPNF"]
-        - proc["Ingresos: FSS"])
+            proc["Resultado: Primario SPNF"]
+            - proc["Ingresos: FSS"])
     proc["Resultado: Global SPNF aj. FSS"] = (proc["Resultado: Global SPNF"]
                                               - proc["Ingresos: FSS"]
                                               + proc["Intereses: FSS"])
@@ -161,9 +123,9 @@ def test_fiscal():
                                  end_date=end_date).dataset
     compare_real_usd = transform.convert_real(compare, start_date=start_date,
                                               end_date=end_date)
-    xr = nxr.get(update=None, save=None)
+    xr = nxr.get_historic(update=None, save=None)
     compare_real_usd = compare_real_usd.divide(
-        xr[start_date:end_date].mean()[3])
+        xr[start_date:end_date].mean()[1])
     compare_real_usd.columns = fiscal_tfm.columns
     assert compare_real_usd.equals(fiscal_tfm)
     remove_clutter()

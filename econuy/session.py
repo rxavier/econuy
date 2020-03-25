@@ -232,7 +232,7 @@ class Session(object):
 
         Parameters
         ----------
-        dataset : {'inflation', 'fiscal', 'nxr', 'naccounts', 'labor'}
+        dataset : {'inflation', 'fiscal', 'naccounts', 'labor'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -277,13 +277,6 @@ class Session(object):
                                      save=save_path,
                                      name=override,
                                      **kwargs)
-        elif dataset == "nxr":
-            called_args = logutil.get_called_args(frequent.exchange_rate,
-                                                  kwargs)
-            output = frequent.exchange_rate(update=update_path,
-                                            save=save_path,
-                                            name=override,
-                                            **kwargs)
         elif dataset == "naccounts" or dataset == "na":
             called_args = logutil.get_called_args(frequent.nat_accounts,
                                                   kwargs)

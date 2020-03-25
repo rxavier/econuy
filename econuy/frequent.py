@@ -59,86 +59,6 @@ def inflation(update: Union[str, PathLike, None] = None,
     return output
 
 
-def exchange_rate(eop: bool = False, sell: bool = True,
-                  seas_adj: Union[str, None] = None, cum: int = 1,
-                  update: Union[str, PathLike, None] = None,
-                  save: Union[str, PathLike, None] = None,
-                  name: Optional[str] = None) -> pd.DataFrame:
-    """
-    Get nominal exchange rate data.
-
-    Allow choosing end of period or average (monthly), sell/buy rates,
-    calculating seasonal decomposition and rolling averages.
-
-    Parameters
-    ----------
-    eop : bool, default False
-        End of period data.
-    sell : bool, default True
-        Sell rate.
-    seas_adj : {None, 'trend', 'seas'}
-        Whether to seasonally adjust.
-    cum : int, default 1
-        How many periods to accumulate for rolling averages.
-    update : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to find a CSV
-        for updating, or ``None``, don't update.
-    save : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to save the CSV,
-        or ``None``, don't save.
-    name : str, default None
-        CSV filename for updating and/or saving.
-
-    Returns
-    -------
-    Nominal exchange rate : pd.DataFrame
-
-    Raises
-    ------
-    ValueError
-        If ``seas_adj`` is given an invalid keyword.
-
-    """
-    if name is None:
-        name = "tfm_nxr"
-
-    if seas_adj not in ["trend", "seas", None]:
-        raise ValueError("'seas_adj' can be 'trend', 'seas' or None.")
-
-    data = nxr.get(update=update, revise_rows=6,
-                   save=save, force_update=False)
-
-    if eop is False:
-        output = data.iloc[:, [2, 3]]
-    else:
-        output = data.iloc[:, [0, 1]]
-
-    if sell is True:
-        output = output.iloc[:, 1].to_frame()
-    else:
-        output = output.iloc[:, 0].to_frame()
-
-    if seas_adj in ["trend", "seas"] and cum == 1:
-        trend, seasadj = transform.decompose(output, trading=True,
-                                             outlier=True)
-        if seas_adj == "trend":
-            output = pd.concat([output, trend], axis=1)
-        elif seas_adj == "seas":
-            output = pd.concat([output, seasadj], axis=1)
-
-    if cum != 1:
-        columns._setmeta(output, ts_type="Flujo")
-        output = transform.rolling(output, periods=cum, operation="average")
-
-    if save is not None:
-        save_path = (Path(save) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(save_path)):
-            mkdir(path.dirname(save_path))
-        output.to_csv(save_path)
-
-    return output
-
-
 def fiscal(aggregation: str = "gps", fss: bool = True,
            unit: Union[str, None] = "gdp",
            start_date: Union[str, date, None] = None,
@@ -296,8 +216,8 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     elif unit == "real_usd":
         output = transform.convert_real(output, start_date=start_date,
                                         end_date=end_date)
-        xr = nxr.get(update=update, revise_rows=6, save=save)
-        output = output.divide(xr[start_date:end_date].mean()[3])
+        xr = nxr.get_historic(update=update, revise_rows=6, save=save)
+        output = output.divide(xr[start_date:end_date].mean()[1])
         columns._setmeta(output, currency="USD")
     elif unit == "real":
         output = transform.convert_real(output, start_date=start_date,
