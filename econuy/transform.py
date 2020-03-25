@@ -22,7 +22,7 @@ def convert_usd(df: pd.DataFrame,
     Convert dataframe from UYU to USD.
 
     Convert a dataframe's columns from Uruguayan pesos to US dollars. Call the
-    :func:`econuy.retrieval.nxr.get` function to obtain nominal
+    :func:`econuy.retrieval.nxr.get_historic` function to obtain nominal
     exchange rates, and take into account whether the input dataframe's
     ``Type``, as defined by its multiindex, is flow or stock, in order to `
     choose end of period or monthly average NXR. Also take into account the
@@ -46,13 +46,13 @@ def convert_usd(df: pd.DataFrame,
 
     """
     inferred_freq = pd.infer_freq(df.index)
-    nxr_data = nxr.get(update=update, revise_rows=6,
-                       save=save, force_update=False)
+    nxr_data = nxr.get_historic(update=update, revise_rows=6,
+                                save=save, force_update=False)
 
     if df.columns.get_level_values("Tipo")[0] == "Flujo":
         columns._setmeta(nxr_data, ts_type="Flujo")
         nxr_freq = resample(nxr_data, target=inferred_freq,
-                            operation="average").iloc[:, [1]]
+                            operation="average").iloc[:, [0]]
         cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
         nxr_freq = rolling(nxr_freq, periods=cum_periods,
                            operation="average")
@@ -60,7 +60,7 @@ def convert_usd(df: pd.DataFrame,
     elif df.columns.get_level_values("Tipo")[0] == "Stock":
         columns._setmeta(nxr_data, ts_type="Stock")
         nxr_freq = resample(nxr_data, target=inferred_freq,
-                            operation="average").iloc[:, [3]]
+                            operation="average").iloc[:, [1]]
     else:
         raise ValueError("Dataframe needs to have a valid 'Type'.")
 

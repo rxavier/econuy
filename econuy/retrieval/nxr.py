@@ -9,11 +9,11 @@ from econuy.resources import updates, columns
 from econuy.resources.lstrings import nxr_url
 
 
-def get(update: Union[str, PathLike, None] = None,
-        revise_rows: Union[str, int] = "nodup",
-        save: Union[str, PathLike, None] = None,
-        force_update: bool = False,
-        name: Optional[str] = None) -> pd.DataFrame:
+def get_historic(update: Union[str, PathLike, None] = None,
+                 revise_rows: Union[str, int] = "nodup",
+                 save: Union[str, PathLike, None] = None,
+                 force_update: bool = False,
+                 name: Optional[str] = None) -> pd.DataFrame:
     """Get nominal exchange rate data.
 
     Parameters
@@ -39,7 +39,7 @@ def get(update: Union[str, PathLike, None] = None,
     Returns
     -------
     Monthly nominal exchange rates : pd.DataFrame
-        Buy and sell, and monthly average and end of period.
+        Sell rate, monthly average and end of period.
 
     """
     update_threshold = 25
@@ -55,20 +55,17 @@ def get(update: Union[str, PathLike, None] = None,
                   f"day(s). Skipping download...")
             return previous_data
 
-    nxr_raw = pd.read_excel(nxr_url, skiprows=4)
-    nxr = (nxr_raw.dropna(axis=0, thresh=4).set_index("Mes y año").
-           dropna(axis=1, how="all").rename_axis(None))
-    nxr.columns = ["Tipo de cambio compra, fin de período",
-                   "Tipo de cambio venta, fin de período",
-                   "Tipo de cambio compra, promedio",
+    nxr_raw = pd.read_excel(nxr_url, skiprows=4, index_col=0, usecols="A,C,F")
+    nxr = nxr_raw.dropna(how="any", axis=0)
+    nxr.columns = ["Tipo de cambio venta, fin de período",
                    "Tipo de cambio venta, promedio"]
     nxr.index = nxr.index + MonthEnd(1)
+    nxr = nxr.apply(pd.to_numeric, errors="coerce")
 
     if update is not None:
         nxr = updates._revise(new_data=nxr, prev_data=previous_data,
                               revise_rows=revise_rows)
 
-    nxr = nxr.apply(pd.to_numeric, errors="coerce")
     columns._setmeta(nxr, area="Precios y salarios", currency="-",
                      inf_adj="No", index="No", seas_adj="NSA",
                      ts_type="-", cumperiods=1)
