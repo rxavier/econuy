@@ -216,7 +216,7 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     elif unit == "real_usd":
         output = transform.convert_real(output, start_date=start_date,
                                         end_date=end_date)
-        xr = nxr.get_historic(update=update, revise_rows=6, save=save)
+        xr = nxr.get_monthly(update=update, revise_rows=6, save=save)
         output = output.divide(xr[start_date:end_date].mean()[1])
         columns._setmeta(output, currency="USD")
     elif unit == "real":

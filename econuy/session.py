@@ -171,11 +171,11 @@ class Session(object):
                                          force_update=self.force_update,
                                          name=override)
         elif dataset == "nxr":
-            output = nxr.get_historic(update=update_path,
-                                      revise_rows=self.revise_rows,
-                                      save=save_path,
-                                      force_update=self.force_update,
-                                      name=override)
+            output = nxr.get_monthly(update=update_path,
+                                     revise_rows=self.revise_rows,
+                                     save=save_path,
+                                     force_update=self.force_update,
+                                     name=override)
         elif dataset == "naccounts" or dataset == "na":
             output = national_accounts.get(update=update_path,
                                            revise_rows=self.revise_rows,

@@ -123,7 +123,7 @@ def test_fiscal():
                                  end_date=end_date).dataset
     compare_real_usd = transform.convert_real(compare, start_date=start_date,
                                               end_date=end_date)
-    xr = nxr.get_historic(update=None, save=None)
+    xr = nxr.get_monthly(update=None, save=None)
     compare_real_usd = compare_real_usd.divide(
         xr[start_date:end_date].mean()[1])
     compare_real_usd.columns = fiscal_tfm.columns

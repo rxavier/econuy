@@ -9,12 +9,12 @@ from econuy.resources import updates, columns
 from econuy.resources.lstrings import nxr_url
 
 
-def get_historic(update: Union[str, PathLike, None] = None,
-                 revise_rows: Union[str, int] = "nodup",
-                 save: Union[str, PathLike, None] = None,
-                 force_update: bool = False,
-                 name: Optional[str] = None) -> pd.DataFrame:
-    """Get nominal exchange rate data.
+def get_monthly(update: Union[str, PathLike, None] = None,
+                revise_rows: Union[str, int] = "nodup",
+                save: Union[str, PathLike, None] = None,
+                force_update: bool = False,
+                name: Optional[str] = None) -> pd.DataFrame:
+    """Get monthly nominal exchange rate data.
 
     Parameters
     ----------

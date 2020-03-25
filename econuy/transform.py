@@ -22,7 +22,7 @@ def convert_usd(df: pd.DataFrame,
     Convert dataframe from UYU to USD.
 
     Convert a dataframe's columns from Uruguayan pesos to US dollars. Call the
-    :func:`econuy.retrieval.nxr.get_historic` function to obtain nominal
+    :func:`econuy.retrieval.nxr.get_monthly` function to obtain nominal
     exchange rates, and take into account whether the input dataframe's
     ``Type``, as defined by its multiindex, is flow or stock, in order to `
     choose end of period or monthly average NXR. Also take into account the
@@ -46,8 +46,8 @@ def convert_usd(df: pd.DataFrame,
 
     """
     inferred_freq = pd.infer_freq(df.index)
-    nxr_data = nxr.get_historic(update=update, revise_rows=6,
-                                save=save, force_update=False)
+    nxr_data = nxr.get_monthly(update=update, revise_rows=6,
+                               save=save, force_update=False)
 
     if df.columns.get_level_values("Tipo")[0] == "Flujo":
         columns._setmeta(nxr_data, ts_type="Flujo")
