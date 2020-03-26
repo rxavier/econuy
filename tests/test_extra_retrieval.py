@@ -86,3 +86,26 @@ def test_lin():
     assert (sorted(lin.columns.get_level_values("Unidad/Moneda"))
             == sorted(["UYU", "USD"]))
     remove_clutter()
+
+
+def test_nxr_daily():
+    remove_clutter()
+    previous_data = pd.read_csv(path.join(TEST_DIR, "nxr_daily.csv"),
+                                index_col=0, header=list(range(9)))
+    columns._setmeta(previous_data)
+    previous_data.index = pd.to_datetime(previous_data.index)
+    session = Session(loc_dir=TEST_DIR)
+    nxr = session.get(dataset="nxr_daily").dataset
+    compare = nxr.loc[previous_data.index].round(4)
+    compare.columns = previous_data.columns
+    assert compare.equals(previous_data.round(4))
+    remove_clutter()
+
+
+def test_nxr_monthly():
+    remove_clutter()
+    session = Session(loc_dir=TEST_DIR)
+    nxr = session.get(dataset="nxr_m").dataset
+    assert len(nxr.columns) == 2
+    assert isinstance(nxr.index[0], pd._libs.tslibs.timestamps.Timestamp)
+    remove_clutter()
