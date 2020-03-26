@@ -88,8 +88,8 @@ def test_fiscal():
     proc["Egresos: Totales SPNF aj. FSS"] = (proc["Egresos: Totales SPNF"]
                                              - proc["Intereses: FSS"])
     proc["Resultado: Primario SPNF aj. FSS"] = (
-            proc["Resultado: Primario SPNF"]
-            - proc["Ingresos: FSS"])
+        proc["Resultado: Primario SPNF"]
+        - proc["Ingresos: FSS"])
     proc["Resultado: Global SPNF aj. FSS"] = (proc["Resultado: Global SPNF"]
                                               - proc["Ingresos: FSS"]
                                               + proc["Intereses: FSS"])
@@ -314,4 +314,4 @@ def test_logging(caplog):
     caplog.clear()
     remove_clutter()
     Session(loc_dir=TEST_DIR, log=0)
-    assert caplog.text is ""
+    assert caplog.text == ""
