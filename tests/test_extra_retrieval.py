@@ -19,7 +19,7 @@ def test_changes():
     previous_data = pd.read_csv(path.join(TEST_DIR, "reserves_chg.csv"),
                                 index_col=0, header=list(range(9)))
     columns._setmeta(previous_data)
-    res = session.get(dataset="reserves", save=False).dataset
+    res = session.get(dataset="reserves").dataset
     previous_data.index = pd.to_datetime(previous_data.index)
     compare = res.loc[previous_data.index].round(4)
     compare.columns = previous_data.columns
@@ -33,7 +33,7 @@ def test_ff():
                                 index_col=0, header=list(range(9)))
     columns._setmeta(previous_data)
     compare = previous_data.iloc[0:-30]
-    ff = reserves.get_fut_fwd(update=TEST_DIR, name=None, save=None)
+    ff = reserves.get_fut_fwd(update=TEST_DIR, name=None, save=TEST_DIR)
     assert len(ff) > len(compare)
     remove_clutter()
 
@@ -41,7 +41,7 @@ def test_ff():
 def test_ops():
     remove_clutter()
     session = Session(loc_dir=TEST_DIR)
-    ops = session.get(dataset="fx_ops", save=False).dataset
+    ops = session.get(dataset="fx_ops").dataset
     assert isinstance(ops, pd.DataFrame)
     remove_clutter()
 
