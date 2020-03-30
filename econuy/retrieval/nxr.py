@@ -134,25 +134,31 @@ def get_daily(update: Union[str, PathLike, None] = None,
     to_ = dt.datetime.now().strftime('%d/%m/%Y')
     dates = f"%22FechaDesde%22:%22{from_}%22,%22FechaHasta%22:%22{to_}"
     url = f"{nxr_daily_url}{dates}%22,%22Grupo%22:%222%22}}" + "}"
-    data.append(pd.read_excel(url))
+    try:
+        data.append(pd.read_excel(url))
+        output = pd.concat(data, axis=0)
+        output = output.pivot(index="Fecha", columns="Moneda",
+                              values="Venta").rename_axis(None)
+        output.index = pd.to_datetime(output.index, format="%d/%m/%Y",
+                                      errors="coerce")
+        output.sort_index(inplace=True)
+        output.replace(",", ".", regex=True, inplace=True)
+        output.columns = ["Tipo de cambio US$, Cable"]
+        output = output.apply(pd.to_numeric, errors="coerce")
 
-    output = pd.concat(data, axis=0)
-    output = output.pivot(index="Fecha", columns="Moneda",
-                          values="Venta").rename_axis(None)
-    output.index = pd.to_datetime(output.index, format="%d/%m/%Y",
-                                  errors="coerce")
-    output.sort_index(inplace=True)
-    output.replace(",", ".", regex=True, inplace=True)
-    output.columns = ["Tipo de cambio US$, Cable"]
-    output = output.apply(pd.to_numeric, errors="coerce")
+        columns._setmeta(output, area="Precios y salarios", currency="-",
+                         inf_adj="No", index="No", seas_adj="NSA",
+                         ts_type="-", cumperiods=1)
+        output.columns.set_levels(["-"], level=2, inplace=True)
 
-    columns._setmeta(output, area="Precios y salarios", currency="-",
-                     inf_adj="No", index="No", seas_adj="NSA",
-                     ts_type="-", cumperiods=1)
-    output.columns.set_levels(["-"], level=2, inplace=True)
+        if update is not None:
+            output = pd.concat([prev_data, output])
 
-    if update is not None:
-        output = pd.concat([prev_data, output])
+    except TypeError:
+        if update is not None:
+            output = prev_data
+        else:
+            return pd.DataFrame()
 
     if save is not None:
         save_path = (Path(save) / name).with_suffix(".csv")
