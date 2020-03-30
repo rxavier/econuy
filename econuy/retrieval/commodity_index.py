@@ -181,7 +181,7 @@ def _prices(update: Union[str, PathLike, None] = None,
     wheat = soy_wheat[1]
 
     raw_milk = pd.read_excel(milk1_url, skiprows=13,
-                             nrows=dt.datetime.now().year - 2007)
+                             nrows=dt.datetime.now().year - 2006)
     raw_milk.dropna(how="all", axis=1, inplace=True)
     raw_milk.drop(["Promedio ", "Variación"], axis=1, inplace=True)
     raw_milk.columns = ["Año/Mes"] + list(range(1, 13))

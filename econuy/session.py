@@ -114,9 +114,9 @@ class Session(object):
 
         Parameters
         ----------
-        dataset : {'cpi', 'nxr', 'fiscal', 'naccounts', 'labor', \
-                'comm_index', 'rxr_custom', 'rxr_official', 'reserves', \
-                'fx_ops'}
+        dataset : {'cpi', 'nxr_monthly', 'nxr_daily', 'fiscal', 'naccounts', \
+                'labor', 'comm_index', 'rxr_custom', 'rxr_official', \
+                'reserves', 'fx_ops'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -170,12 +170,16 @@ class Session(object):
                                          save=save_path,
                                          force_update=self.force_update,
                                          name=override)
-        elif dataset == "nxr":
-            output = nxr.get(update=update_path,
-                             revise_rows=self.revise_rows,
-                             save=save_path,
-                             force_update=self.force_update,
-                             name=override)
+        elif dataset == "nxr_monthly" or dataset == "nxr_m":
+            output = nxr.get_monthly(update=update_path,
+                                     revise_rows=self.revise_rows,
+                                     save=save_path,
+                                     force_update=self.force_update,
+                                     name=override)
+        elif dataset == "nxr_daily" or dataset == "nxr_d":
+            output = nxr.get_daily(update=update_path,
+                                   save=save_path,
+                                   name=override)
         elif dataset == "naccounts" or dataset == "na":
             output = national_accounts.get(update=update_path,
                                            revise_rows=self.revise_rows,
@@ -232,7 +236,7 @@ class Session(object):
 
         Parameters
         ----------
-        dataset : {'inflation', 'fiscal', 'nxr', 'naccounts', 'labor'}
+        dataset : {'inflation', 'fiscal', 'naccounts', 'labor'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -277,13 +281,6 @@ class Session(object):
                                      save=save_path,
                                      name=override,
                                      **kwargs)
-        elif dataset == "nxr":
-            called_args = logutil.get_called_args(frequent.exchange_rate,
-                                                  kwargs)
-            output = frequent.exchange_rate(update=update_path,
-                                            save=save_path,
-                                            name=override,
-                                            **kwargs)
         elif dataset == "naccounts" or dataset == "na":
             called_args = logutil.get_called_args(frequent.nat_accounts,
                                                   kwargs)

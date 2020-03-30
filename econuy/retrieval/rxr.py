@@ -168,8 +168,8 @@ def get_custom(update: Union[str, PathLike, None] = None,
 
     uy_cpi = cpi.get(update=update, revise_rows=6,
                      save=save, force_update=False)
-    uy_e = nxr.get(update=update, revise_rows=6,
-                   save=save, force_update=False).iloc[:, [3]]
+    uy_e = nxr.get_monthly(update=update, revise_rows=6,
+                           save=save, force_update=False).iloc[:, [1]]
     proc = pd.concat([proc, uy_cpi, uy_e], axis=1)
     proc = proc.interpolate(method="linear", limit_area="inside")
     proc = proc.dropna(how="any")
