@@ -27,6 +27,7 @@ patool = "==1.12"
 numpy = "==1.17.4"
 lxml = "==4.4.2"
 econuy = {editable = true,path = "."}
+bleach = "==3.1.4"
 
 [requires]
 python_version = "3.7"
