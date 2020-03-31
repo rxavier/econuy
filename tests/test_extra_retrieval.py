@@ -15,7 +15,7 @@ TEST_DIR = path.join(path.dirname(CUR_DIR), "test-data")
 
 def test_changes():
     remove_clutter()
-    session = Session(loc_dir=TEST_DIR)
+    session = Session(data_dir=TEST_DIR)
     previous_data = pd.read_csv(path.join(TEST_DIR, "reserves_chg.csv"),
                                 index_col=0, header=list(range(9)))
     columns._setmeta(previous_data)
@@ -40,7 +40,7 @@ def test_ff():
 
 def test_ops():
     remove_clutter()
-    session = Session(loc_dir=TEST_DIR)
+    session = Session(data_dir=TEST_DIR)
     ops = session.get(dataset="fx_ops").dataset
     assert isinstance(ops, pd.DataFrame)
     remove_clutter()
@@ -48,7 +48,7 @@ def test_ops():
 
 def test_rxr_official():
     remove_clutter()
-    session = Session(loc_dir=TEST_DIR)
+    session = Session(data_dir=TEST_DIR)
     tcr = session.get(dataset="rxr_official").dataset
     assert isinstance(tcr, pd.DataFrame)
     assert tcr.index[0] == dt.date(2000, 1, 31)
@@ -57,7 +57,7 @@ def test_rxr_official():
 
 def test_rxr_custom():
     remove_clutter()
-    session = Session(loc_dir=TEST_DIR)
+    session = Session(data_dir=TEST_DIR)
     tcr = session.get(dataset="rxr_custom").dataset
     assert isinstance(tcr, pd.DataFrame)
     assert tcr.index[0] == dt.date(1979, 12, 31)
@@ -71,7 +71,7 @@ def test_rxr_custom():
 
 def test_comm_index():
     remove_clutter()
-    session = Session(loc_dir=TEST_DIR)
+    session = Session(data_dir=TEST_DIR)
     comm = session.get(dataset="comm_index").dataset
     assert isinstance(comm, pd.DataFrame)
     assert comm.index[0] == dt.date(2002, 1, 31)
@@ -94,7 +94,7 @@ def test_nxr_daily():
                                 index_col=0, header=list(range(9)))
     columns._setmeta(previous_data)
     previous_data.index = pd.to_datetime(previous_data.index)
-    session = Session(loc_dir=TEST_DIR)
+    session = Session(data_dir=TEST_DIR)
     nxr = session.get(dataset="nxr_daily").dataset
     compare = nxr.loc[previous_data.index].round(4)
     compare.columns = previous_data.columns
@@ -104,7 +104,7 @@ def test_nxr_daily():
 
 def test_nxr_monthly():
     remove_clutter()
-    session = Session(loc_dir=TEST_DIR)
+    session = Session(data_dir=TEST_DIR)
     nxr = session.get(dataset="nxr_m").dataset
     assert len(nxr.columns) == 2
     assert isinstance(nxr.index[0], pd._libs.tslibs.timestamps.Timestamp)

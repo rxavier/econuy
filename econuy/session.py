@@ -18,7 +18,7 @@ class Session(object):
 
     Attributes
     ----------
-    loc_dir : str or os.PathLike, default 'econuy-data'
+    data_dir : str or os.PathLike, default 'econuy-data'
         Directory indicating where data will be saved to and retrieved from.
     revise_rows : {'nodup', 'auto', int}
         Defines how to process data updates. An integer indicates how many rows
@@ -44,14 +44,14 @@ class Session(object):
     """
 
     def __init__(self,
-                 loc_dir: Union[str, PathLike] = "econuy-data",
+                 data_dir: Union[str, PathLike] = "econuy-data",
                  revise_rows: Union[int, str] = "nodup",
                  force_update: bool = False,
                  dataset: Union[dict, pd.DataFrame] = pd.DataFrame(),
                  log: Union[int, str] = 1,
                  logger: Optional[logging.Logger] = None,
                  inplace: bool = False):
-        self.loc_dir = loc_dir
+        self.data_dir = data_dir
         self.revise_rows = revise_rows
         self.force_update = force_update
         self.dataset = dataset
@@ -59,8 +59,8 @@ class Session(object):
         self.logger = logger
         self.inplace = inplace
 
-        if not path.exists(self.loc_dir):
-            makedirs(self.loc_dir)
+        if not path.exists(self.data_dir):
+            makedirs(self.data_dir)
 
         if logger is not None:
             self.log = "custom"
@@ -71,11 +71,11 @@ class Session(object):
                                  " default file), or str (log to console and "
                                  "file with filename=str).")
             elif log == 2:
-                logfile = Path(self.loc_dir) / "info.log"
+                logfile = Path(self.data_dir) / "info.log"
                 log_obj = logutil.setup(file=logfile)
                 log_method = f"console and file ({logfile.as_posix()})"
             elif isinstance(log, str) and log != "custom":
-                logfile = (Path(self.loc_dir) / log).with_suffix(".log")
+                logfile = (Path(self.data_dir) / log).with_suffix(".log")
                 log_obj = logutil.setup(file=logfile)
                 log_method = f"console and file ({logfile.as_posix()})"
             elif log == 1:
@@ -97,7 +97,7 @@ class Session(object):
                 revise_method = revise_rows
             log_obj.info(f"Created Session object with the "
                          f"following attributes:\n"
-                         f"Directory for downloads and updates: {loc_dir}\n"
+                         f"Directory for downloads and updates: {data_dir}\n"
                          f"Update method: {revise_method}\n"
                          f"Dataset: {dataset_message}\n"
                          f"Logging method: {log_method}")
@@ -145,11 +145,11 @@ class Session(object):
 
         """
         if update is True:
-            update_path = Path(self.loc_dir)
+            update_path = Path(self.data_dir)
         else:
             update_path = None
         if save is True:
-            save_path = Path(self.loc_dir)
+            save_path = Path(self.data_dir)
         else:
             save_path = None
 
@@ -260,11 +260,11 @@ class Session(object):
 
         """
         if update is True:
-            update_path = Path(self.loc_dir)
+            update_path = Path(self.data_dir)
         else:
             update_path = None
         if save is True:
-            save_path = Path(self.loc_dir)
+            save_path = Path(self.data_dir)
         else:
             save_path = None
 
@@ -330,7 +330,7 @@ class Session(object):
             self.dataset = output
             return self
         else:
-            return Session(loc_dir=self.loc_dir,
+            return Session(data_dir=self.data_dir,
                            revise_rows=self.revise_rows,
                            force_update=self.force_update,
                            dataset=output,
@@ -360,7 +360,7 @@ class Session(object):
             self.dataset = output
             return self
         else:
-            return Session(loc_dir=self.loc_dir,
+            return Session(data_dir=self.data_dir,
                            revise_rows=self.revise_rows,
                            force_update=self.force_update,
                            dataset=output,
@@ -441,7 +441,7 @@ class Session(object):
             self.dataset = output
             return self
         else:
-            return Session(loc_dir=self.loc_dir,
+            return Session(data_dir=self.data_dir,
                            revise_rows=self.revise_rows,
                            force_update=self.force_update,
                            dataset=output,
@@ -500,7 +500,7 @@ class Session(object):
             self.dataset = output
             return self
         else:
-            return Session(loc_dir=self.loc_dir,
+            return Session(data_dir=self.data_dir,
                            revise_rows=self.revise_rows,
                            force_update=self.force_update,
                            dataset=output,
@@ -531,7 +531,7 @@ class Session(object):
             self.dataset = output
             return self
         else:
-            return Session(loc_dir=self.loc_dir,
+            return Session(data_dir=self.data_dir,
                            revise_rows=self.revise_rows,
                            force_update=self.force_update,
                            dataset=output,
@@ -562,7 +562,7 @@ class Session(object):
             self.dataset = output
             return self
         else:
-            return Session(loc_dir=self.loc_dir,
+            return Session(data_dir=self.data_dir,
                            revise_rows=self.revise_rows,
                            force_update=self.force_update,
                            dataset=output,
@@ -575,18 +575,18 @@ class Session(object):
 
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                save_path = (Path(self.loc_dir) /
+                save_path = (Path(self.data_dir) /
                              f"{name}_{key}").with_suffix(".csv")
                 if not path.exists(path.dirname(save_path)):
                     mkdir(path.dirname(save_path))
                 value.to_csv(save_path)
         else:
-            save_path = (Path(self.loc_dir) / name).with_suffix(".csv")
+            save_path = (Path(self.data_dir) / name).with_suffix(".csv")
             if not path.exists(path.dirname(save_path)):
                 mkdir(path.dirname(save_path))
             self.dataset.to_csv(save_path)
 
-        self.logger.info(f"Saved dataset to directory {self.loc_dir}.")
+        self.logger.info(f"Saved dataset to directory {self.data_dir}.")
 
     def final(self):
         """Return :attr:`dataset` attribute."""
