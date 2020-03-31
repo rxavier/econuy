@@ -9,7 +9,7 @@ import pandas as pd
 from econuy import frequent, transform
 from econuy.resources import logutil
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
-                              labor, rxr, commodity_index, reserves)
+                              labor, rxr, commodity_index, fx_operations)
 
 
 class Session(object):
@@ -115,8 +115,7 @@ class Session(object):
         Parameters
         ----------
         dataset : {'cpi', 'nxr_monthly', 'nxr_daily', 'fiscal', 'naccounts', \
-                'labor', 'comm_index', 'rxr_custom', 'rxr_official', \
-                'reserves', 'fx_ops'}
+                'labor', 'comm_index', 'rxr_custom', 'rxr_official', 'fx_ops'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -209,14 +208,10 @@ class Session(object):
                                          save=save_path,
                                          name=override,
                                          **kwargs)
-        elif dataset == "reserves":
-            output = reserves.get_chg(update=update_path,
-                                      save=save_path,
-                                      name=override)
         elif dataset == "fx_ops" or dataset == "fxops":
-            output = reserves.get_operations(update=update_path,
-                                             save=save_path,
-                                             name=override)
+            output = fx_operations.get(update=update_path,
+                                       save=save_path,
+                                       name=override)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 

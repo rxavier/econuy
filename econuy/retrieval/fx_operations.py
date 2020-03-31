@@ -12,9 +12,9 @@ from econuy.resources.lstrings import (reserves_url, reserves_cols,
                                        missing_reserves_url, ff_url)
 
 
-def get_operations(update: Union[str, PathLike, None] = None,
-                   save: Union[str, PathLike, None] = None,
-                   name: Optional[str] = None) -> pd.DataFrame:
+def get(update: Union[str, PathLike, None] = None,
+        save: Union[str, PathLike, None] = None,
+        name: Optional[str] = None) -> pd.DataFrame:
     """Get spot, future and forwards FX operations by the Central Bank.
 
     Parameters
@@ -35,8 +35,8 @@ def get_operations(update: Union[str, PathLike, None] = None,
     """
     if name is None:
         name = "fx_spot_ff"
-    changes = get_chg(update=update, save=save)
-    ff = get_fut_fwd(update=update, save=save)
+    changes = _reserves_changes(update=update, save=save)
+    ff = _futures_forwards(update=update, save=save)
     spot = changes.iloc[:, [0]]
     fx_ops = pd.merge(spot, ff, how="outer", left_index=True, right_index=True)
     fx_ops = fx_ops.loc[(fx_ops.index >= ff.index.min()) &
@@ -58,9 +58,9 @@ def get_operations(update: Union[str, PathLike, None] = None,
     return fx_ops
 
 
-def get_chg(update: Union[str, PathLike, None] = None,
-            save: Union[str, PathLike, None] = None,
-            name: Optional[str] = None) -> pd.DataFrame:
+def _reserves_changes(update: Union[str, PathLike, None] = None,
+                      save: Union[str, PathLike, None] = None,
+                      name: Optional[str] = None) -> pd.DataFrame:
     """Get international reserves change data.
 
     Parameters
@@ -154,9 +154,9 @@ def get_chg(update: Union[str, PathLike, None] = None,
     return reserves
 
 
-def get_fut_fwd(update: Union[str, PathLike, None] = None,
-                save: Union[str, PathLike, None] = None,
-                name: Optional[str] = None) -> pd.DataFrame:
+def _futures_forwards(update: Union[str, PathLike, None] = None,
+                      save: Union[str, PathLike, None] = None,
+                      name: Optional[str] = None) -> pd.DataFrame:
     """Get future and forwards FX operations by the Central Bank.
 
     Parameters

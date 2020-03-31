@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from econuy.session import Session
-from econuy.retrieval import reserves, national_accounts
+from econuy.retrieval import fx_operations, national_accounts
 from econuy.resources import columns
 from .test_session import remove_clutter
 
@@ -15,11 +15,10 @@ TEST_DIR = path.join(path.dirname(CUR_DIR), "test-data")
 
 def test_changes():
     remove_clutter()
-    session = Session(data_dir=TEST_DIR)
     previous_data = pd.read_csv(path.join(TEST_DIR, "reserves_chg.csv"),
                                 index_col=0, header=list(range(9)))
     columns._setmeta(previous_data)
-    res = session.get(dataset="reserves").dataset
+    res = fx_operations._reserves_changes(update=TEST_DIR, name=None, save=TEST_DIR)
     previous_data.index = pd.to_datetime(previous_data.index)
     compare = res.loc[previous_data.index].round(4)
     compare.columns = previous_data.columns
@@ -33,7 +32,7 @@ def test_ff():
                                 index_col=0, header=list(range(9)))
     columns._setmeta(previous_data)
     compare = previous_data.iloc[0:-30]
-    ff = reserves.get_fut_fwd(update=TEST_DIR, name=None, save=TEST_DIR)
+    ff = fx_operations._futures_forwards(update=TEST_DIR, name=None, save=TEST_DIR)
     assert len(ff) > len(compare)
     remove_clutter()
 
