@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 
 from econuy import transform
-from econuy.utils import columns
+from econuy.utils import metadata
 from econuy.utils.lstrings import fiscal_metadata
 from econuy.retrieval import nxr
 from econuy.session import Session
@@ -96,9 +96,9 @@ def test_fiscal():
 
     cols = fiscal_metadata["nfps"][True]
     compare = proc.loc[:, cols]
-    columns._setmeta(compare, area="Cuentas fiscales y deuda",
-                     currency="UYU", inf_adj="No", index="No",
-                     seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+    metadata._set(compare, area="Cuentas fiscales y deuda",
+                  currency="UYU", inf_adj="No", index="No",
+                  seas_adj="NSA", ts_type="Flujo", cumperiods=1)
     compare_gdp = transform.rolling(compare, periods=12, operation="sum")
     compare_gdp = transform.convert_gdp(compare_gdp)
     compare_gdp.columns = fiscal_tfm.columns

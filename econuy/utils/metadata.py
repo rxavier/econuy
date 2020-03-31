@@ -4,7 +4,7 @@ import warnings
 import pandas as pd
 
 
-def _setmeta(
+def _set(
         df: pd.DataFrame, area: Optional[str] = None,
         currency: Optional[str] = None, inf_adj: Optional[str] = None,
         index: Optional[str] = None, seas_adj: Optional[str] = None,

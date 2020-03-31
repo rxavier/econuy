@@ -11,7 +11,7 @@ from statsmodels.api import tsa
 from statsmodels.tools.sm_exceptions import X13Error
 from statsmodels.tsa import x13
 
-from econuy.utils import columns, updates
+from econuy.utils import metadata, updates
 from econuy.retrieval import cpi, national_accounts, nxr
 
 
@@ -50,7 +50,7 @@ def convert_usd(df: pd.DataFrame,
                                save_path=save_path, force_update=False)
 
     if df.columns.get_level_values("Tipo")[0] == "Flujo":
-        columns._setmeta(nxr_data, ts_type="Flujo")
+        metadata._set(nxr_data, ts_type="Flujo")
         nxr_freq = resample(nxr_data, target=inferred_freq,
                             operation="average").iloc[:, [0]]
         cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
@@ -58,7 +58,7 @@ def convert_usd(df: pd.DataFrame,
                            operation="average")
 
     elif df.columns.get_level_values("Tipo")[0] == "Stock":
-        columns._setmeta(nxr_data, ts_type="Stock")
+        metadata._set(nxr_data, ts_type="Stock")
         nxr_freq = resample(nxr_data, target=inferred_freq,
                             operation="average").iloc[:, [1]]
     else:
@@ -66,7 +66,7 @@ def convert_usd(df: pd.DataFrame,
 
     nxr_to_use = nxr_freq[nxr_freq.index.isin(df.index)].iloc[:, 0]
     converted_df = df.apply(lambda x: x / nxr_to_use)
-    columns._setmeta(converted_df, currency="USD")
+    metadata._set(converted_df, currency="USD")
 
     return converted_df
 
@@ -111,7 +111,7 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     cpi_data = cpi.get(update_path=update_path, revise_rows=6,
                        save_path=save_path,
                        force_update=False)
-    columns._setmeta(cpi_data, ts_type="Flujo")
+    metadata._set(cpi_data, ts_type="Flujo")
     cpi_freq = resample(cpi_data, target=inferred_freq,
                         operation="average").iloc[:, [0]]
     cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
@@ -133,7 +133,7 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
         )
         col_text = f"Const. {start_date}_{end_date}"
 
-    columns._setmeta(converted_df, inf_adj=col_text)
+    metadata._set(converted_df, inf_adj=col_text)
 
     return converted_df
 
@@ -194,7 +194,7 @@ def convert_gdp(df: pd.DataFrame,
     gdp_to_use = gdp[gdp.index.isin(df.index)].iloc[:, 0]
     converted_df = df.apply(lambda x: x / gdp_to_use).multiply(100)
 
-    columns._setmeta(converted_df, currency="% PBI")
+    metadata._set(converted_df, currency="% PBI")
 
     return converted_df
 
@@ -262,14 +262,14 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
             input_notna = df.iloc[:, 0].count()
             output_notna = resampled_df.iloc[:, 0].count()
             cum_adj = round(output_notna / input_notna)
-            columns._setmeta(resampled_df,
-                             cumperiods=int(cum_periods * cum_adj))
+            metadata._set(resampled_df,
+                          cumperiods=int(cum_periods * cum_adj))
 
     else:
         resampled_df = df.resample(target, convention="end").asfreq()
         resampled_df = resampled_df.interpolate(method=interpolation)
 
-    columns._setmeta(resampled_df)
+    metadata._set(resampled_df)
 
     return resampled_df
 
@@ -325,7 +325,7 @@ def rolling(df: pd.DataFrame, periods: Optional[int] = None,
 
     rolling_df = df.apply(window_operation[operation])
 
-    columns._setmeta(rolling_df, cumperiods=periods)
+    metadata._set(rolling_df, cumperiods=periods)
 
     return rolling_df
 
@@ -355,11 +355,11 @@ def base_index(df: pd.DataFrame, start_date: Union[str, date],
     """
     if end_date is None:
         indexed = df.apply(lambda x: x / x[start_date] * base)
-        columns._setmeta(indexed, index=start_date)
+        metadata._set(indexed, index=start_date)
 
     else:
         indexed = df.apply(lambda x: x / x[start_date:end_date].mean() * base)
-        columns._setmeta(indexed, index=f"{start_date}_{end_date}")
+        metadata._set(indexed, index=f"{start_date}_{end_date}")
 
     return indexed
 
@@ -506,9 +506,9 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
     trends.columns = old_columns
     seas_adjs.columns = old_columns
 
-    columns._setmeta(trends, seas_adj="Tendencia")
+    metadata._set(trends, seas_adj="Tendencia")
 
-    columns._setmeta(seas_adjs, seas_adj="SA")
+    metadata._set(seas_adjs, seas_adj="SA")
 
     return trends, seas_adjs
 
@@ -587,11 +587,11 @@ def chg_diff(df: pd.DataFrame, operation: str = "chg",
             output = output.apply(
                 type_change[period_op][operation][0])
 
-        columns._setmeta(output, index=type_change[period_op][operation][1])
+        metadata._set(output, index=type_change[period_op][operation][1])
 
     else:
         output = df.apply(type_change[period_op][operation][0])
-        columns._setmeta(output, index=type_change[period_op][operation][1])
+        metadata._set(output, index=type_change[period_op][operation][1])
 
     if operation == "chg":
         output = output.multiply(100)

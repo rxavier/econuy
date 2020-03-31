@@ -9,7 +9,7 @@ import requests
 from pandas.tseries.offsets import MonthEnd
 
 from econuy import transform
-from econuy.utils import updates, columns
+from econuy.utils import updates, metadata
 from econuy.utils.lstrings import reer_url, ar_cpi_url, ar_cpi_payload
 from econuy.retrieval import cpi, nxr
 
@@ -70,9 +70,9 @@ def get_official(update_path: Union[str, PathLike, None] = None,
         proc = updates._revise(new_data=proc, prev_data=previous_data,
                                revise_rows=revise_rows)
 
-    columns._setmeta(proc, area="Precios y salarios", currency="-",
-                     inf_adj="No", index="2017", seas_adj="NSA",
-                     ts_type="-", cumperiods=1)
+    metadata._set(proc, area="Precios y salarios", currency="-",
+                  inf_adj="No", index="2017", seas_adj="NSA",
+                  ts_type="-", cumperiods=1)
 
     if save_path is not None:
         full_save_path = (Path(save_path) / name).with_suffix(".csv")
@@ -187,9 +187,9 @@ def get_custom(update_path: Union[str, PathLike, None] = None,
     output.drop("UY_E_P", axis=1, inplace=True)
     output.rename_axis(None, inplace=True)
 
-    columns._setmeta(output, area="Precios y salarios", currency="-",
-                     inf_adj="-", index="-", seas_adj="NSA",
-                     ts_type="Flujo", cumperiods=1)
+    metadata._set(output, area="Precios y salarios", currency="-",
+                  inf_adj="-", index="-", seas_adj="NSA",
+                  ts_type="Flujo", cumperiods=1)
     output = transform.base_index(output, start_date="2010-01-01",
                                   end_date="2010-12-31", base=100)
 

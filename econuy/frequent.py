@@ -6,7 +6,7 @@ from typing import Union, Optional
 import pandas as pd
 
 from econuy import transform
-from econuy.utils import columns
+from econuy.utils import metadata
 from econuy.utils.lstrings import fiscal_metadata, wap_url
 from econuy.retrieval import (nxr, national_accounts, cpi,
                               fiscal_accounts, labor)
@@ -204,9 +204,9 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
         + proc["Intereses: FSS"])
 
     output = proc.loc[:, fiscal_metadata[aggregation][fss]]
-    columns._setmeta(output, area="Cuentas fiscales y deuda",
-                     currency="UYU", inf_adj="No", index="No",
-                     seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+    metadata._set(output, area="Cuentas fiscales y deuda",
+                  currency="UYU", inf_adj="No", index="No",
+                  seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
     if unit == "gdp":
         output = transform.rolling(output, periods=12, operation="sum")
@@ -219,7 +219,7 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
         xr = nxr.get_monthly(update_path=update_path, revise_rows=6,
                              save_path=save_path)
         output = output.divide(xr[start_date:end_date].mean()[1])
-        columns._setmeta(output, currency="USD")
+        metadata._set(output, currency="USD")
     elif unit == "real":
         output = transform.convert_real(output, start_date=start_date,
                                         end_date=end_date)
@@ -306,9 +306,9 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
         seas_text = "Trend"
     elif seas_adj == "seas":
         seas_text = "SA"
-    columns._setmeta(persons, area="Mercado laboral", currency="Personas",
-                     inf_adj="No", index="No", seas_adj=seas_text, ts_type="-",
-                     cumperiods=1)
+    metadata._set(persons, area="Mercado laboral", currency="Personas",
+                  inf_adj="No", index="No", seas_adj=seas_text, ts_type="-",
+                  cumperiods=1)
 
     output = pd.concat([rates, persons], axis=1)
 

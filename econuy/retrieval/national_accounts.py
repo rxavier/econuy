@@ -7,7 +7,7 @@ import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
 from econuy import transform
-from econuy.utils import updates, columns
+from econuy.utils import updates, metadata
 from econuy.utils.lstrings import nat_accounts_metadata
 
 
@@ -79,11 +79,11 @@ def get(update_path: Union[str, PathLike, None] = None,
                                    revise_rows=revise_rows)
         proc = proc.apply(pd.to_numeric, errors="coerce")
 
-        columns._setmeta(proc, area="Actividad económica", currency="UYU",
-                         inf_adj=metadata["Inf. Adj."],
-                         index=metadata["Index"],
-                         seas_adj=metadata["Seas"], ts_type="Flujo",
-                         cumperiods=1)
+        metadata._set(proc, area="Actividad económica", currency="UYU",
+                      inf_adj=metadata["Inf. Adj."],
+                      index=metadata["Index"],
+                      seas_adj=metadata["Seas"], ts_type="Flujo",
+                      cumperiods=1)
 
         if save_path is not None:
             full_save_path = (Path(save_path) /

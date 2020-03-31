@@ -6,7 +6,7 @@ from typing import Union, Optional
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
-from econuy.utils import updates, columns
+from econuy.utils import updates, metadata
 from econuy.utils.lstrings import nxr_url, nxr_daily_url
 
 
@@ -67,9 +67,9 @@ def get_monthly(update_path: Union[str, PathLike, None] = None,
         nxr = updates._revise(new_data=nxr, prev_data=previous_data,
                               revise_rows=revise_rows)
 
-    columns._setmeta(nxr, area="Precios y salarios", currency="-",
-                     inf_adj="No", index="No", seas_adj="NSA",
-                     ts_type="-", cumperiods=1)
+    metadata._set(nxr, area="Precios y salarios", currency="-",
+                  inf_adj="No", index="No", seas_adj="NSA",
+                  ts_type="-", cumperiods=1)
 
     if save_path is not None:
         full_save_path = (Path(save_path) / name).with_suffix(".csv")
@@ -112,7 +112,7 @@ def get_daily(update_path: Union[str, PathLike, None] = None,
         prev_data = pd.read_csv(full_update_path, index_col=0,
                                 header=list(range(9)),
                                 float_precision="high")
-        columns._setmeta(prev_data)
+        metadata._set(prev_data)
         prev_data.index = pd.to_datetime(prev_data.index)
         start_date = prev_data.index[len(prev_data) - 1]
 
@@ -146,9 +146,9 @@ def get_daily(update_path: Union[str, PathLike, None] = None,
         output.columns = ["Tipo de cambio US$, Cable"]
         output = output.apply(pd.to_numeric, errors="coerce")
 
-        columns._setmeta(output, area="Precios y salarios", currency="-",
-                         inf_adj="No", index="No", seas_adj="NSA",
-                         ts_type="-", cumperiods=1)
+        metadata._set(output, area="Precios y salarios", currency="-",
+                      inf_adj="No", index="No", seas_adj="NSA",
+                      ts_type="-", cumperiods=1)
         output.columns.set_levels(["-"], level=2, inplace=True)
 
         if update_path is not None:

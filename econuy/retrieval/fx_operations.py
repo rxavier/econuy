@@ -7,7 +7,7 @@ from typing import Union, Optional
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
-from econuy.utils import columns
+from econuy.utils import metadata
 from econuy.utils.lstrings import (reserves_url, reserves_cols,
                                    missing_reserves_url, ff_url)
 
@@ -45,9 +45,9 @@ def get(update_path: Union[str, PathLike, None] = None,
     fx_ops = fx_ops.fillna(0)
     fx_ops.columns = ["Spot", "Futuros", "Forwards"]
 
-    columns._setmeta(fx_ops, area="Reservas internacionales",
-                     currency="USD", inf_adj="No", index="No",
-                     seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+    metadata._set(fx_ops, area="Reservas internacionales",
+                  currency="USD", inf_adj="No", index="No",
+                  seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
     if save_path is not None:
         full_save_path = (Path(save_path) / name).with_suffix(".csv")
@@ -97,7 +97,7 @@ def _reserves_changes(update_path: Union[str, PathLike, None] = None,
             previous_data = pd.read_csv(full_update_path, index_col=0,
                                         header=list(range(9)),
                                         float_precision="high")
-            columns._setmeta(previous_data)
+            metadata._set(previous_data)
             previous_data.columns = reserves_cols[1:46]
             previous_data.index = pd.to_datetime(previous_data.index)
             urls = urls[-18:]
@@ -141,9 +141,9 @@ def _reserves_changes(update_path: Union[str, PathLike, None] = None,
         reserves = reserves.loc[~reserves.index.duplicated(keep="last")]
 
     reserves = reserves.apply(pd.to_numeric, errors="coerce")
-    columns._setmeta(reserves, area="Reservas internacionales",
-                     currency="USD", inf_adj="No", index="No",
-                     seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+    metadata._set(reserves, area="Reservas internacionales",
+                  currency="USD", inf_adj="No", index="No",
+                  seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
     if save_path is not None:
         full_save_path = (Path(save_path) / name).with_suffix(".csv")
@@ -185,7 +185,7 @@ def _futures_forwards(update_path: Union[str, PathLike, None] = None,
             prev_data = pd.read_csv(full_update_path, index_col=0,
                                     header=list(range(9)),
                                     float_precision="high")
-            columns._setmeta(prev_data)
+            metadata._set(prev_data)
             prev_data.index = pd.to_datetime(prev_data.index)
             last_date = prev_data.index[len(prev_data)-1]
             dates = pd.bdate_range(
@@ -228,7 +228,7 @@ def _futures_forwards(update_path: Union[str, PathLike, None] = None,
         operations = pd.DataFrame(reports)
         operations.columns = ["Date", "Futuros", "Forwards"]
         operations.set_index("Date", inplace=True)
-        columns._setmeta(
+        metadata._set(
             operations, area="Reservas internacionales",  currency="USD",
             inf_adj="No", index="No", seas_adj="NSA", ts_type="Flujo",
             cumperiods=1

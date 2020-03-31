@@ -6,7 +6,7 @@ import pytest
 
 from econuy import transform
 from econuy.session import Session
-from econuy.utils import columns
+from econuy.utils import metadata
 
 CUR_DIR = path.abspath(path.dirname(__file__))
 TEST_DIR = path.join(path.dirname(CUR_DIR), "test-data")
@@ -21,9 +21,9 @@ def dummy_df(freq, periods=200, area="Test", currency="Test",
                       np.random.uniform(1, 50, [periods, 1]),
                       np.random.uniform(-100, -50, [periods, 1])])
     output = pd.DataFrame(index=dates, columns=cols, data=data)
-    columns._setmeta(output, area=area, currency=currency,
-                     inf_adj=inf_adj, index=index, seas_adj=seas_adj,
-                     ts_type=ts_type, cumperiods=cumperiods)
+    metadata._set(output, area=area, currency=currency,
+                  inf_adj=inf_adj, index=index, seas_adj=seas_adj,
+                  ts_type=ts_type, cumperiods=cumperiods)
     return output
 
 

@@ -5,7 +5,7 @@ from typing import Union, Optional
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
-from econuy.utils import updates, columns
+from econuy.utils import updates, metadata
 from econuy.utils.lstrings import cpi_url
 
 
@@ -65,9 +65,9 @@ def get(update_path: Union[str, PathLike, None] = None,
                               revise_rows=revise_rows)
 
     cpi = cpi.apply(pd.to_numeric, errors="coerce")
-    columns._setmeta(cpi, area="Precios y salarios", currency="-",
-                     inf_adj="No", index="2010-10-31", seas_adj="NSA",
-                     ts_type="-", cumperiods=1)
+    metadata._set(cpi, area="Precios y salarios", currency="-",
+                  inf_adj="No", index="2010-10-31", seas_adj="NSA",
+                  ts_type="-", cumperiods=1)
 
     if save_path is not None:
         full_save_path = (Path(save_path) / name).with_suffix(".csv")

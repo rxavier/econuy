@@ -6,7 +6,7 @@ import pandas as pd
 
 from econuy.session import Session
 from econuy.retrieval import fx_operations, national_accounts
-from econuy.utils import columns
+from econuy.utils import metadata
 from .test_session import remove_clutter
 
 CUR_DIR = path.abspath(path.dirname(__file__))
@@ -17,7 +17,7 @@ def test_changes():
     remove_clutter()
     previous_data = pd.read_csv(path.join(TEST_DIR, "reserves_chg.csv"),
                                 index_col=0, header=list(range(9)))
-    columns._setmeta(previous_data)
+    metadata._set(previous_data)
     res = fx_operations._reserves_changes(
         update_path=TEST_DIR, name=None, save_path=TEST_DIR)
     previous_data.index = pd.to_datetime(previous_data.index)
@@ -31,7 +31,7 @@ def test_ff():
     remove_clutter()
     previous_data = pd.read_csv(path.join(TEST_DIR, "fx_ff.csv"),
                                 index_col=0, header=list(range(9)))
-    columns._setmeta(previous_data)
+    metadata._set(previous_data)
     compare = previous_data.iloc[0:-30]
     ff = fx_operations._futures_forwards(
         update_path=TEST_DIR, name=None, save_path=TEST_DIR)
@@ -94,7 +94,7 @@ def test_nxr_daily():
     remove_clutter()
     previous_data = pd.read_csv(path.join(TEST_DIR, "nxr_daily.csv"),
                                 index_col=0, header=list(range(9)))
-    columns._setmeta(previous_data)
+    metadata._set(previous_data)
     previous_data.index = pd.to_datetime(previous_data.index)
     session = Session(data_dir=TEST_DIR)
     nxr = session.get(dataset="nxr_daily").dataset

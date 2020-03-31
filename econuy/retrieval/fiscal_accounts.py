@@ -11,7 +11,7 @@ import requests
 from bs4 import BeautifulSoup
 from pandas.tseries.offsets import MonthEnd
 
-from econuy.utils import updates, columns
+from econuy.utils import updates, metadata
 from econuy.utils.lstrings import fiscal_url, fiscal_sheets
 
 
@@ -112,7 +112,7 @@ def get(update_path: Union[str, PathLike, None] = None,
                                            prev_data=previous_data,
                                            revise_rows=revise_rows)
                 data = data.apply(pd.to_numeric, errors="coerce")
-                columns._setmeta(
+                metadata._set(
                     data, area="Cuentas fiscales y deuda", currency="UYU",
                     inf_adj="No", index="No", seas_adj="NSA", ts_type="Flujo",
                     cumperiods=1
