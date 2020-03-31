@@ -12,18 +12,18 @@ from econuy.retrieval import (nxr, national_accounts, cpi,
                               fiscal_accounts, labor)
 
 
-def inflation(update: Union[str, PathLike, None] = None,
-              save: Union[str, PathLike, None] = None,
+def inflation(update_path: Union[str, PathLike, None] = None,
+              save_path: Union[str, PathLike, None] = None,
               name: Optional[str] = None) -> pd.DataFrame:
     """
     Get common inflation measures.
 
     Parameters
     ----------
-    update : str, os.PathLike or None, default None
+    update_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or ``None``, don't update.
-    save : str, os.PathLike or None, default None
+    save_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
         or ``None``, don't save.
     name : str, default None
@@ -38,8 +38,8 @@ def inflation(update: Union[str, PathLike, None] = None,
     """
     if name is None:
         name = "tfm_prices"
-    data = cpi.get(update=update, revise_rows=6,
-                   save=save, force_update=False)
+    data = cpi.get(update_path=update_path, revise_rows=6,
+                   save_path=save_path, force_update=False)
     interannual = transform.chg_diff(data, operation="chg", period_op="inter")
     monthly = transform.chg_diff(data, operation="chg", period_op="last")
     trend, seasadj = transform.decompose(data, trading=True, outlier=False)
@@ -50,11 +50,11 @@ def inflation(update: Union[str, PathLike, None] = None,
     output = pd.concat([data, interannual, monthly,
                         monthly_sa, monthly_trend], axis=1)
 
-    if save is not None:
-        save_path = (Path(save) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(save_path)):
-            mkdir(path.dirname(save_path))
-        output.to_csv(save_path)
+    if save_path is not None:
+        full_save_path = (Path(save_path) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(full_save_path)):
+            mkdir(path.dirname(full_save_path))
+        output.to_csv(full_save_path)
 
     return output
 
@@ -64,8 +64,8 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
            start_date: Union[str, date, None] = None,
            end_date: Union[str, date, None] = None, cum: int = 1,
            seas_adj: Union[str, None] = None,
-           update: Union[str, PathLike, None] = None,
-           save: Union[str, PathLike, None] = None,
+           update_path: Union[str, PathLike, None] = None,
+           save_path: Union[str, PathLike, None] = None,
            name: Optional[str] = None) -> pd.DataFrame:
     """
     Get fiscal accounts data.
@@ -99,10 +99,10 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
         How many periods to accumulate for rolling sums.
     seas_adj : {None, 'trend', 'seas'}
         Whether to seasonally adjust.
-    update : str, os.PathLike or None, default None
+    update_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or ``None``, don't update.
-    save : str, os.PathLike or None, default None
+    save_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
         or ``None``, don't save.
     name : str, default None
@@ -130,8 +130,8 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     if aggregation not in ["gps", "nfps", "gc"]:
         raise ValueError("'aggregation' can be 'gps', 'nfps' or 'gc'.")
 
-    data = fiscal_accounts.get(update=update, revise_rows=12,
-                               save=save, force_update=False)
+    data = fiscal_accounts.get(update_path=update_path, revise_rows=12,
+                               save_path=save_path, force_update=False)
     gps = data["gps"]
     nfps = data["nfps"]
     gc = data["gc-bps"]
@@ -216,7 +216,8 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     elif unit == "real_usd":
         output = transform.convert_real(output, start_date=start_date,
                                         end_date=end_date)
-        xr = nxr.get_monthly(update=update, revise_rows=6, save=save)
+        xr = nxr.get_monthly(update_path=update_path, revise_rows=6,
+                             save_path=save_path)
         output = output.divide(xr[start_date:end_date].mean()[1])
         columns._setmeta(output, currency="USD")
     elif unit == "real":
@@ -234,18 +235,18 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     if cum != 1:
         output = transform.rolling(output, periods=cum, operation="sum")
 
-    if save is not False:
-        save_path = (Path(save) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(save_path)):
-            mkdir(path.dirname(save_path))
-        output.to_csv(save_path)
+    if save_path is not None:
+        full_save_path = (Path(save_path) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(full_save_path)):
+            mkdir(path.dirname(full_save_path))
+        output.to_csv(full_save_path)
 
     return output
 
 
 def labor_mkt(seas_adj: Union[str, None] = "trend",
-              update: Union[str, PathLike, None] = None,
-              save: Union[str, PathLike, None] = None,
+              update_path: Union[str, PathLike, None] = None,
+              save_path: Union[str, PathLike, None] = None,
               name: Optional[str] = None) -> pd.DataFrame:
     """
     Get labor data, both rates and persons. Allow choosing seasonal adjustment.
@@ -254,10 +255,10 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
     ----------
     seas_adj : {'trend', 'seas', None}
         Whether to seasonally adjust.
-    update : str, os.PathLike or None, default None
+    update_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or ``None``, don't update.
-    save : str, os.PathLike or None, default None
+    save_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
         or ``None``, don't save.
     name : str, default None
@@ -279,8 +280,8 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
     if seas_adj not in ["trend", "seas", None]:
         raise ValueError("'seas_adj' can be 'trend', 'seas' or None.")
 
-    rates = labor.get(update=update, revise_rows=6,
-                      save=save, force_update=False)
+    rates = labor.get(update_path=update_path, revise_rows=6,
+                      save_path=save_path, force_update=False)
 
     if seas_adj in ["trend", "seas"]:
         trend, seasadj = transform.decompose(rates, trading=True, outlier=True)
@@ -311,11 +312,11 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
 
     output = pd.concat([rates, persons], axis=1)
 
-    if save is not None:
-        save_path = (Path(save) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(save_path)):
-            mkdir(path.dirname(save_path))
-        output.to_csv(save_path)
+    if save_path is not None:
+        full_save_path = (Path(save_path) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(full_save_path)):
+            mkdir(path.dirname(full_save_path))
+        output.to_csv(full_save_path)
 
     return output
 
@@ -324,8 +325,8 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
                  off_seas_adj: bool = False, usd: bool = False, cum: int = 1,
                  seas_adj: Union[str, None] = None,
                  variation: Union[str, None] = None,
-                 update: Union[str, PathLike, None] = None,
-                 save: Union[str, PathLike, None] = None,
+                 update_path: Union[str, PathLike, None] = None,
+                 save_path: Union[str, PathLike, None] = None,
                  name: Optional[str] = None) -> Optional[pd.DataFrame]:
     """Get national accounts data.
 
@@ -352,10 +353,10 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
     variation : {None, 'last', 'inter', 'annual}
         Type of percentage change to calculate. Can be ``last``, ``inter`` or
         ``annual``.
-    update : str, os.PathLike or None, default None
+    update_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or ``None``, don't update.
-    save : str, os.PathLike or None, default None
+    save_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
         or ``None``, don't save.
     name : str, default None
@@ -382,8 +383,8 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
         raise ValueError("'variation' can be 'last', 'inter', 'annual', or"
                          " None.")
 
-    data = national_accounts.get(update=update, revise_rows=4,
-                                 save=save, force_update=False)
+    data = national_accounts.get(update_path=update_path, revise_rows=4,
+                                 save_path=save_path, force_update=False)
 
     search_terms = []
     if supply is True:
@@ -426,10 +427,10 @@ def nat_accounts(supply: bool = True, real: bool = True, index: bool = False,
         output = transform.chg_diff(output, operation="chg",
                                     period_op=variation)
 
-    if save is not None:
-        save_path = (Path(save) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(save_path)):
-            mkdir(path.dirname(save_path))
-        output.to_csv(save_path)
+    if save_path is not None:
+        full_save_path = (Path(save_path) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(full_save_path)):
+            mkdir(path.dirname(full_save_path))
+        output.to_csv(full_save_path)
 
     return output

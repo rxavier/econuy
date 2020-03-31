@@ -15,16 +15,16 @@ from econuy.resources import updates, columns
 from econuy.resources.lstrings import fiscal_url, fiscal_sheets
 
 
-def get(update: Union[str, PathLike, None] = None,
+def get(update_path: Union[str, PathLike, None] = None,
         revise_rows: Union[str, int] = "nodup",
-        save: Union[str, PathLike, None] = None,
+        save_path: Union[str, PathLike, None] = None,
         force_update: bool = False,
         name: Optional[str] = None) -> Dict[str, pd.DataFrame]:
     """Get fiscal data.
 
     Parameters
     ----------
-    update : str, os.PathLike or None, default None
+    update_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or ``None``, don't update.
     revise_rows : {'nodup', 'auto', int}
@@ -33,7 +33,7 @@ def get(update: Union[str, PathLike, None] = None,
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save : str, os.PathLike or None, default None
+    save_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
         or ``None``, don't save.
     force_update : bool, default False
@@ -54,22 +54,25 @@ def get(update: Union[str, PathLike, None] = None,
     if name is None:
         name = "fiscal"
 
-    if update is not None:
-        update_path = (Path(update)
-                       / f"{name}_nfps").with_suffix(".csv")
+    if update_path is not None:
+        full_update_path = (Path(update_path)
+                            / f"{name}_nfps").with_suffix(".csv")
         try:
-            modified = dt.datetime.fromtimestamp(path.getmtime(update_path))
+            modified = dt.datetime.fromtimestamp(
+                path.getmtime(full_update_path))
             delta = (dt.datetime.now() - modified).days
 
             if delta < update_threshold and force_update is False:
-                print(f"Fiscal data ({update_path}) was modified within "
+                print(f"Fiscal data ({full_update_path}) was modified within "
                       f"{update_threshold} day(s). Skipping download...")
                 output = {}
                 for metadata in fiscal_sheets.values():
-                    update_path = (Path(update)
-                                   / f"{name}_"
-                                     f"{metadata['Name']}").with_suffix(".csv")
-                    delta, previous_data = updates._check_modified(update_path)
+                    full_update_path = (Path(update_path)
+                                        / f"{name}_"
+                                          f"{metadata['Name']}").with_suffix(
+                        ".csv")
+                    delta, previous_data = updates._check_modified(
+                        full_update_path)
                     output.update({metadata["Name"]: previous_data})
                 return output
         except FileNotFoundError:
@@ -98,11 +101,13 @@ def get(update: Union[str, PathLike, None] = None,
                 data.index = data.index + MonthEnd(1)
                 data.columns = metadata["Colnames"]
 
-                if update is not None:
-                    update_path = (Path(update)
-                                   / f"{name}_"
-                                     f"{metadata['Name']}").with_suffix(".csv")
-                    delta, previous_data = updates._check_modified(update_path)
+                if update_path is not None:
+                    full_update_path = (Path(update_path)
+                                        / f"{name}_"
+                                          f"{metadata['Name']}").with_suffix(
+                        ".csv")
+                    delta, previous_data = updates._check_modified(
+                        full_update_path)
                     data = updates._revise(new_data=data,
                                            prev_data=previous_data,
                                            revise_rows=revise_rows)
@@ -113,13 +118,14 @@ def get(update: Union[str, PathLike, None] = None,
                     cumperiods=1
                 )
 
-                if save is not None:
-                    save_path = (Path(save)
-                                 / f"{name}_"
-                                   f"{metadata['Name']}").with_suffix(".csv")
-                    if not path.exists(path.dirname(save_path)):
-                        mkdir(path.dirname(save_path))
-                    data.to_csv(save_path)
+                if save_path is not None:
+                    full_save_path = (Path(save_path)
+                                      / f"{name}_"
+                                        f"{metadata['Name']}").with_suffix(
+                        ".csv")
+                    if not path.exists(path.dirname(full_save_path)):
+                        mkdir(path.dirname(full_save_path))
+                    data.to_csv(full_save_path)
 
                 output.update({metadata["Name"]: data})
 

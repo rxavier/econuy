@@ -11,16 +11,16 @@ from econuy.resources import updates, columns
 from econuy.resources.lstrings import nat_accounts_metadata
 
 
-def get(update: Union[str, PathLike, None] = None,
+def get(update_path: Union[str, PathLike, None] = None,
         revise_rows: Union[str, int] = "nodup",
-        save: Union[str, PathLike, None] = None,
+        save_path: Union[str, PathLike, None] = None,
         force_update: bool = False,
         name: Optional[str] = None) -> Dict[str, pd.DataFrame]:
     """Get national accounts data.
 
     Parameters
     ----------
-    update : str, os.PathLike or None, default None
+    update_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or ``None``, don't update.
     revise_rows : {'nodup', 'auto', int}
@@ -29,7 +29,7 @@ def get(update: Union[str, PathLike, None] = None,
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save : str, os.PathLike or None, default None
+    save_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
         or ``None``, don't save.
     force_update : bool, default False
@@ -51,13 +51,14 @@ def get(update: Union[str, PathLike, None] = None,
     parsed_excels = {}
     for file, metadata in nat_accounts_metadata.items():
 
-        if update is not None:
-            update_path = (Path(update) /
-                           f"{name}_{metadata['Name']}").with_suffix(".csv")
-            delta, previous_data = updates._check_modified(update_path)
+        if update_path is not None:
+            full_update_path = (Path(update_path) /
+                                f"{name}_{metadata['Name']}").with_suffix(
+                ".csv")
+            delta, previous_data = updates._check_modified(full_update_path)
 
             if delta < update_threshold and force_update is False:
-                print(f"{update_path}.csv was modified within"
+                print(f"{full_update_path}.csv was modified within"
                       f" {update_threshold} day(s). Skipping download...")
                 parsed_excels.update({metadata["Name"]: previous_data})
                 continue
@@ -73,7 +74,7 @@ def get(update: Union[str, PathLike, None] = None,
 
         if metadata["Index"] == "No":
             proc = proc.divide(1000)
-        if update is not None:
+        if update_path is not None:
             proc = updates._revise(new_data=proc, prev_data=previous_data,
                                    revise_rows=revise_rows)
         proc = proc.apply(pd.to_numeric, errors="coerce")
@@ -84,12 +85,12 @@ def get(update: Union[str, PathLike, None] = None,
                          seas_adj=metadata["Seas"], ts_type="Flujo",
                          cumperiods=1)
 
-        if save is not None:
-            save_path = (Path(save) /
-                         f"{name}_{metadata['Name']}").with_suffix(".csv")
-            if not path.exists(path.dirname(save_path)):
-                mkdir(path.dirname(save_path))
-            proc.to_csv(save_path)
+        if save_path is not None:
+            full_save_path = (Path(save_path) /
+                              f"{name}_{metadata['Name']}").with_suffix(".csv")
+            if not path.exists(path.dirname(full_save_path)):
+                mkdir(path.dirname(full_save_path))
+            proc.to_csv(full_save_path)
 
         parsed_excels.update({metadata["Name"]: proc})
 
@@ -106,8 +107,8 @@ def _fix_dates(df):
     df.index = pd.to_datetime(df.index, format="%m-%Y") + MonthEnd(1)
 
 
-def _lin_gdp(update: Union[str, PathLike, None] = None,
-             save: Union[str, PathLike, None] = None,
+def _lin_gdp(update_path: Union[str, PathLike, None] = None,
+             save_path: Union[str, PathLike, None] = None,
              force_update: bool = False):
     """Get nominal GDP data in UYU and USD with forecasts.
 
@@ -118,10 +119,10 @@ def _lin_gdp(update: Union[str, PathLike, None] = None,
 
     Parameters
     ----------
-    update : str, os.PathLike or None, default None
+    update_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or ``None``, don't update.
-    save : str, os.PathLike or None, default None
+    save_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
         or ``None``, don't save.
     force_update : bool, default False
@@ -137,16 +138,16 @@ def _lin_gdp(update: Union[str, PathLike, None] = None,
     update_threshold = 80
     name = "lin_gdp"
 
-    if update is not None:
-        update_path = (Path(update) / name).with_suffix(".csv")
-        delta, previous_data = updates._check_modified(update_path)
+    if update_path is not None:
+        full_update_path = (Path(update_path) / name).with_suffix(".csv")
+        delta, previous_data = updates._check_modified(full_update_path)
 
         if delta < update_threshold and force_update is False:
-            print(f"{update_path} was modified within {update_threshold} "
+            print(f"{full_update_path} was modified within {update_threshold} "
                   f"day(s). Skipping download...")
             return previous_data
 
-    data_uyu = get(update=update, revise_rows=4, save=save,
+    data_uyu = get(update_path=update_path, revise_rows=4, save_path=save_path,
                    force_update=False)["gdp_cur_nsa"]
     data_uyu = transform.rolling(data_uyu, periods=4, operation="sum")
     data_usd = transform.convert_usd(data_uyu)
@@ -167,12 +168,12 @@ def _lin_gdp(update: Union[str, PathLike, None] = None,
         fcast = (gdp.loc[[dt.datetime(last_year - 1, 12, 31)]].
                  multiply(imf_data.iloc[1]).divide(imf_data.iloc[0]))
         fcast = fcast.rename(index={dt.datetime(last_year - 1, 12, 31):
-                                    dt.datetime(last_year, 12, 31)})
+                                        dt.datetime(last_year, 12, 31)})
         next_fcast = (gdp.loc[[dt.datetime(last_year - 1, 12, 31)]].
                       multiply(imf_data.iloc[2]).divide(imf_data.iloc[0]))
         next_fcast = next_fcast.rename(
             index={dt.datetime(last_year - 1, 12, 31):
-                   dt.datetime(last_year + 1, 12, 31)}
+                       dt.datetime(last_year + 1, 12, 31)}
         )
         fcast = fcast.append(next_fcast)
         gdp = gdp.append(fcast)
@@ -181,10 +182,10 @@ def _lin_gdp(update: Union[str, PathLike, None] = None,
     output = pd.concat(results, axis=1)
     output = output.resample("Q-DEC").interpolate("linear")
 
-    if save is not None:
-        save_path = (Path(save) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(save_path)):
-            mkdir(path.dirname(save_path))
-        output.to_csv(save_path)
+    if save_path is not None:
+        full_save_path = (Path(save_path) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(full_save_path)):
+            mkdir(path.dirname(full_save_path))
+        output.to_csv(full_save_path)
 
     return output

@@ -8,9 +8,9 @@ from econuy.resources import updates, columns
 from econuy.resources.lstrings import labor_url
 
 
-def get(update: Union[str, PathLike, None] = None,
+def get(update_path: Union[str, PathLike, None] = None,
         revise_rows: Union[str, int] = "nodup",
-        save: Union[str, PathLike, None] = None,
+        save_path: Union[str, PathLike, None] = None,
         force_update: bool = False,
         name: Optional[str] = None) -> pd.DataFrame:
     """Get labor market data.
@@ -20,7 +20,7 @@ def get(update: Union[str, PathLike, None] = None,
 
     Parameters
     ----------
-    update : str, os.PathLike or None, default None
+    update_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or ``None``, don't update.
     revise_rows : {'nodup', 'auto', int}
@@ -29,7 +29,7 @@ def get(update: Union[str, PathLike, None] = None,
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save : str, os.PathLike or None, default None
+    save_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
         or ``None``, don't save.
     force_update : bool, default False
@@ -47,12 +47,12 @@ def get(update: Union[str, PathLike, None] = None,
     if name is None:
         name = "labor"
 
-    if update is not None:
-        update_path = (Path(update) / name).with_suffix(".csv")
-        delta, previous_data = updates._check_modified(update_path)
+    if update_path is not None:
+        full_update_path = (Path(update_path) / name).with_suffix(".csv")
+        delta, previous_data = updates._check_modified(full_update_path)
 
         if delta < update_threshold and force_update is False:
-            print(f"{update_path} was modified within {update_threshold} "
+            print(f"{full_update_path} was modified within {update_threshold} "
                   f"day(s). Skipping download...")
             return previous_data
 
@@ -65,7 +65,7 @@ def get(update: Union[str, PathLike, None] = None,
     labor.columns = ["Tasa de actividad", "Tasa de empleo",
                      "Tasa de desempleo"]
 
-    if update is not None:
+    if update_path is not None:
         labor = updates._revise(new_data=labor, prev_data=previous_data,
                                 revise_rows=revise_rows)
 
@@ -74,10 +74,10 @@ def get(update: Union[str, PathLike, None] = None,
                      inf_adj="No", index="No", seas_adj="NSA",
                      ts_type="-", cumperiods=1)
 
-    if save is not None:
-        save_path = (Path(save) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(save_path)):
-            mkdir(path.dirname(save_path))
-        labor.to_csv(save_path)
+    if save_path is not None:
+        full_save_path = (Path(save_path) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(full_save_path)):
+            mkdir(path.dirname(full_save_path))
+        labor.to_csv(full_save_path)
 
     return labor

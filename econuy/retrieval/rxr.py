@@ -14,16 +14,16 @@ from econuy.resources.lstrings import reer_url, ar_cpi_url, ar_cpi_payload
 from econuy.retrieval import cpi, nxr
 
 
-def get_official(update: Union[str, PathLike, None] = None,
+def get_official(update_path: Union[str, PathLike, None] = None,
                  revise_rows: Union[str, int] = "nodup",
-                 save: Union[str, PathLike, None] = None,
+                 save_path: Union[str, PathLike, None] = None,
                  force_update: bool = False,
                  name: Optional[str] = None) -> pd.DataFrame:
     """Get official real exchange rates from the BCU website.
 
     Parameters
     ----------
-    update : str, os.PathLike or None, default None
+    update_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or ``None``, don't update.
     revise_rows : {'nodup', 'auto', int}
@@ -32,7 +32,7 @@ def get_official(update: Union[str, PathLike, None] = None,
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save : str, os.PathLike or None, default None
+    save_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
         or ``None``, don't save.
     force_update : bool, default False
@@ -51,12 +51,12 @@ def get_official(update: Union[str, PathLike, None] = None,
     if name is None:
         name = "rxr_official"
 
-    if update is not None:
-        update_path = (Path(update) / name).with_suffix(".csv")
-        delta, previous_data = updates._check_modified(update_path)
+    if update_path is not None:
+        full_update_path = (Path(update_path) / name).with_suffix(".csv")
+        delta, previous_data = updates._check_modified(full_update_path)
 
         if delta < update_threshold and force_update is False:
-            print(f"{update_path} was modified within {update_threshold} "
+            print(f"{full_update_path} was modified within {update_threshold} "
                   f"day(s). Skipping download...")
             return previous_data
 
@@ -66,7 +66,7 @@ def get_official(update: Union[str, PathLike, None] = None,
                     "Argentina", "Brasil", "EEUU"]
     proc.index = pd.to_datetime(proc.index) + MonthEnd(1)
 
-    if update is not None:
+    if update_path is not None:
         proc = updates._revise(new_data=proc, prev_data=previous_data,
                                revise_rows=revise_rows)
 
@@ -74,25 +74,25 @@ def get_official(update: Union[str, PathLike, None] = None,
                      inf_adj="No", index="2017", seas_adj="NSA",
                      ts_type="-", cumperiods=1)
 
-    if save is not None:
-        save_path = (Path(save) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(save_path)):
-            mkdir(path.dirname(save_path))
-        proc.to_csv(save_path)
+    if save_path is not None:
+        full_save_path = (Path(save_path) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(full_save_path)):
+            mkdir(path.dirname(full_save_path))
+        proc.to_csv(full_save_path)
 
     return proc
 
 
-def get_custom(update: Union[str, PathLike, None] = None,
+def get_custom(update_path: Union[str, PathLike, None] = None,
                revise_rows: Union[str, int] = "nodup",
-               save: Union[str, PathLike, None] = None,
+               save_path: Union[str, PathLike, None] = None,
                force_update: bool = False,
                name: Optional[str] = None) -> pd.DataFrame:
     """Get official real exchange rates from the BCU website.
 
     Parameters
     ----------
-    update : str, os.PathLike or None, default None
+    update_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or ``None``, don't update.
     revise_rows : {'nodup', 'auto', int}
@@ -101,7 +101,7 @@ def get_custom(update: Union[str, PathLike, None] = None,
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save : str, os.PathLike or None, default None
+    save_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
         or ``None``, don't save.
     force_update : bool, default False
@@ -120,12 +120,12 @@ def get_custom(update: Union[str, PathLike, None] = None,
     if name is None:
         name = "rxr_custom"
 
-    if update is not None:
-        update_path = (Path(update) / name).with_suffix(".csv")
-        delta, previous_data = updates._check_modified(update_path)
+    if update_path is not None:
+        full_update_path = (Path(update_path) / name).with_suffix(".csv")
+        delta, previous_data = updates._check_modified(full_update_path)
 
         if delta < update_threshold and force_update is False:
-            print(f"{update} was modified within {update_threshold} day(s). "
+            print(f"{full_update_path} was modified within {update_threshold} day(s). "
                   f"Skipping download...")
             return previous_data
 
@@ -166,10 +166,10 @@ def get_custom(update: Union[str, PathLike, None] = None,
     proc["AR.ENDA_XDC_USD_RATE_black"] = ar_black_xr.iloc[:, 0]
     proc["AR_E_A"] = proc.iloc[:, [5, 6]].mean(axis=1)
 
-    uy_cpi = cpi.get(update=update, revise_rows=6,
-                     save=save, force_update=False)
-    uy_e = nxr.get_monthly(update=update, revise_rows=6,
-                           save=save, force_update=False).iloc[:, [1]]
+    uy_cpi = cpi.get(update_path=update_path, revise_rows=6,
+                     save_path=save_path, force_update=False)
+    uy_e = nxr.get_monthly(update_path=update_path, revise_rows=6,
+                           save_path=save_path, force_update=False).iloc[:, [1]]
     proc = pd.concat([proc, uy_cpi, uy_e], axis=1)
     proc = proc.interpolate(method="linear", limit_area="inside")
     proc = proc.dropna(how="any")
@@ -192,15 +192,15 @@ def get_custom(update: Union[str, PathLike, None] = None,
     output = transform.base_index(output, start_date="2010-01-01",
                                   end_date="2010-12-31", base=100)
 
-    if update is not None:
+    if update_path is not None:
         output = updates._revise(new_data=output, prev_data=previous_data,
                                  revise_rows=revise_rows)
 
-    if save is not None:
-        save_path = (Path(save) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(save_path)):
-            mkdir(path.dirname(save_path))
-        output.to_csv(save_path)
+    if save_path is not None:
+        full_save_path = (Path(save_path) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(full_save_path)):
+            mkdir(path.dirname(full_save_path))
+        output.to_csv(full_save_path)
 
     return output
 

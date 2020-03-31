@@ -16,15 +16,15 @@ from econuy.resources.lstrings import (beef_url, pulp_url, soybean_url,
                                        what_url, imf_url, milk1_url, milk2_url)
 
 
-def _weights(update: Union[str, PathLike, None] = None,
+def _weights(update_path: Union[str, PathLike, None] = None,
              revise_rows: Union[str, int] = "nodup",
-             save: Union[str, PathLike, None] = None,
+             save_path: Union[str, PathLike, None] = None,
              force_update: bool = False) -> pd.DataFrame:
     """Get commodity export weights for Uruguay.
 
     Parameters
     ----------
-    update : str, os.PathLike or None, default None
+    update_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or ``None``, don't update.
     revise_rows : {'nodup', 'auto', int}
@@ -33,7 +33,7 @@ def _weights(update: Union[str, PathLike, None] = None,
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save : str, os.PathLike or None, default None
+    save_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
         or ``None``, don't save.
     force_update : bool, default False
@@ -49,13 +49,13 @@ def _weights(update: Union[str, PathLike, None] = None,
     update_threshold = 85
     name = "commodity_weights"
 
-    if update is not None:
-        update_path = (Path(update) / name).with_suffix(".csv")
-        delta, previous_data = updates._check_modified(update_path,
+    if update_path is not None:
+        full_update_path = (Path(update_path) / name).with_suffix(".csv")
+        delta, previous_data = updates._check_modified(full_update_path,
                                                        multiindex=False)
 
         if delta < update_threshold and force_update is False:
-            print(f"{update_path} was modified within {update_threshold} "
+            print(f"{full_update_path} was modified within {update_threshold} "
                   f"day(s). Skipping download...")
             return previous_data
 
@@ -88,28 +88,28 @@ def _weights(update: Union[str, PathLike, None] = None,
     output.columns = ["Barley", "Wood", "Gold", "Milk", "Pulp",
                       "Rice", "Soybeans", "Wheat", "Wool", "Beef"]
 
-    if update is not None:
+    if update_path is not None:
         output = updates._revise(new_data=output, prev_data=previous_data,
                                  revise_rows=revise_rows)
 
-    if save is not None:
-        save_path = (Path(save) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(save_path)):
-            mkdir(path.dirname(save_path))
-        output.to_csv(save_path)
+    if save_path is not None:
+        full_save_path = (Path(save_path) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(full_save_path)):
+            mkdir(path.dirname(full_save_path))
+        output.to_csv(full_save_path)
 
     return output
 
 
-def _prices(update: Union[str, PathLike, None] = None,
+def _prices(update_path: Union[str, PathLike, None] = None,
             revise_rows: Union[str, int] = "nodup",
-            save: Union[str, PathLike, None] = None,
+            save_path: Union[str, PathLike, None] = None,
             force_update: bool = False) -> pd.DataFrame:
     """Get commodity prices for Uruguay.
 
     Parameters
     ----------
-    update : str, os.PathLike or None, default None
+    update_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or ``None``, don't update.
     revise_rows : {'nodup', 'auto', int}
@@ -118,7 +118,7 @@ def _prices(update: Union[str, PathLike, None] = None,
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save : str, os.PathLike or None, default None
+    save_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
         or ``None``, don't save.
     force_update : bool, default False
@@ -135,13 +135,13 @@ def _prices(update: Union[str, PathLike, None] = None,
     bushel_conv = 36.74 / 100
     name = "commodity_prices"
 
-    if update is not None:
-        update_path = (Path(update) / name).with_suffix(".csv")
-        delta, previous_data = updates._check_modified(update_path,
+    if update_path is not None:
+        full_update_path = (Path(update_path) / name).with_suffix(".csv")
+        delta, previous_data = updates._check_modified(full_update_path,
                                                        multiindex=False)
 
         if delta < update_threshold and force_update is False:
-            print(f"{update_path} was modified within {update_threshold} "
+            print(f"{full_update_path} was modified within {update_threshold} "
                   f"day(s). Skipping download...")
             return previous_data
 
@@ -233,31 +233,31 @@ def _prices(update: Union[str, PathLike, None] = None,
     complete.columns = ["Beef", "Pulp", "Soybeans", "Milk", "Rice", "Wood",
                         "Wool", "Barley", "Gold", "Wheat"]
 
-    if update is not None:
+    if update_path is not None:
         complete = updates._revise(new_data=complete, prev_data=previous_data,
                                    revise_rows=revise_rows)
 
-    if save is not None:
-        save_path = (Path(save) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(save_path)):
-            mkdir(path.dirname(save_path))
-        complete.to_csv(save_path)
+    if save_path is not None:
+        full_save_path = (Path(save_path) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(full_save_path)):
+            mkdir(path.dirname(full_save_path))
+        complete.to_csv(full_save_path)
 
     return complete
 
 
-def get(update: Union[str, PathLike, None] = None,
-        save: Union[str, PathLike, None] = None,
+def get(update_path: Union[str, PathLike, None] = None,
+        save_path: Union[str, PathLike, None] = None,
         force_update_prices: bool = True, force_update_weights: bool = False,
         name: Optional[str] = None) -> pd.DataFrame:
     """Get export-weighted commodity price index for Uruguay.
 
     Parameters
     ----------
-    update : str, os.PathLike or None, default None
+    update_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or ``None``, don't update.
-    save : str, os.PathLike or None, default None
+    save_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
         or ``None``, don't update.
     force_update_prices : bool, default False
@@ -278,12 +278,12 @@ def get(update: Union[str, PathLike, None] = None,
     if name is None:
         name = "commodity_index"
 
-    prices = _prices(update=update, revise_rows="nodup",
-                     save=save, force_update=force_update_prices)
+    prices = _prices(update_path=update_path, revise_rows="nodup",
+                     save_path=save_path, force_update=force_update_prices)
     prices = prices.interpolate(method="linear", limit=1).dropna(how="any")
     prices = prices.pct_change(periods=1)
-    weights = _weights(update=update, revise_rows="nodup",
-                       save=save, force_update=force_update_weights)
+    weights = _weights(update_path=update_path, revise_rows="nodup",
+                       save_path=save_path, force_update=force_update_weights)
     weights = weights[prices.columns]
     weights = weights.reindex(prices.index, method="ffill")
 
@@ -296,10 +296,10 @@ def get(update: Union[str, PathLike, None] = None,
                      inf_adj="No", index="2002-01-31", seas_adj="NSA",
                      ts_type="-", cumperiods=1)
 
-    if save is not None:
-        save_path = (Path(save) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(save_path)):
-            mkdir(path.dirname(save_path))
-        product.to_csv(save_path)
+    if save_path is not None:
+        full_save_path = (Path(save_path) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(full_save_path)):
+            mkdir(path.dirname(full_save_path))
+        product.to_csv(full_save_path)
 
     return product

@@ -12,17 +12,17 @@ from econuy.resources.lstrings import (reserves_url, reserves_cols,
                                        missing_reserves_url, ff_url)
 
 
-def get(update: Union[str, PathLike, None] = None,
-        save: Union[str, PathLike, None] = None,
+def get(update_path: Union[str, PathLike, None] = None,
+        save_path: Union[str, PathLike, None] = None,
         name: Optional[str] = None) -> pd.DataFrame:
     """Get spot, future and forwards FX operations by the Central Bank.
 
     Parameters
     ----------
-    update : str, os.PathLike or None, default None
+    update_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or ``None``, don't update.
-    save : str, os.PathLike or None, default None
+    save_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
         or ``None``, don't save.
     name : str, default None
@@ -35,8 +35,8 @@ def get(update: Union[str, PathLike, None] = None,
     """
     if name is None:
         name = "fx_spot_ff"
-    changes = _reserves_changes(update=update, save=save)
-    ff = _futures_forwards(update=update, save=save)
+    changes = _reserves_changes(update_path=update_path, save_path=save_path)
+    ff = _futures_forwards(update_path=update_path, save_path=save_path)
     spot = changes.iloc[:, [0]]
     fx_ops = pd.merge(spot, ff, how="outer", left_index=True, right_index=True)
     fx_ops = fx_ops.loc[(fx_ops.index >= ff.index.min()) &
@@ -49,26 +49,26 @@ def get(update: Union[str, PathLike, None] = None,
                      currency="USD", inf_adj="No", index="No",
                      seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
-    if save is not None:
-        save_path = (Path(save) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(save_path)):
-            mkdir(path.dirname(save_path))
-        fx_ops.to_csv(save_path)
+    if save_path is not None:
+        full_save_path = (Path(save_path) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(full_save_path)):
+            mkdir(path.dirname(full_save_path))
+        fx_ops.to_csv(full_save_path)
 
     return fx_ops
 
 
-def _reserves_changes(update: Union[str, PathLike, None] = None,
-                      save: Union[str, PathLike, None] = None,
+def _reserves_changes(update_path: Union[str, PathLike, None] = None,
+                      save_path: Union[str, PathLike, None] = None,
                       name: Optional[str] = None) -> pd.DataFrame:
     """Get international reserves change data.
 
     Parameters
     ----------
-    update : str, os.PathLike or None, default None
+    update_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or ``None``, don't update.
-    save : str, os.PathLike or None, default None
+    save_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
         or ``None``, don't save.
     name : str, default None
@@ -91,10 +91,10 @@ def _reserves_changes(update: Union[str, PathLike, None] = None,
     fixed_may14 = f"{reserves_url}mayo2014.xls"
     urls = [fixed_may14 if x == wrong_may14 else x for x in urls]
 
-    if update is not None:
-        update_path = (Path(update) / name).with_suffix(".csv")
+    if update_path is not None:
+        full_update_path = (Path(update_path) / name).with_suffix(".csv")
         try:
-            previous_data = pd.read_csv(update_path, index_col=0,
+            previous_data = pd.read_csv(full_update_path, index_col=0,
                                         header=list(range(9)),
                                         float_precision="high")
             columns._setmeta(previous_data)
@@ -136,7 +136,7 @@ def _reserves_changes(update: Union[str, PathLike, None] = None,
     mar14.columns = reserves_cols[1:46]
     reserves = pd.concat(reports + [mar14], sort=False).sort_index()
 
-    if update is not None:
+    if update_path is not None:
         reserves = previous_data.append(reserves, sort=False)
         reserves = reserves.loc[~reserves.index.duplicated(keep="last")]
 
@@ -145,26 +145,26 @@ def _reserves_changes(update: Union[str, PathLike, None] = None,
                      currency="USD", inf_adj="No", index="No",
                      seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
-    if save is not None:
-        save_path = (Path(save) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(save_path)):
-            mkdir(path.dirname(save_path))
-        reserves.to_csv(save_path)
+    if save_path is not None:
+        full_save_path = (Path(save_path) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(full_save_path)):
+            mkdir(path.dirname(full_save_path))
+        reserves.to_csv(full_save_path)
 
     return reserves
 
 
-def _futures_forwards(update: Union[str, PathLike, None] = None,
-                      save: Union[str, PathLike, None] = None,
+def _futures_forwards(update_path: Union[str, PathLike, None] = None,
+                      save_path: Union[str, PathLike, None] = None,
                       name: Optional[str] = None) -> pd.DataFrame:
     """Get future and forwards FX operations by the Central Bank.
 
     Parameters
     ----------
-    update : str, os.PathLike or None, default None
+    update_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or ``None``, don't update.
-    save : str, os.PathLike or None, default None
+    save_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
         or ``None``, don't save.
     name : str, default None
@@ -179,10 +179,10 @@ def _futures_forwards(update: Union[str, PathLike, None] = None,
         name = "fx_ff"
     dates = pd.bdate_range("2013-11-01",
                            dt.datetime.today()).strftime("%y%m%d").tolist()
-    if update is not None:
-        update_path = (Path(update) / name).with_suffix(".csv")
+    if update_path is not None:
+        full_update_path = (Path(update_path) / name).with_suffix(".csv")
         try:
-            prev_data = pd.read_csv(update_path, index_col=0,
+            prev_data = pd.read_csv(full_update_path, index_col=0,
                                     header=list(range(9)),
                                     float_precision="high")
             columns._setmeta(prev_data)
@@ -237,13 +237,13 @@ def _futures_forwards(update: Union[str, PathLike, None] = None,
     except ValueError:
         return prev_data
 
-    if update is not None:
+    if update_path is not None:
         operations = prev_data.append(operations, sort=False)
 
-    if save is not None:
-        save_path = (Path(save) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(save_path)):
-            mkdir(path.dirname(save_path))
-        operations.to_csv(save_path)
+    if save_path is not None:
+        full_save_path = (Path(save_path) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(full_save_path)):
+            mkdir(path.dirname(full_save_path))
+        operations.to_csv(full_save_path)
 
     return operations

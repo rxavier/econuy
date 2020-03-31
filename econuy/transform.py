@@ -16,8 +16,8 @@ from econuy.retrieval import cpi, national_accounts, nxr
 
 
 def convert_usd(df: pd.DataFrame,
-                update: Union[str, PathLike, None] = None,
-                save: Union[str, PathLike, None] = None) -> pd.DataFrame:
+                update_path: Union[str, PathLike, None] = None,
+                save_path: Union[str, PathLike, None] = None) -> pd.DataFrame:
     """
     Convert dataframe from UYU to USD.
 
@@ -33,10 +33,10 @@ def convert_usd(df: pd.DataFrame,
     ----------
     df : pd.DataFrame
         Input dataframe.
-    update : str, os.PathLike or None, default None
+    update_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or ``None``, don't update.
-    save : str, os.PathLike or None, default None
+    save_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
         or ``None``, don't save.
 
@@ -46,8 +46,8 @@ def convert_usd(df: pd.DataFrame,
 
     """
     inferred_freq = pd.infer_freq(df.index)
-    nxr_data = nxr.get_monthly(update=update, revise_rows=6,
-                               save=save, force_update=False)
+    nxr_data = nxr.get_monthly(update_path=update_path, revise_rows=6,
+                               save_path=save_path, force_update=False)
 
     if df.columns.get_level_values("Tipo")[0] == "Flujo":
         columns._setmeta(nxr_data, ts_type="Flujo")
@@ -73,8 +73,8 @@ def convert_usd(df: pd.DataFrame,
 
 def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
                  end_date: Union[str, date, None] = None,
-                 update: Union[str, PathLike, None] = None,
-                 save: Union[str, PathLike, None] = None) -> pd.DataFrame:
+                 update_path: Union[str, PathLike, None] = None,
+                 save_path: Union[str, PathLike, None] = None) -> pd.DataFrame:
     """
     Convert dataframe to real prices.
 
@@ -95,10 +95,10 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     end_date : str, datetime.date or None, default None
         If ``start_date`` is set, calculate so that the data is in constant
         prices of ``start_date-end_date``.
-    update : str, os.PathLike or None, default None
+    update_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or ``None``, don't update.
-    save : str, os.PathLike or None, default None
+    save_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
         or ``None``, don't save.
 
@@ -108,7 +108,7 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
 
     """
     inferred_freq = pd.infer_freq(df.index)
-    cpi_data = cpi.get(update=update, revise_rows=6, save=save,
+    cpi_data = cpi.get(update_path=update_path, revise_rows=6, save_path=save_path,
                        force_update=False)
     columns._setmeta(cpi_data, ts_type="Flujo")
     cpi_freq = resample(cpi_data, target=inferred_freq,
@@ -137,8 +137,8 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     return converted_df
 
 
-def convert_gdp(df: pd.DataFrame, update: Union[str, PathLike, None] = None,
-                save: Union[str, PathLike, None] = None) -> pd.DataFrame:
+def convert_gdp(df: pd.DataFrame, update_path: Union[str, PathLike, None] = None,
+                save_path: Union[str, PathLike, None] = None) -> pd.DataFrame:
     """
     Calculate dataframe as percentage of GDP.
 
@@ -153,10 +153,10 @@ def convert_gdp(df: pd.DataFrame, update: Union[str, PathLike, None] = None,
     ----------
     df : pd.DataFrame
         Input dataframe.
-    update : str, os.PathLike or None, default None
+    update_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or ``None``, don't update.
-    save : str, os.PathLike or None, default None
+    save_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to save the CSV,
         or ``None``, don't save.
 
@@ -172,8 +172,8 @@ def convert_gdp(df: pd.DataFrame, update: Union[str, PathLike, None] = None,
 
     """
     inferred_freq = pd.infer_freq(df.index)
-    gdp = national_accounts._lin_gdp(update=update,
-                                     save=save, force_update=False)
+    gdp = national_accounts._lin_gdp(update_path=update_path,
+                                     save_path=save_path, force_update=False)
 
     if inferred_freq in ["M", "MS"]:
         gdp = resample(gdp, target=inferred_freq,

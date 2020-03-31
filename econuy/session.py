@@ -158,59 +158,59 @@ class Session(object):
                              f"arguments: {keywords}")
 
         if dataset == "cpi" or dataset == "prices":
-            output = cpi.get(update=update_path,
+            output = cpi.get(update_path=update_path,
                              revise_rows=self.revise_rows,
-                             save=save_path,
+                             save_path=save_path,
                              force_update=self.force_update,
                              name=override)
         elif dataset == "fiscal":
-            output = fiscal_accounts.get(update=update_path,
+            output = fiscal_accounts.get(update_path=update_path,
                                          revise_rows=self.revise_rows,
-                                         save=save_path,
+                                         save_path=save_path,
                                          force_update=self.force_update,
                                          name=override)
         elif dataset == "nxr_monthly" or dataset == "nxr_m":
-            output = nxr.get_monthly(update=update_path,
+            output = nxr.get_monthly(update_path=update_path,
                                      revise_rows=self.revise_rows,
-                                     save=save_path,
+                                     save_path=save_path,
                                      force_update=self.force_update,
                                      name=override)
         elif dataset == "nxr_daily" or dataset == "nxr_d":
-            output = nxr.get_daily(update=update_path,
-                                   save=save_path,
+            output = nxr.get_daily(update_path=update_path,
+                                   save_path=save_path,
                                    name=override)
         elif dataset == "naccounts" or dataset == "na":
-            output = national_accounts.get(update=update_path,
+            output = national_accounts.get(update_path=update_path,
                                            revise_rows=self.revise_rows,
-                                           save=save_path,
+                                           save_path=save_path,
                                            force_update=self.force_update,
                                            name=override)
         elif dataset == "labor" or dataset == "labour":
-            output = labor.get(update=update_path,
+            output = labor.get(update_path=update_path,
                                revise_rows=self.revise_rows,
-                               save=save_path,
+                               save_path=save_path,
                                force_update=self.force_update,
                                name=override)
         elif dataset == "rxr_custom" or dataset == "rxr-custom":
-            output = rxr.get_custom(update=update_path,
+            output = rxr.get_custom(update_path=update_path,
                                     revise_rows=self.revise_rows,
-                                    save=save_path,
+                                    save_path=save_path,
                                     force_update=self.force_update,
                                     name=override)
         elif dataset == "rxr_official" or dataset == "rxr-official":
-            output = rxr.get_official(update=update_path,
+            output = rxr.get_official(update_path=update_path,
                                       revise_rows=self.revise_rows,
-                                      save=save_path,
+                                      save_path=save_path,
                                       force_update=self.force_update,
                                       name=override)
         elif dataset == "commodity_index" or dataset == "comm_index":
-            output = commodity_index.get(update=update_path,
-                                         save=save_path,
+            output = commodity_index.get(update_path=update_path,
+                                         save_path=save_path,
                                          name=override,
                                          **kwargs)
         elif dataset == "fx_ops" or dataset == "fxops":
-            output = fx_operations.get(update=update_path,
-                                       save=save_path,
+            output = fx_operations.get(update_path=update_path,
+                                       save_path=save_path,
                                        name=override)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
@@ -266,28 +266,28 @@ class Session(object):
         if dataset == "inflation":
             called_args = logutil.get_called_args(frequent.inflation,
                                                   kwargs)
-            output = frequent.inflation(update=update_path,
-                                        save=save_path,
+            output = frequent.inflation(update_path=update_path,
+                                        save_path=save_path,
                                         name=override)
         elif dataset == "fiscal":
             called_args = logutil.get_called_args(frequent.fiscal,
                                                   kwargs)
-            output = frequent.fiscal(update=update_path,
-                                     save=save_path,
+            output = frequent.fiscal(update_path=update_path,
+                                     save_path=save_path,
                                      name=override,
                                      **kwargs)
         elif dataset == "naccounts" or dataset == "na":
             called_args = logutil.get_called_args(frequent.nat_accounts,
                                                   kwargs)
-            output = frequent.nat_accounts(update=update_path,
-                                           save=save_path,
+            output = frequent.nat_accounts(update_path=update_path,
+                                           save_path=save_path,
                                            name=override,
                                            **kwargs)
         elif dataset == "labor" or dataset == "labour":
             called_args = logutil.get_called_args(frequent.labor_mkt,
                                                   kwargs)
-            output = frequent.labor_mkt(update=update_path,
-                                        save=save_path,
+            output = frequent.labor_mkt(update_path=update_path,
+                                        save_path=save_path,
                                         name=override,
                                         **kwargs)
         else:
@@ -465,14 +465,14 @@ class Session(object):
             output = {}
             for key, value in self.dataset.items():
                 if flavor == "usd":
-                    table = transform.convert_usd(value, update=update,
-                                                  save=save)
+                    table = transform.convert_usd(value, update_path=update,
+                                                  save_path=save)
                 elif flavor == "real":
-                    table = transform.convert_real(value, update=update,
-                                                   save=save, **kwargs)
+                    table = transform.convert_real(value, update_path=update,
+                                                   save_path=save, **kwargs)
                 elif flavor == "pcgdp" or flavor == "gdp":
-                    table = transform.convert_gdp(value, update=update,
-                                                  save=save)
+                    table = transform.convert_gdp(value, update_path=update,
+                                                  save_path=save)
                 else:
                     raise ValueError("'flavor' can be one of 'usd', 'real', "
                                      "or 'pcgdp'.")
@@ -480,14 +480,14 @@ class Session(object):
                 output.update({key: table})
         else:
             if flavor == "usd":
-                output = transform.convert_usd(self.dataset, update=update,
-                                               save=save)
+                output = transform.convert_usd(self.dataset, update_path=update,
+                                               save_path=save)
             elif flavor == "real":
-                output = transform.convert_real(self.dataset, update=update,
-                                                save=save, **kwargs)
+                output = transform.convert_real(self.dataset, update_path=update,
+                                                save_path=save, **kwargs)
             elif flavor == "pcgdp" or flavor == "gdp":
-                output = transform.convert_gdp(self.dataset, update=update,
-                                               save=save)
+                output = transform.convert_gdp(self.dataset, update_path=update,
+                                               save_path=save)
             else:
                 raise ValueError("'flavor' can be one of 'usd', 'real', "
                                  "or 'pcgdp'.")
