@@ -66,13 +66,13 @@ df = session.get(dataset="cpi").dataset
 ```
 Note that the previous code block accessed the `dataset` attribute in order to get a dataframe. Alternatively, one could also call the `final()` method after calling `get()`.
 
-**`get_tfm()`**
+**`get_frequent()`**
 
 Gives access to predefined data pipelines that output frequently used data. These are based on the datasets provided by `get()`, but are transformed to render data that you might find more immediately useful.
 
 For example, the following downloads CPI data, calculates annual inflation (pct change from a year ago), monthly inflation, and seasonally adjusted and trend monthly inflation.
 ```
-df = session.get_tfm(dataset="inflation")
+df = session.get_frequent(dataset="inflation")
 ```
 
 **Transformation methods**

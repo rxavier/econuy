@@ -220,12 +220,12 @@ class Session(object):
         return self
 
     @logutil.log_getter
-    def get_tfm(self,
-                dataset: str,
-                update: bool = True,
-                save: bool = True,
-                override: Optional[str] = None,
-                **kwargs):
+    def get_frequent(self,
+                     dataset: str,
+                     update: bool = True,
+                     save: bool = True,
+                     override: Optional[str] = None,
+                     **kwargs):
         """
         Get frequently used datasets.
 

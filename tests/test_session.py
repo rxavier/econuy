@@ -30,7 +30,7 @@ def test_prices_inflation():
     session = Session(data_dir=TEST_DIR)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    inflation = session.get_tfm(dataset="inflation").dataset
+    inflation = session.get_frequent(dataset="inflation").dataset
     remove_clutter()
     prices = session.get(dataset="cpi").dataset
     remove_clutter()
@@ -59,8 +59,8 @@ def test_fiscal():
     session = Session(data_dir=TEST_DIR)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    fiscal_tfm = session.get_tfm(dataset="fiscal", aggregation="nfps",
-                                 fss=True, unit="gdp").dataset
+    fiscal_tfm = session.get_frequent(dataset="fiscal", aggregation="nfps",
+                                      fss=True, unit="gdp").dataset
     remove_clutter()
     fiscal_ = session.get(dataset="fiscal").dataset
     nfps = fiscal_["nfps"]
@@ -104,24 +104,24 @@ def test_fiscal():
     compare_gdp.columns = fiscal_tfm.columns
     assert compare_gdp.equals(fiscal_tfm)
     remove_clutter()
-    fiscal_tfm = session.get_tfm(dataset="fiscal", aggregation="nfps",
-                                 fss=True, unit="usd", seas_adj=None).dataset
+    fiscal_tfm = session.get_frequent(dataset="fiscal", aggregation="nfps",
+                                      fss=True, unit="usd", seas_adj=None).dataset
     compare_usd = transform.convert_usd(compare)
     compare_usd.columns = fiscal_tfm.columns
     assert compare_usd.equals(fiscal_tfm)
     remove_clutter()
-    fiscal_tfm = session.get_tfm(dataset="fiscal", aggregation="nfps",
-                                 fss=True, unit="real", seas_adj=None).dataset
+    fiscal_tfm = session.get_frequent(dataset="fiscal", aggregation="nfps",
+                                      fss=True, unit="real", seas_adj=None).dataset
     compare_real = transform.convert_real(compare)
     compare_real.columns = fiscal_tfm.columns
     assert compare_real.equals(fiscal_tfm)
     remove_clutter()
     start_date = "2010-01-31"
     end_date = "2010-12-31"
-    fiscal_tfm = session.get_tfm(dataset="fiscal", aggregation="nfps",
-                                 fss=True, unit="real_usd", seas_adj=None,
-                                 start_date=start_date,
-                                 end_date=end_date).dataset
+    fiscal_tfm = session.get_frequent(dataset="fiscal", aggregation="nfps",
+                                      fss=True, unit="real_usd", seas_adj=None,
+                                      start_date=start_date,
+                                      end_date=end_date).dataset
     compare_real_usd = transform.convert_real(compare, start_date=start_date,
                                               end_date=end_date)
     xr = nxr.get_monthly(update_path=None, save_path=None)
@@ -130,28 +130,28 @@ def test_fiscal():
     compare_real_usd.columns = fiscal_tfm.columns
     assert compare_real_usd.equals(fiscal_tfm)
     remove_clutter()
-    fiscal_tfm = session.get_tfm(dataset="fiscal", aggregation="nfps",
-                                 fss=True, unit=None, seas_adj="trend").dataset
+    fiscal_tfm = session.get_frequent(dataset="fiscal", aggregation="nfps",
+                                      fss=True, unit=None, seas_adj="trend").dataset
     compare_trend, compare_sa = transform.decompose(compare, outlier=True,
                                                     trading=True)
     compare_trend.columns = fiscal_tfm.columns
     assert compare_trend.equals(fiscal_tfm)
     remove_clutter()
-    fiscal_tfm = session.get_tfm(dataset="fiscal", aggregation="nfps",
-                                 fss=True, unit=None, seas_adj=None,
-                                 cum=12).dataset
+    fiscal_tfm = session.get_frequent(dataset="fiscal", aggregation="nfps",
+                                      fss=True, unit=None, seas_adj=None,
+                                      cum=12).dataset
     compare_roll = transform.rolling(compare, periods=12, operation="sum")
     compare_roll.columns = fiscal_tfm.columns
     assert compare_roll.equals(fiscal_tfm)
     remove_clutter()
     with pytest.raises(ValueError):
-        session.get_tfm(dataset="fiscal", aggregation="nfps",
-                        unit="wrong")
+        session.get_frequent(dataset="fiscal", aggregation="nfps",
+                             unit="wrong")
     with pytest.raises(ValueError):
-        session.get_tfm(dataset="fiscal", aggregation="nfps",
-                        seas_adj="wrong")
+        session.get_frequent(dataset="fiscal", aggregation="nfps",
+                             seas_adj="wrong")
     with pytest.raises(ValueError):
-        session.get_tfm(dataset="fiscal", aggregation="wrong")
+        session.get_frequent(dataset="fiscal", aggregation="wrong")
     remove_clutter()
 
 
@@ -160,7 +160,7 @@ def test_labor():
     session = Session(data_dir=TEST_DIR)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    labor_tfm = session.get_tfm(dataset="labor", seas_adj="trend").dataset
+    labor_tfm = session.get_frequent(dataset="labor", seas_adj="trend").dataset
     labor_tfm = labor_tfm.iloc[:, [0, 1, 2]]
     remove_clutter()
     labor_ = session.get(dataset="labor").dataset
@@ -169,12 +169,12 @@ def test_labor():
     labor_trend.columns = labor_tfm.columns
     assert labor_trend.equals(labor_tfm)
     remove_clutter()
-    labor_tfm = session.get_tfm(dataset="labor", seas_adj="seas").dataset
+    labor_tfm = session.get_frequent(dataset="labor", seas_adj="seas").dataset
     labor_tfm = labor_tfm.iloc[:, [0, 1, 2]]
     labor_sa.columns = labor_tfm.columns
     assert labor_sa.equals(labor_tfm)
     remove_clutter()
-    labor_tfm = session.get_tfm(dataset="labor", seas_adj=None).dataset
+    labor_tfm = session.get_frequent(dataset="labor", seas_adj=None).dataset
     compare = labor_.iloc[:, 0].div(labor_.iloc[:, 1]).round(4)
     compare_2 = labor_tfm.iloc[:, 3].div(labor_tfm.iloc[:, 4]).round(4)
     assert compare.equals(compare_2)
@@ -182,7 +182,7 @@ def test_labor():
     assert compare.equals(labor_tfm.iloc[:, 5].round(4))
     remove_clutter()
     with pytest.raises(ValueError):
-        session.get_tfm(dataset="labor", seas_adj="wrong")
+        session.get_frequent(dataset="labor", seas_adj="wrong")
 
 
 def test_naccounts():
@@ -190,32 +190,32 @@ def test_naccounts():
     session = Session(data_dir=TEST_DIR)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    na_tfm = session.get_tfm(dataset="na", supply=True, real=True, index=False,
-                             off_seas_adj=False, usd=False, cum=1,
-                             seas_adj=None, variation=None).dataset
+    na_tfm = session.get_frequent(dataset="na", supply=True, real=True, index=False,
+                                  off_seas_adj=False, usd=False, cum=1,
+                                  seas_adj=None, variation=None).dataset
     remove_clutter()
     na_ = session.get(dataset="na").dataset
     compare = na_["ind_con_nsa"]
     compare.columns = na_tfm.columns
     assert compare.equals(na_tfm)
     remove_clutter()
-    na_tfm = session.get_tfm(dataset="na", supply=True, real=False,
-                             index=False, off_seas_adj=False, usd=False, cum=1,
-                             seas_adj=None, variation=None).dataset
+    na_tfm = session.get_frequent(dataset="na", supply=True, real=False,
+                                  index=False, off_seas_adj=False, usd=False, cum=1,
+                                  seas_adj=None, variation=None).dataset
     compare = na_["ind_cur_nsa"]
     compare.columns = na_tfm.columns
     assert compare.equals(na_tfm)
     remove_clutter()
-    na_tfm = session.get_tfm(dataset="na", supply=False, real=True,
-                             index=False, off_seas_adj=False, usd=False, cum=1,
-                             seas_adj=None, variation=None).dataset
+    na_tfm = session.get_frequent(dataset="na", supply=False, real=True,
+                                  index=False, off_seas_adj=False, usd=False, cum=1,
+                                  seas_adj=None, variation=None).dataset
     compare = na_["gas_con_nsa"]
     compare.columns = na_tfm.columns
     assert compare.equals(na_tfm)
     remove_clutter()
-    na_tfm = session.get_tfm(dataset="na", supply=False, real=True,
-                             index=False, off_seas_adj=False, usd=True, cum=4,
-                             seas_adj=None, variation="inter").dataset
+    na_tfm = session.get_frequent(dataset="na", supply=False, real=True,
+                                  index=False, off_seas_adj=False, usd=True, cum=4,
+                                  seas_adj=None, variation="inter").dataset
     compare_mult = transform.convert_usd(compare)
     compare_mult = transform.rolling(compare_mult, periods=4, operation="sum")
     compare_mult = transform.chg_diff(compare_mult, operation="chg",
@@ -223,31 +223,31 @@ def test_naccounts():
     compare_mult.columns = na_tfm.columns
     assert compare_mult.equals(na_tfm)
     remove_clutter()
-    na_tfm = session.get_tfm(dataset="na", supply=False, real=True,
-                             index=False, off_seas_adj=False, usd=False, cum=1,
-                             seas_adj="trend", variation=None).dataset
+    na_tfm = session.get_frequent(dataset="na", supply=False, real=True,
+                                  index=False, off_seas_adj=False, usd=False, cum=1,
+                                  seas_adj="trend", variation=None).dataset
     compare_trend, compare_sa = transform.decompose(compare, trading=True,
                                                     outlier=True)
     compare_trend.columns = na_tfm.columns
     assert compare_trend.equals(na_tfm)
     remove_clutter()
-    na_tfm = session.get_tfm(dataset="na", supply=False, real=True,
-                             index=False, off_seas_adj=False, usd=False, cum=1,
-                             seas_adj="seas", variation=None).dataset
+    na_tfm = session.get_frequent(dataset="na", supply=False, real=True,
+                                  index=False, off_seas_adj=False, usd=False, cum=1,
+                                  seas_adj="seas", variation=None).dataset
     compare_sa.columns = na_tfm.columns
     assert compare_sa.equals(na_tfm)
     with pytest.raises(KeyError):
-        session.get_tfm(dataset="na", supply=False, real=True, index=True,
-                        off_seas_adj=True, usd=False, cum=1,
-                        seas_adj=None, variation=None)
+        session.get_frequent(dataset="na", supply=False, real=True, index=True,
+                             off_seas_adj=True, usd=False, cum=1,
+                             seas_adj=None, variation=None)
     with pytest.raises(ValueError):
-        session.get_tfm(dataset="na", supply=False, real=True, index=False,
-                        off_seas_adj=False, usd=False, cum=1,
-                        seas_adj="wrong", variation=None)
+        session.get_frequent(dataset="na", supply=False, real=True, index=False,
+                             off_seas_adj=False, usd=False, cum=1,
+                             seas_adj="wrong", variation=None)
     with pytest.raises(ValueError):
-        session.get_tfm(dataset="na", supply=False, real=True, index=False,
-                        off_seas_adj=False, usd=False, cum=1,
-                        seas_adj=None, variation="wrong")
+        session.get_frequent(dataset="na", supply=False, real=True, index=False,
+                             off_seas_adj=False, usd=False, cum=1,
+                             seas_adj=None, variation="wrong")
     remove_clutter()
 
 
@@ -260,12 +260,12 @@ def test_edge():
     with pytest.raises(ValueError):
         session.get(dataset="wrong")
     with pytest.raises(ValueError):
-        session.get_tfm(dataset="wrong")
+        session.get_frequent(dataset="wrong")
     remove_clutter()
     Session(data_dir="new_dir")
     assert path.isdir("new_dir")
-    Session(data_dir=TEST_DIR).get_tfm(dataset="inflation",
-                                       update=False, save=False)
+    Session(data_dir=TEST_DIR).get_frequent(dataset="inflation",
+                                            update=False, save=False)
     remove_clutter()
 
 

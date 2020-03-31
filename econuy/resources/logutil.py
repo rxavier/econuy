@@ -35,7 +35,7 @@ def setup(file: Optional[str] = None, null: bool = False):
 def log_getter(func):
     """
     Decorator for :meth:`~econuy.session.Session.get` and
-    :meth:`~econuy.session.Session.get_tfm`.
+    :meth:`~econuy.session.Session.get_frequent`.
 
     """
     @functools.wraps(func)
@@ -74,7 +74,7 @@ def log_transformer(func):
 def get_called_args(func, keywords):
     """
     Helper function for getting arguments passed to
-    :meth:`~econuy.session.Session.get_tfm`
+    :meth:`~econuy.session.Session.get_frequent`
 
     """
     inspection = inspect.getfullargspec(func)
