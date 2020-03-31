@@ -18,7 +18,8 @@ def test_changes():
     previous_data = pd.read_csv(path.join(TEST_DIR, "reserves_chg.csv"),
                                 index_col=0, header=list(range(9)))
     columns._setmeta(previous_data)
-    res = fx_operations._reserves_changes(update_path=TEST_DIR, name=None, save_path=TEST_DIR)
+    res = fx_operations._reserves_changes(
+        update_path=TEST_DIR, name=None, save_path=TEST_DIR)
     previous_data.index = pd.to_datetime(previous_data.index)
     compare = res.loc[previous_data.index].round(4)
     compare.columns = previous_data.columns
@@ -32,7 +33,8 @@ def test_ff():
                                 index_col=0, header=list(range(9)))
     columns._setmeta(previous_data)
     compare = previous_data.iloc[0:-30]
-    ff = fx_operations._futures_forwards(update_path=TEST_DIR, name=None, save_path=TEST_DIR)
+    ff = fx_operations._futures_forwards(
+        update_path=TEST_DIR, name=None, save_path=TEST_DIR)
     assert len(ff) > len(compare)
     remove_clutter()
 
@@ -80,7 +82,8 @@ def test_comm_index():
 
 def test_lin():
     remove_clutter()
-    lin = national_accounts._lin_gdp(update_path="test-data", save_path="test-data")
+    lin = national_accounts._lin_gdp(
+        update_path="test-data", save_path="test-data")
     assert isinstance(lin, pd.DataFrame)
     assert (sorted(lin.columns.get_level_values("Unidad/Moneda"))
             == sorted(["UYU", "USD"]))

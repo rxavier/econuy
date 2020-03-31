@@ -125,8 +125,8 @@ def get_custom(update_path: Union[str, PathLike, None] = None,
         delta, previous_data = updates._check_modified(full_update_path)
 
         if delta < update_threshold and force_update is False:
-            print(f"{full_update_path} was modified within {update_threshold} day(s). "
-                  f"Skipping download...")
+            print(f"{full_update_path} was modified within {update_threshold}"
+                  f" day(s). Skipping download...")
             return previous_data
 
     url_ = "http://dataservices.imf.org/REST/SDMX_JSON.svc/CompactData/IFS/M."
@@ -169,7 +169,8 @@ def get_custom(update_path: Union[str, PathLike, None] = None,
     uy_cpi = cpi.get(update_path=update_path, revise_rows=6,
                      save_path=save_path, force_update=False)
     uy_e = nxr.get_monthly(update_path=update_path, revise_rows=6,
-                           save_path=save_path, force_update=False).iloc[:, [1]]
+                           save_path=save_path,
+                           force_update=False).iloc[:, [1]]
     proc = pd.concat([proc, uy_cpi, uy_e], axis=1)
     proc = proc.interpolate(method="linear", limit_area="inside")
     proc = proc.dropna(how="any")

@@ -213,7 +213,7 @@ def test_decompose():
     assert std["Real"] >= std["Seas"]
     assert std["Real"] >= std["Trend"]
     session = Session(data_dir=TEST_DIR, dataset={"data1": df[["Real"]],
-                                                 "data2": df[["Real"]]})
+                                                  "data2": df[["Real"]]})
     trend, seas = session.decompose(flavor="both", trading=True,
                                     outlier=False).dataset["data1"]
     trend.columns, seas.columns = ["Trend"], ["Seas"]
@@ -231,7 +231,7 @@ def test_decompose():
                           outlier=False, x13_binary="search")
     with pytest.raises(ValueError):
         session = Session(data_dir=TEST_DIR, dataset={"data1": df[["Real"]],
-                                                     "data2": df[["Real"]]})
+                                                      "data2": df[["Real"]]})
         session.decompose(flavor="wrong", trading=True,
                           outlier=False, x13_binary="search")
 
@@ -247,12 +247,14 @@ def test_base_index():
     chg.columns = comp.columns
     assert chg.equals(comp)
     data = dummy_df(freq="Q-DEC")
-    session = Session(data_dir=TEST_DIR, dataset={"data1": data, "data2": data})
+    session = Session(data_dir=TEST_DIR, dataset={
+                      "data1": data, "data2": data})
     base = session.base_index(start_date="2000-03-31").final()
     assert np.all(
         base["data1"].loc["2000-03-31"].values == np.array([100] * 3))
     chg = data.pct_change(periods=1).multiply(100)
-    session = Session(data_dir=TEST_DIR, dataset={"data1": data, "data2": data})
+    session = Session(data_dir=TEST_DIR, dataset={
+                      "data1": data, "data2": data})
     comp = session.chg_diff(operation="chg", period_op="last").dataset["data1"]
     chg.columns = comp.columns
     assert chg.equals(comp)
@@ -271,7 +273,8 @@ def test_convert():
     usd.columns = data.columns
     assert np.all(abs(usd) <= abs(data))
     data = dummy_df(freq="M", ts_type="Flujo")
-    session = Session(data_dir=TEST_DIR, dataset={"data1": data, "data2": data})
+    session = Session(data_dir=TEST_DIR, dataset={
+                      "data1": data, "data2": data})
     usd = session.convert(flavor="usd").dataset["data1"]
     usd.columns = data.columns
     assert np.all(abs(usd) <= abs(data))
@@ -285,7 +288,8 @@ def test_convert():
     real.columns = data.columns
     assert np.all(abs(real) <= abs(data))
     data = dummy_df(freq="M")
-    session = Session(data_dir=TEST_DIR, dataset={"data1": data, "data2": data})
+    session = Session(data_dir=TEST_DIR, dataset={
+                      "data1": data, "data2": data})
     real = session.convert(flavor="real").dataset["data1"]
     real.columns = data.columns
     assert np.all(abs(real) <= abs(data))
@@ -295,7 +299,8 @@ def test_convert():
     pcgdp.columns = data.columns
     assert np.all(abs(pcgdp) <= abs(data))
     data = dummy_df(freq="Q-DEC", periods=40)
-    session = Session(data_dir=TEST_DIR, dataset={"data1": data, "data2": data})
+    session = Session(data_dir=TEST_DIR, dataset={
+                      "data1": data, "data2": data})
     pcgdp = session.convert(flavor="pcgdp").dataset["data1"]
     pcgdp.columns = data.columns
     assert np.all(abs(pcgdp) <= abs(data))

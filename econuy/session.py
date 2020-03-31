@@ -480,13 +480,16 @@ class Session(object):
                 output.update({key: table})
         else:
             if flavor == "usd":
-                output = transform.convert_usd(self.dataset, update_path=update,
+                output = transform.convert_usd(self.dataset,
+                                               update_path=update,
                                                save_path=save)
             elif flavor == "real":
-                output = transform.convert_real(self.dataset, update_path=update,
+                output = transform.convert_real(self.dataset,
+                                                update_path=update,
                                                 save_path=save, **kwargs)
             elif flavor == "pcgdp" or flavor == "gdp":
-                output = transform.convert_gdp(self.dataset, update_path=update,
+                output = transform.convert_gdp(self.dataset,
+                                               update_path=update,
                                                save_path=save)
             else:
                 raise ValueError("'flavor' can be one of 'usd', 'real', "

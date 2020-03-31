@@ -108,7 +108,8 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
 
     """
     inferred_freq = pd.infer_freq(df.index)
-    cpi_data = cpi.get(update_path=update_path, revise_rows=6, save_path=save_path,
+    cpi_data = cpi.get(update_path=update_path, revise_rows=6,
+                       save_path=save_path,
                        force_update=False)
     columns._setmeta(cpi_data, ts_type="Flujo")
     cpi_freq = resample(cpi_data, target=inferred_freq,
@@ -137,7 +138,8 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     return converted_df
 
 
-def convert_gdp(df: pd.DataFrame, update_path: Union[str, PathLike, None] = None,
+def convert_gdp(df: pd.DataFrame,
+                update_path: Union[str, PathLike, None] = None,
                 save_path: Union[str, PathLike, None] = None) -> pd.DataFrame:
     """
     Calculate dataframe as percentage of GDP.
