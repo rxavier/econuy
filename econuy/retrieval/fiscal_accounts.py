@@ -11,8 +11,8 @@ import requests
 from bs4 import BeautifulSoup
 from pandas.tseries.offsets import MonthEnd
 
-from econuy.resources import updates, columns
-from econuy.resources.lstrings import fiscal_url, fiscal_sheets
+from econuy.utils import updates, columns
+from econuy.utils.lstrings import fiscal_url, fiscal_sheets
 
 
 def get(update_path: Union[str, PathLike, None] = None,

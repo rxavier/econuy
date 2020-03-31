@@ -9,8 +9,8 @@ import requests
 from pandas.tseries.offsets import MonthEnd
 
 from econuy import transform
-from econuy.resources import updates, columns
-from econuy.resources.lstrings import reer_url, ar_cpi_url, ar_cpi_payload
+from econuy.utils import updates, columns
+from econuy.utils.lstrings import reer_url, ar_cpi_url, ar_cpi_payload
 from econuy.retrieval import cpi, nxr
 
 

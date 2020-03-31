@@ -7,8 +7,8 @@ import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
 from econuy import transform
-from econuy.resources import updates, columns
-from econuy.resources.lstrings import nat_accounts_metadata
+from econuy.utils import updates, columns
+from econuy.utils.lstrings import nat_accounts_metadata
 
 
 def get(update_path: Union[str, PathLike, None] = None,

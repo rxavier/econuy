@@ -6,8 +6,8 @@ from typing import Union, Optional
 import pandas as pd
 
 from econuy import transform
-from econuy.resources import columns
-from econuy.resources.lstrings import fiscal_metadata, wap_url
+from econuy.utils import columns
+from econuy.utils.lstrings import fiscal_metadata, wap_url
 from econuy.retrieval import (nxr, national_accounts, cpi,
                               fiscal_accounts, labor)
 

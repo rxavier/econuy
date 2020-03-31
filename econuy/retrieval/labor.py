@@ -4,8 +4,8 @@ from typing import Union, Optional
 
 import pandas as pd
 
-from econuy.resources import updates, columns
-from econuy.resources.lstrings import labor_url
+from econuy.utils import updates, columns
+from econuy.utils.lstrings import labor_url
 
 
 def get(update_path: Union[str, PathLike, None] = None,

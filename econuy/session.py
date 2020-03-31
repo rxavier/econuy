@@ -7,7 +7,7 @@ from typing import Union, Optional
 import pandas as pd
 
 from econuy import frequent, transform
-from econuy.resources import logutil
+from econuy.utils import logutil
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
                               labor, rxr, commodity_index, fx_operations)
 

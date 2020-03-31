@@ -5,8 +5,8 @@ from typing import Union, Optional
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
-from econuy.resources import updates, columns
-from econuy.resources.lstrings import cpi_url
+from econuy.utils import updates, columns
+from econuy.utils.lstrings import cpi_url
 
 
 def get(update_path: Union[str, PathLike, None] = None,

@@ -11,9 +11,9 @@ import pandas as pd
 import requests
 from pandas.tseries.offsets import YearEnd
 
-from econuy.resources import updates, columns
-from econuy.resources.lstrings import (beef_url, pulp_url, soybean_url,
-                                       what_url, imf_url, milk1_url, milk2_url)
+from econuy.utils import updates, columns
+from econuy.utils.lstrings import (beef_url, pulp_url, soybean_url,
+                                   what_url, imf_url, milk1_url, milk2_url)
 
 
 def _weights(update_path: Union[str, PathLike, None] = None,

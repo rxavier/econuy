@@ -6,8 +6,8 @@ from typing import Union, Optional
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
-from econuy.resources import updates, columns
-from econuy.resources.lstrings import nxr_url, nxr_daily_url
+from econuy.utils import updates, columns
+from econuy.utils.lstrings import nxr_url, nxr_daily_url
 
 
 def get_monthly(update_path: Union[str, PathLike, None] = None,

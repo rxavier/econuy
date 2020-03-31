@@ -6,7 +6,7 @@ import pandas as pd
 
 from econuy.session import Session
 from econuy.retrieval import fx_operations, national_accounts
-from econuy.resources import columns
+from econuy.utils import columns
 from .test_session import remove_clutter
 
 CUR_DIR = path.abspath(path.dirname(__file__))

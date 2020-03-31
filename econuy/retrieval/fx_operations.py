@@ -7,9 +7,9 @@ from typing import Union, Optional
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
-from econuy.resources import columns
-from econuy.resources.lstrings import (reserves_url, reserves_cols,
-                                       missing_reserves_url, ff_url)
+from econuy.utils import columns
+from econuy.utils.lstrings import (reserves_url, reserves_cols,
+                                   missing_reserves_url, ff_url)
 
 
 def get(update_path: Union[str, PathLike, None] = None,

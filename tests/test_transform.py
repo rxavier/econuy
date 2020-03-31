@@ -6,7 +6,7 @@ import pytest
 
 from econuy import transform
 from econuy.session import Session
-from econuy.resources import columns
+from econuy.utils import columns
 
 CUR_DIR = path.abspath(path.dirname(__file__))
 TEST_DIR = path.join(path.dirname(CUR_DIR), "test-data")

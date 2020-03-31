@@ -6,8 +6,8 @@ import pandas as pd
 import pytest
 
 from econuy import transform
-from econuy.resources import columns
-from econuy.resources.lstrings import fiscal_metadata
+from econuy.utils import columns
+from econuy.utils.lstrings import fiscal_metadata
 from econuy.retrieval import nxr
 from econuy.session import Session
 from .test_transform import dummy_df

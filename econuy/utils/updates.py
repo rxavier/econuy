@@ -5,7 +5,7 @@ from typing import Union
 
 import pandas as pd
 
-from econuy.resources import columns
+from econuy.utils import columns
 
 
 def _check_modified(data_path: Union[str, PathLike], multiindex=True):
