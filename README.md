@@ -16,7 +16,6 @@ This project aims at simplifying gathering, processing and visualization (in the
 pip install econuy
 ```
 
-
 * Git:
 
 ```
@@ -53,7 +52,9 @@ The `Session()` object is initialized with the `data_dir`, `revise_rows`,  `forc
 
 #### Methods
 
-**`get()`** downloads the basic datasets. These are basically as provided by official sources, except various Pandas transformations are performed to render nice looking dataframes with appropiate column names, time indexes and properly defined values.
+**`get()`** 
+
+Downloads the basic datasets. These are basically as provided by official sources, except various Pandas transformations are performed to render nice looking dataframes with appropiate column names, time indexes and properly defined values.
 
 Available options for the `dataset` argument are "cpi", "fiscal", "nxr", "naccounts", "labor", "rxr_custom", "rxr_official", "commodity_index", "reserves" and "fx_ops". Most are self explanatory but all are explained in the documentation.
 
@@ -65,11 +66,18 @@ df = session.get(dataset="cpi").dataset
 ```
 Note that the previous code block accessed the `dataset` attribute in order to get a dataframe. Alternatively, one could also call the `final()` method after calling `get()`.
 
-**`get_tfm()`** gives access to predefined data pipelines that output frequently used data. These are based on the datasets provided by `get()`, but are transformed to render data that you might find more immediately useful.
+**`get_tfm()`**
 
-For example, `session.get_tfm(dataset="inflation")` downloads CPI data, calculates annual inflation (pct change from a year ago), monthly inflation, and seasonally adjusted and trend monthly inflation.
+Gives access to predefined data pipelines that output frequently used data. These are based on the datasets provided by `get()`, but are transformed to render data that you might find more immediately useful.
 
-**Transformation methods** take a `Session()` object with a valid dataset and allow performing preset transformation pipelines. For example:
+For example, the following downloads CPI data, calculates annual inflation (pct change from a year ago), monthly inflation, and seasonally adjusted and trend monthly inflation.
+```
+df = session.get_tfm(dataset="inflation")
+```
+
+**Transformation methods**
+
+Take a `Session()` object with a valid dataset and allow performing preset transformation pipelines. For example:
 ```
 df = session.get(dataset="nxr").decompose(flavor="trend", outlier=True, trading=False)
 ```
@@ -83,10 +91,7 @@ Available transformation methods are
 * `base_index()` - set a period or window as 100, scale rest accordingly
 * `rolling()` - calculate rolling windows, either average or sum.
 
-#### X13 ARIMA binary
-
-If you want to use the `decompose()` method  you will need to supply the X13 binary (or place it somewhere reasonable and set `x13_binary="search"`). You can get it [from here](https://www.census.gov/srd/www/x13as/x13down_pc.html) for Windows or [from here](https://www.census.gov/srd/www/x13as/x13down_unix.html) for UNIX systems. For macOS you can compile it using the instructions found [here](https://github.com/christophsax/seasonal/wiki/Compiling-X-13ARIMA-SEATS-from-Source-for-OS-X) (choose the non-html version) or use my version (working under macOS Catalina) from [here](https://drive.google.com/open?id=1HxFoi57TWaBMV90NoOAbM8hWdZS9uoz_).
-
+----
 #### Dataframe/CSV headers
 
 Metadata for each dataset is held in Pandas MultiIndexes with the following:
@@ -101,10 +106,15 @@ Metadata for each dataset is held in Pandas MultiIndexes with the following:
 8) Type (stock or flow)
 9) Cumulative periods
 
+#### X13 ARIMA binary
+
+If you want to use the `decompose()` method  you will need to supply the X13 binary (or place it somewhere reasonable and set `x13_binary="search"`). You can get it [from here](https://www.census.gov/srd/www/x13as/x13down_pc.html) for Windows or [from here](https://www.census.gov/srd/www/x13as/x13down_unix.html) for UNIX systems. For macOS you can compile it using the instructions found [here](https://github.com/christophsax/seasonal/wiki/Compiling-X-13ARIMA-SEATS-from-Source-for-OS-X) (choose the non-html version) or use my version (working under macOS Catalina) from [here](https://drive.google.com/open?id=1HxFoi57TWaBMV90NoOAbM8hWdZS9uoz_).
+
 #### unrar libraries
 
 The [patool](https://github.com/wummel/patool) library is used in order to access fiscal data, which is provided by the MEF in `.rar` format. This library requires that you have the unrar binaries in your system, which you can get them from [here](https://www.rarlab.com/rar_add.htm).
 
+----
 ## Word of warning
 
 This project is heavily based on getting data from online sources that could change without notice, causing methods that download data to fail. While I try to stay on my toes and fix these quickly, it helps if you create an issue when you find one of these (or even submit a fix!).
