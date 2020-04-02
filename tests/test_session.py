@@ -1,3 +1,4 @@
+import shutil
 from os import listdir, remove, path
 from typing import Tuple
 from pathlib import Path
@@ -273,8 +274,9 @@ def test_edge():
     with pytest.raises(ValueError):
         session.get_frequent(dataset="wrong")
     remove_clutter()
-    Session(data_dir="new_dir")
+    session = Session(data_dir="new_dir")
     assert path.isdir("new_dir")
+    shutil.rmtree(session.data_dir)
     Session(data_dir=TEST_DIR).get_frequent(dataset="inflation",
                                             update=False, save=False)
     remove_clutter()
@@ -302,6 +304,7 @@ def test_save():
     session.save(name="test_save")
     assert path.isfile(Path(session.data_dir) / "test_save.csv")
     remove_clutter()
+    shutil.rmtree(session.data_dir)
 
 
 def test_logging(caplog):
