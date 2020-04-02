@@ -70,8 +70,8 @@ def get_official(update_path: Union[str, PathLike, None] = None,
         proc = updates._revise(new_data=proc, prev_data=previous_data,
                                revise_rows=revise_rows)
 
-    metadata._set(proc, area="Precios y salarios", currency="-",
-                  inf_adj="No", unit="2017", seas_adj="NSA",
+    metadata._set(proc, area="Precios y salarios", currency="UYU/Otro",
+                  inf_adj="No", unit="2017=100", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
 
     if save_path is not None:
@@ -187,9 +187,9 @@ def get_custom(update_path: Union[str, PathLike, None] = None,
     output.drop("UY_E_P", axis=1, inplace=True)
     output.rename_axis(None, inplace=True)
 
-    metadata._set(output, area="Precios y salarios", currency="-",
-                  inf_adj="-", unit="-", seas_adj="NSA",
-                  ts_type="Flujo", cumperiods=1)
+    metadata._set(output, area="Precios y salarios", currency="UYU/Otro",
+                  inf_adj="No", unit="-", seas_adj="NSA",
+                  ts_type="-", cumperiods=1)
     output = transform.base_index(output, start_date="2010-01-01",
                                   end_date="2010-12-31", base=100)
 

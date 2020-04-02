@@ -292,9 +292,9 @@ def get(update_path: Union[str, PathLike, None] = None,
     product = product.sum(axis=1).add(1).to_frame().cumprod()
     product.columns = ["Índice de precios de productos primarios"]
 
-    metadata._set(product, area="Sector externo", currency="-",
+    metadata._set(product, area="Sector externo", currency="USD",
                   inf_adj="No", unit="2002-01-31=1", seas_adj="NSA",
-                  ts_type="-", cumperiods=1)
+                  ts_type="Flujo", cumperiods=1)
 
     if save_path is not None:
         full_save_path = (Path(save_path) / name).with_suffix(".csv")
