@@ -48,6 +48,7 @@ def get(update_path: Union[str, PathLike, None] = None,
     metadata._set(fx_ops, area="Reservas internacionales",
                   currency="USD", inf_adj="No", unit="Millones",
                   seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+    fx_ops.columns.set_levels(["-"], level=2, inplace=True)
 
     if save_path is not None:
         full_save_path = (Path(save_path) / name).with_suffix(".csv")
@@ -98,6 +99,7 @@ def _reserves_changes(update_path: Union[str, PathLike, None] = None,
                                         header=list(range(9)),
                                         float_precision="high")
             metadata._set(previous_data)
+            previous_data.columns.set_levels(["-"], level=2, inplace=True)
             previous_data.columns = reserves_cols[1:46]
             previous_data.index = pd.to_datetime(previous_data.index)
             urls = urls[-18:]
@@ -144,6 +146,7 @@ def _reserves_changes(update_path: Union[str, PathLike, None] = None,
     metadata._set(reserves, area="Reservas internacionales",
                   currency="USD", inf_adj="No", unit="Millones",
                   seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+    reserves.columns.set_levels(["-"], level=2, inplace=True)
 
     if save_path is not None:
         full_save_path = (Path(save_path) / name).with_suffix(".csv")
@@ -186,6 +189,7 @@ def _futures_forwards(update_path: Union[str, PathLike, None] = None,
                                     header=list(range(9)),
                                     float_precision="high")
             metadata._set(prev_data)
+            prev_data.columns.set_levels(["-"], level=2, inplace=True)
             prev_data.index = pd.to_datetime(prev_data.index)
             last_date = prev_data.index[len(prev_data)-1]
             dates = pd.bdate_range(
@@ -233,6 +237,7 @@ def _futures_forwards(update_path: Union[str, PathLike, None] = None,
             inf_adj="No", unit="Millones", seas_adj="NSA",
             ts_type="Flujo", cumperiods=1
         )
+        operations.columns.set_levels(["-"], level=2, inplace=True)
         operations = operations.divide(1000)
     except ValueError:
         return prev_data
