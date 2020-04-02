@@ -46,7 +46,7 @@ def get(update_path: Union[str, PathLike, None] = None,
     fx_ops.columns = ["Spot", "Futuros", "Forwards"]
 
     metadata._set(fx_ops, area="Reservas internacionales",
-                  currency="USD", inf_adj="No", index="No",
+                  currency="USD", inf_adj="No", unit="Millones",
                   seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
     if save_path is not None:
@@ -142,7 +142,7 @@ def _reserves_changes(update_path: Union[str, PathLike, None] = None,
 
     reserves = reserves.apply(pd.to_numeric, errors="coerce")
     metadata._set(reserves, area="Reservas internacionales",
-                  currency="USD", inf_adj="No", index="No",
+                  currency="USD", inf_adj="No", unit="Millones",
                   seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
     if save_path is not None:
@@ -230,8 +230,8 @@ def _futures_forwards(update_path: Union[str, PathLike, None] = None,
         operations.set_index("Date", inplace=True)
         metadata._set(
             operations, area="Reservas internacionales",  currency="USD",
-            inf_adj="No", index="No", seas_adj="NSA", ts_type="Flujo",
-            cumperiods=1
+            inf_adj="No", unit="Millones", seas_adj="NSA",
+            ts_type="Flujo", cumperiods=1
         )
         operations = operations.divide(1000)
     except ValueError:

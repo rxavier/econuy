@@ -293,7 +293,7 @@ def get(update_path: Union[str, PathLike, None] = None,
     product.columns = ["Índice de precios de productos primarios"]
 
     metadata._set(product, area="Sector externo", currency="-",
-                  inf_adj="No", index="2002-01-31", seas_adj="NSA",
+                  inf_adj="No", unit="2002-01-31=1", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
 
     if save_path is not None:

@@ -66,14 +66,14 @@ def get(update_path: Union[str, PathLike, None] = None,
                 print(f"Fiscal data ({full_update_path}) was modified within "
                       f"{update_threshold} day(s). Skipping download...")
                 output = {}
-                for metadata in fiscal_sheets.values():
+                for meta in fiscal_sheets.values():
                     full_update_path = (Path(update_path)
                                         / f"{name}_"
-                                          f"{metadata['Name']}").with_suffix(
+                                          f"{meta['Name']}").with_suffix(
                         ".csv")
                     delta, previous_data = updates._check_modified(
                         full_update_path)
-                    output.update({metadata["Name"]: previous_data})
+                    output.update({meta["Name"]: previous_data})
                 return output
         except FileNotFoundError:
             pass
@@ -92,19 +92,19 @@ def get(update_path: Union[str, PathLike, None] = None,
 
         output = {}
         with pd.ExcelFile(path_temp) as xls:
-            for sheet, metadata in fiscal_sheets.items():
+            for sheet, meta in fiscal_sheets.items():
                 data = (pd.read_excel(xls, sheet_name=sheet).
                         dropna(axis=0, thresh=4).dropna(axis=1, thresh=4).
                         transpose().set_index(2, drop=True))
                 data.columns = data.iloc[0]
                 data = data[data.index.notnull()].rename_axis(None)
                 data.index = data.index + MonthEnd(1)
-                data.columns = metadata["Colnames"]
+                data.columns = meta["Colnames"]
 
                 if update_path is not None:
                     full_update_path = (Path(update_path)
                                         / f"{name}_"
-                                          f"{metadata['Name']}").with_suffix(
+                                          f"{meta['Name']}").with_suffix(
                         ".csv")
                     delta, previous_data = updates._check_modified(
                         full_update_path)
@@ -114,19 +114,19 @@ def get(update_path: Union[str, PathLike, None] = None,
                 data = data.apply(pd.to_numeric, errors="coerce")
                 metadata._set(
                     data, area="Cuentas fiscales y deuda", currency="UYU",
-                    inf_adj="No", index="No", seas_adj="NSA", ts_type="Flujo",
-                    cumperiods=1
+                    inf_adj="No", unit="Millones", seas_adj="NSA",
+                    ts_type="Flujo", cumperiods=1
                 )
 
                 if save_path is not None:
                     full_save_path = (Path(save_path)
                                       / f"{name}_"
-                                        f"{metadata['Name']}").with_suffix(
+                                        f"{meta['Name']}").with_suffix(
                         ".csv")
                     if not path.exists(path.dirname(full_save_path)):
                         mkdir(path.dirname(full_save_path))
                     data.to_csv(full_save_path)
 
-                output.update({metadata["Name"]: data})
+                output.update({meta["Name"]: data})
 
     return output

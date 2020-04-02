@@ -85,7 +85,7 @@ def test_lin():
     lin = national_accounts._lin_gdp(
         update_path="test-data", save_path="test-data")
     assert isinstance(lin, pd.DataFrame)
-    assert (sorted(lin.columns.get_level_values("Unidad/Moneda"))
+    assert (sorted(lin.columns.get_level_values("Moneda"))
             == sorted(["UYU", "USD"]))
     remove_clutter()
 

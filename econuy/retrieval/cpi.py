@@ -66,7 +66,7 @@ def get(update_path: Union[str, PathLike, None] = None,
 
     cpi = cpi.apply(pd.to_numeric, errors="coerce")
     metadata._set(cpi, area="Precios y salarios", currency="-",
-                  inf_adj="No", index="2010-10-31", seas_adj="NSA",
+                  inf_adj="No", unit="2010-10-31=100", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
 
     if save_path is not None:

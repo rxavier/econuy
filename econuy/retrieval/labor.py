@@ -71,7 +71,7 @@ def get(update_path: Union[str, PathLike, None] = None,
 
     labor = labor.apply(pd.to_numeric, errors="coerce")
     metadata._set(labor, area="Mercado laboral", currency="-",
-                  inf_adj="No", index="No", seas_adj="NSA",
+                  inf_adj="No", unit="Tasa", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
 
     if save_path is not None:

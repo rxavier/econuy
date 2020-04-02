@@ -49,50 +49,53 @@ def get(update_path: Union[str, PathLike, None] = None,
         name = "naccounts"
 
     parsed_excels = {}
-    for file, metadata in nat_accounts_metadata.items():
+    for file, meta in nat_accounts_metadata.items():
 
         if update_path is not None:
             full_update_path = (Path(update_path) /
-                                f"{name}_{metadata['Name']}").with_suffix(
+                                f"{name}_{meta['Name']}").with_suffix(
                 ".csv")
             delta, previous_data = updates._check_modified(full_update_path)
 
             if delta < update_threshold and force_update is False:
                 print(f"{full_update_path}.csv was modified within"
                       f" {update_threshold} day(s). Skipping download...")
-                parsed_excels.update({metadata["Name"]: previous_data})
+                parsed_excels.update({meta["Name"]: previous_data})
                 continue
 
-        raw = pd.read_excel(file, skiprows=9, nrows=metadata["Rows"])
+        raw = pd.read_excel(file, skiprows=9, nrows=meta["Rows"])
         proc = (raw.drop(columns=["Unnamed: 0"]).
                 dropna(axis=0, how="all").dropna(axis=1, how="all"))
         proc = proc.transpose()
-        proc.columns = metadata["Colnames"]
+        proc.columns = meta["Colnames"]
         proc.drop(["Unnamed: 1"], inplace=True)
 
         _fix_dates(proc)
 
-        if metadata["Index"] == "No":
+        if meta["Unit"] == "Miles":
             proc = proc.divide(1000)
+            unit_ = "Millones"
+        else:
+            unit_ = meta["Unit"]
         if update_path is not None:
             proc = updates._revise(new_data=proc, prev_data=previous_data,
                                    revise_rows=revise_rows)
         proc = proc.apply(pd.to_numeric, errors="coerce")
 
         metadata._set(proc, area="Actividad económica", currency="UYU",
-                      inf_adj=metadata["Inf. Adj."],
-                      index=metadata["Index"],
-                      seas_adj=metadata["Seas"], ts_type="Flujo",
+                      inf_adj=meta["Inf. Adj."],
+                      unit=unit_,
+                      seas_adj=meta["Seas"], ts_type="Flujo",
                       cumperiods=1)
 
         if save_path is not None:
             full_save_path = (Path(save_path) /
-                              f"{name}_{metadata['Name']}").with_suffix(".csv")
+                              f"{name}_{meta['Name']}").with_suffix(".csv")
             if not path.exists(path.dirname(full_save_path)):
                 mkdir(path.dirname(full_save_path))
             proc.to_csv(full_save_path)
 
-        parsed_excels.update({metadata["Name"]: proc})
+        parsed_excels.update({meta["Name"]: proc})
 
     return parsed_excels
 

@@ -186,7 +186,7 @@ def convert_gdp(df: pd.DataFrame,
         raise ValueError("Frequency of input dataframe not any of 'M', 'MS', "
                          "'Q', 'Q-DEC', 'A' or 'A-DEC'.")
 
-    if df.columns.get_level_values("Unidad/Moneda")[0] == "USD":
+    if df.columns.get_level_values("Moneda")[0] == "USD":
         gdp = gdp.iloc[:, 1].to_frame()
     else:
         gdp = gdp.iloc[:, 0].to_frame()
@@ -194,7 +194,7 @@ def convert_gdp(df: pd.DataFrame,
     gdp_to_use = gdp[gdp.index.isin(df.index)].iloc[:, 0]
     converted_df = df.apply(lambda x: x / gdp_to_use).multiply(100)
 
-    metadata._set(converted_df, currency="% PBI")
+    metadata._set(converted_df, unit="% PBI")
 
     return converted_df
 
@@ -355,11 +355,11 @@ def base_index(df: pd.DataFrame, start_date: Union[str, date],
     """
     if end_date is None:
         indexed = df.apply(lambda x: x / x[start_date] * base)
-        metadata._set(indexed, index=start_date)
+        metadata._set(indexed, unit=f"f{start_date}={base}")
 
     else:
         indexed = df.apply(lambda x: x / x[start_date:end_date].mean() * base)
-        metadata._set(indexed, index=f"{start_date}_{end_date}")
+        metadata._set(indexed, unit=f"{start_date}_{end_date}={base}")
 
     return indexed
 
@@ -587,11 +587,11 @@ def chg_diff(df: pd.DataFrame, operation: str = "chg",
             output = output.apply(
                 type_change[period_op][operation][0])
 
-        metadata._set(output, index=type_change[period_op][operation][1])
+        metadata._set(output, unit=type_change[period_op][operation][1])
 
     else:
         output = df.apply(type_change[period_op][operation][0])
-        metadata._set(output, index=type_change[period_op][operation][1])
+        metadata._set(output, unit=type_change[period_op][operation][1])
 
     if operation == "chg":
         output = output.multiply(100)

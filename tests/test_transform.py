@@ -13,7 +13,7 @@ TEST_DIR = path.join(path.dirname(CUR_DIR), "test-data")
 
 
 def dummy_df(freq, periods=200, area="Test", currency="Test",
-             inf_adj="Test", index="Test", seas_adj="Test",
+             inf_adj="Test", unit="Test", seas_adj="Test",
              ts_type="Test", cumperiods=1):
     dates = pd.date_range("2000-01-31", periods=periods, freq=freq)
     cols = ["A", "B", "C"]
@@ -22,7 +22,7 @@ def dummy_df(freq, periods=200, area="Test", currency="Test",
                       np.random.uniform(-100, -50, [periods, 1])])
     output = pd.DataFrame(index=dates, columns=cols, data=data)
     metadata._set(output, area=area, currency=currency,
-                  inf_adj=inf_adj, index=index, seas_adj=seas_adj,
+                  inf_adj=inf_adj, unit=unit, seas_adj=seas_adj,
                   ts_type=ts_type, cumperiods=cumperiods)
     return output
 

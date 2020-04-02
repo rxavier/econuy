@@ -67,8 +67,8 @@ def get_monthly(update_path: Union[str, PathLike, None] = None,
         nxr = updates._revise(new_data=nxr, prev_data=previous_data,
                               revise_rows=revise_rows)
 
-    metadata._set(nxr, area="Precios y salarios", currency="-",
-                  inf_adj="No", index="No", seas_adj="NSA",
+    metadata._set(nxr, area="Precios y salarios", currency="UYU/USD",
+                  inf_adj="No", unit="-", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
 
     if save_path is not None:
@@ -146,8 +146,8 @@ def get_daily(update_path: Union[str, PathLike, None] = None,
         output.columns = ["Tipo de cambio US$, Cable"]
         output = output.apply(pd.to_numeric, errors="coerce")
 
-        metadata._set(output, area="Precios y salarios", currency="-",
-                      inf_adj="No", index="No", seas_adj="NSA",
+        metadata._set(output, area="Precios y salarios", currency="UYU/USD",
+                      inf_adj="No", unit="-", seas_adj="NSA",
                       ts_type="-", cumperiods=1)
         output.columns.set_levels(["-"], level=2, inplace=True)
 

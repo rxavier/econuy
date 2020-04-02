@@ -205,7 +205,7 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
 
     output = proc.loc[:, fiscal_metadata[aggregation][fss]]
     metadata._set(output, area="Cuentas fiscales y deuda",
-                  currency="UYU", inf_adj="No", index="No",
+                  currency="UYU", inf_adj="No", unit="Millones",
                   seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
     if unit == "gdp":
@@ -306,9 +306,9 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
         seas_text = "Trend"
     elif seas_adj == "seas":
         seas_text = "SA"
-    metadata._set(persons, area="Mercado laboral", currency="Personas",
-                  inf_adj="No", index="No", seas_adj=seas_text, ts_type="-",
-                  cumperiods=1)
+    metadata._set(persons, area="Mercado laboral", currency="-",
+                  inf_adj="No", unit="Personas", seas_adj=seas_text,
+                  ts_type="-", cumperiods=1)
 
     output = pd.concat([rates, persons], axis=1)
 
