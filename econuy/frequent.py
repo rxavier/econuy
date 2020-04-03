@@ -280,8 +280,8 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
     if seas_adj not in ["trend", "seas", None]:
         raise ValueError("'seas_adj' can be 'trend', 'seas' or None.")
 
-    rates = labor.get(update_path=update_path, revise_rows=6,
-                      save_path=save_path, force_update=False)
+    rates = labor.get_rates(update_path=update_path, revise_rows=6,
+                            save_path=save_path, force_update=False)
 
     if seas_adj in ["trend", "seas"]:
         trend, seasadj = transform.decompose(rates, trading=True, outlier=True)

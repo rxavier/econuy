@@ -5,14 +5,14 @@ from typing import Union, Optional
 import pandas as pd
 
 from econuy.utils import updates, metadata
-from econuy.utils.lstrings import labor_url
+from econuy.utils.lstrings import labor_url, wages_url
 
 
-def get(update_path: Union[str, PathLike, None] = None,
-        revise_rows: Union[str, int] = "nodup",
-        save_path: Union[str, PathLike, None] = None,
-        force_update: bool = False,
-        name: Optional[str] = None) -> pd.DataFrame:
+def get_rates(update_path: Union[str, PathLike, None] = None,
+              revise_rows: Union[str, int] = "nodup",
+              save_path: Union[str, PathLike, None] = None,
+              force_update: bool = False,
+              name: Optional[str] = None) -> pd.DataFrame:
     """Get labor market data.
 
     Get monthly labor force participation rate, employment rate (employment to

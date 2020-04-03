@@ -186,11 +186,11 @@ class Session(object):
                                            force_update=self.force_update,
                                            name=override)
         elif dataset == "labor" or dataset == "labour":
-            output = labor.get(update_path=update_path,
-                               revise_rows=self.revise_rows,
-                               save_path=save_path,
-                               force_update=self.force_update,
-                               name=override)
+            output = labor.get_rates(update_path=update_path,
+                                     revise_rows=self.revise_rows,
+                                     save_path=save_path,
+                                     force_update=self.force_update,
+                                     name=override)
         elif dataset == "rxr_custom" or dataset == "rxr-custom":
             output = rxr.get_custom(update_path=update_path,
                                     revise_rows=self.revise_rows,
