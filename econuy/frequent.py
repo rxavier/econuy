@@ -244,10 +244,10 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     return output
 
 
-def labor_mkt(seas_adj: Union[str, None] = "trend",
-              update_path: Union[str, PathLike, None] = None,
-              save_path: Union[str, PathLike, None] = None,
-              name: Optional[str] = None) -> pd.DataFrame:
+def labor_rate_people(seas_adj: Union[str, None] = None,
+                      update_path: Union[str, PathLike, None] = None,
+                      save_path: Union[str, PathLike, None] = None,
+                      name: Optional[str] = None) -> pd.DataFrame:
     """
     Get labor data, both rates and persons. Allow choosing seasonal adjustment.
 
@@ -311,6 +311,72 @@ def labor_mkt(seas_adj: Union[str, None] = "trend",
                   ts_type="-", cumperiods=1)
 
     output = pd.concat([rates, persons], axis=1)
+
+    if save_path is not None:
+        full_save_path = (Path(save_path) / name).with_suffix(".csv")
+        if not path.exists(path.dirname(full_save_path)):
+            mkdir(path.dirname(full_save_path))
+        output.to_csv(full_save_path)
+
+    return output
+
+
+def labor_real_wages(seas_adj: Union[str, None] = None,
+                     update_path: Union[str, PathLike, None] = None,
+                     save_path: Union[str, PathLike, None] = None,
+                     name: Optional[str] = None) -> pd.DataFrame:
+    """
+    Get real wages. Allow choosing seasonal adjustment.
+
+    Parameters
+    ----------
+    seas_adj : {'trend', 'seas', None}
+        Whether to seasonally adjust.
+    update_path : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to find a CSV
+        for updating, or ``None``, don't update.
+    save_path : str, os.PathLike or None, default None
+        Path or path-like string pointing to a directory where to save the CSV,
+        or ``None``, don't save.
+    name : str, default None
+        CSV filename for updating and/or saving.
+
+    Returns
+    -------
+    Real wages data : pd.DataFrame
+
+    Raises
+    ------
+    ValueError
+        If ``seas_adj`` is given an invalid keyword.
+
+    """
+    if name is None:
+        name = "tfm_wages"
+
+    if seas_adj not in ["trend", "seas", None]:
+        raise ValueError("'seas_adj' can be 'trend', 'seas' or None.")
+
+    wages = labor.get_wages(update_path=update_path, revise_rows=6,
+                            save_path=save_path, force_update=False)
+    real_wages = wages.copy()
+    real_wages.columns = ["Índice medio de salarios reales",
+                          "Índice medio de salarios reales privados",
+                          "Índice medio de salarios reales públicos"]
+    metadata._set(real_wages, area="Mercado laboral", currency="UYU",
+                  inf_adj="Sí", seas_adj="NSA", ts_type="-", cumperiods=1)
+    real_wages = transform.convert_real(real_wages)
+    output = pd.concat([wages, real_wages], axis=1)
+
+    if seas_adj in ["trend", "seas"]:
+        trend, seasadj = transform.decompose(output,
+                                             trading=True, outlier=False)
+        if seas_adj == "trend":
+            output = trend
+        elif seas_adj == "seas":
+            output = seasadj
+
+    output = transform.base_index(output, start_date="2008-07-31")
 
     if save_path is not None:
         full_save_path = (Path(save_path) / name).with_suffix(".csv")

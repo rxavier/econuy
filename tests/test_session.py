@@ -189,6 +189,39 @@ def test_labor():
         session.get_frequent(dataset="labor", seas_adj="wrong")
 
 
+def test_wages():
+    remove_clutter()
+    session = Session(data_dir=TEST_DIR)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    full_wages = session.get_frequent(dataset="real_wages",
+                                      seas_adj="trend").dataset
+    wages_tfm = full_wages.iloc[:, [0, 1, 2]]
+    remove_clutter()
+    wages_ = session.get(dataset="wages").dataset
+    wages_trend, wages_sa = transform.decompose(wages_, outlier=False,
+                                                trading=True)
+    wages_trend = transform.base_index(wages_trend, start_date="2008-07-31")
+    wages_trend.columns = wages_tfm.columns
+    assert wages_trend.equals(wages_tfm)
+    remove_clutter()
+    full_wages = session.get_frequent(dataset="wages", seas_adj="seas").dataset
+    wages_tfm = full_wages.iloc[:, [0, 1, 2]]
+    wages_sa = transform.base_index(wages_sa, start_date="2008-07-31")
+    wages_sa.columns = wages_tfm.columns
+    assert wages_sa.equals(wages_tfm)
+    remove_clutter()
+    full_wages = session.get_frequent(dataset="wages", seas_adj=None).dataset
+    real_wages = full_wages.iloc[:, [3, 4, 5]]
+    compare = transform.convert_real(wages_)
+    compare = transform.base_index(compare, start_date="2008-07-31")
+    compare.columns = real_wages.columns
+    assert real_wages.equals(compare)
+    remove_clutter()
+    with pytest.raises(ValueError):
+        session.get_frequent(dataset="wages", seas_adj="wrong")
+
+
 def test_naccounts():
     remove_clutter()
     session = Session(data_dir=TEST_DIR)
