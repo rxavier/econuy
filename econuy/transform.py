@@ -355,7 +355,7 @@ def base_index(df: pd.DataFrame, start_date: Union[str, date],
     """
     if end_date is None:
         indexed = df.apply(lambda x: x / x[start_date] * base)
-        metadata._set(indexed, unit=f"f{start_date}={base}")
+        metadata._set(indexed, unit=f"{start_date}={base}")
 
     else:
         indexed = df.apply(lambda x: x / x[start_date:end_date].mean() * base)
