@@ -115,7 +115,8 @@ class Session(object):
         Parameters
         ----------
         dataset : {'cpi', 'nxr_monthly', 'nxr_daily', 'fiscal', 'naccounts', \
-                'labor', 'comm_index', 'rxr_custom', 'rxr_official', 'fx_ops'}
+                'labor', 'wages', 'comm_index', 'rxr_custom', 'rxr_official', \
+                'fx_ops'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -186,11 +187,17 @@ class Session(object):
                                            force_update=self.force_update,
                                            name=override)
         elif dataset == "labor" or dataset == "labour":
-            output = labor.get(update_path=update_path,
-                               revise_rows=self.revise_rows,
-                               save_path=save_path,
-                               force_update=self.force_update,
-                               name=override)
+            output = labor.get_rates(update_path=update_path,
+                                     revise_rows=self.revise_rows,
+                                     save_path=save_path,
+                                     force_update=self.force_update,
+                                     name=override)
+        elif dataset == "wages":
+            output = labor.get_wages(update_path=update_path,
+                                     revise_rows=self.revise_rows,
+                                     save_path=save_path,
+                                     force_update=self.force_update,
+                                     name=override)
         elif dataset == "rxr_custom" or dataset == "rxr-custom":
             output = rxr.get_custom(update_path=update_path,
                                     revise_rows=self.revise_rows,
@@ -231,7 +238,7 @@ class Session(object):
 
         Parameters
         ----------
-        dataset : {'inflation', 'fiscal', 'naccounts', 'labor'}
+        dataset : {'inflation', 'fiscal', 'naccounts', 'labor', 'real_wages'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -284,12 +291,19 @@ class Session(object):
                                            name=override,
                                            **kwargs)
         elif dataset == "labor" or dataset == "labour":
-            called_args = logutil.get_called_args(frequent.labor_mkt,
+            called_args = logutil.get_called_args(frequent.labor_rate_people,
                                                   kwargs)
-            output = frequent.labor_mkt(update_path=update_path,
-                                        save_path=save_path,
-                                        name=override,
-                                        **kwargs)
+            output = frequent.labor_rate_people(update_path=update_path,
+                                                save_path=save_path,
+                                                name=override,
+                                                **kwargs)
+        elif dataset == "wages" or dataset == "real_wages":
+            called_args = logutil.get_called_args(frequent.labor_real_wages,
+                                                  kwargs)
+            output = frequent.labor_real_wages(update_path=update_path,
+                                               save_path=save_path,
+                                               name=override,
+                                               **kwargs)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 
