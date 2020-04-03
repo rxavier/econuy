@@ -7,9 +7,9 @@ from typing import Union, Optional
 import pandas as pd
 
 from econuy import frequent, transform
-from econuy.resources import logutil
+from econuy.utils import logutil
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
-                              labor, rxr, commodity_index, reserves)
+                              labor, rxr, commodity_index, fx_operations)
 
 
 class Session(object):
@@ -18,7 +18,7 @@ class Session(object):
 
     Attributes
     ----------
-    loc_dir : str or os.PathLike, default 'econuy-data'
+    data_dir : str or os.PathLike, default 'econuy-data'
         Directory indicating where data will be saved to and retrieved from.
     revise_rows : {'nodup', 'auto', int}
         Defines how to process data updates. An integer indicates how many rows
@@ -44,14 +44,14 @@ class Session(object):
     """
 
     def __init__(self,
-                 loc_dir: Union[str, PathLike] = "econuy-data",
+                 data_dir: Union[str, PathLike] = "econuy-data",
                  revise_rows: Union[int, str] = "nodup",
                  force_update: bool = False,
                  dataset: Union[dict, pd.DataFrame] = pd.DataFrame(),
                  log: Union[int, str] = 1,
                  logger: Optional[logging.Logger] = None,
                  inplace: bool = False):
-        self.loc_dir = loc_dir
+        self.data_dir = data_dir
         self.revise_rows = revise_rows
         self.force_update = force_update
         self.dataset = dataset
@@ -59,8 +59,8 @@ class Session(object):
         self.logger = logger
         self.inplace = inplace
 
-        if not path.exists(self.loc_dir):
-            makedirs(self.loc_dir)
+        if not path.exists(self.data_dir):
+            makedirs(self.data_dir)
 
         if logger is not None:
             self.log = "custom"
@@ -71,11 +71,11 @@ class Session(object):
                                  " default file), or str (log to console and "
                                  "file with filename=str).")
             elif log == 2:
-                logfile = Path(self.loc_dir) / "info.log"
+                logfile = Path(self.data_dir) / "info.log"
                 log_obj = logutil.setup(file=logfile)
                 log_method = f"console and file ({logfile.as_posix()})"
             elif isinstance(log, str) and log != "custom":
-                logfile = (Path(self.loc_dir) / log).with_suffix(".log")
+                logfile = (Path(self.data_dir) / log).with_suffix(".log")
                 log_obj = logutil.setup(file=logfile)
                 log_method = f"console and file ({logfile.as_posix()})"
             elif log == 1:
@@ -97,7 +97,7 @@ class Session(object):
                 revise_method = revise_rows
             log_obj.info(f"Created Session object with the "
                          f"following attributes:\n"
-                         f"Directory for downloads and updates: {loc_dir}\n"
+                         f"Directory for downloads and updates: {data_dir}\n"
                          f"Update method: {revise_method}\n"
                          f"Dataset: {dataset_message}\n"
                          f"Logging method: {log_method}")
@@ -115,8 +115,7 @@ class Session(object):
         Parameters
         ----------
         dataset : {'cpi', 'nxr_monthly', 'nxr_daily', 'fiscal', 'naccounts', \
-                'labor', 'comm_index', 'rxr_custom', 'rxr_official', \
-                'reserves', 'fx_ops'}
+                'labor', 'comm_index', 'rxr_custom', 'rxr_official', 'fx_ops'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -145,11 +144,11 @@ class Session(object):
 
         """
         if update is True:
-            update_path = Path(self.loc_dir)
+            update_path = Path(self.data_dir)
         else:
             update_path = None
         if save is True:
-            save_path = Path(self.loc_dir)
+            save_path = Path(self.data_dir)
         else:
             save_path = None
 
@@ -159,64 +158,60 @@ class Session(object):
                              f"arguments: {keywords}")
 
         if dataset == "cpi" or dataset == "prices":
-            output = cpi.get(update=update_path,
+            output = cpi.get(update_path=update_path,
                              revise_rows=self.revise_rows,
-                             save=save_path,
+                             save_path=save_path,
                              force_update=self.force_update,
                              name=override)
         elif dataset == "fiscal":
-            output = fiscal_accounts.get(update=update_path,
+            output = fiscal_accounts.get(update_path=update_path,
                                          revise_rows=self.revise_rows,
-                                         save=save_path,
+                                         save_path=save_path,
                                          force_update=self.force_update,
                                          name=override)
         elif dataset == "nxr_monthly" or dataset == "nxr_m":
-            output = nxr.get_monthly(update=update_path,
+            output = nxr.get_monthly(update_path=update_path,
                                      revise_rows=self.revise_rows,
-                                     save=save_path,
+                                     save_path=save_path,
                                      force_update=self.force_update,
                                      name=override)
         elif dataset == "nxr_daily" or dataset == "nxr_d":
-            output = nxr.get_daily(update=update_path,
-                                   save=save_path,
+            output = nxr.get_daily(update_path=update_path,
+                                   save_path=save_path,
                                    name=override)
         elif dataset == "naccounts" or dataset == "na":
-            output = national_accounts.get(update=update_path,
+            output = national_accounts.get(update_path=update_path,
                                            revise_rows=self.revise_rows,
-                                           save=save_path,
+                                           save_path=save_path,
                                            force_update=self.force_update,
                                            name=override)
         elif dataset == "labor" or dataset == "labour":
-            output = labor.get(update=update_path,
+            output = labor.get(update_path=update_path,
                                revise_rows=self.revise_rows,
-                               save=save_path,
+                               save_path=save_path,
                                force_update=self.force_update,
                                name=override)
         elif dataset == "rxr_custom" or dataset == "rxr-custom":
-            output = rxr.get_custom(update=update_path,
+            output = rxr.get_custom(update_path=update_path,
                                     revise_rows=self.revise_rows,
-                                    save=save_path,
+                                    save_path=save_path,
                                     force_update=self.force_update,
                                     name=override)
         elif dataset == "rxr_official" or dataset == "rxr-official":
-            output = rxr.get_official(update=update_path,
+            output = rxr.get_official(update_path=update_path,
                                       revise_rows=self.revise_rows,
-                                      save=save_path,
+                                      save_path=save_path,
                                       force_update=self.force_update,
                                       name=override)
         elif dataset == "commodity_index" or dataset == "comm_index":
-            output = commodity_index.get(update=update_path,
-                                         save=save_path,
+            output = commodity_index.get(update_path=update_path,
+                                         save_path=save_path,
                                          name=override,
                                          **kwargs)
-        elif dataset == "reserves":
-            output = reserves.get_chg(update=update_path,
-                                      save=save_path,
-                                      name=override)
         elif dataset == "fx_ops" or dataset == "fxops":
-            output = reserves.get_operations(update=update_path,
-                                             save=save_path,
-                                             name=override)
+            output = fx_operations.get(update_path=update_path,
+                                       save_path=save_path,
+                                       name=override)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 
@@ -225,12 +220,12 @@ class Session(object):
         return self
 
     @logutil.log_getter
-    def get_tfm(self,
-                dataset: str,
-                update: bool = True,
-                save: bool = True,
-                override: Optional[str] = None,
-                **kwargs):
+    def get_frequent(self,
+                     dataset: str,
+                     update: bool = True,
+                     save: bool = True,
+                     override: Optional[str] = None,
+                     **kwargs):
         """
         Get frequently used datasets.
 
@@ -260,39 +255,39 @@ class Session(object):
 
         """
         if update is True:
-            update_path = Path(self.loc_dir)
+            update_path = Path(self.data_dir)
         else:
             update_path = None
         if save is True:
-            save_path = Path(self.loc_dir)
+            save_path = Path(self.data_dir)
         else:
             save_path = None
 
         if dataset == "inflation":
             called_args = logutil.get_called_args(frequent.inflation,
                                                   kwargs)
-            output = frequent.inflation(update=update_path,
-                                        save=save_path,
+            output = frequent.inflation(update_path=update_path,
+                                        save_path=save_path,
                                         name=override)
         elif dataset == "fiscal":
             called_args = logutil.get_called_args(frequent.fiscal,
                                                   kwargs)
-            output = frequent.fiscal(update=update_path,
-                                     save=save_path,
+            output = frequent.fiscal(update_path=update_path,
+                                     save_path=save_path,
                                      name=override,
                                      **kwargs)
         elif dataset == "naccounts" or dataset == "na":
             called_args = logutil.get_called_args(frequent.nat_accounts,
                                                   kwargs)
-            output = frequent.nat_accounts(update=update_path,
-                                           save=save_path,
+            output = frequent.nat_accounts(update_path=update_path,
+                                           save_path=save_path,
                                            name=override,
                                            **kwargs)
         elif dataset == "labor" or dataset == "labour":
             called_args = logutil.get_called_args(frequent.labor_mkt,
                                                   kwargs)
-            output = frequent.labor_mkt(update=update_path,
-                                        save=save_path,
+            output = frequent.labor_mkt(update_path=update_path,
+                                        save_path=save_path,
                                         name=override,
                                         **kwargs)
         else:
@@ -330,7 +325,7 @@ class Session(object):
             self.dataset = output
             return self
         else:
-            return Session(loc_dir=self.loc_dir,
+            return Session(data_dir=self.data_dir,
                            revise_rows=self.revise_rows,
                            force_update=self.force_update,
                            dataset=output,
@@ -360,7 +355,7 @@ class Session(object):
             self.dataset = output
             return self
         else:
-            return Session(loc_dir=self.loc_dir,
+            return Session(data_dir=self.data_dir,
                            revise_rows=self.revise_rows,
                            force_update=self.force_update,
                            dataset=output,
@@ -441,7 +436,7 @@ class Session(object):
             self.dataset = output
             return self
         else:
-            return Session(loc_dir=self.loc_dir,
+            return Session(data_dir=self.data_dir,
                            revise_rows=self.revise_rows,
                            force_update=self.force_update,
                            dataset=output,
@@ -470,14 +465,14 @@ class Session(object):
             output = {}
             for key, value in self.dataset.items():
                 if flavor == "usd":
-                    table = transform.convert_usd(value, update=update,
-                                                  save=save)
+                    table = transform.convert_usd(value, update_path=update,
+                                                  save_path=save)
                 elif flavor == "real":
-                    table = transform.convert_real(value, update=update,
-                                                   save=save, **kwargs)
+                    table = transform.convert_real(value, update_path=update,
+                                                   save_path=save, **kwargs)
                 elif flavor == "pcgdp" or flavor == "gdp":
-                    table = transform.convert_gdp(value, update=update,
-                                                  save=save)
+                    table = transform.convert_gdp(value, update_path=update,
+                                                  save_path=save)
                 else:
                     raise ValueError("'flavor' can be one of 'usd', 'real', "
                                      "or 'pcgdp'.")
@@ -485,14 +480,17 @@ class Session(object):
                 output.update({key: table})
         else:
             if flavor == "usd":
-                output = transform.convert_usd(self.dataset, update=update,
-                                               save=save)
+                output = transform.convert_usd(self.dataset,
+                                               update_path=update,
+                                               save_path=save)
             elif flavor == "real":
-                output = transform.convert_real(self.dataset, update=update,
-                                                save=save, **kwargs)
+                output = transform.convert_real(self.dataset,
+                                                update_path=update,
+                                                save_path=save, **kwargs)
             elif flavor == "pcgdp" or flavor == "gdp":
-                output = transform.convert_gdp(self.dataset, update=update,
-                                               save=save)
+                output = transform.convert_gdp(self.dataset,
+                                               update_path=update,
+                                               save_path=save)
             else:
                 raise ValueError("'flavor' can be one of 'usd', 'real', "
                                  "or 'pcgdp'.")
@@ -500,7 +498,7 @@ class Session(object):
             self.dataset = output
             return self
         else:
-            return Session(loc_dir=self.loc_dir,
+            return Session(data_dir=self.data_dir,
                            revise_rows=self.revise_rows,
                            force_update=self.force_update,
                            dataset=output,
@@ -531,7 +529,7 @@ class Session(object):
             self.dataset = output
             return self
         else:
-            return Session(loc_dir=self.loc_dir,
+            return Session(data_dir=self.data_dir,
                            revise_rows=self.revise_rows,
                            force_update=self.force_update,
                            dataset=output,
@@ -562,7 +560,7 @@ class Session(object):
             self.dataset = output
             return self
         else:
-            return Session(loc_dir=self.loc_dir,
+            return Session(data_dir=self.data_dir,
                            revise_rows=self.revise_rows,
                            force_update=self.force_update,
                            dataset=output,
@@ -575,18 +573,18 @@ class Session(object):
 
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                save_path = (Path(self.loc_dir) /
+                save_path = (Path(self.data_dir) /
                              f"{name}_{key}").with_suffix(".csv")
                 if not path.exists(path.dirname(save_path)):
                     mkdir(path.dirname(save_path))
                 value.to_csv(save_path)
         else:
-            save_path = (Path(self.loc_dir) / name).with_suffix(".csv")
+            save_path = (Path(self.data_dir) / name).with_suffix(".csv")
             if not path.exists(path.dirname(save_path)):
                 mkdir(path.dirname(save_path))
             self.dataset.to_csv(save_path)
 
-        self.logger.info(f"Saved dataset to directory {self.loc_dir}.")
+        self.logger.info(f"Saved dataset to directory {self.data_dir}.")
 
     def final(self):
         """Return :attr:`dataset` attribute."""

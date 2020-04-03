@@ -4,10 +4,10 @@ import warnings
 import pandas as pd
 
 
-def _setmeta(
+def _set(
         df: pd.DataFrame, area: Optional[str] = None,
         currency: Optional[str] = None, inf_adj: Optional[str] = None,
-        index: Optional[str] = None, seas_adj: Optional[str] = None,
+        unit: Optional[str] = None, seas_adj: Optional[str] = None,
         ts_type: Optional[str] = None, cumperiods: Optional[int] = None
 ):
     """Add a multiindex to a dataframe's columns.
@@ -24,14 +24,14 @@ def _setmeta(
         Currency denomination.
     inf_adj : str or None (default is None)
         Whether the data is in constant prices.
-    index : str or None (default is None)
-        Whether the data is some type of index.
+    unit : str or None (default is None)
+        Units in which data is defined.
     seas_adj : str or None (default is None)
         Whether the data is seasonally adjusted.
     ts_type : str or None (default is None)
-        Time series type, generally 'stock' or 'flow'.
+        Time series type, generally 'Stock' or 'Flujo'.
     cumperiods : int or None (default is None)
-        Number of periods accumulated per observation.
+        Number of periods accumulated per period.
 
     Returns
     -------
@@ -49,14 +49,14 @@ def _setmeta(
                       "from the index. Setting to '-'.", UserWarning)
         inferred_freq = "-"
     names = [
-        "Indicador", "Área", "Frecuencia", "Unidad/Moneda",
-        "Inf. adj.", "Índice", "Seas. Adj.", "Tipo", "Acum. períodos"
+        "Indicador", "Área", "Frecuencia", "Moneda",
+        "Inf. adj.", "Unidad", "Seas. Adj.", "Tipo", "Acum. períodos"
     ]
     if not isinstance(df.columns, pd.MultiIndex):
         df.columns = pd.MultiIndex.from_product(
             [
                 colnames, [area], [inferred_freq], [currency], [inf_adj],
-                [index], [seas_adj], [ts_type], [cumperiods]
+                [unit], [seas_adj], [ts_type], [cumperiods]
             ],
             names=names
         )
@@ -72,8 +72,8 @@ def _setmeta(
             arrays[3] = [currency] * len(df.columns)
         if inf_adj is not None:
             arrays[4] = [inf_adj] * len(df.columns)
-        if index is not None:
-            arrays[5] = [index] * len(df.columns)
+        if unit is not None:
+            arrays[5] = [unit] * len(df.columns)
         if seas_adj is not None:
             arrays[6] = [seas_adj] * len(df.columns)
         if ts_type is not None:

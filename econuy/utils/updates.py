@@ -5,7 +5,7 @@ from typing import Union
 
 import pandas as pd
 
-from econuy.resources import columns
+from econuy.utils import metadata
 
 
 def _check_modified(data_path: Union[str, PathLike], multiindex=True):
@@ -17,7 +17,7 @@ def _check_modified(data_path: Union[str, PathLike], multiindex=True):
             previous_data = pd.read_csv(data_path, index_col=0,
                                         header=list(range(9)),
                                         float_precision="high")
-            columns._setmeta(previous_data)
+            metadata._set(previous_data)
         else:
             previous_data = pd.read_csv(data_path, index_col=0)
         previous_data.index = pd.to_datetime(previous_data.index)

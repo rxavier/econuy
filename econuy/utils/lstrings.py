@@ -189,7 +189,7 @@ fiscal_sheets = {
 
 nat_accounts_metadata = {
     "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_101t.xls":
-        {"Rows": 12, "Inf. Adj.": "Const. 2005", "Index": "No", "Seas": "NSA",
+        {"Rows": 12, "Inf. Adj.": "Const. 2005", "Unit": "Miles", "Seas": "NSA",
          "Name": "ind_con_nsa",
          "Colnames": ["PBI: Actividades primarias",
                       "PBI: Agricultura, ganadería, caza y silvucultura",
@@ -202,7 +202,7 @@ nat_accounts_metadata = {
                       "PBI: SIFMI", "PBI: Impuestos menos subvenciones",
                       "PBI"]},
     "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_100t.xls":
-        {"Rows": 12, "Inf. Adj.": "Corriente", "Index": "No", "Seas": "NSA",
+        {"Rows": 12, "Inf. Adj.": "No", "Unit": "Miles", "Seas": "NSA",
          "Name": "ind_cur_nsa",
          "Colnames": ["PBI: Actividades primarias",
                       "PBI: Agricultura, ganadería, caza y silvucultura",
@@ -215,7 +215,7 @@ nat_accounts_metadata = {
                       "PBI: SIFMI", "PBI: Impuestos menos subvenciones",
                       "PBI"]},
     "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_104t.xls":
-        {"Rows": 10, "Inf. Adj.": "Const. 2005", "Index": "No", "Seas": "NSA",
+        {"Rows": 10, "Inf. Adj.": "Const. 2005", "Unit": "Miles", "Seas": "NSA",
          "Name": "gas_con_nsa",
          "Colnames": ["PBI: Gasto total", "PBI: Gasto privado",
                       "PBI: Gasto público",
@@ -226,7 +226,7 @@ nat_accounts_metadata = {
                       "PBI: Exportaciones",
                       "PBI: Importaciones", "PBI"]},
     "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_132t.xls":
-        {"Rows": 12, "Inf. Adj.": "Const. 2005", "Index": "2005=100",
+        {"Rows": 12, "Inf. Adj.": "Const. 2005", "Unit": "2005=100",
          "Seas": "NSA", "Name": "ind_con_idx_nsa",
          "Colnames": ["PBI: Actividades primarias",
                       "PBI: Agricultura, ganadería, caza y silvucultura",
@@ -239,7 +239,7 @@ nat_accounts_metadata = {
                       "PBI: SIFMI", "PBI: Impuestos menos subvenciones",
                       "PBI"]},
     "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_133t.xls":
-        {"Rows": 12, "Inf. Adj.": "Const. 2005", "Index": "2005=100",
+        {"Rows": 12, "Inf. Adj.": "Const. 2005", "Unit": "2005=100",
          "Seas": "SA", "Name": "ind_con_idx_sa",
          "Colnames": ["PBI: Actividades primarias",
                       "PBI: Agricultura, ganadería, caza y silvucultura",
@@ -252,7 +252,7 @@ nat_accounts_metadata = {
                       "PBI: SIFMI", "PBI: Impuestos menos subvenciones",
                       "PBI"]},
     "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_130t.xls":
-        {"Rows": 2, "Inf. Adj.": "Corriente", "Index": "No", "Seas": "NSA",
+        {"Rows": 2, "Inf. Adj.": "No", "Unit": "Miles", "Seas": "NSA",
          "Name": "gdp_cur_nsa",
          "Colnames": ["PBI"]}}
 

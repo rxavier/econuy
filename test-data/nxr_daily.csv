@@ -1,9 +1,9 @@
 Indicador,"Tipo de cambio US$, Cable"
 Área,Precios y salarios
 Frecuencia,-
-Unidad/Moneda,-
+Moneda,UYU/USD
 Inf. adj.,No
-Índice,No
+Unidad,-
 Seas. Adj.,NSA
 Tipo,-
 Acum. períodos,1
@@ -4999,3 +4999,10 @@ Acum. períodos,1
 2020-02-11,37.773
 2020-02-12,37.91
 2020-02-13,38.053
+2020-02-14,37.916
+2020-02-17,37.906
+2020-02-18,38.046
+2020-02-19,38.064
+2020-02-20,38.254
+2020-02-21,38.378
+2020-02-26,38.603

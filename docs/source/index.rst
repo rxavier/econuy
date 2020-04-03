@@ -47,7 +47,7 @@ Retrieval functions
    :members:
    :undoc-members:
    :show-inheritance:
-.. automodule:: econuy.retrieval.reserves
+.. automodule:: econuy.retrieval.fx_operations
    :members:
    :undoc-members:
    :show-inheritance:

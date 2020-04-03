@@ -1,9 +1,9 @@
 Indicador,Futuros,Forwards
 Área,Reservas internacionales,Reservas internacionales
 Frecuencia,-,-
-Unidad/Moneda,USD,USD
+Moneda,USD,USD
 Inf. adj.,No,No
-Índice,No,No
+Unidad,Millones,Millones
 Seas. Adj.,NSA,NSA
 Tipo,Flujo,Flujo
 Acum. períodos,1,1
@@ -1437,3 +1437,5 @@ Date,,
 2020-02-18,0.0,0.0
 2020-02-19,0.0,0.0
 2020-02-20,0.0,0.0
+2020-02-21,0.0,0.0
+2020-02-26,0.0,0.0
