@@ -1,4 +1,4 @@
-<img src="https://i.imgur.com/o6cxmaP.jpg" height=300 style="margin-bottom:60px;">
+<img src="https://i.imgur.com/o6cxmaP.jpg" height=250 style="margin-bottom:60px;">
 
   <a href="https://www.python.org/downloads/release/python-360/"><img src="https://img.shields.io/badge/python-=>3.6-blue.svg"></a>
   <a href="https://badge.fury.io/py/econuy"><img src="https://badge.fury.io/py/econuy.svg"></a>
@@ -9,9 +9,7 @@
 
 This project simplifies gathering and processing of Uruguay economic statistics. Data is retrieved from (mostly) government sources and can be transformed in several ways (converting to dollars, calculating rolling averages, resampling to other frequencies, etc.).
 
-If the following screenshot gives you anxiety, this package should be of interest:
-
- <img src="https://i.imgur.com/Ku5OR0y.jpg" height=250>
+If [this screenshot](https://i.imgur.com/Ku5OR0y.jpg) gives you anxiety, this package should be of interest:
 
 # Installation
 
@@ -34,8 +32,6 @@ python setup.py install
 **[Read the documentation](https://econuy.readthedocs.io/)**
 
 ## The `Session()` class
-
-### Basics
 
 This is the recommended entry point for the package. It allows setting up the common behavior for downloads, and holds the current working dataset.
 
@@ -80,7 +76,7 @@ For example, the following downloads CPI data, calculates annual inflation (pct 
 df = session.get_frequent(dataset="inflation")
 ```
 
-#### Session transformation methods
+### Session transformation methods
 
 These class methods take a `Session()` object with a valid dataset and allow performing preset transformation pipelines. For example:
 ```
