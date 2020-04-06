@@ -1,4 +1,4 @@
-<img src="https://i.imgur.com/o6cxmaP.jpg" height=250 style="margin-bottom:60px;">
+<img src="https://i.imgur.com/o6cxmaP.jpg" width=400 style="margin-bottom:60px;">
 
   <a href="https://www.python.org/downloads/release/python-360/"><img src="https://img.shields.io/badge/python-=>3.6-blue.svg"></a>
   <a href="https://badge.fury.io/py/econuy"><img src="https://badge.fury.io/py/econuy.svg"></a>
@@ -121,14 +121,18 @@ If you want to use the `decompose()` method  you will need to supply the X13 bin
 The [patool](https://github.com/wummel/patool) library is used in order to access fiscal data, which is provided by the MEF in `.rar` format. This library requires that you have the unrar binaries in your system, which you can get them from [here](https://www.rarlab.com/rar_add.htm).
 
 ----
-## Word of warning
+
+# Problems and plans
+
+## Problems
 
 This project is heavily based on getting data from online sources that could change without notice, causing methods that download data to fail. While I try to stay on my toes and fix these quickly, it helps if you create an issue when you find one of these (or even submit a fix!).
 
-## What next
+## Plans
 
 * ~~I now realize this project would greatly benefit from OOP and plan to implement it next.~~
 * ~~Tests.~~
 * CLI.
-* Handling everything with column multi-indexes really doesn't seem like the best way to go around this.
+* Website.
 * Automating data updates.
+* Visualization.

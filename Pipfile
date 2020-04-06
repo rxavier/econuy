@@ -15,6 +15,8 @@ pytest = "*"
 coverage = "*"
 flake8 = "*"
 autopep8 = "*"
+m2r = "*"
+recommonmark = "*"
 
 [packages]
 pandas = "~=0.25.0"
