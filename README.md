@@ -1,4 +1,4 @@
-<img src="https://i.imgur.com/o6cxmaP.jpg" height=250 style="margin-bottom:60px;">
+<img src="https://i.imgur.com/o6cxmaP.jpg" width=400 style="margin-bottom:60px;">
 
   <a href="https://www.python.org/downloads/release/python-360/"><img src="https://img.shields.io/badge/python-=>3.6-blue.svg"></a>
   <a href="https://badge.fury.io/py/econuy"><img src="https://badge.fury.io/py/econuy.svg"></a>
