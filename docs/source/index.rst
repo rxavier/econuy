@@ -14,7 +14,7 @@ Wrangling Uruguay economic data so you don't have to.
 User documentation
 ------------------
 
-Check the readme for a brief explainer on how to use the package.
+Check the readme for a brief explainer on how to use the package, what extra stuff you might need and which problems you might face.
 
 .. toctree::
    :maxdepth: 3
@@ -24,7 +24,7 @@ Check the readme for a brief explainer on how to use the package.
 API documentation
 -----------------
 
-API documentation automatically generated from source code:
+Or read the API documentation (automatically generated from source code) for the specifics.
 
 .. toctree::
 
