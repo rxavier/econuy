@@ -33,7 +33,8 @@ release = __version__
 # ones.
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.napoleon',
-              'sphinx.ext.viewcode']
+              'sphinx.ext.viewcode',
+              'm2r']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -60,3 +61,4 @@ autodoc_member_order = 'bysource'
 add_function_parentheses = True
 pygments_style = 'sphinx'
 master_doc = 'index'
+source_suffix = ['.rst', '.md']
