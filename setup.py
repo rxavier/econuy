@@ -25,7 +25,7 @@ with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
 setup(
     name="econuy",
     version=__version__,
-    description="Download and process Uruguayan economic data.",
+    description="Wrangling Uruguay economic data so you don't have to.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Rafael Xavier",

@@ -1,14 +1,21 @@
-[![Python 3.6](https://img.shields.io/badge/python-=>3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
-[![PyPI version](https://badge.fury.io/py/econuy.svg)](https://badge.fury.io/py/econuy)
-[![Build Status](https://travis-ci.org/rxavier/econuy.svg?branch=master)](https://travis-ci.org/rxavier/econuy)
-[![codecov](https://codecov.io/gh/rxavier/econuy/branch/master/graph/badge.svg)](https://codecov.io/gh/rxavier/econuy)
-[![Documentation Status](https://readthedocs.org/projects/econuy/badge/?version=latest)](https://econuy.readthedocs.io/en/latest/?badge=latest)
+<img src="https://i.imgur.com/o6cxmaP.jpg" height=300 style="margin-bottom:40px;">
 
-# ECON-UY
+  <a href="https://www.python.org/downloads/release/python-360/"><img src="https://img.shields.io/badge/python-=>3.6-blue.svg"></a>
+  <a href="https://badge.fury.io/py/econuy"><img src="https://badge.fury.io/py/econuy.svg"></a>
+  <a href="https://travis-ci.org/rxavier/econuy"><img src="https://travis-ci.org/rxavier/econuy.svg?branch=master"></a>
+  <a href="https://codecov.io/gh/rxavier/econuy"><img src="https://codecov.io/gh/rxavier/econuy/branch/master/graph/badge.svg"></a>
+  <a href="https://econuy.readthedocs.io/en/latest/?badge=latest"><img src="https://readthedocs.org/projects/econuy/badge/?version=latest"></a>
 
-This project aims at simplifying gathering, processing and visualization (in the future) of Uruguay economic statistics. Data is retrieved from (mostly) government sources and can be transformed in several ways (converting to dollars, calculating rolling averages, resampling to other frequencies, etc.).
 
-## Installation
+This project simplifies gathering and processing of Uruguay economic statistics. Data is retrieved from (mostly) government sources and can be transformed in several ways (converting to dollars, calculating rolling averages, resampling to other frequencies, etc.).
+
+If the following screenshot gives you anxiety, this package should be of interest:
+
+<p align="center">
+  <img src="https://i.imgur.com/Ku5OR0y.jpg" height=250>
+</p>
+
+# Installation
 
 * PyPI:
 
@@ -24,13 +31,13 @@ cd econuy
 python setup.py install
 ```
 
-## Usage
+# Usage
 
 **[Read the documentation](https://econuy.readthedocs.io/)**
 
-### The `Session()` class
+## The `Session()` class
 
-#### Basics
+### Basics
 
 This is the recommended entry point for the package. It allows setting up the common behavior for downloads, and holds the current working dataset.
 
@@ -50,9 +57,9 @@ The `Session()` object is initialized with the `data_dir`, `revise_rows`,  `forc
 * `logger` holds the current logger object from the logging module. Generally, the end user shouldn't set this manually.
 * `inplace` controls whether transformation methods modify the current Session object inplace or whether they create a new instance with the same attributes (except `dataset`, of course).
 
-#### Methods
+### Session retrieval methods
 
-**`get()`** 
+#### `get()`
 
 Downloads the basic datasets. These are basically as provided by official sources, except various Pandas transformations are performed to render nice looking dataframes with appropiate column names, time indexes and properly defined values.
 
@@ -66,7 +73,7 @@ df = session.get(dataset="cpi").dataset
 ```
 Note that the previous code block accessed the `dataset` attribute in order to get a dataframe. Alternatively, one could also call the `final()` method after calling `get()`.
 
-**`get_frequent()`**
+#### `get_frequent()`
 
 Gives access to predefined data pipelines that output frequently used data. These are based on the datasets provided by `get()`, but are transformed to render data that you might find more immediately useful.
 
@@ -75,9 +82,9 @@ For example, the following downloads CPI data, calculates annual inflation (pct 
 df = session.get_frequent(dataset="inflation")
 ```
 
-**Transformation methods**
+#### Session transformation methods
 
-Take a `Session()` object with a valid dataset and allow performing preset transformation pipelines. For example:
+These class methods take a `Session()` object with a valid dataset and allow performing preset transformation pipelines. For example:
 ```
 df = session.get(dataset="nxr").decompose(flavor="trend", outlier=True, trading=False)
 ```
@@ -91,8 +98,11 @@ Available transformation methods are
 * `base_index()` - set a period or window as 100, scale rest accordingly
 * `rolling()` - calculate rolling windows, either average or sum.
 
-----
-#### Dataframe/CSV headers
+## Retrieval functions
+
+If you don't want to go the `Session()` way, you can simply get your data from the functions under `econuy.retrieval`, for example `econuy.retrieval.fiscal_accounts.get()`. While creating a Session object is recommended, this can be easier if you only plan on retrieving a single dataset.
+
+## Dataframe/CSV headers
 
 Metadata for each dataset is held in Pandas MultiIndexes with the following:
 
@@ -106,11 +116,13 @@ Metadata for each dataset is held in Pandas MultiIndexes with the following:
 8) Type (stock or flow)
 9) Cumulative periods
 
-#### X13 ARIMA binary
+## External binaries and libraries
+
+### X13 ARIMA binary
 
 If you want to use the `decompose()` method  you will need to supply the X13 binary (or place it somewhere reasonable and set `x13_binary="search"`). You can get it [from here](https://www.census.gov/srd/www/x13as/x13down_pc.html) for Windows or [from here](https://www.census.gov/srd/www/x13as/x13down_unix.html) for UNIX systems. For macOS you can compile it using the instructions found [here](https://github.com/christophsax/seasonal/wiki/Compiling-X-13ARIMA-SEATS-from-Source-for-OS-X) (choose the non-html version) or use my version (working under macOS Catalina) from [here](https://drive.google.com/open?id=1HxFoi57TWaBMV90NoOAbM8hWdZS9uoz_).
 
-#### unrar libraries
+### unrar libraries
 
 The [patool](https://github.com/wummel/patool) library is used in order to access fiscal data, which is provided by the MEF in `.rar` format. This library requires that you have the unrar binaries in your system, which you can get them from [here](https://www.rarlab.com/rar_add.htm).
 
