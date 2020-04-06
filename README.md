@@ -1,4 +1,4 @@
-<img src="https://i.imgur.com/o6cxmaP.jpg" height=300 style="margin-bottom:40px;">
+<img src="https://i.imgur.com/o6cxmaP.jpg" height=300 style="margin-bottom:60px;">
 
   <a href="https://www.python.org/downloads/release/python-360/"><img src="https://img.shields.io/badge/python-=>3.6-blue.svg"></a>
   <a href="https://badge.fury.io/py/econuy"><img src="https://badge.fury.io/py/econuy.svg"></a>
@@ -11,9 +11,7 @@ This project simplifies gathering and processing of Uruguay economic statistics.
 
 If the following screenshot gives you anxiety, this package should be of interest:
 
-<p align="center">
-  <img src="https://i.imgur.com/Ku5OR0y.jpg" height=250>
-</p>
+ <img src="https://i.imgur.com/Ku5OR0y.jpg" height=250>
 
 # Installation
 
