@@ -3,8 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-econuy: wrangling Uruguay economic data so you don't have to
+econ_uy
 ===============================================================
+
+Wrangling Uruguay economic data so you don't have to.
 
 .. contents::
    :local:
