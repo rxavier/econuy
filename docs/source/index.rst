@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-econ_uy
+econuy
 ===============================================================
 
 Wrangling Uruguay economic data so you don't have to.
@@ -17,7 +17,9 @@ User documentation
 Check the readme for a brief explainer on how to use the package.
 
 .. toctree::
-   readme.rst
+   :maxdepth: 3
+
+   README.md
 
 API documentation
 -----------------
@@ -25,4 +27,5 @@ API documentation
 API documentation automatically generated from source code:
 
 .. toctree::
+
    api.rst

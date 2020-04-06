@@ -12,9 +12,12 @@
 #
 import os
 import sys
+from shutil import copyfile
 sys.path.insert(0, os.path.abspath('../../'))
 from econuy import __version__
 
+
+copyfile("../../README.md", "README.md")
 
 # -- Project information -----------------------------------------------------
 
@@ -34,7 +37,7 @@ release = __version__
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.napoleon',
               'sphinx.ext.viewcode',
-              'm2r']
+              'recommonmark']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -62,3 +65,4 @@ add_function_parentheses = True
 pygments_style = 'sphinx'
 master_doc = 'index'
 source_suffix = ['.rst', '.md']
+html_logo = "../../logo.png"
