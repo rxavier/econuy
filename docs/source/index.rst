@@ -3,72 +3,24 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-econuy Documentation
-==================================
+econonuy: wrangling Uruguay economic data so you don't have to
+===============================================================
+
+.. contents::
+   :local:
+
+User documentation
+------------------
+
+Check the readme for a brief explainer on how to use the package.
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   readme.rst
 
-Session class
-=============
-.. autoclass:: econuy.session.Session
-   :members:
-   :undoc-members:
-   :show-inheritance:
+API documentation
+-----------------
 
-Retrieval functions
-===================
-.. automodule:: econuy.retrieval.cpi
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.nxr
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.national_accounts
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.fiscal_accounts
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.labor
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.rxr
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.commodity_index
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.fx_operations
-   :members:
-   :undoc-members:
-   :show-inheritance:
+API documentation automatically generated from source code:
 
-Transformation functions
-========================
-.. automodule:: econuy.transform
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Frequent functions
-==================
-.. automodule:: econuy.frequent
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. toctree::
+   api.rst

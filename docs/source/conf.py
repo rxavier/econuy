@@ -57,3 +57,6 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
 autodoc_member_order = 'bysource'
+add_function_parentheses = True
+pygments_style = 'sphinx'
+master_doc = 'index'
