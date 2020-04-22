@@ -7,6 +7,9 @@ import numpy as np
 import pandas as pd
 import requests
 from pandas.tseries.offsets import MonthEnd
+from urllib import error
+from requests import exceptions
+from opnieuw import retry
 
 from econuy import transform
 from econuy.utils import updates, metadata
@@ -14,6 +17,11 @@ from econuy.utils.lstrings import reer_url, ar_cpi_url, ar_cpi_payload
 from econuy.retrieval import cpi, nxr
 
 
+@retry(
+    retry_on_exceptions=(error.HTTPError, error.URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
 def get_official(update_path: Union[str, PathLike, None] = None,
                  revise_rows: Union[str, int] = "nodup",
                  save_path: Union[str, PathLike, None] = None,
@@ -83,6 +91,11 @@ def get_official(update_path: Union[str, PathLike, None] = None,
     return proc
 
 
+@retry(
+    retry_on_exceptions=(error.HTTPError, error.URLError),
+    max_calls_total=10,
+    retry_window_after_first_call_in_seconds=90,
+)
 def get_custom(update_path: Union[str, PathLike, None] = None,
                revise_rows: Union[str, int] = "nodup",
                save_path: Union[str, PathLike, None] = None,
@@ -206,6 +219,12 @@ def get_custom(update_path: Union[str, PathLike, None] = None,
     return output
 
 
+@retry(
+    retry_on_exceptions=(exceptions.HTTPError, exceptions.ConnectionError,
+                         error.HTTPError, error.URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
 def _missing_ar():
     """Get Argentina's non-official exchange rate and CPI."""
     today_fmt = dt.datetime.now().strftime("%d-%m-%Y")

@@ -30,6 +30,7 @@ numpy = "==1.17.4"
 lxml = "==4.4.2"
 econuy = {editable = true,path = "."}
 bleach = "==3.1.4"
+opnieuw = "==1.0.0"
 
 [requires]
 python_version = "3.7"

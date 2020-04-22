@@ -6,6 +6,8 @@ from typing import Union, Optional
 
 import pandas as pd
 from dateutil.relativedelta import relativedelta
+from urllib.error import URLError, HTTPError
+from opnieuw import retry
 
 from econuy.utils import metadata
 from econuy.utils.lstrings import (reserves_url, reserves_cols,
@@ -59,6 +61,11 @@ def get(update_path: Union[str, PathLike, None] = None,
     return fx_ops
 
 
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=10,
+    retry_window_after_first_call_in_seconds=90,
+)
 def _reserves_changes(update_path: Union[str, PathLike, None] = None,
                       save_path: Union[str, PathLike, None] = None,
                       name: Optional[str] = None) -> pd.DataFrame:
@@ -157,6 +164,11 @@ def _reserves_changes(update_path: Union[str, PathLike, None] = None,
     return reserves
 
 
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=10,
+    retry_window_after_first_call_in_seconds=90,
+)
 def _futures_forwards(update_path: Union[str, PathLike, None] = None,
                       save_path: Union[str, PathLike, None] = None,
                       name: Optional[str] = None) -> pd.DataFrame:

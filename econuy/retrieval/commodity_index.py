@@ -10,12 +10,20 @@ import numpy as np
 import pandas as pd
 import requests
 from pandas.tseries.offsets import YearEnd
+from urllib import error
+from requests import exceptions
+from opnieuw import retry
 
 from econuy.utils import updates, metadata
 from econuy.utils.lstrings import (beef_url, pulp_url, soybean_url,
                                    what_url, imf_url, milk1_url, milk2_url)
 
 
+@retry(
+    retry_on_exceptions=(exceptions.HTTPError, exceptions.ConnectionError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=90,
+)
 def _weights(update_path: Union[str, PathLike, None] = None,
              revise_rows: Union[str, int] = "nodup",
              save_path: Union[str, PathLike, None] = None,
@@ -101,6 +109,12 @@ def _weights(update_path: Union[str, PathLike, None] = None,
     return output
 
 
+@retry(
+    retry_on_exceptions=(error.HTTPError, error.URLError,
+                         exceptions.HTTPError, exceptions.ConnectionError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
 def _prices(update_path: Union[str, PathLike, None] = None,
             revise_rows: Union[str, int] = "nodup",
             save_path: Union[str, PathLike, None] = None,
