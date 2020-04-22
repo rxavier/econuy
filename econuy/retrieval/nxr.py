@@ -109,12 +109,15 @@ def get_daily(update_path: Union[str, PathLike, None] = None,
 
     if update_path is not None:
         full_update_path = (Path(update_path) / name).with_suffix(".csv")
-        prev_data = pd.read_csv(full_update_path, index_col=0,
-                                header=list(range(9)),
-                                float_precision="high")
-        metadata._set(prev_data)
-        prev_data.index = pd.to_datetime(prev_data.index)
-        start_date = prev_data.index[len(prev_data) - 1]
+        try:
+            prev_data = pd.read_csv(full_update_path, index_col=0,
+                                    header=list(range(9)),
+                                    float_precision="high")
+            metadata._set(prev_data)
+            prev_data.index = pd.to_datetime(prev_data.index)
+            start_date = prev_data.index[len(prev_data) - 1]
+        except FileNotFoundError:
+            prev_data = pd.DataFrame()
 
     today = dt.datetime.now()
     runs = (today - start_date).days // 30
