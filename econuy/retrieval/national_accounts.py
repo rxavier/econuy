@@ -5,12 +5,19 @@ from typing import Union, Optional, Dict
 
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
+from urllib.error import URLError, HTTPError
+from opnieuw import retry
 
 from econuy import transform
 from econuy.utils import updates, metadata
 from econuy.utils.lstrings import nat_accounts_metadata
 
 
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
 def get(update_path: Union[str, PathLike, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_path: Union[str, PathLike, None] = None,
@@ -110,6 +117,11 @@ def _fix_dates(df):
     df.index = pd.to_datetime(df.index, format="%m-%Y") + MonthEnd(1)
 
 
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
 def _lin_gdp(update_path: Union[str, PathLike, None] = None,
              save_path: Union[str, PathLike, None] = None,
              force_update: bool = False):

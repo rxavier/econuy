@@ -5,11 +5,18 @@ from typing import Union, Optional
 
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
+from urllib.error import URLError, HTTPError
+from opnieuw import retry
 
 from econuy.utils import updates, metadata
 from econuy.utils.lstrings import nxr_url, nxr_daily_url
 
 
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=30,
+)
 def get_monthly(update_path: Union[str, PathLike, None] = None,
                 revise_rows: Union[str, int] = "nodup",
                 save_path: Union[str, PathLike, None] = None,
@@ -80,6 +87,11 @@ def get_monthly(update_path: Union[str, PathLike, None] = None,
     return nxr
 
 
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=10,
+    retry_window_after_first_call_in_seconds=60,
+)
 def get_daily(update_path: Union[str, PathLike, None] = None,
               save_path: Union[str, PathLike, None] = None,
               name: Optional[str] = None) -> pd.DataFrame:
