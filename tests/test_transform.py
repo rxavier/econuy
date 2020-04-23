@@ -286,7 +286,7 @@ def test_convert():
     session = Session(data_dir=TEST_DIR, dataset=data)
     real = session.convert(flavor="real", start_date="2000-01-31").dataset
     real.columns = data.columns
-    assert np.all(abs(real) <= abs(data))
+    assert np.all(abs(real.iloc[1:]) <= abs(data.iloc[1:]))
     data = dummy_df(freq="M")
     session = Session(data_dir=TEST_DIR, dataset={
                       "data1": data, "data2": data})
