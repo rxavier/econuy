@@ -52,7 +52,7 @@ def get_monthly(update_path: Union[str, PathLike, None] = None,
     """
     update_threshold = 25
     if name is None:
-        name = "nxr"
+        name = "nxr_monthly"
 
     if update_path is not None:
         full_update_path = (Path(update_path) / name).with_suffix(".csv")
