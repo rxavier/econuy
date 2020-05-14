@@ -93,12 +93,14 @@ def df_to_sql(df: pd.DataFrame, name: str,
               index_label: str = "index") -> None:
     """Flatten MultiIndex index columns before creating SQL table
     from dataframe."""
-    if isinstance(df.columns, pd.MultiIndex):
-        metadata = df.columns.to_frame(index=False)
+    data = df.copy()
+    if isinstance(data.columns, pd.MultiIndex):
+        metadata = data.columns.to_frame(index=False)
         metadata.to_sql(name=f"{name}_metadata", con=con, if_exists=if_exists)
-        df.columns = df.columns.get_level_values(level=0)
+        data.columns = data.columns.get_level_values(level=0)
 
-    df.to_sql(name=name, con=con, if_exists=if_exists, index_label=index_label)
+    data.to_sql(name=name, con=con, if_exists=if_exists,
+                index_label=index_label)
 
     return
 
