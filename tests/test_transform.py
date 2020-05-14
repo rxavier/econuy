@@ -269,10 +269,6 @@ def test_convert():
     usd = session.convert(flavor="usd").dataset["data1"]
     usd.columns = data.columns
     assert np.all(abs(usd) <= abs(data))
-    with pytest.raises(ValueError):
-        data = dummy_df(freq="M", ts_type="wrong")
-        session = Session(data_dir=TEST_DIR, dataset=data)
-        session.convert(flavor="usd")
     data = dummy_df(freq="M")
     session = Session(data_dir=TEST_DIR, dataset=data)
     real = session.convert(flavor="real", start_date="2000-01-31").dataset
