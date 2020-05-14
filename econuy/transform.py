@@ -122,8 +122,10 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
                                 x / cpi_to_use)
         col_text = "Const."
     elif end_date is None:
-        converted_df = df.apply(lambda x:
-                                x / cpi_to_use * cpi_to_use[start_date])
+        converted_df = df.apply(
+            lambda x: x / cpi_to_use *
+                      cpi_to_use.iloc[df.index.get_loc(start_date,
+                                                       method="nearest")])
         col_text = f"Const. {start_date}"
     else:
         converted_df = df.apply(
@@ -352,7 +354,9 @@ def base_index(df: pd.DataFrame, start_date: Union[str, date],
 
     """
     if end_date is None:
-        indexed = df.apply(lambda x: x / x[start_date] * base)
+        indexed = df.apply(
+            lambda x: x / x.iloc[x.index.get_loc(start_date, method="nearest")]
+                      * base)
         metadata._set(indexed, unit=f"{start_date}={base}")
 
     else:
