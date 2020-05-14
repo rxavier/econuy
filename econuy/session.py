@@ -415,37 +415,20 @@ class Session(object):
         if isinstance(self.dataset, dict):
             output = {}
             for key, value in self.dataset.items():
-                full = transform.decompose(value,
-                                           trading=trading,
-                                           outlier=outlier,
-                                           x13_binary=x13_binary,
-                                           search_parents=search_parents)
-                if flavor == "trend":
-                    table = full[0]
-                elif flavor == "seas" or type == "seasonal":
-                    table = full[1]
-                elif flavor == "both":
-                    table = full
-                else:
-                    raise ValueError("'flavor' can be one of 'both', 'trend', "
-                                     "or 'seas'.")
-
+                table = transform.decompose(value,
+                                            flavor=flavor,
+                                            trading=trading,
+                                            outlier=outlier,
+                                            x13_binary=x13_binary,
+                                            search_parents=search_parents)
                 output.update({key: table})
         else:
-            full = transform.decompose(self.dataset,
-                                       trading=trading,
-                                       outlier=outlier,
-                                       x13_binary=x13_binary,
-                                       search_parents=search_parents)
-            if flavor == "trend":
-                output = full[0]
-            elif flavor == "seas" or type == "seasonal":
-                output = full[1]
-            elif flavor == "both":
-                output = full
-            else:
-                raise ValueError("'flavor' can be one of 'both', 'trend', or"
-                                 "'seas'.")
+            output = transform.decompose(self.dataset,
+                                         flavor=flavor,
+                                         trading=trading,
+                                         outlier=outlier,
+                                         x13_binary=x13_binary,
+                                         search_parents=search_parents)
         if self.inplace is True:
             self.dataset = output
             return self

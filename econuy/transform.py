@@ -378,6 +378,7 @@ x13._open_and_read = _new_open_and_read
 
 
 def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
+              flavor: str = "both",
               x13_binary: Union[str, PathLike] = "search",
               search_parents: int = 1) -> Optional[Tuple[pd.DataFrame,
                                                          pd.DataFrame]]:
@@ -398,6 +399,9 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
         Whether to automatically detect trading days.
     outlier : bool, default True
         Whether to automatically detect outliers.
+    flavor : {None, 'seas', 'trend'}
+        Return both seasonally adjusted and trend dataframes or choose between
+        them.
     x13_binary: str or os.PathLike, default 'search'
         Location of the X13 binary. If ``search`` is used, will attempt to find
         the binary in the project structure.
@@ -457,7 +461,9 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
                     print(f"X13 error found while processing "
                           f"'{df_proc.columns[column]}' with selected "
                           f"parameters. Trying with outlier=False...")
-                    return decompose(df=df, outlier=False)
+                    return decompose(df=df, outlier=False, flavor=flavor,
+                                     x13_binary=x13_binary,
+                                     search_parents=search_parents)
 
                 except X13Error:
                     try:
@@ -465,7 +471,9 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
                               f"'{df_proc.columns[column]}' with "
                               f"trading=True. Trying with trading=False...")
                         return decompose(df=df, outlier=False,
-                                         trading=False)
+                                         trading=False, flavor=flavor,
+                                         x13_binary=x13_binary,
+                                         search_parents=search_parents)
 
                     except X13Error:
                         print(f"X13 error found while processing "
@@ -480,7 +488,9 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
                           f"'{df_proc.columns[column]}' "
                           f"with trading=True. Trying with "
                           f"trading=False...")
-                    return decompose(df=df, trading=False)
+                    return decompose(df=df, trading=False, flavor=flavor,
+                                     x13_binary=x13_binary,
+                                     search_parents=search_parents)
 
                 except X13Error:
                     print(f"X13 error found while processing "
@@ -490,7 +500,9 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
 
             else:
                 try:
-                    return decompose(df=df)
+                    return decompose(df=df, flavor=flavor,
+                                     x13_binary=x13_binary,
+                                     search_parents=search_parents)
 
                 except X13Error:
                     print(f"X13 error found while processing "
@@ -512,7 +524,15 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
 
     metadata._set(seas_adjs, seas_adj="SA")
 
-    return trends, seas_adjs
+    output = pd.DataFrame()
+    if flavor == "both":
+        output = (trends, seas_adjs)
+    elif flavor == "seas":
+        output = seas_adjs
+    elif flavor == "trend":
+        output = trends
+
+    return output
 
 
 def chg_diff(df: pd.DataFrame, operation: str = "chg",

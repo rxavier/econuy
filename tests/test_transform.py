@@ -225,15 +225,6 @@ def test_decompose():
         session = Session(data_dir=TEST_DIR, dataset=df[["Real"]])
         session.decompose(flavor="both", trading=True,
                           outlier=False, x13_binary="wrong")
-    with pytest.raises(ValueError):
-        session = Session(data_dir=TEST_DIR, dataset=df[["Real"]])
-        session.decompose(flavor="wrong", trading=True,
-                          outlier=False, x13_binary="search")
-    with pytest.raises(ValueError):
-        session = Session(data_dir=TEST_DIR, dataset={"data1": df[["Real"]],
-                                                      "data2": df[["Real"]]})
-        session.decompose(flavor="wrong", trading=True,
-                          outlier=False, x13_binary="search")
 
 
 def test_base_index():
