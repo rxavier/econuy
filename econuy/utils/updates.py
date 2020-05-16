@@ -15,12 +15,14 @@ def _check_modified(data_path: Union[str, PathLike], multiindex=True):
         delta = (dt.datetime.now() - modified_time).days
         if multiindex is True:
             previous_data = pd.read_csv(data_path, index_col=0,
+                                        parse_dates=True,
                                         header=list(range(9)),
                                         float_precision="high")
             metadata._set(previous_data)
         else:
-            previous_data = pd.read_csv(data_path, index_col=0)
-        previous_data.index = pd.to_datetime(previous_data.index)
+            previous_data = pd.read_csv(data_path, index_col=0,
+                                        parse_dates=True,
+                                        float_precision="high")
     except FileNotFoundError:
         print(f"{data_path} does not exist. No data will be updated")
         delta = 9999
