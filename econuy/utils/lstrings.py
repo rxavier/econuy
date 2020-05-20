@@ -10,7 +10,7 @@ pulp_url = (
 soybean_url = "https://www.quandl.com/api/v3/datasets/CHRIS/CME_S1.csv?api_key=3TPxACcrxy9WsE871Lqe"
 what_url = "https://www.quandl.com/api/v3/datasets/CHRIS/CME_W1.csv?api_key=3TPxACcrxy9WsE871Lqe"
 imf_url = "https://www.imf.org/~/media/Files/Research/CommodityPrices/Monthly/ExternalData.ashx"
-milk1_url = "https://www.inale.org/wp-content/uploads/2020/01/Precios-exportaci%C3%B3n-de-Europa.xls"
+milk1_url = "https://www.inale.org/estadisticas/"
 milk2_url = "https://ec.europa.eu/info/sites/info/files/food-farming-fisheries/farming/documents/eu-milk-historical-price-series_en.xls"
 cpi_url = "http://ine.gub.uy/c/document_library/get_file?uuid=2e92084a-94ec-4fec-b5ca-42b40d5d2826&groupId=10181"
 nxr_url = "http://ine.gub.uy/c/document_library/get_file?uuid=3fbf4ffd-a829-420c-aca9-9f01ecd7919a&groupId=10181"
