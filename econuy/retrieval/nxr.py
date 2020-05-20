@@ -131,7 +131,7 @@ def get_daily(update_path: Union[str, PathLike, None] = None,
         except FileNotFoundError:
             prev_data = pd.DataFrame()
 
-    today = dt.datetime.now()
+    today = dt.datetime.now() - dt.timedelta(days=1)
     runs = (today - start_date).days // 30
     data = []
     if runs > 0:
@@ -146,7 +146,7 @@ def get_daily(update_path: Union[str, PathLike, None] = None,
             except TypeError:
                 pass
     from_ = (start_date + dt.timedelta(days=1)).strftime('%d/%m/%Y')
-    to_ = dt.datetime.now().strftime('%d/%m/%Y')
+    to_ = (dt.datetime.now() - dt.timedelta(days=1)).strftime('%d/%m/%Y')
     dates = f"%22FechaDesde%22:%22{from_}%22,%22FechaHasta%22:%22{to_}"
     url = f"{nxr_daily_url}{dates}%22,%22Grupo%22:%222%22}}" + "}"
     try:
