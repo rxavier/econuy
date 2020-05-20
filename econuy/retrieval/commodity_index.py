@@ -1,3 +1,4 @@
+import re
 import datetime as dt
 import tempfile
 import zipfile
@@ -13,6 +14,7 @@ from pandas.tseries.offsets import YearEnd
 from urllib import error
 from requests import exceptions
 from opnieuw import retry
+from bs4 import BeautifulSoup
 
 from econuy.utils import updates, metadata
 from econuy.utils.lstrings import (beef_url, pulp_url, soybean_url,
@@ -194,7 +196,12 @@ def _prices(update_path: Union[str, PathLike, None] = None,
     soybean = soy_wheat[0]
     wheat = soy_wheat[1]
 
-    raw_milk = pd.read_excel(milk1_url, skiprows=13,
+    milk_r = requests.get(milk1_url)
+    milk_soup = BeautifulSoup(milk_r.content, "html.parser")
+    links = milk_soup.find_all(href=re.compile("Oceanía"))
+    xls = links[0]["href"]
+    raw_milk = pd.read_excel(requests.utils.quote(xls).replace("%3A", ":"),
+                             skiprows=14,
                              nrows=dt.datetime.now().year - 2006)
     raw_milk.dropna(how="all", axis=1, inplace=True)
     raw_milk.drop(["Promedio ", "Variación"], axis=1, inplace=True)
