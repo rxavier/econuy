@@ -1,3 +1,4 @@
+import re
 import datetime as dt
 from os import PathLike, path, mkdir
 from pathlib import Path
@@ -10,6 +11,7 @@ from pandas.tseries.offsets import MonthEnd
 from urllib import error
 from requests import exceptions
 from opnieuw import retry
+from bs4 import BeautifulSoup
 
 from econuy import transform
 from econuy.utils import updates, metadata
@@ -59,16 +61,15 @@ def get_official(update_path: Union[str, PathLike, None] = None,
     if name is None:
         name = "rxr_official"
 
-    if update_path is not None:
-        full_update_path = (Path(update_path) / name).with_suffix(".csv")
-        delta, previous_data = updates._check_modified(full_update_path)
-
-        if delta < update_threshold and force_update is False:
+    r = requests.get(reer_url)
+    soup = BeautifulSoup(r.content, "html.parser")
+    links = soup.find_all(href=re.compile("eese[A-z0-9]+\\.xls$"))
+    xls = "https://www.bcu.gub.uy" + links[0]["href"]
+    raw = pd.read_excel(xls, skiprows=8, usecols="B:H", index_col=0)
             print(f"{full_update_path} was modified within {update_threshold} "
                   f"day(s). Skipping download...")
             return previous_data
 
-    raw = pd.read_excel(reer_url, skiprows=8, usecols="B:H", index_col=0)
     proc = raw.dropna(how="any")
     proc.columns = ["Global", "Regional", "Extrarregional",
                     "Argentina", "Brasil", "EEUU"]
