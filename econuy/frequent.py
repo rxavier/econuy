@@ -61,8 +61,8 @@ def inflation(update_path: Union[str, PathLike, None] = None,
 def fiscal(aggregation: str = "gps", fss: bool = True,
            unit: Union[str, None] = "gdp",
            start_date: Union[str, date, None] = None,
-           end_date: Union[str, date, None] = None, cum: int = 1,
-           seas_adj: Union[str, None] = None,
+           end_date: Union[str, date, None] = None,
+           update_path: Union[str, PathLike, Engine,
            update_path: Union[str, PathLike, None] = None,
            save_path: Union[str, PathLike, None] = None,
            name: Optional[str] = None) -> pd.DataFrame:
@@ -94,10 +94,10 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     end_date :
         If ``unit`` is set to ``real`` or ``real_usd``, this parameter and
         ``start_date`` control how deflation is calculated.
-    cum : int, default 1
-        How many periods to accumulate for rolling sums.
-    seas_adj : {None, 'trend', 'seas'}
-        Whether to seasonally adjust.
+    update_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
     update_path : str, os.PathLike or None, default None
         Path or path-like string pointing to a directory where to find a CSV
         for updating, or ``None``, don't update.
@@ -222,17 +222,6 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     elif unit == "real":
         output = transform.convert_real(output, start_date=start_date,
                                         end_date=end_date)
-    if seas_adj in ["trend", "seas"] and unit != "gdp" and cum == 1:
-        output_trend, output_seasadj = transform.decompose(output,
-                                                           trading=True,
-                                                           outlier=True)
-        if seas_adj == "trend":
-            output = output_trend
-        elif seas_adj == "seas":
-            output = output_seasadj
-
-    if cum != 1:
-        output = transform.rolling(output, periods=cum, operation="sum")
 
     if save_path is not None:
         full_save_path = (Path(save_path) / name).with_suffix(".csv")
