@@ -224,75 +224,12 @@ def test_wages():
 
 def test_naccounts():
     remove_clutter()
-    session = Session(data_dir=TEST_DIR)
+    session = Session(location=TEST_DIR)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    na_tfm = session.get_frequent(dataset="na", supply=True, real=True,
-                                  index=False,
-                                  off_seas_adj=False, usd=False, cum=1,
-                                  seas_adj=None, variation=None).dataset
-    remove_clutter()
     na_ = session.get(dataset="na").dataset
-    compare = na_["ind_con_nsa"]
-    compare.columns = na_tfm.columns
-    assert compare.equals(na_tfm)
-    remove_clutter()
-    na_tfm = session.get_frequent(dataset="na", supply=True, real=False,
-                                  index=False, off_seas_adj=False, usd=False,
-                                  cum=1,
-                                  seas_adj=None, variation=None).dataset
-    compare = na_["ind_cur_nsa"]
-    compare.columns = na_tfm.columns
-    assert compare.equals(na_tfm)
-    remove_clutter()
-    na_tfm = session.get_frequent(dataset="na", supply=False, real=True,
-                                  index=False, off_seas_adj=False, usd=False,
-                                  cum=1,
-                                  seas_adj=None, variation=None).dataset
-    compare = na_["gas_con_nsa"]
-    compare.columns = na_tfm.columns
-    assert compare.equals(na_tfm)
-    remove_clutter()
-    na_tfm = session.get_frequent(dataset="na", supply=False, real=True,
-                                  index=False, off_seas_adj=False, usd=True,
-                                  cum=4,
-                                  seas_adj=None, variation="inter").dataset
-    compare_mult = transform.convert_usd(compare)
-    compare_mult = transform.rolling(compare_mult, periods=4, operation="sum")
-    compare_mult = transform.chg_diff(compare_mult, operation="chg",
-                                      period_op="inter")
-    compare_mult.columns = na_tfm.columns
-    assert compare_mult.equals(na_tfm)
-    remove_clutter()
-    na_tfm = session.get_frequent(dataset="na", supply=False, real=True,
-                                  index=False, off_seas_adj=False, usd=False,
-                                  cum=1,
-                                  seas_adj="trend", variation=None).dataset
-    compare_trend, compare_sa = transform.decompose(compare, trading=True,
-                                                    outlier=True)
-    compare_trend.columns = na_tfm.columns
-    assert compare_trend.equals(na_tfm)
-    remove_clutter()
-    na_tfm = session.get_frequent(dataset="na", supply=False, real=True,
-                                  index=False, off_seas_adj=False, usd=False,
-                                  cum=1,
-                                  seas_adj="seas", variation=None).dataset
-    compare_sa.columns = na_tfm.columns
-    assert compare_sa.equals(na_tfm)
-    with pytest.raises(KeyError):
-        session.get_frequent(dataset="na", supply=False, real=True, index=True,
-                             off_seas_adj=True, usd=False, cum=1,
-                             seas_adj=None, variation=None)
-    with pytest.raises(ValueError):
-        session.get_frequent(dataset="na", supply=False, real=True,
-                             index=False,
-                             off_seas_adj=False, usd=False, cum=1,
-                             seas_adj="wrong", variation=None)
-    with pytest.raises(ValueError):
-        session.get_frequent(dataset="na", supply=False, real=True,
-                             index=False,
-                             off_seas_adj=False, usd=False, cum=1,
-                             seas_adj=None, variation="wrong")
+    assert isinstance(na_, dict)
+    assert len(na_) == 6
     remove_clutter()
 
 

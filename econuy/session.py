@@ -283,13 +283,6 @@ class Session(object):
                                      save_path=save_path,
                                      name=override,
                                      **kwargs)
-        elif dataset == "naccounts" or dataset == "na":
-            called_args = logutil.get_called_args(frequent.nat_accounts,
-                                                  kwargs)
-            output = frequent.nat_accounts(update_path=update_path,
-                                           save_path=save_path,
-                                           name=override,
-                                           **kwargs)
         elif dataset == "labor" or dataset == "labour":
             called_args = logutil.get_called_args(frequent.labor_rate_people,
                                                   kwargs)
