@@ -106,15 +106,13 @@ def test_fiscal():
     assert compare_gdp.equals(fiscal_tfm)
     remove_clutter()
     fiscal_tfm = session.get_frequent(dataset="fiscal", aggregation="nfps",
-                                      fss=True, unit="usd",
-                                      seas_adj=None).dataset
+                                      fss=True, unit="usd").dataset
     compare_usd = transform.convert_usd(compare)
     compare_usd.columns = fiscal_tfm.columns
     assert compare_usd.equals(fiscal_tfm)
     remove_clutter()
     fiscal_tfm = session.get_frequent(dataset="fiscal", aggregation="nfps",
-                                      fss=True, unit="real",
-                                      seas_adj=None).dataset
+                                      fss=True, unit="real").dataset
     compare_real = transform.convert_real(compare)
     compare_real.columns = fiscal_tfm.columns
     assert compare_real.equals(fiscal_tfm)
@@ -122,7 +120,7 @@ def test_fiscal():
     start_date = "2010-01-31"
     end_date = "2010-12-31"
     fiscal_tfm = session.get_frequent(dataset="fiscal", aggregation="nfps",
-                                      fss=True, unit="real_usd", seas_adj=None,
+                                      fss=True, unit="real_usd",
                                       start_date=start_date,
                                       end_date=end_date).dataset
     compare_real_usd = transform.convert_real(compare, start_date=start_date,
@@ -133,27 +131,9 @@ def test_fiscal():
     compare_real_usd.columns = fiscal_tfm.columns
     assert compare_real_usd.equals(fiscal_tfm)
     remove_clutter()
-    fiscal_tfm = session.get_frequent(dataset="fiscal", aggregation="nfps",
-                                      fss=True, unit=None,
-                                      seas_adj="trend").dataset
-    compare_trend, compare_sa = transform.decompose(compare, outlier=True,
-                                                    trading=True)
-    compare_trend.columns = fiscal_tfm.columns
-    assert compare_trend.equals(fiscal_tfm)
-    remove_clutter()
-    fiscal_tfm = session.get_frequent(dataset="fiscal", aggregation="nfps",
-                                      fss=True, unit=None, seas_adj=None,
-                                      cum=12).dataset
-    compare_roll = transform.rolling(compare, periods=12, operation="sum")
-    compare_roll.columns = fiscal_tfm.columns
-    assert compare_roll.equals(fiscal_tfm)
-    remove_clutter()
     with pytest.raises(ValueError):
         session.get_frequent(dataset="fiscal", aggregation="nfps",
                              unit="wrong")
-    with pytest.raises(ValueError):
-        session.get_frequent(dataset="fiscal", aggregation="nfps",
-                             seas_adj="wrong")
     with pytest.raises(ValueError):
         session.get_frequent(dataset="fiscal", aggregation="wrong")
     remove_clutter()
