@@ -19,7 +19,6 @@ labor_url = "http://ine.gub.uy/c/document_library/get_file?uuid=50ae926c-1ddc-44
 wages1_url = "http://www.ine.gub.uy/c/document_library/get_file?uuid=a76433b7-5fba-40fc-9958-dd913338e989&groupId=10181"
 wages2_url = "http://www.ine.gub.uy/c/document_library/get_file?uuid=97f07fd8-9410-476e-bf81-e6b1c11467ef&groupId=10181"
 wap_url = "http://www.ine.gub.uy/c/document_library/get_file?uuid=2a5c1e6e-b02f-4a63-963f-925edea7c17e&groupId=10181"
-ff_url = "https://www.bcu.gub.uy/Politica-Economica-y-Mercados/Mercado%20de%20Cambios/informepublico"
 fiscal_url = "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos"
 reserves_url = "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Informe%20Diario%20Pasivos%20Monetarios/infd_"
 reer_url = "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Cambio-Real-Efectivo.aspx"

@@ -28,7 +28,7 @@ def remove_clutter(avoid: Tuple[str] = ("fx_ff.csv", "fx_spot_ff.csv",
 
 def test_prices_inflation():
     remove_clutter()
-    session = Session(data_dir=TEST_DIR)
+    session = Session(location=TEST_DIR)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
     inflation = session.get_frequent(dataset="inflation").dataset
@@ -57,7 +57,7 @@ def test_prices_inflation():
 
 def test_fiscal():
     remove_clutter()
-    session = Session(data_dir=TEST_DIR)
+    session = Session(location=TEST_DIR)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
     fiscal_tfm = session.get_frequent(dataset="fiscal", aggregation="nfps",
@@ -141,7 +141,7 @@ def test_fiscal():
 
 def test_labor():
     remove_clutter()
-    session = Session(data_dir=TEST_DIR)
+    session = Session(location=TEST_DIR)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
     labor_tfm = session.get_frequent(dataset="labor", seas_adj="trend").dataset
@@ -171,7 +171,7 @@ def test_labor():
 
 def test_wages():
     remove_clutter()
-    session = Session(data_dir=TEST_DIR)
+    session = Session(location=TEST_DIR)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
     full_wages = session.get_frequent(dataset="real_wages",
@@ -215,7 +215,7 @@ def test_naccounts():
 
 def test_edge():
     remove_clutter()
-    session = Session(data_dir=TEST_DIR)
+    session = Session(location=TEST_DIR)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
     session.get(dataset="cpi", update=False, save=False)
@@ -224,10 +224,10 @@ def test_edge():
     with pytest.raises(ValueError):
         session.get_frequent(dataset="wrong")
     remove_clutter()
-    session = Session(data_dir="new_dir")
+    session = Session(location="new_dir")
     assert path.isdir("new_dir")
-    shutil.rmtree(session.data_dir)
-    Session(data_dir=TEST_DIR).get_frequent(dataset="inflation",
+    shutil.rmtree(session.location)
+    Session(location=TEST_DIR).get_frequent(dataset="inflation",
                                             update=False, save=False)
     remove_clutter()
 
@@ -235,48 +235,48 @@ def test_edge():
 def test_save():
     remove_clutter()
     data = dummy_df(freq="M")
-    session = Session(data_dir=TEST_DIR, dataset=data)
+    session = Session(location=TEST_DIR, dataset=data)
     session.save(name="test_save")
     assert path.isfile(Path(TEST_DIR) / "test_save.csv")
     remove_clutter()
     data = dummy_df(freq="M")
-    session = Session(data_dir=TEST_DIR, dataset={
+    session = Session(location=TEST_DIR, dataset={
         "data1": data, "data2": data})
     session.save(name="test_save")
     assert path.isfile(Path(TEST_DIR) / "test_save_data1.csv")
     assert path.isfile(Path(TEST_DIR) / "test_save_data2.csv")
     remove_clutter()
-    session.data_dir = "new_dir"
+    session.location = "new_dir"
     session.save(name="test_save")
-    assert path.isfile(Path(session.data_dir) / "test_save_data1.csv")
-    assert path.isfile(Path(session.data_dir) / "test_save_data2.csv")
+    assert path.isfile(Path(session.location) / "test_save_data1.csv")
+    assert path.isfile(Path(session.location) / "test_save_data2.csv")
     session.dataset = data
     session.save(name="test_save")
-    assert path.isfile(Path(session.data_dir) / "test_save.csv")
+    assert path.isfile(Path(session.location) / "test_save.csv")
     remove_clutter()
-    shutil.rmtree(session.data_dir)
+    shutil.rmtree(session.location)
 
 
 def test_logging(caplog):
     remove_clutter()
     caplog.clear()
-    Session(data_dir=TEST_DIR, log="test")
+    Session(location=TEST_DIR, log="test")
     assert path.isfile(path.join(TEST_DIR, "test.log"))
     remove_clutter()
     caplog.clear()
-    Session(data_dir=TEST_DIR, log=2)
+    Session(location=TEST_DIR, log=2)
     assert path.isfile(path.join(TEST_DIR, "info.log"))
     remove_clutter()
     caplog.clear()
     with pytest.raises(ValueError):
-        Session(data_dir=TEST_DIR, log=5)
+        Session(location=TEST_DIR, log=5)
     remove_clutter()
     caplog.clear()
-    Session(data_dir=TEST_DIR, log=1)
+    Session(location=TEST_DIR, log=1)
     assert "Logging method: console" in caplog.text
     assert "Logging method: console and file" not in caplog.text
     assert not path.isfile(path.join(TEST_DIR, "info.log"))
     caplog.clear()
     remove_clutter()
-    Session(data_dir=TEST_DIR, log=0)
+    Session(location=TEST_DIR, log=0)
     assert caplog.text == ""

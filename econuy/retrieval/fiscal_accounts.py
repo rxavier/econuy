@@ -1,9 +1,7 @@
-import datetime as dt
 import re
 import tempfile
-from os import PathLike, path, listdir, mkdir
-from pathlib import Path
-from typing import Union, Optional, Dict
+from os import PathLike, path, listdir
+from typing import Union, Dict
 
 import pandas as pd
 import patoolib
@@ -12,6 +10,7 @@ from bs4 import BeautifulSoup
 from pandas.tseries.offsets import MonthEnd
 from requests.exceptions import ConnectionError, HTTPError
 from opnieuw import retry
+from sqlalchemy.engine.base import Connection, Engine
 
 from econuy.utils import updates, metadata
 from econuy.utils.lstrings import fiscal_url, fiscal_sheets
@@ -22,32 +21,40 @@ from econuy.utils.lstrings import fiscal_url, fiscal_sheets
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def get(update_path: Union[str, PathLike, None] = None,
+def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
-        save_path: Union[str, PathLike, None] = None,
-        force_update: bool = False,
-        name: Optional[str] = None) -> Dict[str, pd.DataFrame]:
+        save_path: Union[str, PathLike, Engine, Connection, None] = None,
+        name: str = "fiscal",
+        index_label: str = "index",
+        only_get: bool = False) -> Dict[str, pd.DataFrame]:
     """Get fiscal data.
 
     Parameters
     ----------
-    update_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to find a CSV
-        for updating, or ``None``, don't update.
+    update_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
     revise_rows : {'nodup', 'auto', int}
         Defines how to process data updates. An integer indicates how many rows
         to remove from the tail of the dataframe and replace with new data.
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to save the CSV,
-        or ``None``, don't save.
-    force_update : bool, default False
-        If ``True``, fetch data and update existing data even if it was
-        modified within its update window (for fiscal accounts, 25 days).
-    name : str, default None
-        CSV filename for updating and/or saving.
+    save_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'fiscal'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_path``.
 
     Returns
     -------
@@ -57,33 +64,15 @@ def get(update_path: Union[str, PathLike, None] = None,
         and individual public enterprises.
 
     """
-    update_threshold = 25
-    if name is None:
-        name = "fiscal"
-
-    if update_path is not None:
-        full_update_path = (Path(update_path)
-                            / f"{name}_nfps").with_suffix(".csv")
-        try:
-            modified = dt.datetime.fromtimestamp(
-                path.getmtime(full_update_path))
-            delta = (dt.datetime.now() - modified).days
-
-            if delta < update_threshold and force_update is False:
-                print(f"Fiscal data ({full_update_path}) was modified within "
-                      f"{update_threshold} day(s). Skipping download...")
-                output = {}
-                for meta in fiscal_sheets.values():
-                    full_update_path = (Path(update_path)
-                                        / f"{name}_"
-                                          f"{meta['Name']}").with_suffix(
-                        ".csv")
-                    delta, previous_data = updates._check_modified(
-                        full_update_path)
-                    output.update({meta["Name"]: previous_data})
-                return output
-        except FileNotFoundError:
-            pass
+    if only_get is True:
+        output = {}
+        for meta in fiscal_sheets.values():
+            data = updates._update_save(
+                operation="update", data_path=update_path,
+                name=f"{name}_{meta['Name']}", index_label=index_label
+            )
+            output.update({meta["Name"]: data})
+        return output
 
     response = requests.get(fiscal_url)
     soup = BeautifulSoup(response.content, "html.parser")
@@ -109,12 +98,10 @@ def get(update_path: Union[str, PathLike, None] = None,
                 data.columns = meta["Colnames"]
 
                 if update_path is not None:
-                    full_update_path = (Path(update_path)
-                                        / f"{name}_"
-                                          f"{meta['Name']}").with_suffix(
-                        ".csv")
-                    delta, previous_data = updates._check_modified(
-                        full_update_path)
+                    previous_data = updates._update_save(
+                        operation="update", data_path=update_path,
+                        name=f"{name}_{meta['Name']}", index_label=index_label
+                    )
                     data = updates._revise(new_data=data,
                                            prev_data=previous_data,
                                            revise_rows=revise_rows)
@@ -126,13 +113,10 @@ def get(update_path: Union[str, PathLike, None] = None,
                 )
 
                 if save_path is not None:
-                    full_save_path = (Path(save_path)
-                                      / f"{name}_"
-                                        f"{meta['Name']}").with_suffix(
-                        ".csv")
-                    if not path.exists(path.dirname(full_save_path)):
-                        mkdir(path.dirname(full_save_path))
-                    data.to_csv(full_save_path)
+                    updates._update_save(
+                        operation="save", data_path=save_path, data=data,
+                        name=f"{name}_{meta['Name']}", index_label=index_label
+                    )
 
                 output.update({meta["Name"]: data})
 

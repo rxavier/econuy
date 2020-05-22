@@ -3,9 +3,8 @@ import datetime as dt
 import tempfile
 import zipfile
 from io import BytesIO
-from os import PathLike, path, mkdir
-from pathlib import Path
-from typing import Union, Optional
+from os import PathLike, path
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -14,6 +13,7 @@ from pandas.tseries.offsets import YearEnd
 from urllib import error
 from requests import exceptions
 from opnieuw import retry
+from sqlalchemy.engine.base import Connection, Engine
 from bs4 import BeautifulSoup
 
 from econuy.utils import updates, metadata
@@ -26,29 +26,35 @@ from econuy.utils.lstrings import (beef_url, pulp_url, soybean_url,
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=90,
 )
-def _weights(update_path: Union[str, PathLike, None] = None,
+def _weights(update_path: Union[str, PathLike, Engine,
+                                Connection, None] = None,
              revise_rows: Union[str, int] = "nodup",
-             save_path: Union[str, PathLike, None] = None,
-             force_update: bool = False) -> pd.DataFrame:
+             save_path: Union[str, PathLike, Engine,
+                              Connection, None] = None,
+             only_get: bool = True) -> pd.DataFrame:
     """Get commodity export weights for Uruguay.
 
     Parameters
     ----------
-    update_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to find a CSV
-        for updating, or ``None``, don't update.
+    update_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
     revise_rows : {'nodup', 'auto', int}
         Defines how to process data updates. An integer indicates how many rows
         to remove from the tail of the dataframe and replace with new data.
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to save the CSV,
-        or ``None``, don't save.
-    force_update : bool, default False
-        If ``True``, fetch data and update existing data even if it was
-        modified within its update window (for commodity weights, 85 days).
+    save_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    only_get : bool, default True
+        If True, don't download data, retrieve what is available from
+        ``update_path``.
 
     Returns
     -------
@@ -56,23 +62,15 @@ def _weights(update_path: Union[str, PathLike, None] = None,
         Export-based weights for relevant commodities to Uruguay.
 
     """
-    update_threshold = 85
     name = "commodity_weights"
+    if only_get is True:
+        return updates._update_save(operation="update", data_path=update_path,
+                                    name=name, multiindex=False)
 
-    if update_path is not None:
-        full_update_path = (Path(update_path) / name).with_suffix(".csv")
-        delta, previous_data = updates._check_modified(full_update_path,
-                                                       multiindex=False)
-
-        if delta < update_threshold and force_update is False:
-            print(f"{full_update_path} was modified within {update_threshold} "
-                  f"day(s). Skipping download...")
-            return previous_data
-
-    raw = []
+    base_url = "http://comtrade.un.org/api/get?max=1000&type=C&freq=A&px=S3&ps"
     prods = "%2C".join(["0011", "011", "01251", "01252", "0176", "022", "041",
                         "042", "043", "2222", "24", "25", "268", "97"])
-    base_url = "http://comtrade.un.org/api/get?max=1000&type=C&freq=A&px=S3&ps"
+    raw = []
     for year in range(1992, dt.datetime.now().year-1):
         full_url = f"{base_url}={year}&r=all&p=858&rg=1&cc={prods}"
         un_r = requests.get(full_url)
@@ -99,14 +97,15 @@ def _weights(update_path: Union[str, PathLike, None] = None,
                       "Rice", "Soybeans", "Wheat", "Wool", "Beef"]
 
     if update_path is not None:
+        previous_data = updates._update_save(operation="update",
+                                             data_path=update_path,
+                                             name=name)
         output = updates._revise(new_data=output, prev_data=previous_data,
                                  revise_rows=revise_rows)
 
     if save_path is not None:
-        full_save_path = (Path(save_path) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(full_save_path)):
-            mkdir(path.dirname(full_save_path))
-        output.to_csv(full_save_path)
+        updates._update_save(operation="save", data_path=save_path,
+                             data=output, name=name)
 
     return output
 
@@ -117,29 +116,33 @@ def _weights(update_path: Union[str, PathLike, None] = None,
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def _prices(update_path: Union[str, PathLike, None] = None,
+def _prices(update_path: Union[str, PathLike, Engine, Connection, None] = None,
             revise_rows: Union[str, int] = "nodup",
-            save_path: Union[str, PathLike, None] = None,
-            force_update: bool = False) -> pd.DataFrame:
+            save_path: Union[str, PathLike, Engine, Connection, None] = None,
+            only_get: bool = True) -> pd.DataFrame:
     """Get commodity prices for Uruguay.
 
     Parameters
     ----------
-    update_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to find a CSV
-        for updating, or ``None``, don't update.
+    update_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
     revise_rows : {'nodup', 'auto', int}
         Defines how to process data updates. An integer indicates how many rows
         to remove from the tail of the dataframe and replace with new data.
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to save the CSV,
-        or ``None``, don't save.
-    force_update : bool, default False
-        If ``True``, fetch data and update existing data even if it was
-        modified within its update window (for commodity prices, 10 days).
+    save_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    only_get : bool, default True
+        If True, don't download data, retrieve what is available from
+        ``update_path``.
 
     Returns
     -------
@@ -147,19 +150,12 @@ def _prices(update_path: Union[str, PathLike, None] = None,
         Prices and price indexes of relevant commodities for Uruguay.
 
     """
-    update_threshold = 10
     bushel_conv = 36.74 / 100
     name = "commodity_prices"
 
-    if update_path is not None:
-        full_update_path = (Path(update_path) / name).with_suffix(".csv")
-        delta, previous_data = updates._check_modified(full_update_path,
-                                                       multiindex=False)
-
-        if delta < update_threshold and force_update is False:
-            print(f"{full_update_path} was modified within {update_threshold} "
-                  f"day(s). Skipping download...")
-            return previous_data
+    if only_get is True:
+        return updates._update_save(operation="update", data_path=update_path,
+                                    name=name)
 
     raw_beef = (pd.read_excel(beef_url, header=4, index_col=0)
                 .dropna(how="all"))
@@ -255,40 +251,52 @@ def _prices(update_path: Union[str, PathLike, None] = None,
                         "Wool", "Barley", "Gold", "Wheat"]
 
     if update_path is not None:
+        previous_data = updates._update_save( operation="update",
+                                              data_path=update_path,
+                                              name=name)
         complete = updates._revise(new_data=complete, prev_data=previous_data,
                                    revise_rows=revise_rows)
 
     if save_path is not None:
-        full_save_path = (Path(save_path) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(full_save_path)):
-            mkdir(path.dirname(full_save_path))
-        complete.to_csv(full_save_path)
+        updates._update_save(operation="save", data_path=save_path,
+                             data=complete, name=name)
 
     return complete
 
 
-def get(update_path: Union[str, PathLike, None] = None,
-        save_path: Union[str, PathLike, None] = None,
-        force_update_prices: bool = True, force_update_weights: bool = False,
-        name: Optional[str] = None) -> pd.DataFrame:
+def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
+        save_path: Union[str, PathLike, Engine, Connection, None] = None,
+        name: str = "commodity_index", index_label: str = "index",
+        only_get: bool = False, only_get_prices: bool = False,
+        only_get_weights: bool = True) -> pd.DataFrame:
     """Get export-weighted commodity price index for Uruguay.
 
     Parameters
     ----------
-    update_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to find a CSV
-        for updating, or ``None``, don't update.
-    save_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to save the CSV,
-        or ``None``, don't update.
-    force_update_prices : bool, default False
-        If ``True``, fetch data and update existing data even if it was
-        modified within its update window for commodity prices.
-    force_update_weights : bool, default False
-        If ``True``, fetch data and update existing data even if it was
-        modified within its update window for commodity weights.
-    name : str, default None
-        CSV filename for updating and/or saving.
+    update_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    save_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'commodity_weights'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_path`` for the commodity index.
+    only_get_prices : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_path`` for commodity prices.
+    only_get_weights : bool, default True
+        If True, don't download data, retrieve what is available from
+        ``update_path`` for commodity weights.
 
     Returns
     -------
@@ -296,31 +304,30 @@ def get(update_path: Union[str, PathLike, None] = None,
         Export-weighted average of commodity prices relevant to Uruguay.
 
     """
-    if name is None:
-        name = "commodity_index"
+    if only_get is True:
+        return updates._update_save(operation="update", data_path=update_path,
+                                    name=name, index_label=index_label)
 
     prices = _prices(update_path=update_path, revise_rows="nodup",
-                     save_path=save_path, force_update=force_update_prices)
+                     save_path=save_path, only_get=only_get_prices)
     prices = prices.interpolate(method="linear", limit=1).dropna(how="any")
     prices = prices.pct_change(periods=1)
     weights = _weights(update_path=update_path, revise_rows="nodup",
-                       save_path=save_path, force_update=force_update_weights)
+                       save_path=save_path, only_get=only_get_weights)
     weights = weights[prices.columns]
     weights = weights.reindex(prices.index, method="ffill")
 
     product = pd.DataFrame(prices.values * weights.values,
                            columns=prices.columns, index=prices.index)
-    product = product.sum(axis=1).add(1).to_frame().cumprod()
+    product = product.sum(axis=1).add(1).to_frame().cumprod().multiply(100)
     product.columns = ["Índice de precios de productos primarios"]
 
     metadata._set(product, area="Sector externo", currency="USD",
-                  inf_adj="No", unit="2002-01-31=1", seas_adj="NSA",
+                  inf_adj="No", unit="2002-01-31=100", seas_adj="NSA",
                   ts_type="Flujo", cumperiods=1)
 
     if save_path is not None:
-        full_save_path = (Path(save_path) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(full_save_path)):
-            mkdir(path.dirname(full_save_path))
-        product.to_csv(full_save_path)
+        updates._update_save(operation="save", data_path=save_path,
+                             data=product, name=name, index_label=index_label)
 
     return product

@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from econuy.session import Session
-from econuy.retrieval import fx_operations, national_accounts
+from econuy.retrieval import reserves, national_accounts
 from econuy.utils import metadata
 from .test_session import remove_clutter
 
@@ -18,7 +18,7 @@ def test_changes():
     previous_data = pd.read_csv(path.join(TEST_DIR, "reserves_chg.csv"),
                                 index_col=0, header=list(range(9)))
     metadata._set(previous_data)
-    res = fx_operations._reserves_changes(
+    res = reserves.get_changes(
         update_path=TEST_DIR, name=None, save_path=TEST_DIR)
     previous_data.index = pd.to_datetime(previous_data.index)
     compare = res.loc[previous_data.index].round(4)
@@ -27,29 +27,9 @@ def test_changes():
     remove_clutter()
 
 
-def test_ff():
-    remove_clutter()
-    previous_data = pd.read_csv(path.join(TEST_DIR, "fx_ff.csv"),
-                                index_col=0, header=list(range(9)))
-    metadata._set(previous_data)
-    compare = previous_data.iloc[0:-30]
-    ff = fx_operations._futures_forwards(
-        update_path=TEST_DIR, name=None, save_path=TEST_DIR)
-    assert len(ff) > len(compare)
-    remove_clutter()
-
-
-def test_ops():
-    remove_clutter()
-    session = Session(data_dir=TEST_DIR)
-    ops = session.get(dataset="fx_ops").dataset
-    assert isinstance(ops, pd.DataFrame)
-    remove_clutter()
-
-
 def test_rxr_official():
     remove_clutter()
-    session = Session(data_dir=TEST_DIR)
+    session = Session(location=TEST_DIR)
     tcr = session.get(dataset="rxr_official").dataset
     assert isinstance(tcr, pd.DataFrame)
     assert tcr.index[0] == dt.date(2000, 1, 31)
@@ -58,7 +38,7 @@ def test_rxr_official():
 
 def test_rxr_custom():
     remove_clutter()
-    session = Session(data_dir=TEST_DIR)
+    session = Session(location=TEST_DIR)
     tcr = session.get(dataset="rxr_custom").dataset
     assert isinstance(tcr, pd.DataFrame)
     assert tcr.index[0] == dt.date(1979, 12, 31)
@@ -72,7 +52,7 @@ def test_rxr_custom():
 
 def test_comm_index():
     remove_clutter()
-    session = Session(data_dir=TEST_DIR)
+    session = Session(location=TEST_DIR)
     comm = session.get(dataset="comm_index").dataset
     assert isinstance(comm, pd.DataFrame)
     assert comm.index[0] == dt.date(2002, 1, 31)
@@ -96,7 +76,7 @@ def test_nxr_daily():
                                 index_col=0, header=list(range(9)))
     metadata._set(previous_data)
     previous_data.index = pd.to_datetime(previous_data.index)
-    session = Session(data_dir=TEST_DIR)
+    session = Session(location=TEST_DIR)
     nxr = session.get(dataset="nxr_daily").dataset
     compare = nxr.loc[previous_data.index].round(4)
     compare.columns = previous_data.columns
@@ -106,7 +86,7 @@ def test_nxr_daily():
 
 def test_nxr_monthly():
     remove_clutter()
-    session = Session(data_dir=TEST_DIR)
+    session = Session(location=TEST_DIR)
     nxr = session.get(dataset="nxr_m").dataset
     assert len(nxr.columns) == 2
     assert isinstance(nxr.index[0], pd._libs.tslibs.timestamps.Timestamp)

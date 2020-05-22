@@ -87,5 +87,4 @@ def _set(
             pass
 
         tuples = list(zip(*arrays))
-        index = pd.MultiIndex.from_tuples(tuples, names=names)
-        df.columns = index
+        df.columns = pd.MultiIndex.from_tuples(tuples, names=names)

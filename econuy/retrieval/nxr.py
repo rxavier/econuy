@@ -1,12 +1,12 @@
 import datetime as dt
-from os import PathLike, mkdir, path
-from pathlib import Path
+from os import PathLike
 from typing import Union, Optional
 
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 from urllib.error import URLError, HTTPError
 from opnieuw import retry
+from sqlalchemy.engine.base import Connection, Engine
 
 from econuy.utils import updates, metadata
 from econuy.utils.lstrings import nxr_url, nxr_daily_url
@@ -17,32 +17,42 @@ from econuy.utils.lstrings import nxr_url, nxr_daily_url
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=30,
 )
-def get_monthly(update_path: Union[str, PathLike, None] = None,
+def get_monthly(update_path: Union[str, PathLike,
+                                   Engine, Connection, None] = None,
                 revise_rows: Union[str, int] = "nodup",
-                save_path: Union[str, PathLike, None] = None,
-                force_update: bool = False,
-                name: Optional[str] = None) -> pd.DataFrame:
+                save_path: Union[str, PathLike,
+                                 Engine, Connection, None] = None,
+                name: str = "nxr_monthly",
+                index_label: str = "index",
+                only_get: bool = False) -> pd.DataFrame:
     """Get monthly nominal exchange rate data.
 
     Parameters
     ----------
-    update_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to find a CSV
-        for updating, or ``None``, don't update.
+    update_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
     revise_rows : {'nodup', 'auto', int}
         Defines how to process data updates. An integer indicates how many rows
         to remove from the tail of the dataframe and replace with new data.
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to save the CSV,
-        or ``None``, don't save.
-    force_update : bool, default False
-        If ``True``, fetch data and update existing data even if it was
-        modified within its update window(for nominal exchange rates, 25 days).
-    name : str, default None
-        CSV filename for updating and/or saving.
+    save_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'nxr_monthly'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_path``.
 
     Returns
     -------
@@ -50,18 +60,9 @@ def get_monthly(update_path: Union[str, PathLike, None] = None,
         Sell rate, monthly average and end of period.
 
     """
-    update_threshold = 25
-    if name is None:
-        name = "nxr_monthly"
-
-    if update_path is not None:
-        full_update_path = (Path(update_path) / name).with_suffix(".csv")
-        delta, previous_data = updates._check_modified(full_update_path)
-
-        if delta < update_threshold and force_update is False:
-            print(f"{full_update_path} was modified within {update_threshold} "
-                  f"day(s). Skipping download...")
-            return previous_data
+    if only_get is True:
+        return updates._update_save(operation="update", data_path=update_path,
+                                    name=name, index_label=index_label)
 
     nxr_raw = pd.read_excel(nxr_url, skiprows=4, index_col=0, usecols="A,C,F")
     nxr = nxr_raw.dropna(how="any", axis=0)
@@ -71,6 +72,10 @@ def get_monthly(update_path: Union[str, PathLike, None] = None,
     nxr = nxr.apply(pd.to_numeric, errors="coerce")
 
     if update_path is not None:
+        previous_data = updates._update_save(operation="update",
+                                             data_path=update_path,
+                                             name=name,
+                                             index_label=index_label)
         nxr = updates._revise(new_data=nxr, prev_data=previous_data,
                               revise_rows=revise_rows)
 
@@ -79,10 +84,8 @@ def get_monthly(update_path: Union[str, PathLike, None] = None,
                   ts_type="-", cumperiods=1)
 
     if save_path is not None:
-        full_save_path = (Path(save_path) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(full_save_path)):
-            mkdir(path.dirname(full_save_path))
-        nxr.to_csv(full_save_path)
+        updates._update_save(operation="save", data_path=save_path,
+                             data=nxr, name=name, index_label=index_label)
 
     return nxr
 
@@ -92,21 +95,35 @@ def get_monthly(update_path: Union[str, PathLike, None] = None,
     max_calls_total=10,
     retry_window_after_first_call_in_seconds=60,
 )
-def get_daily(update_path: Union[str, PathLike, None] = None,
-              save_path: Union[str, PathLike, None] = None,
-              name: Optional[str] = None) -> pd.DataFrame:
+def get_daily(update_path: Union[str, PathLike,
+                                 Engine, Connection, None] = None,
+              save_path: Union[str, PathLike,
+                               Engine, Connection, None] = None,
+              name: str = "nxr_daily",
+              index_label: str = "index",
+              only_get: bool = False) -> pd.DataFrame:
     """Get daily nominal exchange rate data.
 
     Parameters
     ----------
-    update_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to find a CSV
-        for updating, or ``None``, don't update.
-    save_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to save the CSV,
-        or ``None``, don't save.
-    name : str, default None
-        CSV filename for updating and/or saving.
+    update_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    save_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'nxr_daily'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_path``.
 
     Returns
     -------
@@ -114,22 +131,19 @@ def get_daily(update_path: Union[str, PathLike, None] = None,
         Sell rate, monthly average and end of period.
 
     """
-    if name is None:
-        name = "nxr_daily"
+    if only_get is True:
+        return updates._update_save(operation="update", data_path=update_path,
+                                    name=name, index_label=index_label)
 
     start_date = dt.datetime(1999, 12, 31)
 
     if update_path is not None:
-        full_update_path = (Path(update_path) / name).with_suffix(".csv")
-        try:
-            prev_data = pd.read_csv(full_update_path, index_col=0,
-                                    header=list(range(9)),
-                                    float_precision="high")
-            metadata._set(prev_data)
-            prev_data.index = pd.to_datetime(prev_data.index)
-            start_date = prev_data.index[len(prev_data) - 1]
-        except FileNotFoundError:
-            prev_data = pd.DataFrame()
+        previous_data = updates._update_save(
+            operation="update", data_path=update_path,
+            name=name, index_label=index_label
+        )
+        metadata._set(previous_data)
+        start_date = previous_data.index[len(previous_data) - 1]
 
     today = dt.datetime.now() - dt.timedelta(days=1)
     runs = (today - start_date).days // 30
@@ -149,36 +163,28 @@ def get_daily(update_path: Union[str, PathLike, None] = None,
     to_ = (dt.datetime.now() - dt.timedelta(days=1)).strftime('%d/%m/%Y')
     dates = f"%22FechaDesde%22:%22{from_}%22,%22FechaHasta%22:%22{to_}"
     url = f"{nxr_daily_url}{dates}%22,%22Grupo%22:%222%22}}" + "}"
-    try:
-        data.append(pd.read_excel(url))
-        output = pd.concat(data, axis=0)
-        output = output.pivot(index="Fecha", columns="Moneda",
-                              values="Venta").rename_axis(None)
-        output.index = pd.to_datetime(output.index, format="%d/%m/%Y",
-                                      errors="coerce")
-        output.sort_index(inplace=True)
-        output.replace(",", ".", regex=True, inplace=True)
-        output.columns = ["Tipo de cambio US$, Cable"]
-        output = output.apply(pd.to_numeric, errors="coerce")
 
-        metadata._set(output, area="Precios y salarios", currency="UYU/USD",
-                      inf_adj="No", unit="-", seas_adj="NSA",
-                      ts_type="-", cumperiods=1)
-        output.columns.set_levels(["-"], level=2, inplace=True)
+    data.append(pd.read_excel(url))
+    output = pd.concat(data, axis=0)
+    output = output.pivot(index="Fecha", columns="Moneda",
+                          values="Venta").rename_axis(None)
+    output.index = pd.to_datetime(output.index, format="%d/%m/%Y",
+                                  errors="coerce")
+    output.sort_index(inplace=True)
+    output.replace(",", ".", regex=True, inplace=True)
+    output.columns = ["Tipo de cambio US$, Cable"]
+    output = output.apply(pd.to_numeric, errors="coerce")
 
-        if update_path is not None:
-            output = pd.concat([prev_data, output])
+    metadata._set(output, area="Precios y salarios", currency="UYU/USD",
+                  inf_adj="No", unit="-", seas_adj="NSA",
+                  ts_type="-", cumperiods=1)
+    output.columns.set_levels(["-"], level=2, inplace=True)
 
-    except TypeError:
-        if update_path is not None:
-            output = prev_data
-        else:
-            return pd.DataFrame()
+    if update_path is not None:
+        output = pd.concat([previous_data, output])
 
     if save_path is not None:
-        full_save_path = (Path(save_path) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(full_save_path)):
-            mkdir(path.dirname(full_save_path))
-        output.to_csv(full_save_path)
+        updates._update_save(operation="save", data_path=save_path,
+                             data=output, name=name, index_label=index_label)
 
     return output
