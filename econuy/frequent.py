@@ -8,8 +8,7 @@ import pandas as pd
 from econuy import transform
 from econuy.utils import metadata
 from econuy.utils.lstrings import fiscal_metadata, wap_url
-from econuy.retrieval import (nxr, national_accounts, cpi,
-                              fiscal_accounts, labor)
+from econuy.retrieval import nxr, cpi, fiscal_accounts, labor
 
 
 def inflation(update_path: Union[str, PathLike, None] = None,
