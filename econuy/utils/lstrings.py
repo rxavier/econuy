@@ -25,7 +25,7 @@ reserves_url = "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Informe%20Diar
 reer_url = "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Cambio-Real-Efectivo.aspx"
 missing_reserves_url = "https://docs.google.com/spreadsheets/d/1tXwv8SaigbBrfBSSCVGBjSs88f3dgTq4nIANPn7vjYI/export?format=xlsx&authuser=0"
 ar_cpi_url = "http://www.bcra.gov.ar/PublicacionesEstadisticas/Principales_variables_datos.asp"
-ar_cpi_payload = "fecha_desde=1970-01-01&fecha_hasta=2019-12-31&B1=Enviar&primeravez=1&fecha_desde=19600101&fecha_hasta=20191231&serie=7931&serie1=0&serie2=0&serie3=0&serie4=0&detalle=Inflaci%F3n+mensual%A0%28variaci%F3n+en+%29"
+ar_cpi_payload = f"fecha_desde=1970-01-01&fecha_hasta={dt.datetime.now().strftime('%Y-%m-%d')}&B1=Enviar&primeravez=1&fecha_desde=19600101&fecha_hasta={dt.datetime.now().strftime('%Y%m%d')}&serie=7931&serie1=0&serie2=0&serie3=0&serie4=0&detalle=Inflaci%F3n+mensual%A0%28variaci%F3n+en+%29"
 
 fiscal_sheets = {
     "Sector Público No Financiero":
