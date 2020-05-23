@@ -1,6 +1,6 @@
 import logging
 from datetime import date
-from os import PathLike, path, makedirs, mkdir
+from os import PathLike, path, makedirs
 from pathlib import Path
 from typing import Union, Optional
 
@@ -68,6 +68,9 @@ class Session(object):
         if isinstance(location, (str, PathLike)):
             if not path.exists(self.location):
                 makedirs(self.location)
+            loc_text = location
+        else:
+            loc_text = location.engine.url
 
         if logger is not None:
             self.log = "custom"
@@ -104,12 +107,11 @@ class Session(object):
                 revise_method = revise_rows
             log_obj.info(f"Created Session object with the "
                          f"following attributes:\n"
-                         f"Directory for downloads and updates: {location}\n"
-                         f"Update method: {revise_method}\n"
+                         f"Location for downloads and updates: {loc_text}\n"
+                         f"Update method: '{revise_method}'\n"
                          f"Dataset: {dataset_message}\n"
                          f"Logging method: {log_method}")
 
-    @logutil.log_getter
     def get(self,
             dataset: str,
             update: bool = True,
@@ -157,11 +159,6 @@ class Session(object):
                 save_path = self.location
         else:
             save_path = None
-
-        if kwargs:
-            keywords = ", ".join(f"{k}={v}" for k, v in kwargs.items())
-            self.logger.info(f"Used the following keyword "
-                             f"arguments: {keywords}")
 
         if dataset == "cpi" or dataset == "prices":
             output = cpi.get(update_path=update_path,
@@ -230,10 +227,10 @@ class Session(object):
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 
         self.dataset = output
+        self.logger.info(f"Retrieved '{dataset}' dataset.")
 
         return self
 
-    @logutil.log_getter
     def get_frequent(self,
                      dataset: str,
                      update: bool = True,
@@ -280,29 +277,21 @@ class Session(object):
             save_path = None
 
         if dataset == "inflation":
-            called_args = logutil.get_called_args(frequent.inflation,
-                                                  kwargs)
             output = frequent.inflation(update_path=update_path,
                                         save_path=save_path,
                                         only_get=self.only_get,
                                         **kwargs)
         elif dataset == "fiscal":
-            called_args = logutil.get_called_args(frequent.fiscal,
-                                                  kwargs)
             output = frequent.fiscal(update_path=update_path,
                                      save_path=save_path,
                                      only_get=self.only_get,
                                      **kwargs)
         elif dataset == "labor" or dataset == "labour":
-            called_args = logutil.get_called_args(frequent.labor_rate_people,
-                                                  kwargs)
             output = frequent.labor_rate_people(update_path=update_path,
                                                 save_path=save_path,
                                                 only_get=self.only_get,
                                                 **kwargs)
         elif dataset == "wages" or dataset == "real_wages":
-            called_args = logutil.get_called_args(frequent.labor_real_wages,
-                                                  kwargs)
             output = frequent.labor_real_wages(update_path=update_path,
                                                save_path=save_path,
                                                only_get=self.only_get,
@@ -311,12 +300,10 @@ class Session(object):
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 
         self.dataset = output
-        self.logger.info(f"Used the following keyword "
-                         f"arguments: {called_args}")
+        self.logger.info(f"Retrieved '{dataset}' dataset.")
 
         return self
 
-    @logutil.log_transformer
     def resample(self, target: str, operation: str = "sum",
                  interpolation: str = "linear"):
         """
@@ -338,6 +325,8 @@ class Session(object):
             output = transform.resample(self.dataset, target=target,
                                         operation=operation,
                                         interpolation=interpolation)
+        self.logger.info(f"Applied 'resample' transformation with '{target}' "
+                         f"and '{operation}' operation.")
         if self.inplace is True:
             self.dataset = output
             return self
@@ -349,7 +338,6 @@ class Session(object):
                            logger=self.logger,
                            inplace=self.inplace)
 
-    @logutil.log_transformer
     def chg_diff(self, operation: str = "chg", period_op: str = "last"):
         """
         Calculate pct change or difference.
@@ -368,6 +356,8 @@ class Session(object):
         else:
             output = transform.chg_diff(self.dataset, operation=operation,
                                         period_op=period_op)
+        self.logger.info(f"Applied 'chg_diff' transformation with "
+                         f"'{operation}' operation and '{period_op}' period.")
         if self.inplace is True:
             self.dataset = output
             return self
@@ -379,7 +369,6 @@ class Session(object):
                            logger=self.logger,
                            inplace=self.inplace)
 
-    @logutil.log_transformer
     def decompose(self, flavor: str = "both",
                   trading: bool = True, outlier: bool = True,
                   x13_binary: Union[str, PathLike] = "search",
@@ -432,6 +421,8 @@ class Session(object):
                                          outlier=outlier,
                                          x13_binary=x13_binary,
                                          search_parents=search_parents)
+        self.logger.info(f"Applied 'decompose' transformation with "
+                         f"'{flavor}' flavor.")
         if self.inplace is True:
             self.dataset = output
             return self
@@ -443,7 +434,6 @@ class Session(object):
                            logger=self.logger,
                            inplace=self.inplace)
 
-    @logutil.log_transformer
     def convert(self, flavor: str, update: bool = True,
                 save: bool = True, only_get: bool = True, **kwargs):
         """
@@ -520,6 +510,8 @@ class Session(object):
             else:
                 raise ValueError("'flavor' can be one of 'usd', 'real', "
                                  "or 'pcgdp'.")
+        self.logger.info(f"Applied 'convert' transformation "
+                         f"with '{flavor}' flavor.")
         if self.inplace is True:
             self.dataset = output
             return self
@@ -531,7 +523,6 @@ class Session(object):
                            logger=self.logger,
                            inplace=self.inplace)
 
-    @logutil.log_transformer
     def base_index(self, start_date: Union[str, date],
                    end_date: Union[str, date, None] = None, base: float = 100):
         """
@@ -551,6 +542,7 @@ class Session(object):
         else:
             output = transform.base_index(self.dataset, start_date=start_date,
                                           end_date=end_date, base=base)
+        self.logger.info(f"Applied 'base_index' transformation.")
         if self.inplace is True:
             self.dataset = output
             return self
@@ -562,7 +554,6 @@ class Session(object):
                            logger=self.logger,
                            inplace=self.inplace)
 
-    @logutil.log_transformer
     def rolling(self, periods: Optional[int] = None,
                 operation: str = "sum"):
         """
@@ -582,6 +573,8 @@ class Session(object):
         else:
             output = transform.rolling(self.dataset, periods=periods,
                                        operation=operation)
+        self.logger.info(f"Applied 'rolling' transformation with "
+                         f"{periods} periods and '{operation}' operation.")
         if self.inplace is True:
             self.dataset = output
             return self
