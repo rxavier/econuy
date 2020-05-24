@@ -456,8 +456,8 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
         search_term = "x13as"
         if platform.system() == "Windows":
             search_term += ".exe"
-        binary_path = ops._rsearch(dir_file=getcwd(), n=search_parents,
-                                   search_term=search_term)
+        binary_path = _rsearch(dir_file=getcwd(), n=search_parents,
+                               search_term=search_term)
     elif isinstance(x13_binary, str):
         binary_path = x13_binary
     else:
@@ -563,6 +563,21 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
         output = trends
 
     return output
+
+
+def _rsearch(dir_file: Union[str, PathLike], search_term: str, n: int = 2):
+    """Recursively search for a file starting from the n-parent folder of
+    a supplied path."""
+    i = 0
+    while i < n:
+        i += 1
+        dir_file = path.dirname(dir_file)
+    try:
+        final_path = ([x for x in Path(dir_file).rglob(search_term)][0]
+                      .absolute().as_posix())
+    except IndexError:
+        final_path = True
+    return final_path
 
 
 def chg_diff(df: pd.DataFrame, operation: str = "chg",

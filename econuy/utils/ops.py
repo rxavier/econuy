@@ -107,18 +107,3 @@ def _io(operation: str,
                               con=full_update_loc,
                               index_label=index_label)
         return
-
-
-def _rsearch(dir_file: Union[str, PathLike], search_term: str, n: int = 2):
-    """Recursively search for a file starting from the n-parent folder of
-    a supplied path."""
-    i = 0
-    while i < n:
-        i += 1
-        dir_file = path.dirname(dir_file)
-    try:
-        final_path = ([x for x in Path(dir_file).rglob(search_term)][0]
-                      .absolute().as_posix())
-    except IndexError:
-        final_path = True
-    return final_path
