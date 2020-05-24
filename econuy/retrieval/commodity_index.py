@@ -63,7 +63,7 @@ def _weights(update_path: Union[str, PathLike, Engine,
 
     """
     name = "commodity_weights"
-    if only_get is True:
+    if only_get is True and update_path is not None:
         return updates._update_save(operation="update", data_path=update_path,
                                     name=name, multiindex=False)
 
@@ -153,7 +153,7 @@ def _prices(update_path: Union[str, PathLike, Engine, Connection, None] = None,
     bushel_conv = 36.74 / 100
     name = "commodity_prices"
 
-    if only_get is True:
+    if only_get is True and update_path is not None:
         return updates._update_save(operation="update", data_path=update_path,
                                     name=name)
 
@@ -304,7 +304,7 @@ def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
         Export-weighted average of commodity prices relevant to Uruguay.
 
     """
-    if only_get is True:
+    if only_get is True and update_path is not None:
         return updates._update_save(operation="update", data_path=update_path,
                                     name=name, index_label=index_label)
 

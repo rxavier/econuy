@@ -64,7 +64,7 @@ def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
         and individual public enterprises.
 
     """
-    if only_get is True:
+    if only_get is True and update_path is not None:
         output = {}
         for meta in fiscal_sheets.values():
             data = updates._update_save(

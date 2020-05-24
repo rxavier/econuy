@@ -67,7 +67,7 @@ def get_official(update_path: Union[str, PathLike, Engine,
         Available: global, regional, extraregional, Argentina, Brazil, US.
 
     """
-    if only_get is True:
+    if only_get is True and update_path is not None:
         return updates._update_save(operation="update", data_path=update_path,
                                     name=name, index_label=index_label)
 
@@ -148,7 +148,7 @@ def get_custom(update_path: Union[str, PathLike, Engine,
         Available: Argentina, Brazil, US.
 
     """
-    if only_get is True:
+    if only_get is True and update_path is not None:
         return updates._update_save(operation="update", data_path=update_path,
                                     name=name, index_label=index_label)
 

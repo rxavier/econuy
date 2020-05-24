@@ -59,7 +59,7 @@ def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
         Each dataframe corresponds to a national accounts table.
 
     """
-    if only_get is True:
+    if only_get is True and update_path is not None:
         output = {}
         for meta in nat_accounts_metadata.values():
             data = updates._update_save(
@@ -166,7 +166,7 @@ def _lin_gdp(update_path: Union[str, PathLike, Engine,
         Quarterly GDP in UYU and USD with 1 year forecasts.
 
     """
-    if only_get is True:
+    if only_get is True and update_path is not None:
         return updates._update_save(operation="update", data_path=update_path,
                                     name=name, index_label=index_label)
 

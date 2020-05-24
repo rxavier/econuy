@@ -61,7 +61,7 @@ def get_rates(update_path: Union[str, PathLike,
     Monthly participation, employment and unemployment rates : pd.DataFrame
 
     """
-    if only_get is True:
+    if only_get is True and update_path is not None:
         return updates._update_save(operation="update", data_path=update_path,
                                     name=name, index_label=index_label)
 
@@ -141,7 +141,7 @@ def get_wages(update_path: Union[str, PathLike,
     Monthly wages separated by public and private sector : pd.DataFrame
 
     """
-    if only_get is True:
+    if only_get is True and update_path is not None:
         return updates._update_save(operation="update", data_path=update_path,
                                     name=name, index_label=index_label)
 

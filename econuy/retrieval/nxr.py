@@ -60,7 +60,7 @@ def get_monthly(update_path: Union[str, PathLike,
         Sell rate, monthly average and end of period.
 
     """
-    if only_get is True:
+    if only_get is True and update_path is not None:
         return updates._update_save(operation="update", data_path=update_path,
                                     name=name, index_label=index_label)
 
@@ -131,7 +131,7 @@ def get_daily(update_path: Union[str, PathLike,
         Sell rate, monthly average and end of period.
 
     """
-    if only_get is True:
+    if only_get is True and update_path is not None:
         return updates._update_save(operation="update", data_path=update_path,
                                     name=name, index_label=index_label)
 
