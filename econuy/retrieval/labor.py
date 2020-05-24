@@ -1,13 +1,13 @@
 from os import PathLike
 from typing import Union
+from urllib.error import URLError, HTTPError
 
 import pandas as pd
-from pandas.tseries.offsets import MonthEnd
-from urllib.error import URLError, HTTPError
 from opnieuw import retry
+from pandas.tseries.offsets import MonthEnd
 from sqlalchemy.engine.base import Connection, Engine
 
-from econuy.utils import updates, metadata
+from econuy.utils import ops, metadata
 from econuy.utils.lstrings import labor_url, wages1_url, wages2_url
 
 
@@ -16,11 +16,11 @@ from econuy.utils.lstrings import labor_url, wages1_url, wages2_url
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def get_rates(update_path: Union[str, PathLike,
-                                 Engine, Connection, None] = None,
+def get_rates(update_loc: Union[str, PathLike,
+                                Engine, Connection, None] = None,
               revise_rows: Union[str, int] = "nodup",
-              save_path: Union[str, PathLike,
-                               Engine, Connection, None] = None,
+              save_loc: Union[str, PathLike,
+                              Engine, Connection, None] = None,
               name: str = "labor",
               index_label: str = "index",
               only_get: bool = False) -> pd.DataFrame:
@@ -31,7 +31,7 @@ def get_rates(update_path: Union[str, PathLike,
 
     Parameters
     ----------
-    update_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                   default None
         Either Path or path-like string pointing to a directory where to find
         a CSV for updating, SQLAlchemy connection or engine object, or
@@ -42,7 +42,7 @@ def get_rates(update_path: Union[str, PathLike,
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                 default None
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
@@ -54,16 +54,16 @@ def get_rates(update_path: Union[str, PathLike,
         Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
-        ``update_path``.
+        ``update_loc``.
 
     Returns
     -------
     Monthly participation, employment and unemployment rates : pd.DataFrame
 
     """
-    if only_get is True and update_path is not None:
-        return updates._update_save(operation="update", data_path=update_path,
-                                    name=name, index_label=index_label)
+    if only_get is True and update_loc is not None:
+        return ops._io(operation="update", data_loc=update_loc,
+                       name=name, index_label=index_label)
 
     labor_raw = pd.read_excel(labor_url, skiprows=39).dropna(axis=0, thresh=2)
     labor = labor_raw[~labor_raw["Unnamed: 0"].str.contains("-|/|Total",
@@ -74,22 +74,22 @@ def get_rates(update_path: Union[str, PathLike,
     labor.columns = ["Tasa de actividad", "Tasa de empleo",
                      "Tasa de desempleo"]
 
-    if update_path is not None:
-        previous_data = updates._update_save(operation="update",
-                                             data_path=update_path,
-                                             name=name,
-                                             index_label=index_label)
-        labor = updates._revise(new_data=labor, prev_data=previous_data,
-                                revise_rows=revise_rows)
+    if update_loc is not None:
+        previous_data = ops._io(operation="update",
+                                data_loc=update_loc,
+                                name=name,
+                                index_label=index_label)
+        labor = ops._revise(new_data=labor, prev_data=previous_data,
+                            revise_rows=revise_rows)
 
     labor = labor.apply(pd.to_numeric, errors="coerce")
     metadata._set(labor, area="Mercado laboral", currency="-",
                   inf_adj="No", unit="Tasa", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
 
-    if save_path is not None:
-        updates._update_save(operation="save", data_path=save_path,
-                             data=labor, name=name, index_label=index_label)
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=labor, name=name, index_label=index_label)
 
     return labor
 
@@ -99,11 +99,11 @@ def get_rates(update_path: Union[str, PathLike,
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def get_wages(update_path: Union[str, PathLike,
-                                 Engine, Connection, None] = None,
+def get_wages(update_loc: Union[str, PathLike,
+                                Engine, Connection, None] = None,
               revise_rows: Union[str, int] = "nodup",
-              save_path: Union[str, PathLike,
-                               Engine, Connection, None] = None,
+              save_loc: Union[str, PathLike,
+                              Engine, Connection, None] = None,
               name: str = "wages",
               index_label: str = "index",
               only_get: bool = False) -> pd.DataFrame:
@@ -111,7 +111,7 @@ def get_wages(update_path: Union[str, PathLike,
 
     Parameters
     ----------
-    update_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                   default None
         Either Path or path-like string pointing to a directory where to find
         a CSV for updating, SQLAlchemy connection or engine object, or
@@ -122,7 +122,7 @@ def get_wages(update_path: Union[str, PathLike,
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                 default None
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
@@ -134,16 +134,16 @@ def get_wages(update_path: Union[str, PathLike,
         Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
-        ``update_path``.
+        ``update_loc``.
 
     Returns
     -------
     Monthly wages separated by public and private sector : pd.DataFrame
 
     """
-    if only_get is True and update_path is not None:
-        return updates._update_save(operation="update", data_path=update_path,
-                                    name=name, index_label=index_label)
+    if only_get is True and update_loc is not None:
+        return ops._io(operation="update", data_loc=update_loc,
+                       name=name, index_label=index_label)
 
     historical = pd.read_excel(wages1_url, skiprows=8, usecols="A:B")
     historical = historical.dropna(how="any").set_index("Unnamed: 0")
@@ -155,21 +155,21 @@ def get_wages(update_path: Union[str, PathLike,
                      "Índice medio de salarios privados",
                      "Índice medio de salarios públicos"]
 
-    if update_path is not None:
-        previous_data = updates._update_save(operation="update",
-                                             data_path=update_path,
-                                             name=name,
-                                             index_label=index_label)
-        wages = updates._revise(new_data=wages, prev_data=previous_data,
-                                revise_rows=revise_rows)
+    if update_loc is not None:
+        previous_data = ops._io(operation="update",
+                                data_loc=update_loc,
+                                name=name,
+                                index_label=index_label)
+        wages = ops._revise(new_data=wages, prev_data=previous_data,
+                            revise_rows=revise_rows)
 
     wages = wages.apply(pd.to_numeric, errors="coerce")
     metadata._set(wages, area="Mercado laboral", currency="UYU",
                   inf_adj="No", unit="2008-07-31=100", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
 
-    if save_path is not None:
-        updates._update_save(operation="save", data_path=save_path,
-                             data=wages, name=name, index_label=index_label)
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=wages, name=name, index_label=index_label)
 
     return wages

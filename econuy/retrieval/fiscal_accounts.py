@@ -7,12 +7,12 @@ import pandas as pd
 import patoolib
 import requests
 from bs4 import BeautifulSoup
+from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from requests.exceptions import ConnectionError, HTTPError
-from opnieuw import retry
 from sqlalchemy.engine.base import Connection, Engine
 
-from econuy.utils import updates, metadata
+from econuy.utils import ops, metadata
 from econuy.utils.lstrings import fiscal_url, fiscal_sheets
 
 
@@ -21,9 +21,9 @@ from econuy.utils.lstrings import fiscal_url, fiscal_sheets
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
+def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
-        save_path: Union[str, PathLike, Engine, Connection, None] = None,
+        save_loc: Union[str, PathLike, Engine, Connection, None] = None,
         name: str = "fiscal",
         index_label: str = "index",
         only_get: bool = False) -> Dict[str, pd.DataFrame]:
@@ -31,7 +31,7 @@ def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
 
     Parameters
     ----------
-    update_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                   default None
         Either Path or path-like string pointing to a directory where to find
         a CSV for updating, SQLAlchemy connection or engine object, or
@@ -42,7 +42,7 @@ def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                 default None
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
@@ -54,7 +54,7 @@ def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
         Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
-        ``update_path``.
+        ``update_loc``.
 
     Returns
     -------
@@ -64,11 +64,11 @@ def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
         and individual public enterprises.
 
     """
-    if only_get is True and update_path is not None:
+    if only_get is True and update_loc is not None:
         output = {}
         for meta in fiscal_sheets.values():
-            data = updates._update_save(
-                operation="update", data_path=update_path,
+            data = ops._io(
+                operation="update", data_loc=update_loc,
                 name=f"{name}_{meta['Name']}", index_label=index_label
             )
             output.update({meta["Name"]: data})
@@ -97,14 +97,14 @@ def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
                 data.index = data.index + MonthEnd(1)
                 data.columns = meta["Colnames"]
 
-                if update_path is not None:
-                    previous_data = updates._update_save(
-                        operation="update", data_path=update_path,
+                if update_loc is not None:
+                    previous_data = ops._io(
+                        operation="update", data_loc=update_loc,
                         name=f"{name}_{meta['Name']}", index_label=index_label
                     )
-                    data = updates._revise(new_data=data,
-                                           prev_data=previous_data,
-                                           revise_rows=revise_rows)
+                    data = ops._revise(new_data=data,
+                                       prev_data=previous_data,
+                                       revise_rows=revise_rows)
                 data = data.apply(pd.to_numeric, errors="coerce")
                 metadata._set(
                     data, area="Cuentas fiscales y deuda", currency="UYU",
@@ -112,9 +112,9 @@ def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
                     ts_type="Flujo", cumperiods=1
                 )
 
-                if save_path is not None:
-                    updates._update_save(
-                        operation="save", data_path=save_path, data=data,
+                if save_loc is not None:
+                    ops._io(
+                        operation="save", data_loc=save_loc, data=data,
                         name=f"{name}_{meta['Name']}", index_label=index_label
                     )
 

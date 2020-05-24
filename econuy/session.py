@@ -8,9 +8,9 @@ import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import frequent, transform
-from econuy.utils import logutil, updates
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
                               labor, rxr, commodity_index, reserves)
+from econuy.utils import logutil, ops
 
 
 class Session(object):
@@ -32,7 +32,7 @@ class Session(object):
         which replaces existing periods with new data.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
-        ``update_path``.
+        ``update_loc``.
     dataset : pd.DataFrame, default pd.DataFrame(index=[], columns=[])
         Current working dataset.
     log : {str, 0, 1, 2}
@@ -147,80 +147,80 @@ class Session(object):
         """
         if update is True:
             if isinstance(self.location, (str, PathLike)):
-                update_path = Path(self.location)
+                update_loc = Path(self.location)
             else:
-                update_path = self.location
+                update_loc = self.location
         else:
-            update_path = None
+            update_loc = None
         if save is True:
             if isinstance(self.location, (str, PathLike)):
-                save_path = Path(self.location)
+                save_loc = Path(self.location)
             else:
-                save_path = self.location
+                save_loc = self.location
         else:
-            save_path = None
+            save_loc = None
 
         if dataset == "cpi" or dataset == "prices":
-            output = cpi.get(update_path=update_path,
+            output = cpi.get(update_loc=update_loc,
                              revise_rows=self.revise_rows,
-                             save_path=save_path,
+                             save_loc=save_loc,
                              only_get=self.only_get,
                              **kwargs)
         elif dataset == "fiscal":
-            output = fiscal_accounts.get(update_path=update_path,
+            output = fiscal_accounts.get(update_loc=update_loc,
                                          revise_rows=self.revise_rows,
-                                         save_path=save_path,
+                                         save_loc=save_loc,
                                          only_get=self.only_get,
                                          **kwargs)
         elif dataset == "nxr_monthly" or dataset == "nxr_m":
-            output = nxr.get_monthly(update_path=update_path,
+            output = nxr.get_monthly(update_loc=update_loc,
                                      revise_rows=self.revise_rows,
-                                     save_path=save_path,
+                                     save_loc=save_loc,
                                      only_get=self.only_get,
                                      **kwargs)
         elif dataset == "nxr_daily" or dataset == "nxr_d":
-            output = nxr.get_daily(update_path=update_path,
-                                   save_path=save_path,
+            output = nxr.get_daily(update_loc=update_loc,
+                                   save_loc=save_loc,
                                    only_get=self.only_get,
                                    **kwargs)
         elif dataset == "naccounts" or dataset == "na":
-            output = national_accounts.get(update_path=update_path,
+            output = national_accounts.get(update_loc=update_loc,
                                            revise_rows=self.revise_rows,
-                                           save_path=save_path,
+                                           save_loc=save_loc,
                                            only_get=self.only_get,
                                            **kwargs)
         elif dataset == "labor" or dataset == "labour":
-            output = labor.get_rates(update_path=update_path,
+            output = labor.get_rates(update_loc=update_loc,
                                      revise_rows=self.revise_rows,
-                                     save_path=save_path,
+                                     save_loc=save_loc,
                                      only_get=self.only_get,
                                      **kwargs)
         elif dataset == "wages":
-            output = labor.get_wages(update_path=update_path,
+            output = labor.get_wages(update_loc=update_loc,
                                      revise_rows=self.revise_rows,
-                                     save_path=save_path,
+                                     save_loc=save_loc,
                                      only_get=self.only_get,
                                      **kwargs)
         elif dataset == "rxr_custom" or dataset == "rxr-custom":
-            output = rxr.get_custom(update_path=update_path,
+            output = rxr.get_custom(update_loc=update_loc,
                                     revise_rows=self.revise_rows,
-                                    save_path=save_path,
+                                    save_loc=save_loc,
                                     only_get=self.only_get,
                                     **kwargs)
         elif dataset == "rxr_official" or dataset == "rxr-official":
-            output = rxr.get_official(update_path=update_path,
+            output = rxr.get_official(update_loc=update_loc,
                                       revise_rows=self.revise_rows,
-                                      save_path=save_path,
+                                      save_loc=save_loc,
                                       only_get=self.only_get,
                                       **kwargs)
         elif dataset == "commodity_index" or dataset == "comm_index":
-            output = commodity_index.get(update_path=update_path,
-                                         save_path=save_path,
+            output = commodity_index.get(update_loc=update_loc,
+                                         save_loc=save_loc,
                                          only_get=self.only_get,
                                          **kwargs)
         elif dataset == "reserves_changes" or dataset == "reserves_chg":
-            output = reserves.get_changes(update_path=update_path,
-                                          save_path=save_path,
+            output = reserves.get_changes(update_loc=update_loc,
+                                          save_loc=save_loc,
                                           only_get=self.only_get,
                                           **kwargs)
         else:
@@ -263,37 +263,37 @@ class Session(object):
         """
         if update is True:
             if isinstance(self.location, (str, PathLike)):
-                update_path = Path(self.location)
+                update_loc = Path(self.location)
             else:
-                update_path = self.location
+                update_loc = self.location
         else:
-            update_path = None
+            update_loc = None
         if save is True:
             if isinstance(self.location, (str, PathLike)):
-                save_path = Path(self.location)
+                save_loc = Path(self.location)
             else:
-                save_path = self.location
+                save_loc = self.location
         else:
-            save_path = None
+            save_loc = None
 
         if dataset == "inflation":
-            output = frequent.inflation(update_path=update_path,
-                                        save_path=save_path,
+            output = frequent.inflation(update_loc=update_loc,
+                                        save_loc=save_loc,
                                         only_get=self.only_get,
                                         **kwargs)
         elif dataset == "fiscal":
-            output = frequent.fiscal(update_path=update_path,
-                                     save_path=save_path,
+            output = frequent.fiscal(update_loc=update_loc,
+                                     save_loc=save_loc,
                                      only_get=self.only_get,
                                      **kwargs)
         elif dataset == "labor" or dataset == "labour":
-            output = frequent.labor_rate_people(update_path=update_path,
-                                                save_path=save_path,
+            output = frequent.labor_rate_people(update_loc=update_loc,
+                                                save_loc=save_loc,
                                                 only_get=self.only_get,
                                                 **kwargs)
         elif dataset == "wages" or dataset == "real_wages":
-            output = frequent.labor_real_wages(update_path=update_path,
-                                               save_path=save_path,
+            output = frequent.labor_real_wages(update_loc=update_loc,
+                                               save_loc=save_loc,
                                                only_get=self.only_get,
                                                **kwargs)
         else:
@@ -453,37 +453,37 @@ class Session(object):
         """
         if update is True:
             if isinstance(self.location, (str, PathLike)):
-                update_path = Path(self.location)
+                update_loc = Path(self.location)
             else:
-                update_path = self.location
+                update_loc = self.location
         else:
-            update_path = None
+            update_loc = None
         if save is True:
             if isinstance(self.location, (str, PathLike)):
-                save_path = Path(self.location)
+                save_loc = Path(self.location)
             else:
-                save_path = self.location
+                save_loc = self.location
         else:
-            save_path = None
+            save_loc = None
 
         if isinstance(self.dataset, dict):
             output = {}
             for key, value in self.dataset.items():
                 if flavor == "usd":
                     table = transform.convert_usd(value,
-                                                  update_path=update_path,
-                                                  save_path=save_path,
+                                                  update_loc=update_loc,
+                                                  save_loc=save_loc,
                                                   only_get=only_get)
                 elif flavor == "real":
                     table = transform.convert_real(value,
-                                                   update_path=update_path,
-                                                   save_path=save_path,
+                                                   update_loc=update_loc,
+                                                   save_loc=save_loc,
                                                    only_get=only_get,
                                                    **kwargs)
                 elif flavor == "pcgdp" or flavor == "gdp":
                     table = transform.convert_gdp(value,
-                                                  update_path=update_path,
-                                                  save_path=save_path,
+                                                  update_loc=update_loc,
+                                                  save_loc=save_loc,
                                                   only_get=only_get)
                 else:
                     raise ValueError("'flavor' can be one of 'usd', 'real', "
@@ -493,19 +493,19 @@ class Session(object):
         else:
             if flavor == "usd":
                 output = transform.convert_usd(self.dataset,
-                                               update_path=update_path,
-                                               save_path=save_path,
+                                               update_loc=update_loc,
+                                               save_loc=save_loc,
                                                only_get=only_get)
             elif flavor == "real":
                 output = transform.convert_real(self.dataset,
-                                                update_path=update_path,
-                                                save_path=save_path,
+                                                update_loc=update_loc,
+                                                save_loc=save_loc,
                                                 only_get=only_get,
                                                 **kwargs)
             elif flavor == "pcgdp" or flavor == "gdp":
                 output = transform.convert_gdp(self.dataset,
-                                               update_path=update_path,
-                                               save_path=save_path,
+                                               update_loc=update_loc,
+                                               save_loc=save_loc,
                                                only_get=only_get)
             else:
                 raise ValueError("'flavor' can be one of 'usd', 'real', "
@@ -592,13 +592,13 @@ class Session(object):
 
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                updates._update_save(operation="save", data_path=self.location,
-                                     data=value, name=f"{name}_{key}",
-                                     index_label=index_label)
+                ops._io(operation="save", data_loc=self.location,
+                        data=value, name=f"{name}_{key}",
+                        index_label=index_label)
         else:
-            updates._update_save(operation="save", data_path=self.location,
-                                 data=self.dataset, name=name,
-                                 index_label=index_label)
+            ops._io(operation="save", data_loc=self.location,
+                    data=self.dataset, name=name,
+                    index_label=index_label)
 
         self.logger.info(f"Saved dataset to directory {self.location}.")
 

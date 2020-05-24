@@ -9,32 +9,32 @@ from sqlalchemy.exc import ProgrammingError
 from econuy.utils import metadata, sqlutil
 
 
-def _check_modified(data_path: Union[str, PathLike,
-                                     Connection, Engine],
-                    multiindex=True,
-                    table_name: Optional[str] = None,
-                    index_label: Optional[str] = None):
+def _load(data_loc: Union[str, PathLike,
+                          Connection, Engine],
+          multiindex=True,
+          table_name: Optional[str] = None,
+          index_label: Optional[str] = None):
     """Load existing data from CSV or SQL."""
     try:
-        if isinstance(data_path, (Engine, Connection)):
+        if isinstance(data_loc, (Engine, Connection)):
             if multiindex is True:
-                previous_data = sqlutil.read(con=data_path,
+                previous_data = sqlutil.read(con=data_loc,
                                              table_name=table_name,
                                              index_label=index_label)
             else:
                 previous_data = pd.read_sql(sql=table_name,
-                                            con=data_path,
+                                            con=data_loc,
                                             index_col=index_label,
                                             parse_dates=index_label)
         else:
             if multiindex is True:
-                previous_data = pd.read_csv(data_path, index_col=0,
+                previous_data = pd.read_csv(data_loc, index_col=0,
                                             parse_dates=True,
                                             header=list(range(9)),
                                             float_precision="high")
                 metadata._set(previous_data)
             else:
-                previous_data = pd.read_csv(data_path, index_col=0,
+                previous_data = pd.read_csv(data_loc, index_col=0,
                                             parse_dates=True,
                                             float_precision="high")
     except (ProgrammingError, FileNotFoundError):
@@ -81,30 +81,30 @@ def _revise(new_data: pd.DataFrame, prev_data: pd.DataFrame,
     return updated
 
 
-def _update_save(operation: str,
-                 data_path: Union[str, PathLike, Connection, Engine],
-                 name: str,
-                 data: Optional[pd.DataFrame] = None,
-                 index_label: str = "index",
-                 multiindex: bool = True) -> Optional[pd.DataFrame]:
+def _io(operation: str,
+        data_loc: Union[str, PathLike, Connection, Engine],
+        name: str,
+        data: Optional[pd.DataFrame] = None,
+        index_label: str = "index",
+        multiindex: bool = True) -> Optional[pd.DataFrame]:
     if operation == "update":
-        if not isinstance(data_path, (Connection, Engine)):
-            full_update_path = (Path(data_path) / name).with_suffix(".csv")
+        if isinstance(data_loc, (str, PathLike)):
+            full_update_loc = (Path(data_loc) / name).with_suffix(".csv")
         else:
-            full_update_path = data_path
-        return _check_modified(full_update_path, table_name=name,
-                               index_label=index_label, multiindex=multiindex)
+            full_update_loc = data_loc
+        return _load(full_update_loc, table_name=name,
+                     index_label=index_label, multiindex=multiindex)
 
     elif operation == "save":
-        if not isinstance(data_path, (Connection, Engine)):
-            full_save_path = (Path(data_path) / name).with_suffix(".csv")
-            if not path.exists(path.dirname(full_save_path)):
-                mkdir(path.dirname(full_save_path))
-            data.to_csv(full_save_path)
+        if isinstance(data_loc, (str, PathLike)):
+            full_save_loc = (Path(data_loc) / name).with_suffix(".csv")
+            if not path.exists(path.dirname(full_save_loc)):
+                mkdir(path.dirname(full_save_loc))
+            data.to_csv(full_save_loc)
         else:
-            full_update_path = data_path
+            full_update_loc = data_loc
             sqlutil.df_to_sql(data, name=name,
-                              con=full_update_path,
+                              con=full_update_loc,
                               index_label=index_label)
         return
 

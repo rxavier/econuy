@@ -4,8 +4,8 @@ from os import path
 import numpy as np
 import pandas as pd
 
-from econuy.session import Session
 from econuy.retrieval import reserves, national_accounts
+from econuy.session import Session
 from econuy.utils import metadata
 from .test_session import remove_clutter
 
@@ -19,7 +19,7 @@ def test_changes():
                                 index_col=0, header=list(range(9)))
     metadata._set(previous_data)
     res = reserves.get_changes(
-        update_path=TEST_DIR, name=None, save_path=TEST_DIR)
+        update_loc=TEST_DIR, name=None, save_loc=TEST_DIR)
     previous_data.index = pd.to_datetime(previous_data.index)
     compare = res.loc[previous_data.index].round(4)
     compare.columns = previous_data.columns
@@ -45,7 +45,7 @@ def test_rxr_custom():
     assert len(tcr.columns) == 5
     avs = tcr.loc[(tcr.index >= "2010-01-01") &
                   (tcr.index <= "2010-12-31")].mean().values.round(1)
-    arr = np.array([100]*5, dtype="float64")
+    arr = np.array([100] * 5, dtype="float64")
     assert np.all(avs == arr)
     remove_clutter()
 
@@ -63,7 +63,7 @@ def test_comm_index():
 def test_lin():
     remove_clutter()
     lin = national_accounts._lin_gdp(
-        update_path="test-data", save_path="test-data")
+        update_loc="test-data", save_loc="test-data")
     assert isinstance(lin, pd.DataFrame)
     assert (sorted(lin.columns.get_level_values("Moneda"))
             == sorted(["UYU", "USD"]))

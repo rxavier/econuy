@@ -1,15 +1,15 @@
 import datetime as dt
 from os import PathLike
 from typing import Union, Dict
+from urllib.error import URLError, HTTPError
 
 import pandas as pd
-from pandas.tseries.offsets import MonthEnd
-from urllib.error import URLError, HTTPError
 from opnieuw import retry
+from pandas.tseries.offsets import MonthEnd
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
-from econuy.utils import updates, metadata
+from econuy.utils import ops, metadata
 from econuy.utils.lstrings import nat_accounts_metadata
 
 
@@ -18,9 +18,9 @@ from econuy.utils.lstrings import nat_accounts_metadata
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
+def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
-        save_path: Union[str, PathLike, Engine, Connection, None] = None,
+        save_loc: Union[str, PathLike, Engine, Connection, None] = None,
         name: str = "naccounts",
         index_label: str = "index",
         only_get: bool = False) -> Dict[str, pd.DataFrame]:
@@ -28,7 +28,7 @@ def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
 
     Parameters
     ----------
-    update_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                   default None
         Either Path or path-like string pointing to a directory where to find
         a CSV for updating, SQLAlchemy connection or engine object, or
@@ -39,7 +39,7 @@ def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                 default None
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
@@ -51,7 +51,7 @@ def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
         Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
-        ``update_path``.
+        ``update_loc``.
 
     Returns
     -------
@@ -59,11 +59,11 @@ def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
         Each dataframe corresponds to a national accounts table.
 
     """
-    if only_get is True and update_path is not None:
+    if only_get is True and update_loc is not None:
         output = {}
         for meta in nat_accounts_metadata.values():
-            data = updates._update_save(
-                operation="update", data_path=update_path,
+            data = ops._io(
+                operation="update", data_loc=update_loc,
                 name=f"{name}_{meta['Name']}", index_label=index_label
             )
             output.update({meta["Name"]: data})
@@ -84,13 +84,13 @@ def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
         else:
             unit_ = meta["Unit"]
 
-        if update_path is not None:
-            previous_data = updates._update_save(
-                operation="update", data_path=update_path,
+        if update_loc is not None:
+            previous_data = ops._io(
+                operation="update", data_loc=update_loc,
                 name=f"{name}_{meta['Name']}", index_label=index_label
             )
-            proc = updates._revise(new_data=proc, prev_data=previous_data,
-                                   revise_rows=revise_rows)
+            proc = ops._revise(new_data=proc, prev_data=previous_data,
+                               revise_rows=revise_rows)
         proc = proc.apply(pd.to_numeric, errors="coerce")
 
         metadata._set(proc, area="Actividad económica", currency="UYU",
@@ -99,9 +99,9 @@ def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
                       seas_adj=meta["Seas"], ts_type="Flujo",
                       cumperiods=1)
 
-        if save_path is not None:
-            updates._update_save(
-                operation="save", data_path=save_path, data=proc,
+        if save_loc is not None:
+            ops._io(
+                operation="save", data_loc=save_loc, data=proc,
                 name=f"{name}_{meta['Name']}", index_label=index_label
             )
 
@@ -125,10 +125,10 @@ def _fix_dates(df):
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def _lin_gdp(update_path: Union[str, PathLike, Engine,
-                                Connection, None] = None,
-             save_path: Union[str, PathLike, Engine,
-                              Connection, None] = None,
+def _lin_gdp(update_loc: Union[str, PathLike, Engine,
+                               Connection, None] = None,
+             save_loc: Union[str, PathLike, Engine,
+                             Connection, None] = None,
              name: str = "lin_gdp",
              index_label: str = "index",
              only_get: bool = True):
@@ -141,12 +141,12 @@ def _lin_gdp(update_path: Union[str, PathLike, Engine,
 
     Parameters
     ----------
-    update_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                   default None
         Either Path or path-like string pointing to a directory where to find
         a CSV for updating, SQLAlchemy connection or engine object, or
         ``None``, don't update.
-    save_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                 default None
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
@@ -158,7 +158,7 @@ def _lin_gdp(update_path: Union[str, PathLike, Engine,
         Label for SQL indexes.
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
-        ``update_path``.
+        ``update_loc``.
 
     Returns
     -------
@@ -166,14 +166,14 @@ def _lin_gdp(update_path: Union[str, PathLike, Engine,
         Quarterly GDP in UYU and USD with 1 year forecasts.
 
     """
-    if only_get is True and update_path is not None:
-        return updates._update_save(operation="update", data_path=update_path,
-                                    name=name, index_label=index_label)
+    if only_get is True and update_loc is not None:
+        return ops._io(operation="update", data_loc=update_loc,
+                       name=name, index_label=index_label)
 
-    data_uyu = get(update_path=update_path, only_get=True)["gdp_cur_nsa"]
+    data_uyu = get(update_loc=update_loc, only_get=True)["gdp_cur_nsa"]
     data_uyu = transform.rolling(data_uyu, periods=4, operation="sum")
     data_usd = transform.convert_usd(data_uyu,
-                                     update_path=update_path)
+                                     update_loc=update_loc)
 
     data = [data_uyu, data_usd]
     last_year = data_uyu.index.max().year
@@ -191,12 +191,12 @@ def _lin_gdp(update_path: Union[str, PathLike, Engine,
         fcast = (gdp.loc[[dt.datetime(last_year - 1, 12, 31)]].
                  multiply(imf_data.iloc[1]).divide(imf_data.iloc[0]))
         fcast = fcast.rename(index={dt.datetime(last_year - 1, 12, 31):
-                                    dt.datetime(last_year, 12, 31)})
+                                        dt.datetime(last_year, 12, 31)})
         next_fcast = (gdp.loc[[dt.datetime(last_year - 1, 12, 31)]].
                       multiply(imf_data.iloc[2]).divide(imf_data.iloc[0]))
         next_fcast = next_fcast.rename(
             index={dt.datetime(last_year - 1, 12, 31):
-                   dt.datetime(last_year + 1, 12, 31)}
+                       dt.datetime(last_year + 1, 12, 31)}
         )
         fcast = fcast.append(next_fcast)
         gdp = gdp.append(fcast)
@@ -216,8 +216,8 @@ def _lin_gdp(update_path: Union[str, PathLike, Engine,
                                                       "Seas. Adj.", "Tipo",
                                                       "Acum. períodos"])
 
-    if save_path is not None:
-        updates._update_save(operation="save", data_path=save_path,
-                             data=output, name=name, index_label=index_label)
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=output, name=name, index_label=index_label)
 
     return output

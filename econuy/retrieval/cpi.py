@@ -1,13 +1,13 @@
 from os import PathLike
 from typing import Union
+from urllib.error import URLError, HTTPError
 
 import pandas as pd
-from pandas.tseries.offsets import MonthEnd
-from urllib.error import URLError, HTTPError
 from opnieuw import retry
+from pandas.tseries.offsets import MonthEnd
 from sqlalchemy.engine.base import Connection, Engine
 
-from econuy.utils import updates, metadata
+from econuy.utils import ops, metadata
 from econuy.utils.lstrings import cpi_url
 
 
@@ -16,9 +16,9 @@ from econuy.utils.lstrings import cpi_url
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
+def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
-        save_path: Union[str, PathLike, Engine, Connection, None] = None,
+        save_loc: Union[str, PathLike, Engine, Connection, None] = None,
         name: str = "cpi",
         index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
@@ -26,7 +26,7 @@ def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
 
     Parameters
     ----------
-    update_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                   default None
         Either Path or path-like string pointing to a directory where to find
         a CSV for updating, SQLAlchemy connection or engine object, or
@@ -37,7 +37,7 @@ def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                 default None
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
@@ -49,16 +49,16 @@ def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
         Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
-        ``update_path``.
+        ``update_loc``.
 
     Returns
     -------
     Monthly CPI index : pd.DataFrame
 
     """
-    if only_get is True and update_path is not None:
-        return updates._update_save(operation="update", data_path=update_path,
-                                    name=name, index_label=index_label)
+    if only_get is True and update_loc is not None:
+        return ops._io(operation="update", data_loc=update_loc,
+                       name=name, index_label=index_label)
 
     cpi_raw = pd.read_excel(cpi_url, skiprows=7).dropna(axis=0, thresh=2)
     cpi = (cpi_raw.drop(["Mensual", "Acum.año", "Acum.12 meses"], axis=1).
@@ -66,21 +66,21 @@ def get(update_path: Union[str, PathLike, Engine, Connection, None] = None,
     cpi.columns = ["Índice de precios al consumo"]
     cpi.index = cpi.index + MonthEnd(1)
 
-    if update_path is not None:
-        previous_data = updates._update_save(
-            operation="update", data_path=update_path,
+    if update_loc is not None:
+        previous_data = ops._io(
+            operation="update", data_loc=update_loc,
             name=name, index_label=index_label
         )
-        cpi = updates._revise(new_data=cpi, prev_data=previous_data,
-                              revise_rows=revise_rows)
+        cpi = ops._revise(new_data=cpi, prev_data=previous_data,
+                          revise_rows=revise_rows)
 
     cpi = cpi.apply(pd.to_numeric, errors="coerce")
     metadata._set(cpi, area="Precios y salarios", currency="-",
                   inf_adj="No", unit="2010-10-31=100", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
 
-    if save_path is not None:
-        updates._update_save(operation="save", data_path=save_path,
-                             data=cpi, name=name, index_label=index_label)
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=cpi, name=name, index_label=index_label)
 
     return cpi

@@ -1,22 +1,22 @@
-import re
 import datetime as dt
+import re
 from os import PathLike
 from typing import Union
+from urllib import error
 
 import numpy as np
 import pandas as pd
 import requests
-from pandas.tseries.offsets import MonthEnd
-from urllib import error
-from requests import exceptions
-from opnieuw import retry
-from sqlalchemy.engine.base import Connection, Engine
 from bs4 import BeautifulSoup
+from opnieuw import retry
+from pandas.tseries.offsets import MonthEnd
+from requests import exceptions
+from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
-from econuy.utils import updates, metadata
-from econuy.utils.lstrings import reer_url, ar_cpi_url, ar_cpi_payload
 from econuy.retrieval import cpi, nxr
+from econuy.utils import ops, metadata
+from econuy.utils.lstrings import reer_url, ar_cpi_url, ar_cpi_payload
 
 
 @retry(
@@ -24,11 +24,11 @@ from econuy.retrieval import cpi, nxr
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def get_official(update_path: Union[str, PathLike, Engine,
-                                    Connection, None] = None,
+def get_official(update_loc: Union[str, PathLike, Engine,
+                                   Connection, None] = None,
                  revise_rows: Union[str, int] = "nodup",
-                 save_path: Union[str, PathLike, Engine,
-                                  Connection, None] = None,
+                 save_loc: Union[str, PathLike, Engine,
+                                 Connection, None] = None,
                  name: str = "rxr_official",
                  index_label: str = "index",
                  only_get: bool = False) -> pd.DataFrame:
@@ -36,7 +36,7 @@ def get_official(update_path: Union[str, PathLike, Engine,
 
     Parameters
     ----------
-    update_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                   default None
         Either Path or path-like string pointing to a directory where to find
         a CSV for updating, SQLAlchemy connection or engine object, or
@@ -47,7 +47,7 @@ def get_official(update_path: Union[str, PathLike, Engine,
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                 default None
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
@@ -59,7 +59,7 @@ def get_official(update_path: Union[str, PathLike, Engine,
         Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
-        ``update_path``.
+        ``update_loc``.
 
     Returns
     -------
@@ -67,9 +67,9 @@ def get_official(update_path: Union[str, PathLike, Engine,
         Available: global, regional, extraregional, Argentina, Brazil, US.
 
     """
-    if only_get is True and update_path is not None:
-        return updates._update_save(operation="update", data_path=update_path,
-                                    name=name, index_label=index_label)
+    if only_get is True and update_loc is not None:
+        return ops._io(operation="update", data_loc=update_loc,
+                       name=name, index_label=index_label)
 
     r = requests.get(reer_url)
     soup = BeautifulSoup(r.content, "html.parser")
@@ -81,21 +81,21 @@ def get_official(update_path: Union[str, PathLike, Engine,
                     "Argentina", "Brasil", "EEUU"]
     proc.index = pd.to_datetime(proc.index) + MonthEnd(1)
 
-    if update_path is not None:
-        previous_data = updates._update_save(operation="update",
-                                             data_path=update_path,
-                                             name=name,
-                                             index_label=index_label)
-        proc = updates._revise(new_data=proc, prev_data=previous_data,
-                               revise_rows=revise_rows)
+    if update_loc is not None:
+        previous_data = ops._io(operation="update",
+                                data_loc=update_loc,
+                                name=name,
+                                index_label=index_label)
+        proc = ops._revise(new_data=proc, prev_data=previous_data,
+                           revise_rows=revise_rows)
 
     metadata._set(proc, area="Precios y salarios", currency="UYU/Otro",
                   inf_adj="No", unit="2017=100", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
 
-    if save_path is not None:
-        updates._update_save(operation="save", data_path=save_path,
-                             data=proc, name=name, index_label=index_label)
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=proc, name=name, index_label=index_label)
 
     return proc
 
@@ -105,11 +105,11 @@ def get_official(update_path: Union[str, PathLike, Engine,
     max_calls_total=10,
     retry_window_after_first_call_in_seconds=90,
 )
-def get_custom(update_path: Union[str, PathLike, Engine,
-                                  Connection, None] = None,
+def get_custom(update_loc: Union[str, PathLike, Engine,
+                                 Connection, None] = None,
                revise_rows: Union[str, int] = "nodup",
-               save_path: Union[str, PathLike, Engine,
-                                Connection, None] = None,
+               save_loc: Union[str, PathLike, Engine,
+                               Connection, None] = None,
                name: str = "rxr_custom",
                index_label: str = "index",
                only_get: bool = False) -> pd.DataFrame:
@@ -117,7 +117,7 @@ def get_custom(update_path: Union[str, PathLike, Engine,
 
     Parameters
     ----------
-    update_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                   default None
         Either Path or path-like string pointing to a directory where to find
         a CSV for updating, SQLAlchemy connection or engine object, or
@@ -128,7 +128,7 @@ def get_custom(update_path: Union[str, PathLike, Engine,
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                 default None
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
@@ -140,7 +140,7 @@ def get_custom(update_path: Union[str, PathLike, Engine,
         Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
-        ``update_path``.
+        ``update_loc``.
 
     Returns
     -------
@@ -148,9 +148,9 @@ def get_custom(update_path: Union[str, PathLike, Engine,
         Available: Argentina, Brazil, US.
 
     """
-    if only_get is True and update_path is not None:
-        return updates._update_save(operation="update", data_path=update_path,
-                                    name=name, index_label=index_label)
+    if only_get is True and update_loc is not None:
+        return ops._io(operation="update", data_loc=update_loc,
+                       name=name, index_label=index_label)
 
     url_ = "http://dataservices.imf.org/REST/SDMX_JSON.svc/CompactData/IFS/M."
     url_extra = ".?startPeriod=1970&endPeriod="
@@ -189,9 +189,9 @@ def get_custom(update_path: Union[str, PathLike, Engine,
     proc["AR.ENDA_XDC_USD_RATE_black"] = ar_black_xr.iloc[:, 0]
     proc["AR_E_A"] = proc.iloc[:, [5, 6]].mean(axis=1)
 
-    uy_cpi = cpi.get(update_path=update_path, save_path=save_path,
+    uy_cpi = cpi.get(update_loc=update_loc, save_loc=save_loc,
                      only_get=True)
-    uy_e = nxr.get_monthly(update_path=update_path, save_path=save_path,
+    uy_e = nxr.get_monthly(update_loc=update_loc, save_loc=save_loc,
                            only_get=True).iloc[:, [1]]
     proc = pd.concat([proc, uy_cpi, uy_e], axis=1)
     proc = proc.interpolate(method="linear", limit_area="inside")
@@ -215,17 +215,17 @@ def get_custom(update_path: Union[str, PathLike, Engine,
     output = transform.base_index(output, start_date="2010-01-01",
                                   end_date="2010-12-31", base=100)
 
-    if update_path is not None:
-        previous_data = updates._update_save(operation="update",
-                                             data_path=update_path,
-                                             name=name,
-                                             index_label=index_label)
-        output = updates._revise(new_data=output, prev_data=previous_data,
-                                 revise_rows=revise_rows)
+    if update_loc is not None:
+        previous_data = ops._io(operation="update",
+                                data_loc=update_loc,
+                                name=name,
+                                index_label=index_label)
+        output = ops._revise(new_data=output, prev_data=previous_data,
+                             revise_rows=revise_rows)
 
-    if save_path is not None:
-        updates._update_save(operation="save", data_path=save_path,
-                             data=output, name=name, index_label=index_label)
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=output, name=name, index_label=index_label)
 
     return output
 

@@ -1,16 +1,16 @@
 import shutil
 from os import listdir, remove, path
-from typing import Tuple
 from pathlib import Path
+from typing import Tuple
 
 import pandas as pd
 import pytest
 
 from econuy import transform
-from econuy.utils import metadata
-from econuy.utils.lstrings import fiscal_metadata
 from econuy.retrieval import nxr
 from econuy.session import Session
+from econuy.utils import metadata
+from econuy.utils.lstrings import fiscal_metadata
 from .test_transform import dummy_df
 
 CUR_DIR = path.abspath(path.dirname(__file__))
@@ -125,7 +125,7 @@ def test_fiscal():
                                       end_date=end_date).dataset
     compare_real_usd = transform.convert_real(compare, start_date=start_date,
                                               end_date=end_date)
-    xr = nxr.get_monthly(update_path=None, save_path=None)
+    xr = nxr.get_monthly(update_loc=None, save_loc=None)
     compare_real_usd = compare_real_usd.divide(
         xr[start_date:end_date].mean()[1])
     compare_real_usd.columns = fiscal_tfm.columns

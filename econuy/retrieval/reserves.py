@@ -2,14 +2,14 @@ import datetime as dt
 import urllib
 from os import PathLike
 from typing import Union
+from urllib.error import URLError, HTTPError
 
 import pandas as pd
 from dateutil.relativedelta import relativedelta
-from urllib.error import URLError, HTTPError
 from opnieuw import retry
 from sqlalchemy.engine.base import Connection, Engine
 
-from econuy.utils import metadata, updates
+from econuy.utils import metadata, ops
 from econuy.utils.lstrings import (reserves_url, reserves_cols,
                                    missing_reserves_url)
 
@@ -19,10 +19,10 @@ from econuy.utils.lstrings import (reserves_url, reserves_cols,
     max_calls_total=10,
     retry_window_after_first_call_in_seconds=90,
 )
-def get_changes(update_path: Union[str, PathLike, Engine,
-                                   Connection, None] = None,
-                save_path: Union[str, PathLike, Engine,
-                                 Connection, None] = None,
+def get_changes(update_loc: Union[str, PathLike, Engine,
+                                  Connection, None] = None,
+                save_loc: Union[str, PathLike, Engine,
+                                Connection, None] = None,
                 name: str = "reserves_chg",
                 index_label: str = "index",
                 only_get: bool = False) -> pd.DataFrame:
@@ -30,12 +30,12 @@ def get_changes(update_path: Union[str, PathLike, Engine,
 
     Parameters
     ----------
-    update_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                   default None
         Either Path or path-like string pointing to a directory where to find
         a CSV for updating, SQLAlchemy connection or engine object, or
         ``None``, don't update.
-    save_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                 default None
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
@@ -47,16 +47,16 @@ def get_changes(update_path: Union[str, PathLike, Engine,
         Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
-        ``update_path``.
+        ``update_loc``.
 
     Returns
     -------
     Daily international reserves changes : pd.DataFrame
 
     """
-    if only_get is True and update_path is not None:
-        return updates._update_save(operation="update", data_path=update_path,
-                                    name=name, index_label=index_label)
+    if only_get is True and update_loc is not None:
+        return ops._io(operation="update", data_loc=update_loc,
+                       name=name, index_label=index_label)
 
     months = ["ene", "feb", "mar", "abr", "may", "jun",
               "jul", "ago", "set", "oct", "nov", "dic"]
@@ -70,10 +70,10 @@ def get_changes(update_path: Union[str, PathLike, Engine,
     fixed_may14 = f"{reserves_url}mayo2014.xls"
     urls = [fixed_may14 if x == wrong_may14 else x for x in urls]
 
-    if update_path is not None:
-        previous_data = updates._update_save(operation="update",
-                                             data_path=update_path,
-                                             name=name)
+    if update_loc is not None:
+        previous_data = ops._io(operation="update",
+                                data_loc=update_loc,
+                                name=name)
         if not previous_data.equals(pd.DataFrame()):
             metadata._set(previous_data)
             previous_data.columns.set_levels(["-"], level=2, inplace=True)
@@ -109,7 +109,7 @@ def get_changes(update_path: Union[str, PathLike, Engine,
     mar14.columns = reserves_cols[1:46]
     reserves = pd.concat(reports + [mar14], sort=False).sort_index()
 
-    if update_path is not None:
+    if update_loc is not None:
         reserves = previous_data.append(reserves, sort=False)
         reserves = reserves.loc[~reserves.index.duplicated(keep="last")]
 
@@ -119,8 +119,8 @@ def get_changes(update_path: Union[str, PathLike, Engine,
                   seas_adj="NSA", ts_type="Flujo", cumperiods=1)
     reserves.columns.set_levels(["-"], level=2, inplace=True)
 
-    if save_path is not None:
-        updates._update_save(operation="save", data_path=save_path,
-                             data=reserves, name=name, index_label=index_label)
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=reserves, name=name, index_label=index_label)
 
     return reserves

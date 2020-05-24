@@ -1,21 +1,20 @@
 from datetime import date
-from os import PathLike, mkdir, path
-from pathlib import Path
-from typing import Union, Optional
+from os import PathLike
+from typing import Union
 
 import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
-from econuy.utils import metadata, updates
-from econuy.utils.lstrings import fiscal_metadata, wap_url
 from econuy.retrieval import nxr, cpi, fiscal_accounts, labor
+from econuy.utils import metadata, ops
+from econuy.utils.lstrings import fiscal_metadata, wap_url
 
 
-def inflation(update_path: Union[str, PathLike, Engine,
-                                 Connection, None] = None,
-              save_path: Union[str, PathLike, Engine,
-                               Connection, None] = None,
+def inflation(update_loc: Union[str, PathLike, Engine,
+                                Connection, None] = None,
+              save_loc: Union[str, PathLike, Engine,
+                              Connection, None] = None,
               only_get: bool = True,
               name: str = "tfm_prices",
               index_label: str = "index") -> pd.DataFrame:
@@ -24,12 +23,12 @@ def inflation(update_path: Union[str, PathLike, Engine,
 
     Parameters
     ----------
-    update_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                   default None
         Either Path or path-like string pointing to a directory where to find
         a CSV for updating, SQLAlchemy connection or engine object, or
         ``None``, don't update.
-    save_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                 default None
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
@@ -41,7 +40,7 @@ def inflation(update_path: Union[str, PathLike, Engine,
         Label for SQL indexes.
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
-        ``update_path`` for the commodity index.
+        ``update_loc`` for the commodity index.
 
     Returns
     -------
@@ -50,8 +49,8 @@ def inflation(update_path: Union[str, PathLike, Engine,
         adjusted monthly inflation and trend monthly inflation.
 
     """
-    data = cpi.get(update_path=update_path,
-                   save_path=save_path, only_get=only_get)
+    data = cpi.get(update_loc=update_loc,
+                   save_loc=save_loc, only_get=only_get)
     interannual = transform.chg_diff(data, operation="chg", period_op="inter")
     monthly = transform.chg_diff(data, operation="chg", period_op="last")
     trend, seasadj = transform.decompose(data, trading=True, outlier=False)
@@ -75,9 +74,9 @@ def inflation(update_path: Union[str, PathLike, Engine,
                                                       "Seas. Adj.", "Tipo",
                                                       "Acum. períodos"])
 
-    if save_path is not None:
-        updates._update_save(operation="save", data_path=save_path,
-                             data=output, name=name, index_label=index_label)
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=output, name=name, index_label=index_label)
 
     return output
 
@@ -86,10 +85,10 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
            unit: Union[str, None] = "gdp",
            start_date: Union[str, date, None] = None,
            end_date: Union[str, date, None] = None,
-           update_path: Union[str, PathLike, Engine,
-                              Connection, None] = None,
-           save_path: Union[str, PathLike, Engine,
-                            Connection, None] = None,
+           update_loc: Union[str, PathLike, Engine,
+                             Connection, None] = None,
+           save_loc: Union[str, PathLike, Engine,
+                           Connection, None] = None,
            only_get: bool = True,
            name: str = "tfm_fiscal",
            index_label: str = "index") -> pd.DataFrame:
@@ -121,12 +120,12 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     end_date :
         If ``unit`` is set to ``real`` or ``real_usd``, this parameter and
         ``start_date`` control how deflation is calculated.
-    update_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                   default None
         Either Path or path-like string pointing to a directory where to find
         a CSV for updating, SQLAlchemy connection or engine object, or
         ``None``, don't update.
-    save_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                 default None
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
@@ -138,7 +137,7 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
         Label for SQL indexes.
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
-        ``update_path`` for the commodity index.
+        ``update_loc`` for the commodity index.
 
     Returns
     -------
@@ -163,8 +162,8 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     if fss:
         name = name + "_fssadj"
 
-    data = fiscal_accounts.get(update_path=update_path,
-                               save_path=save_path, only_get=only_get)
+    data = fiscal_accounts.get(update_loc=update_loc,
+                               save_loc=save_loc, only_get=only_get)
     gps = data["gps"]
     nfps = data["nfps"]
     gc = data["gc-bps"]
@@ -218,8 +217,8 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     proc["Egresos: Totales GC-BPS aj. FSS"] = (proc["Egresos: Totales GC-BPS"]
                                                - proc["Intereses: FSS"])
     proc["Resultado: Primario SPNF aj. FSS"] = (
-        proc["Resultado: Primario SPNF"]
-        - proc["Ingresos: FSS"])
+            proc["Resultado: Primario SPNF"]
+            - proc["Ingresos: FSS"])
     proc["Resultado: Global SPNF aj. FSS"] = (proc["Resultado: Global SPNF"]
                                               - proc["Ingresos: FSS"]
                                               + proc["Intereses: FSS"])
@@ -229,12 +228,12 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
                                              - proc["Ingresos: FSS"]
                                              + proc["Intereses: FSS"])
     proc["Resultado: Primario GC-BPS aj. FSS"] = (
-        proc["Resultado: Primario GC-BPS"]
-        - proc["Ingresos: FSS"])
+            proc["Resultado: Primario GC-BPS"]
+            - proc["Ingresos: FSS"])
     proc["Resultado: Global GC-BPS aj. FSS"] = (
-        proc["Resultado: Global GC-BPS"]
-        - proc["Ingresos: FSS"]
-        + proc["Intereses: FSS"])
+            proc["Resultado: Global GC-BPS"]
+            - proc["Ingresos: FSS"]
+            + proc["Intereses: FSS"])
 
     output = proc.loc[:, fiscal_metadata[aggregation][fss]]
     metadata._set(output, area="Cuentas fiscales y deuda",
@@ -243,37 +242,37 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
 
     if unit == "gdp":
         output = transform.rolling(output, periods=12, operation="sum")
-        output = transform.convert_gdp(output, update_path=update_path,
+        output = transform.convert_gdp(output, update_loc=update_loc,
                                        only_get=only_get)
     elif unit == "usd":
-        output = transform.convert_usd(output, update_path=update_path,
+        output = transform.convert_usd(output, update_loc=update_loc,
                                        only_get=only_get)
     elif unit == "real_usd":
         output = transform.convert_real(output, start_date=start_date,
                                         end_date=end_date,
-                                        update_path=update_path,
+                                        update_loc=update_loc,
                                         only_get=only_get)
-        xr = nxr.get_monthly(update_path=update_path,
+        xr = nxr.get_monthly(update_loc=update_loc,
                              only_get=True)
         output = output.divide(xr[start_date:end_date].mean()[1])
         metadata._set(output, currency="USD")
     elif unit == "real":
         output = transform.convert_real(output, start_date=start_date,
                                         end_date=end_date,
-                                        update_path=update_path)
+                                        update_loc=update_loc)
 
-    if save_path is not None:
-        updates._update_save(operation="save", data_path=save_path,
-                             data=output, name=name, index_label=index_label)
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=output, name=name, index_label=index_label)
 
     return output
 
 
 def labor_rate_people(seas_adj: Union[str, None] = None,
-                      update_path: Union[str, PathLike, Engine,
-                                         Connection, None] = None,
-                      save_path: Union[str, PathLike, Engine,
-                                       Connection, None] = None,
+                      update_loc: Union[str, PathLike, Engine,
+                                        Connection, None] = None,
+                      save_loc: Union[str, PathLike, Engine,
+                                      Connection, None] = None,
                       name: str = "tfm_labor",
                       index_label: str = "index",
                       only_get: bool = True) -> pd.DataFrame:
@@ -284,12 +283,12 @@ def labor_rate_people(seas_adj: Union[str, None] = None,
     ----------
     seas_adj : {'trend', 'seas', None}
         Whether to seasonally adjust.
-    update_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                   default None
         Either Path or path-like string pointing to a directory where to find
         a CSV for updating, SQLAlchemy connection or engine object, or
         ``None``, don't update.
-    save_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                 default None
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
@@ -301,7 +300,7 @@ def labor_rate_people(seas_adj: Union[str, None] = None,
         Label for SQL indexes.
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
-        ``update_path`` for the commodity index.
+        ``update_loc`` for the commodity index.
 
     Returns
     -------
@@ -316,7 +315,7 @@ def labor_rate_people(seas_adj: Union[str, None] = None,
     if seas_adj not in ["trend", "seas", None]:
         raise ValueError("'seas_adj' can be 'trend', 'seas' or None.")
 
-    rates = labor.get_rates(update_path=update_path, only_get=only_get)
+    rates = labor.get_rates(update_loc=update_loc, only_get=only_get)
 
     if seas_adj in ["trend", "seas"]:
         trend, seasadj = transform.decompose(rates, trading=True, outlier=True)
@@ -349,18 +348,18 @@ def labor_rate_people(seas_adj: Union[str, None] = None,
 
     name = f"{name}_{seas_text.lower()}"
 
-    if save_path is not None:
-        updates._update_save(operation="save", data_path=save_path,
-                             data=output, name=name, index_label=index_label)
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=output, name=name, index_label=index_label)
 
     return output
 
 
 def labor_real_wages(seas_adj: Union[str, None] = None,
-                     update_path: Union[str, PathLike, Engine,
-                                        Connection, None] = None,
-                     save_path: Union[str, PathLike, Engine,
-                                      Connection, None] = None,
+                     update_loc: Union[str, PathLike, Engine,
+                                       Connection, None] = None,
+                     save_loc: Union[str, PathLike, Engine,
+                                     Connection, None] = None,
                      name: str = "tfm_wages",
                      index_label: str = "index",
                      only_get: bool = True) -> pd.DataFrame:
@@ -371,12 +370,12 @@ def labor_real_wages(seas_adj: Union[str, None] = None,
     ----------
     seas_adj : {'trend', 'seas', None}
         Whether to seasonally adjust.
-    update_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                   default None
         Either Path or path-like string pointing to a directory where to find
         a CSV for updating, SQLAlchemy connection or engine object, or
         ``None``, don't update.
-    save_path : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                 default None
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
@@ -388,7 +387,7 @@ def labor_real_wages(seas_adj: Union[str, None] = None,
         Label for SQL indexes.
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
-        ``update_path`` for the commodity index.
+        ``update_loc`` for the commodity index.
 
     Returns
     -------
@@ -403,14 +402,14 @@ def labor_real_wages(seas_adj: Union[str, None] = None,
     if seas_adj not in ["trend", "seas", None]:
         raise ValueError("'seas_adj' can be 'trend', 'seas' or None.")
 
-    wages = labor.get_wages(update_path=update_path, only_get=only_get)
+    wages = labor.get_wages(update_loc=update_loc, only_get=only_get)
     real_wages = wages.copy()
     real_wages.columns = ["Índice medio de salarios reales",
                           "Índice medio de salarios reales privados",
                           "Índice medio de salarios reales públicos"]
     metadata._set(real_wages, area="Mercado laboral", currency="UYU",
                   inf_adj="Sí", seas_adj="NSA", ts_type="-", cumperiods=1)
-    real_wages = transform.convert_real(real_wages, update_path=update_path,
+    real_wages = transform.convert_real(real_wages, update_loc=update_loc,
                                         only_get=only_get)
     output = pd.concat([wages, real_wages], axis=1)
     seas_text = "nsa"
@@ -428,8 +427,8 @@ def labor_real_wages(seas_adj: Union[str, None] = None,
 
     name = f"{name}_{seas_text}"
 
-    if save_path is not None:
-        updates._update_save(operation="save", data_path=save_path,
-                             data=output, name=name, index_label=index_label)
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=output, name=name, index_label=index_label)
 
     return output
