@@ -20,8 +20,7 @@ CUR_DIR = path.abspath(path.dirname(__file__))
 TEST_DIR = path.join(path.dirname(CUR_DIR), "test-data")
 
 
-def remove_clutter(avoid: Tuple[str] = ("fx_ff.csv", "fx_spot_ff.csv",
-                                        "reserves_chg.csv",
+def remove_clutter(avoid: Tuple[str] = ("reserves_chg.csv",
                                         "commodity_weights.csv",
                                         "nxr_daily.csv")):
     [remove(path.join(TEST_DIR, x)) for x in listdir(TEST_DIR)
