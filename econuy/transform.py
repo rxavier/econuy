@@ -64,7 +64,6 @@ def convert_usd(df: pd.DataFrame,
         metadata._set(nxr_data, ts_type="Stock")
         nxr_freq = resample(nxr_data, target=inferred_freq,
                             operation="average").iloc[:, [1]]
-
     else:
         metadata._set(nxr_data, ts_type="Flujo")
         nxr_freq = resample(nxr_data, target=inferred_freq,
@@ -129,6 +128,7 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     inferred_freq = pd.infer_freq(df.index)
     cpi_data = cpi.get(update_loc=update_loc, save_loc=save_loc,
                        only_get=only_get)
+
     metadata._set(cpi_data, ts_type="Flujo")
     cpi_freq = resample(cpi_data, target=inferred_freq,
                         operation="average").iloc[:, [0]]
