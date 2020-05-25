@@ -13,7 +13,7 @@ from statsmodels.tools.sm_exceptions import X13Error
 from statsmodels.tsa import x13
 
 from econuy.retrieval import cpi, national_accounts, nxr
-from econuy.utils import metadata, ops
+from econuy.utils import metadata
 
 
 def convert_usd(df: pd.DataFrame,
