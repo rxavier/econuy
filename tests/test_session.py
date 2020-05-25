@@ -11,7 +11,10 @@ from econuy.retrieval import nxr
 from econuy.session import Session
 from econuy.utils import metadata
 from econuy.utils.lstrings import fiscal_metadata
-from .test_transform import dummy_df
+try:
+    from tests.test_transform import dummy_df
+except ImportError:
+    from .test_transform import dummy_df
 
 CUR_DIR = path.abspath(path.dirname(__file__))
 TEST_DIR = path.join(path.dirname(CUR_DIR), "test-data")
