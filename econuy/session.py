@@ -110,6 +110,7 @@ class Session(object):
             log_obj.info(f"Created Session object with the "
                          f"following attributes:\n"
                          f"Location for downloads and updates: {loc_text}\n"
+                         f"Offline: {only_get.__str__()}\n"
                          f"Update method: '{revise_method}'\n"
                          f"Dataset: {dataset_message}\n"
                          f"Logging method: {log_method}")
