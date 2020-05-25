@@ -243,23 +243,29 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     if unit == "gdp":
         output = transform.rolling(output, periods=12, operation="sum")
         output = transform.convert_gdp(output, update_loc=update_loc,
+                                       save_loc=save_loc,
                                        only_get=only_get)
     elif unit == "usd":
         output = transform.convert_usd(output, update_loc=update_loc,
+                                       save_loc=save_loc,
                                        only_get=only_get)
     elif unit == "real_usd":
         output = transform.convert_real(output, start_date=start_date,
                                         end_date=end_date,
                                         update_loc=update_loc,
+                                        save_loc=save_loc,
                                         only_get=only_get)
         xr = nxr.get_monthly(update_loc=update_loc,
-                             only_get=True)
+                             save_loc=save_loc,
+                             only_get=only_get)
         output = output.divide(xr[start_date:end_date].mean()[1])
         metadata._set(output, currency="USD")
     elif unit == "real":
         output = transform.convert_real(output, start_date=start_date,
                                         end_date=end_date,
-                                        update_loc=update_loc)
+                                        update_loc=update_loc,
+                                        save_loc=save_loc,
+                                        only_get=only_get)
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
