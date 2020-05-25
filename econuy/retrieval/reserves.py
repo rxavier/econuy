@@ -55,8 +55,10 @@ def get_changes(update_loc: Union[str, PathLike, Engine,
 
     """
     if only_get is True and update_loc is not None:
-        return ops._io(operation="update", data_loc=update_loc,
-                       name=name, index_label=index_label)
+        output = ops._io(operation="update", data_loc=update_loc,
+                         name=name, index_label=index_label)
+        if not output.equals(pd.DataFrame()):
+            return output
 
     months = ["ene", "feb", "mar", "abr", "may", "jun",
               "jul", "ago", "set", "oct", "nov", "dic"]

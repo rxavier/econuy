@@ -57,8 +57,10 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     """
     if only_get is True and update_loc is not None:
-        return ops._io(operation="update", data_loc=update_loc,
-                       name=name, index_label=index_label)
+        output = ops._io(operation="update", data_loc=update_loc,
+                         name=name, index_label=index_label)
+        if not output.equals(pd.DataFrame()):
+            return output
 
     cpi_raw = pd.read_excel(cpi_url, skiprows=7).dropna(axis=0, thresh=2)
     cpi = (cpi_raw.drop(["Mensual", "Acum.año", "Acum.12 meses"], axis=1).

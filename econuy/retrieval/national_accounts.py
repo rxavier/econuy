@@ -67,7 +67,8 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                 name=f"{name}_{meta['Name']}", index_label=index_label
             )
             output.update({meta["Name"]: data})
-        return output
+        if all(not value.equals(pd.DataFrame()) for value in output.values()):
+            return output
 
     parsed_excels = {}
     for file, meta in nat_accounts_metadata.items():
@@ -167,13 +168,16 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
 
     """
     if only_get is True and update_loc is not None:
-        return ops._io(operation="update", data_loc=update_loc,
-                       name=name, index_label=index_label)
+        output = ops._io(operation="update", data_loc=update_loc,
+                         name=name, index_label=index_label)
+        if not output.equals(pd.DataFrame()):
+            return output
 
-    data_uyu = get(update_loc=update_loc, only_get=True)["gdp_cur_nsa"]
+    data_uyu = get(update_loc=update_loc, only_get=only_get)["gdp_cur_nsa"]
     data_uyu = transform.rolling(data_uyu, periods=4, operation="sum")
     data_usd = transform.convert_usd(data_uyu,
-                                     update_loc=update_loc)
+                                     update_loc=update_loc,
+                                     only_get=only_get)
 
     data = [data_uyu, data_usd]
     last_year = data_uyu.index.max().year

@@ -61,8 +61,10 @@ def get_monthly(update_loc: Union[str, PathLike,
 
     """
     if only_get is True and update_loc is not None:
-        return ops._io(operation="update", data_loc=update_loc,
-                       name=name, index_label=index_label)
+        output = ops._io(operation="update", data_loc=update_loc,
+                         name=name, index_label=index_label)
+        if not output.equals(pd.DataFrame()):
+            return output
 
     nxr_raw = pd.read_excel(nxr_url, skiprows=4, index_col=0, usecols="A,C,F")
     nxr = nxr_raw.dropna(how="any", axis=0)

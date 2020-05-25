@@ -27,10 +27,10 @@ from econuy.utils.lstrings import (beef_url, pulp_url, soybean_url,
     retry_window_after_first_call_in_seconds=90,
 )
 def _weights(update_loc: Union[str, PathLike, Engine,
-                                Connection, None] = None,
+                               Connection, None] = None,
              revise_rows: Union[str, int] = "nodup",
              save_loc: Union[str, PathLike, Engine,
-                              Connection, None] = None,
+                             Connection, None] = None,
              only_get: bool = True) -> pd.DataFrame:
     """Get commodity export weights for Uruguay.
 
@@ -64,14 +64,16 @@ def _weights(update_loc: Union[str, PathLike, Engine,
     """
     name = "commodity_weights"
     if only_get is True and update_loc is not None:
-        return ops._io(operation="update", data_loc=update_loc,
-                       name=name, multiindex=False)
+        output = ops._io(operation="update", data_loc=update_loc,
+                         name=name, multiindex=False)
+        if not output.equals(pd.DataFrame()):
+            return output
 
     base_url = "http://comtrade.un.org/api/get?max=1000&type=C&freq=A&px=S3&ps"
     prods = "%2C".join(["0011", "011", "01251", "01252", "0176", "022", "041",
                         "042", "043", "2222", "24", "25", "268", "97"])
     raw = []
-    for year in range(1992, dt.datetime.now().year-1):
+    for year in range(1992, dt.datetime.now().year - 1):
         full_url = f"{base_url}={year}&r=all&p=858&rg=1&cc={prods}"
         un_r = requests.get(full_url)
         raw.append(pd.DataFrame(un_r.json()["dataset"]))
@@ -154,8 +156,10 @@ def _prices(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     name = "commodity_prices"
 
     if only_get is True and update_loc is not None:
-        return ops._io(operation="update", data_loc=update_loc,
-                       name=name)
+        output = ops._io(operation="update", data_loc=update_loc,
+                         name=name)
+        if not output.equals(pd.DataFrame()):
+            return output
 
     raw_beef = (pd.read_excel(beef_url, header=4, index_col=0)
                 .dropna(how="all"))
@@ -305,8 +309,10 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     """
     if only_get is True and update_loc is not None:
-        return ops._io(operation="update", data_loc=update_loc,
-                       name=name, index_label=index_label)
+        output = ops._io(operation="update", data_loc=update_loc,
+                         name=name, index_label=index_label)
+        if not output.equals(pd.DataFrame()):
+            return output
 
     prices = _prices(update_loc=update_loc, revise_rows="nodup",
                      save_loc=save_loc, only_get=only_get_prices)

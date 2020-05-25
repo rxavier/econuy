@@ -68,8 +68,10 @@ def get_official(update_loc: Union[str, PathLike, Engine,
 
     """
     if only_get is True and update_loc is not None:
-        return ops._io(operation="update", data_loc=update_loc,
-                       name=name, index_label=index_label)
+        output = ops._io(operation="update", data_loc=update_loc,
+                         name=name, index_label=index_label)
+        if not output.equals(pd.DataFrame()):
+            return output
 
     r = requests.get(reer_url)
     soup = BeautifulSoup(r.content, "html.parser")
@@ -149,8 +151,10 @@ def get_custom(update_loc: Union[str, PathLike, Engine,
 
     """
     if only_get is True and update_loc is not None:
-        return ops._io(operation="update", data_loc=update_loc,
-                       name=name, index_label=index_label)
+        output = ops._io(operation="update", data_loc=update_loc,
+                         name=name, index_label=index_label)
+        if not output.equals(pd.DataFrame()):
+            return output
 
     url_ = "http://dataservices.imf.org/REST/SDMX_JSON.svc/CompactData/IFS/M."
     url_extra = ".?startPeriod=1970&endPeriod="

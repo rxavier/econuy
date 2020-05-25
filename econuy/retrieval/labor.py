@@ -62,8 +62,10 @@ def get_rates(update_loc: Union[str, PathLike,
 
     """
     if only_get is True and update_loc is not None:
-        return ops._io(operation="update", data_loc=update_loc,
-                       name=name, index_label=index_label)
+        output = ops._io(operation="update", data_loc=update_loc,
+                         name=name, index_label=index_label)
+        if not output.equals(pd.DataFrame()):
+            return output
 
     labor_raw = pd.read_excel(labor_url, skiprows=39).dropna(axis=0, thresh=2)
     labor = labor_raw[~labor_raw["Unnamed: 0"].str.contains("-|/|Total",
@@ -142,8 +144,10 @@ def get_wages(update_loc: Union[str, PathLike,
 
     """
     if only_get is True and update_loc is not None:
-        return ops._io(operation="update", data_loc=update_loc,
-                       name=name, index_label=index_label)
+        output = ops._io(operation="update", data_loc=update_loc,
+                         name=name, index_label=index_label)
+        if not output.equals(pd.DataFrame()):
+            return output
 
     historical = pd.read_excel(wages1_url, skiprows=8, usecols="A:B")
     historical = historical.dropna(how="any").set_index("Unnamed: 0")

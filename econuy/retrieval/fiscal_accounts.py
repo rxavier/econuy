@@ -72,7 +72,8 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                 name=f"{name}_{meta['Name']}", index_label=index_label
             )
             output.update({meta["Name"]: data})
-        return output
+        if all(not value.equals(pd.DataFrame()) for value in output.values()):
+            return output
 
     response = requests.get(fiscal_url)
     soup = BeautifulSoup(response.content, "html.parser")
