@@ -69,8 +69,10 @@ class Session(object):
             if not path.exists(self.location):
                 makedirs(self.location)
             loc_text = location
-        else:
+        elif isinstance(location, (Engine, Connection)):
             loc_text = location.engine.url
+        else:
+            loc_text = "none set."
 
         if logger is not None:
             self.log = "custom"
