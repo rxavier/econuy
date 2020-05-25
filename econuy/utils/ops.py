@@ -4,7 +4,7 @@ from typing import Union, Optional
 
 import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
-from sqlalchemy.exc import ProgrammingError
+from sqlalchemy.exc import ProgrammingError, OperationalError
 
 from econuy.utils import metadata, sqlutil
 
@@ -37,7 +37,7 @@ def _load(data_loc: Union[str, PathLike,
                 previous_data = pd.read_csv(data_loc, index_col=0,
                                             parse_dates=True,
                                             float_precision="high")
-    except (ProgrammingError, FileNotFoundError):
+    except (ProgrammingError, OperationalError, FileNotFoundError):
         print(f"Data does not exist. No data will be updated")
         previous_data = pd.DataFrame()
 
