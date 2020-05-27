@@ -4,6 +4,7 @@ from typing import Union, Optional, Iterable
 
 import pandas as pd
 import sqlalchemy as sqla
+from pandas.errors import ParserError
 from sqlalchemy import select, table, column, and_
 
 
@@ -110,13 +111,15 @@ def insert_csvs(con: sqla.engine.base.Connection,
     """Insert all CSV files in data directory into a SQL database."""
     if path.isfile(directory):
         directory = path.dirname(directory)
-    not_use = ["commodity_weights.csv", "fx_ff.csv", "reserves_chg.csv"]
-    for file in [x for x in listdir(directory) if x.endswith(".csv")
-                                                  and x not in not_use]:
+    for file in [x for x in listdir(directory) if x.endswith(".csv")]:
         full_path = Path(directory) / file
-        data = pd.read_csv(full_path, index_col=0,
-                           header=list(range(9)), float_precision="high",
-                           parse_dates=True)
+        try:
+            data = pd.read_csv(full_path, index_col=0,
+                               header=list(range(9)), float_precision="high",
+                               parse_dates=True)
+        except ParserError:
+            data = pd.read_csv(full_path, index_col=0, float_precision="high",
+                               parse_dates=True)
         df_to_sql(df=data, name=Path(file).with_suffix("").as_posix(),
                   con=con, index_label="index", if_exists="replace")
         print(f"Inserted {file} into {con.engine.url}.")
