@@ -165,8 +165,10 @@ def get_daily(update_loc: Union[str, PathLike,
     to_ = (dt.datetime.now() - dt.timedelta(days=1)).strftime('%d/%m/%Y')
     dates = f"%22FechaDesde%22:%22{from_}%22,%22FechaHasta%22:%22{to_}"
     url = f"{nxr_daily_url}{dates}%22,%22Grupo%22:%222%22}}" + "}"
-
-    data.append(pd.read_excel(url))
+    try:
+        data.append(pd.read_excel(url))
+    except TypeError:
+        pass
     output = pd.concat(data, axis=0)
     output = output.pivot(index="Fecha", columns="Moneda",
                           values="Venta").rename_axis(None)
