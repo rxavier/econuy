@@ -3,14 +3,20 @@ from os import path
 
 import numpy as np
 import pandas as pd
+from sqlalchemy import create_engine
 
 from econuy.retrieval import reserves, national_accounts
 from econuy.session import Session
-from econuy.utils import metadata
-from .test_session import remove_clutter
+from econuy.utils import metadata, sqlutil
+try:
+    from tests.test_session import remove_clutter
+except ImportError:
+    from .test_session import remove_clutter
 
 CUR_DIR = path.abspath(path.dirname(__file__))
 TEST_DIR = path.join(path.dirname(CUR_DIR), "test-data")
+TEST_CON = create_engine("sqlite://").connect()
+sqlutil.insert_csvs(con=TEST_CON, directory=TEST_DIR)
 
 
 def test_changes():
@@ -19,7 +25,7 @@ def test_changes():
                                 index_col=0, header=list(range(9)))
     metadata._set(previous_data)
     res = reserves.get_changes(
-        update_loc=TEST_DIR, name=None, save_loc=TEST_DIR)
+        update_loc=TEST_DIR, save_loc=TEST_DIR)
     previous_data.index = pd.to_datetime(previous_data.index)
     compare = res.loc[previous_data.index].round(4)
     compare.columns = previous_data.columns
@@ -56,7 +62,7 @@ def test_comm_index():
     comm = session.get(dataset="comm_index").dataset
     assert isinstance(comm, pd.DataFrame)
     assert comm.index[0] == dt.date(2002, 1, 31)
-    assert comm.iloc[0][0] == 1
+    assert comm.iloc[0][0] == 100
     remove_clutter()
 
 
