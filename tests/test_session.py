@@ -5,11 +5,12 @@ from typing import Tuple
 
 import pandas as pd
 import pytest
+from sqlalchemy import create_engine, inspect
 
 from econuy import transform
 from econuy.retrieval import nxr
 from econuy.session import Session
-from econuy.utils import metadata
+from econuy.utils import metadata, sqlutil
 from econuy.utils.lstrings import fiscal_metadata
 try:
     from tests.test_transform import dummy_df
@@ -18,6 +19,8 @@ except ImportError:
 
 CUR_DIR = path.abspath(path.dirname(__file__))
 TEST_DIR = path.join(path.dirname(CUR_DIR), "test-data")
+TEST_CON = create_engine("sqlite://").connect()
+sqlutil.insert_csvs(con=TEST_CON, directory=TEST_DIR)
 
 
 def remove_clutter(avoid: Tuple[str] = ("reserves_chg.csv",
@@ -25,12 +28,17 @@ def remove_clutter(avoid: Tuple[str] = ("reserves_chg.csv",
                                         "nxr_daily.csv")):
     [remove(path.join(TEST_DIR, x)) for x in listdir(TEST_DIR)
      if x not in avoid]
+
+    for table in inspect(TEST_CON).get_table_names():
+        if table not in [f[:-4] for f in avoid]:
+            TEST_CON.engine.execute(f'DROP TABLE IF EXISTS "{table}"')
+
     return
 
 
 def test_prices_inflation():
     remove_clutter()
-    session = Session(location=TEST_DIR)
+    session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
     inflation = session.get_frequent(dataset="inflation").dataset
@@ -59,7 +67,7 @@ def test_prices_inflation():
 
 def test_fiscal():
     remove_clutter()
-    session = Session(location=TEST_DIR)
+    session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
     fiscal_tfm = session.get_frequent(dataset="fiscal", aggregation="nfps",
@@ -143,7 +151,7 @@ def test_fiscal():
 
 def test_labor():
     remove_clutter()
-    session = Session(location=TEST_DIR)
+    session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
     labor_tfm = session.get_frequent(dataset="labor", seas_adj="trend").dataset
@@ -173,7 +181,7 @@ def test_labor():
 
 def test_wages():
     remove_clutter()
-    session = Session(location=TEST_DIR)
+    session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
     full_wages = session.get_frequent(dataset="real_wages",
@@ -206,7 +214,7 @@ def test_wages():
 
 def test_naccounts():
     remove_clutter()
-    session = Session(location=TEST_DIR)
+    session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
     na_ = session.get(dataset="na").dataset
