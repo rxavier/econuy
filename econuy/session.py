@@ -590,7 +590,7 @@ class Session(object):
                            inplace=self.inplace)
 
     def save(self, name: str, index_label: str = "index"):
-        """Save :attr:`dataset` attribute to a CSV."""
+        """Save :attr:`dataset` attribute to a CSV or SQL."""
         name = Path(name).with_suffix("").as_posix()
 
         if isinstance(self.dataset, dict):
@@ -603,7 +603,7 @@ class Session(object):
                     data=self.dataset, name=name,
                     index_label=index_label)
 
-        self.logger.info(f"Saved dataset to directory {self.location}.")
+        self.logger.info(f"Saved dataset to '{self.location}'.")
 
     def final(self):
         """Return :attr:`dataset` attribute."""
