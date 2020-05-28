@@ -1,15 +1,16 @@
 import logging
 from datetime import date
-from os import PathLike, path, makedirs, mkdir
+from os import PathLike, path, makedirs
 from pathlib import Path
 from typing import Union, Optional
 
 import pandas as pd
+from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import frequent, transform
-from econuy.utils import logutil
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
-                              labor, rxr, commodity_index, fx_operations)
+                              labor, rxr, commodity_index, reserves)
+from econuy.utils import logutil, ops
 
 
 class Session(object):
@@ -18,16 +19,20 @@ class Session(object):
 
     Attributes
     ----------
-    data_dir : str or os.PathLike, default 'econuy-data'
-        Directory indicating where data will be saved to and retrieved from.
+    location : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+               default 'econuy-data'
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
     revise_rows : {'nodup', 'auto', int}
         Defines how to process data updates. An integer indicates how many rows
         to remove from the tail of the dataframe and replace with new data.
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    force_update : bool, default False
-        Whether to force download even if data was recently modified.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
     dataset : pd.DataFrame, default pd.DataFrame(index=[], columns=[])
         Current working dataset.
     log : {str, 0, 1, 2}
@@ -44,23 +49,30 @@ class Session(object):
     """
 
     def __init__(self,
-                 data_dir: Union[str, PathLike] = "econuy-data",
+                 location: Union[str, PathLike,
+                                 Connection, Engine, None] = "econuy-data",
                  revise_rows: Union[int, str] = "nodup",
-                 force_update: bool = False,
+                 only_get: bool = False,
                  dataset: Union[dict, pd.DataFrame] = pd.DataFrame(),
                  log: Union[int, str] = 1,
                  logger: Optional[logging.Logger] = None,
                  inplace: bool = False):
-        self.data_dir = data_dir
+        self.location = location
         self.revise_rows = revise_rows
-        self.force_update = force_update
+        self.only_get = only_get
         self.dataset = dataset
         self.log = log
         self.logger = logger
         self.inplace = inplace
 
-        if not path.exists(self.data_dir):
-            makedirs(self.data_dir)
+        if isinstance(location, (str, PathLike)):
+            if not path.exists(self.location):
+                makedirs(self.location)
+            loc_text = location
+        elif isinstance(location, (Engine, Connection)):
+            loc_text = location.engine.url
+        else:
+            loc_text = "none set."
 
         if logger is not None:
             self.log = "custom"
@@ -71,11 +83,11 @@ class Session(object):
                                  " default file), or str (log to console and "
                                  "file with filename=str).")
             elif log == 2:
-                logfile = Path(self.data_dir) / "info.log"
+                logfile = Path(self.location) / "info.log"
                 log_obj = logutil.setup(file=logfile)
                 log_method = f"console and file ({logfile.as_posix()})"
             elif isinstance(log, str) and log != "custom":
-                logfile = (Path(self.data_dir) / log).with_suffix(".log")
+                logfile = (Path(self.location) / log).with_suffix(".log")
                 log_obj = logutil.setup(file=logfile)
                 log_method = f"console and file ({logfile.as_posix()})"
             elif log == 1:
@@ -97,17 +109,16 @@ class Session(object):
                 revise_method = revise_rows
             log_obj.info(f"Created Session object with the "
                          f"following attributes:\n"
-                         f"Directory for downloads and updates: {data_dir}\n"
-                         f"Update method: {revise_method}\n"
+                         f"Location for downloads and updates: {loc_text}\n"
+                         f"Offline: {only_get.__str__()}\n"
+                         f"Update method: '{revise_method}'\n"
                          f"Dataset: {dataset_message}\n"
                          f"Logging method: {log_method}")
 
-    @logutil.log_getter
     def get(self,
             dataset: str,
             update: bool = True,
             save: bool = True,
-            override: Optional[str] = None,
             **kwargs):
         """
         Main download method.
@@ -116,21 +127,14 @@ class Session(object):
         ----------
         dataset : {'cpi', 'nxr_monthly', 'nxr_daily', 'fiscal', 'naccounts', \
                 'labor', 'wages', 'comm_index', 'rxr_custom', 'rxr_official', \
-                'fx_ops'}
+                'reserves_changes'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
         save : bool, default True
             Whether to save the dataset.
-        override : str, default None
-            If not None, overrides the saved dataset's default filename.
         **kwargs
-            These arguments are passed only to
-            :func:`econuy.retrieval.commodity_index.get`. There's two
-            options: ``force_update_weights: bool`` and
-            ``force_update_prices: bool`` which are self-explanatory. Generally
-            you will need to update prices but not weights since the latter are
-            annual and take a long time to download.
+            Keyword arguments.
 
         Returns
         -------
@@ -145,110 +149,109 @@ class Session(object):
 
         """
         if update is True:
-            update_path = Path(self.data_dir)
+            if isinstance(self.location, (str, PathLike)):
+                update_loc = Path(self.location)
+            else:
+                update_loc = self.location
         else:
-            update_path = None
+            update_loc = None
         if save is True:
-            save_path = Path(self.data_dir)
+            if isinstance(self.location, (str, PathLike)):
+                save_loc = Path(self.location)
+            else:
+                save_loc = self.location
         else:
-            save_path = None
-
-        if kwargs:
-            keywords = ", ".join(f"{k}={v}" for k, v in kwargs.items())
-            self.logger.info(f"Used the following keyword "
-                             f"arguments: {keywords}")
+            save_loc = None
 
         if dataset == "cpi" or dataset == "prices":
-            output = cpi.get(update_path=update_path,
+            output = cpi.get(update_loc=update_loc,
                              revise_rows=self.revise_rows,
-                             save_path=save_path,
-                             force_update=self.force_update,
-                             name=override)
+                             save_loc=save_loc,
+                             only_get=self.only_get,
+                             **kwargs)
         elif dataset == "fiscal":
-            output = fiscal_accounts.get(update_path=update_path,
+            output = fiscal_accounts.get(update_loc=update_loc,
                                          revise_rows=self.revise_rows,
-                                         save_path=save_path,
-                                         force_update=self.force_update,
-                                         name=override)
-        elif dataset == "nxr_monthly" or dataset == "nxr_m":
-            output = nxr.get_monthly(update_path=update_path,
-                                     revise_rows=self.revise_rows,
-                                     save_path=save_path,
-                                     force_update=self.force_update,
-                                     name=override)
-        elif dataset == "nxr_daily" or dataset == "nxr_d":
-            output = nxr.get_daily(update_path=update_path,
-                                   save_path=save_path,
-                                   name=override)
-        elif dataset == "naccounts" or dataset == "na":
-            output = national_accounts.get(update_path=update_path,
-                                           revise_rows=self.revise_rows,
-                                           save_path=save_path,
-                                           force_update=self.force_update,
-                                           name=override)
-        elif dataset == "labor" or dataset == "labour":
-            output = labor.get_rates(update_path=update_path,
-                                     revise_rows=self.revise_rows,
-                                     save_path=save_path,
-                                     force_update=self.force_update,
-                                     name=override)
-        elif dataset == "wages":
-            output = labor.get_wages(update_path=update_path,
-                                     revise_rows=self.revise_rows,
-                                     save_path=save_path,
-                                     force_update=self.force_update,
-                                     name=override)
-        elif dataset == "rxr_custom" or dataset == "rxr-custom":
-            output = rxr.get_custom(update_path=update_path,
-                                    revise_rows=self.revise_rows,
-                                    save_path=save_path,
-                                    force_update=self.force_update,
-                                    name=override)
-        elif dataset == "rxr_official" or dataset == "rxr-official":
-            output = rxr.get_official(update_path=update_path,
-                                      revise_rows=self.revise_rows,
-                                      save_path=save_path,
-                                      force_update=self.force_update,
-                                      name=override)
-        elif dataset == "commodity_index" or dataset == "comm_index":
-            output = commodity_index.get(update_path=update_path,
-                                         save_path=save_path,
-                                         name=override,
+                                         save_loc=save_loc,
+                                         only_get=self.only_get,
                                          **kwargs)
-        elif dataset == "fx_ops" or dataset == "fxops":
-            output = fx_operations.get(update_path=update_path,
-                                       save_path=save_path,
-                                       name=override)
+        elif dataset == "nxr_monthly" or dataset == "nxr_m":
+            output = nxr.get_monthly(update_loc=update_loc,
+                                     revise_rows=self.revise_rows,
+                                     save_loc=save_loc,
+                                     only_get=self.only_get,
+                                     **kwargs)
+        elif dataset == "nxr_daily" or dataset == "nxr_d":
+            output = nxr.get_daily(update_loc=update_loc,
+                                   save_loc=save_loc,
+                                   only_get=self.only_get,
+                                   **kwargs)
+        elif dataset == "naccounts" or dataset == "na":
+            output = national_accounts.get(update_loc=update_loc,
+                                           revise_rows=self.revise_rows,
+                                           save_loc=save_loc,
+                                           only_get=self.only_get,
+                                           **kwargs)
+        elif dataset == "labor" or dataset == "labour":
+            output = labor.get_rates(update_loc=update_loc,
+                                     revise_rows=self.revise_rows,
+                                     save_loc=save_loc,
+                                     only_get=self.only_get,
+                                     **kwargs)
+        elif dataset == "wages":
+            output = labor.get_wages(update_loc=update_loc,
+                                     revise_rows=self.revise_rows,
+                                     save_loc=save_loc,
+                                     only_get=self.only_get,
+                                     **kwargs)
+        elif dataset == "rxr_custom" or dataset == "rxr-custom":
+            output = rxr.get_custom(update_loc=update_loc,
+                                    revise_rows=self.revise_rows,
+                                    save_loc=save_loc,
+                                    only_get=self.only_get,
+                                    **kwargs)
+        elif dataset == "rxr_official" or dataset == "rxr-official":
+            output = rxr.get_official(update_loc=update_loc,
+                                      revise_rows=self.revise_rows,
+                                      save_loc=save_loc,
+                                      only_get=self.only_get,
+                                      **kwargs)
+        elif dataset == "commodity_index" or dataset == "comm_index":
+            output = commodity_index.get(update_loc=update_loc,
+                                         save_loc=save_loc,
+                                         only_get=self.only_get,
+                                         **kwargs)
+        elif dataset == "reserves_changes" or dataset == "reserves_chg":
+            output = reserves.get_changes(update_loc=update_loc,
+                                          save_loc=save_loc,
+                                          only_get=self.only_get,
+                                          **kwargs)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 
         self.dataset = output
+        self.logger.info(f"Retrieved '{dataset}' dataset.")
 
         return self
 
-    @logutil.log_getter
     def get_frequent(self,
                      dataset: str,
                      update: bool = True,
                      save: bool = True,
-                     override: Optional[str] = None,
                      **kwargs):
         """
         Get frequently used datasets.
 
         Parameters
         ----------
-        dataset : {'inflation', 'fiscal', 'naccounts', 'labor', 'real_wages'}
+        dataset : {'inflation', 'fiscal', 'labor', 'real_wages'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
         save : bool, default  True
             Whether to save the dataset.
-        override : str, default None
-            If not None, overrides the saved dataset's default filename.
         **kwargs
-            Keyword arguments passed to functions in
-            :mod:`econuy.frequent`.
+            Keyword arguments.
 
         Returns
         -------
@@ -262,58 +265,48 @@ class Session(object):
 
         """
         if update is True:
-            update_path = Path(self.data_dir)
+            if isinstance(self.location, (str, PathLike)):
+                update_loc = Path(self.location)
+            else:
+                update_loc = self.location
         else:
-            update_path = None
+            update_loc = None
         if save is True:
-            save_path = Path(self.data_dir)
+            if isinstance(self.location, (str, PathLike)):
+                save_loc = Path(self.location)
+            else:
+                save_loc = self.location
         else:
-            save_path = None
+            save_loc = None
 
         if dataset == "inflation":
-            called_args = logutil.get_called_args(frequent.inflation,
-                                                  kwargs)
-            output = frequent.inflation(update_path=update_path,
-                                        save_path=save_path,
-                                        name=override)
+            output = frequent.inflation(update_loc=update_loc,
+                                        save_loc=save_loc,
+                                        only_get=self.only_get,
+                                        **kwargs)
         elif dataset == "fiscal":
-            called_args = logutil.get_called_args(frequent.fiscal,
-                                                  kwargs)
-            output = frequent.fiscal(update_path=update_path,
-                                     save_path=save_path,
-                                     name=override,
+            output = frequent.fiscal(update_loc=update_loc,
+                                     save_loc=save_loc,
+                                     only_get=self.only_get,
                                      **kwargs)
-        elif dataset == "naccounts" or dataset == "na":
-            called_args = logutil.get_called_args(frequent.nat_accounts,
-                                                  kwargs)
-            output = frequent.nat_accounts(update_path=update_path,
-                                           save_path=save_path,
-                                           name=override,
-                                           **kwargs)
         elif dataset == "labor" or dataset == "labour":
-            called_args = logutil.get_called_args(frequent.labor_rate_people,
-                                                  kwargs)
-            output = frequent.labor_rate_people(update_path=update_path,
-                                                save_path=save_path,
-                                                name=override,
+            output = frequent.labor_rate_people(update_loc=update_loc,
+                                                save_loc=save_loc,
+                                                only_get=self.only_get,
                                                 **kwargs)
         elif dataset == "wages" or dataset == "real_wages":
-            called_args = logutil.get_called_args(frequent.labor_real_wages,
-                                                  kwargs)
-            output = frequent.labor_real_wages(update_path=update_path,
-                                               save_path=save_path,
-                                               name=override,
+            output = frequent.labor_real_wages(update_loc=update_loc,
+                                               save_loc=save_loc,
+                                               only_get=self.only_get,
                                                **kwargs)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 
         self.dataset = output
-        self.logger.info(f"Used the following keyword "
-                         f"arguments: {called_args}")
+        self.logger.info(f"Retrieved '{dataset}' dataset.")
 
         return self
 
-    @logutil.log_transformer
     def resample(self, target: str, operation: str = "sum",
                  interpolation: str = "linear"):
         """
@@ -335,18 +328,19 @@ class Session(object):
             output = transform.resample(self.dataset, target=target,
                                         operation=operation,
                                         interpolation=interpolation)
+        self.logger.info(f"Applied 'resample' transformation with '{target}' "
+                         f"and '{operation}' operation.")
         if self.inplace is True:
             self.dataset = output
             return self
         else:
-            return Session(data_dir=self.data_dir,
+            return Session(location=self.location,
                            revise_rows=self.revise_rows,
-                           force_update=self.force_update,
+                           only_get=self.only_get,
                            dataset=output,
                            logger=self.logger,
                            inplace=self.inplace)
 
-    @logutil.log_transformer
     def chg_diff(self, operation: str = "chg", period_op: str = "last"):
         """
         Calculate pct change or difference.
@@ -365,18 +359,19 @@ class Session(object):
         else:
             output = transform.chg_diff(self.dataset, operation=operation,
                                         period_op=period_op)
+        self.logger.info(f"Applied 'chg_diff' transformation with "
+                         f"'{operation}' operation and '{period_op}' period.")
         if self.inplace is True:
             self.dataset = output
             return self
         else:
-            return Session(data_dir=self.data_dir,
+            return Session(location=self.location,
                            revise_rows=self.revise_rows,
-                           force_update=self.force_update,
+                           only_get=self.only_get,
                            dataset=output,
                            logger=self.logger,
                            inplace=self.inplace)
 
-    @logutil.log_transformer
     def decompose(self, flavor: str = "both",
                   trading: bool = True, outlier: bool = True,
                   x13_binary: Union[str, PathLike] = "search",
@@ -429,20 +424,21 @@ class Session(object):
                                          outlier=outlier,
                                          x13_binary=x13_binary,
                                          search_parents=search_parents)
+        self.logger.info(f"Applied 'decompose' transformation with "
+                         f"'{flavor}' flavor.")
         if self.inplace is True:
             self.dataset = output
             return self
         else:
-            return Session(data_dir=self.data_dir,
+            return Session(location=self.location,
                            revise_rows=self.revise_rows,
-                           force_update=self.force_update,
+                           only_get=self.only_get,
                            dataset=output,
                            logger=self.logger,
                            inplace=self.inplace)
 
-    @logutil.log_transformer
-    def convert(self, flavor: str, update: Union[str, PathLike, None] = None,
-                save: Union[str, PathLike, None] = None, **kwargs):
+    def convert(self, flavor: str, update: bool = True,
+                save: bool = True, only_get: bool = True, **kwargs):
         """
         Convert to other units.
 
@@ -458,18 +454,40 @@ class Session(object):
         :func:`~econuy.transform.convert_gdp`
 
         """
+        if update is True:
+            if isinstance(self.location, (str, PathLike)):
+                update_loc = Path(self.location)
+            else:
+                update_loc = self.location
+        else:
+            update_loc = None
+        if save is True:
+            if isinstance(self.location, (str, PathLike)):
+                save_loc = Path(self.location)
+            else:
+                save_loc = self.location
+        else:
+            save_loc = None
+
         if isinstance(self.dataset, dict):
             output = {}
             for key, value in self.dataset.items():
                 if flavor == "usd":
-                    table = transform.convert_usd(value, update_path=update,
-                                                  save_path=save)
+                    table = transform.convert_usd(value,
+                                                  update_loc=update_loc,
+                                                  save_loc=save_loc,
+                                                  only_get=only_get)
                 elif flavor == "real":
-                    table = transform.convert_real(value, update_path=update,
-                                                   save_path=save, **kwargs)
+                    table = transform.convert_real(value,
+                                                   update_loc=update_loc,
+                                                   save_loc=save_loc,
+                                                   only_get=only_get,
+                                                   **kwargs)
                 elif flavor == "pcgdp" or flavor == "gdp":
-                    table = transform.convert_gdp(value, update_path=update,
-                                                  save_path=save)
+                    table = transform.convert_gdp(value,
+                                                  update_loc=update_loc,
+                                                  save_loc=save_loc,
+                                                  only_get=only_get)
                 else:
                     raise ValueError("'flavor' can be one of 'usd', 'real', "
                                      "or 'pcgdp'.")
@@ -478,31 +496,36 @@ class Session(object):
         else:
             if flavor == "usd":
                 output = transform.convert_usd(self.dataset,
-                                               update_path=update,
-                                               save_path=save)
+                                               update_loc=update_loc,
+                                               save_loc=save_loc,
+                                               only_get=only_get)
             elif flavor == "real":
                 output = transform.convert_real(self.dataset,
-                                                update_path=update,
-                                                save_path=save, **kwargs)
+                                                update_loc=update_loc,
+                                                save_loc=save_loc,
+                                                only_get=only_get,
+                                                **kwargs)
             elif flavor == "pcgdp" or flavor == "gdp":
                 output = transform.convert_gdp(self.dataset,
-                                               update_path=update,
-                                               save_path=save)
+                                               update_loc=update_loc,
+                                               save_loc=save_loc,
+                                               only_get=only_get)
             else:
                 raise ValueError("'flavor' can be one of 'usd', 'real', "
                                  "or 'pcgdp'.")
+        self.logger.info(f"Applied 'convert' transformation "
+                         f"with '{flavor}' flavor.")
         if self.inplace is True:
             self.dataset = output
             return self
         else:
-            return Session(data_dir=self.data_dir,
+            return Session(location=self.location,
                            revise_rows=self.revise_rows,
-                           force_update=self.force_update,
+                           only_get=self.only_get,
                            dataset=output,
                            logger=self.logger,
                            inplace=self.inplace)
 
-    @logutil.log_transformer
     def base_index(self, start_date: Union[str, date],
                    end_date: Union[str, date, None] = None, base: float = 100):
         """
@@ -522,18 +545,18 @@ class Session(object):
         else:
             output = transform.base_index(self.dataset, start_date=start_date,
                                           end_date=end_date, base=base)
+        self.logger.info(f"Applied 'base_index' transformation.")
         if self.inplace is True:
             self.dataset = output
             return self
         else:
-            return Session(data_dir=self.data_dir,
+            return Session(location=self.location,
                            revise_rows=self.revise_rows,
-                           force_update=self.force_update,
+                           only_get=self.only_get,
                            dataset=output,
                            logger=self.logger,
                            inplace=self.inplace)
 
-    @logutil.log_transformer
     def rolling(self, periods: Optional[int] = None,
                 operation: str = "sum"):
         """
@@ -553,35 +576,34 @@ class Session(object):
         else:
             output = transform.rolling(self.dataset, periods=periods,
                                        operation=operation)
+        self.logger.info(f"Applied 'rolling' transformation with "
+                         f"{periods} periods and '{operation}' operation.")
         if self.inplace is True:
             self.dataset = output
             return self
         else:
-            return Session(data_dir=self.data_dir,
+            return Session(location=self.location,
                            revise_rows=self.revise_rows,
-                           force_update=self.force_update,
+                           only_get=self.only_get,
                            dataset=output,
                            logger=self.logger,
                            inplace=self.inplace)
 
-    def save(self, name: str):
-        """Save :attr:`dataset` attribute to a CSV."""
+    def save(self, name: str, index_label: str = "index"):
+        """Save :attr:`dataset` attribute to a CSV or SQL."""
         name = Path(name).with_suffix("").as_posix()
 
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
-                save_path = (Path(self.data_dir) /
-                             f"{name}_{key}").with_suffix(".csv")
-                if not path.exists(path.dirname(save_path)):
-                    mkdir(path.dirname(save_path))
-                value.to_csv(save_path)
+                ops._io(operation="save", data_loc=self.location,
+                        data=value, name=f"{name}_{key}",
+                        index_label=index_label)
         else:
-            save_path = (Path(self.data_dir) / name).with_suffix(".csv")
-            if not path.exists(path.dirname(save_path)):
-                mkdir(path.dirname(save_path))
-            self.dataset.to_csv(save_path)
+            ops._io(operation="save", data_loc=self.location,
+                    data=self.dataset, name=name,
+                    index_label=index_label)
 
-        self.logger.info(f"Saved dataset to directory {self.data_dir}.")
+        self.logger.info(f"Saved dataset to '{self.location}'.")
 
     def final(self):
         """Return :attr:`dataset` attribute."""

@@ -43,7 +43,12 @@ def _set(
 
     """
     colnames = df.columns
-    inferred_freq = pd.infer_freq(df.index)
+    try:
+        inferred_freq = pd.infer_freq(df.index)
+    except ValueError:
+        warnings.warn("ValueError: Need at least 3 dates to infer frequency. "
+                      "Setting to '-'.", UserWarning)
+        inferred_freq = "-"
     if inferred_freq is None:
         warnings.warn("Metadata: frequency could not be inferred "
                       "from the index. Setting to '-'.", UserWarning)
@@ -87,5 +92,4 @@ def _set(
             pass
 
         tuples = list(zip(*arrays))
-        index = pd.MultiIndex.from_tuples(tuples, names=names)
-        df.columns = index
+        df.columns = pd.MultiIndex.from_tuples(tuples, names=names)

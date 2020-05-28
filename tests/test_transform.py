@@ -3,6 +3,7 @@ from os import path
 import numpy as np
 import pandas as pd
 import pytest
+from sqlalchemy import create_engine
 
 from econuy import transform
 from econuy.session import Session
@@ -10,6 +11,7 @@ from econuy.utils import metadata
 
 CUR_DIR = path.abspath(path.dirname(__file__))
 TEST_DIR = path.join(path.dirname(CUR_DIR), "test-data")
+TEST_CON = create_engine("sqlite://").connect()
 
 
 def dummy_df(freq, periods=200, area="Test", currency="Test",
@@ -29,14 +31,14 @@ def dummy_df(freq, periods=200, area="Test", currency="Test",
 
 def test_diff():
     data_m = dummy_df(freq="M")
-    session = Session(data_dir=TEST_DIR, dataset=data_m)
+    session = Session(location=TEST_CON, dataset=data_m)
     trf_last = session.chg_diff(operation="diff", period_op="last").dataset
     trf_last.columns = data_m.columns
     assert trf_last.equals(data_m.diff(periods=1))
     data_q1 = dummy_df(freq="Q-DEC")
     data_q2 = dummy_df(freq="Q-DEC")
     data_dict = {"data_q1": data_q1, "data_q2": data_q2}
-    session = Session(data_dir=TEST_DIR, dataset=data_dict, inplace=True)
+    session = Session(location=TEST_CON, dataset=data_dict, inplace=True)
     trf_inter = session.chg_diff(operation="diff", period_op="inter").dataset
     trf_inter["data_q1"].columns = trf_inter[
         "data_q2"].columns = data_q1.columns
@@ -66,19 +68,19 @@ def test_diff():
 
 def test_chg():
     data_m = dummy_df(freq="M")
-    session = Session(data_dir=TEST_DIR, dataset=data_m, inplace=True)
+    session = Session(location=TEST_CON, dataset=data_m, inplace=True)
     trf_last = session.chg_diff(operation="chg", period_op="last").dataset
     trf_last.columns = data_m.columns
     assert trf_last.equals(data_m.pct_change(periods=1).multiply(100))
     data_m = dummy_df(freq="M")
-    session = Session(data_dir=TEST_DIR, dataset=data_m, inplace=True)
+    session = Session(location=TEST_CON, dataset=data_m, inplace=True)
     trf_last = session.chg_diff(operation="chg", period_op="last").dataset
     trf_last.columns = data_m.columns
     assert trf_last.equals(data_m.pct_change(periods=1).multiply(100))
     data_q1 = dummy_df(freq="Q-DEC")
     data_q2 = dummy_df(freq="Q-DEC")
     data_dict = {"data_q1": data_q1, "data_q2": data_q2}
-    session = Session(data_dir=TEST_DIR, dataset=data_dict)
+    session = Session(location=TEST_CON, dataset=data_dict)
     trf_inter = session.chg_diff(operation="chg", period_op="inter").dataset
     trf_inter["data_q1"].columns = trf_inter[
         "data_q2"].columns = data_q1.columns
@@ -102,14 +104,14 @@ def test_chg():
 
 def test_rolling():
     data_m = dummy_df(freq="M", ts_type="Flujo")
-    session = Session(data_dir=TEST_DIR, dataset=data_m, inplace=True)
+    session = Session(location=TEST_CON, dataset=data_m, inplace=True)
     trf_none = session.rolling(operation="sum").dataset
     trf_none.columns = data_m.columns
     assert trf_none.equals(data_m.rolling(window=12, min_periods=12).sum())
     data_q1 = dummy_df(freq="M", ts_type="Flujo")
     data_q2 = dummy_df(freq="M", ts_type="Flujo")
     data_dict = {"data_q1": data_q1, "data_q2": data_q2}
-    session = Session(data_dir=TEST_DIR, dataset=data_dict)
+    session = Session(location=TEST_CON, dataset=data_dict)
     trf_inter = session.rolling(operation="sum").dataset
     trf_inter["data_q1"].columns = trf_inter[
         "data_q2"].columns = data_q1.columns
@@ -124,14 +126,14 @@ def test_rolling():
 
 def test_resample():
     data_m = dummy_df(freq="M", ts_type="Flujo", cumperiods=2)
-    session = Session(data_dir=TEST_DIR, dataset=data_m)
+    session = Session(location=TEST_CON, dataset=data_m)
     trf_none = session.resample(target="Q-DEC", operation="sum").dataset
     trf_none.columns = data_m.columns
     assert trf_none.equals(data_m.resample("Q-DEC").sum())
     data_q1 = dummy_df(freq="Q", ts_type="Flujo")
     data_q2 = dummy_df(freq="Q", ts_type="Flujo")
     data_dict = {"data_q1": data_q1, "data_q2": data_q2}
-    session = Session(data_dir=TEST_DIR, dataset=data_dict, inplace=True)
+    session = Session(location=TEST_CON, dataset=data_dict, inplace=True)
     trf_inter = session.resample(target="A-DEC", operation="average").dataset
     trf_inter["data_q1"].columns = trf_inter[
         "data_q2"].columns = data_q1.columns
@@ -170,7 +172,7 @@ def test_decompose():
                       multiply(np.random.uniform(1.04, 1.06)))
     noise = np.random.normal(0, 1, 100)
     df["Real"] = df["Real"] + noise
-    session = Session(data_dir=TEST_DIR, dataset=df[["Real"]])
+    session = Session(location=TEST_CON, dataset=df[["Real"]])
     trend, seas = session.decompose(flavor="both", trading=True,
                                     outlier=True).dataset
     trend.columns, seas.columns = ["Trend"], ["Seas"]
@@ -178,7 +180,7 @@ def test_decompose():
     std = out.std()
     assert std["Real"] >= std["Seas"]
     assert std["Real"] >= std["Trend"]
-    session = Session(data_dir=TEST_DIR, dataset=df[["Real"]], inplace=True)
+    session = Session(location=TEST_CON, dataset=df[["Real"]], inplace=True)
     trend, seas = session.decompose(flavor="both", trading=False,
                                     outlier=True).dataset
     trend.columns, seas.columns = ["Trend"], ["Seas"]
@@ -186,7 +188,7 @@ def test_decompose():
     std = out.std()
     assert std["Real"] >= std["Seas"]
     assert std["Real"] >= std["Trend"]
-    session = Session(data_dir=TEST_DIR, dataset=df[["Real"]])
+    session = Session(location=TEST_CON, dataset=df[["Real"]])
     trend, seas = session.decompose(flavor="both", trading=False,
                                     outlier=False).dataset
     trend.columns, seas.columns = ["Trend"], ["Seas"]
@@ -194,7 +196,7 @@ def test_decompose():
     std = out.std()
     assert std["Real"] >= std["Seas"]
     assert std["Real"] >= std["Trend"]
-    session = Session(data_dir=TEST_DIR, dataset=df[["Real"]])
+    session = Session(location=TEST_CON, dataset=df[["Real"]])
     trend, seas = session.decompose(flavor="both", trading=True,
                                     outlier=False).dataset
     trend.columns, seas.columns = ["Trend"], ["Seas"]
@@ -202,7 +204,7 @@ def test_decompose():
     std = out.std()
     assert std["Real"] >= std["Seas"]
     assert std["Real"] >= std["Trend"]
-    session = Session(data_dir=TEST_DIR, dataset=df[["Real"]])
+    session = Session(location=TEST_CON, dataset=df[["Real"]])
     trend = session.decompose(flavor="trend", trading=True,
                               outlier=False).dataset
     seas = session.decompose(flavor="seas", trading=True,
@@ -212,7 +214,7 @@ def test_decompose():
     std = out.std()
     assert std["Real"] >= std["Seas"]
     assert std["Real"] >= std["Trend"]
-    session = Session(data_dir=TEST_DIR, dataset={"data1": df[["Real"]],
+    session = Session(location=TEST_CON, dataset={"data1": df[["Real"]],
                                                   "data2": df[["Real"]]})
     trend, seas = session.decompose(flavor="both", trading=True,
                                     outlier=False).dataset["data1"]
@@ -222,35 +224,35 @@ def test_decompose():
     assert std["Real"] >= std["Seas"]
     assert std["Real"] >= std["Trend"]
     with pytest.raises(ValueError):
-        session = Session(data_dir=TEST_DIR, dataset=df[["Real"]])
+        session = Session(location=TEST_CON, dataset=df[["Real"]])
         session.decompose(flavor="both", trading=True,
                           outlier=False, x13_binary="wrong")
 
 
 def test_base_index():
     data = dummy_df(freq="M")
-    session = Session(data_dir=TEST_DIR, dataset=data)
+    session = Session(location=TEST_CON, dataset=data)
     base = session.base_index(start_date="2000-01-31").final()
     assert np.all(base.loc["2000-01-31"].values == np.array([100] * 3))
     chg = data.pct_change(periods=1).multiply(100)
-    session = Session(data_dir=TEST_DIR, dataset=data, inplace=True)
+    session = Session(location=TEST_CON, dataset=data, inplace=True)
     comp = session.chg_diff(operation="chg", period_op="last").dataset
     chg.columns = comp.columns
     assert chg.equals(comp)
     data = dummy_df(freq="Q-DEC")
-    session = Session(data_dir=TEST_DIR, dataset={
+    session = Session(location=TEST_CON, dataset={
                       "data1": data, "data2": data})
     base = session.base_index(start_date="2000-03-31").final()
     assert np.all(
         base["data1"].loc["2000-03-31"].values == np.array([100] * 3))
     chg = data.pct_change(periods=1).multiply(100)
-    session = Session(data_dir=TEST_DIR, dataset={
+    session = Session(location=TEST_CON, dataset={
                       "data1": data, "data2": data})
     comp = session.chg_diff(operation="chg", period_op="last").dataset["data1"]
     chg.columns = comp.columns
     assert chg.equals(comp)
     data = dummy_df(freq="M")
-    session = Session(data_dir=TEST_DIR, dataset=data)
+    session = Session(location=TEST_CON, dataset=data)
     base = session.base_index(start_date="2000-01-31",
                               end_date="2000-12-31").dataset
     assert np.all(base["2000-01-31":"2000-12-31"].mean().round(4).values ==
@@ -259,49 +261,49 @@ def test_base_index():
 
 def test_convert():
     data = dummy_df(freq="M", ts_type="Stock")
-    session = Session(data_dir=TEST_DIR, dataset=data)
+    session = Session(location=TEST_CON, dataset=data)
     usd = session.convert(flavor="usd").dataset
     usd.columns = data.columns
     assert np.all(abs(usd) <= abs(data))
     data = dummy_df(freq="M", ts_type="Flujo")
-    session = Session(data_dir=TEST_DIR, dataset={
+    session = Session(location=TEST_CON, dataset={
                       "data1": data, "data2": data})
     usd = session.convert(flavor="usd").dataset["data1"]
     usd.columns = data.columns
     assert np.all(abs(usd) <= abs(data))
     data = dummy_df(freq="M")
-    session = Session(data_dir=TEST_DIR, dataset=data)
+    session = Session(location=TEST_CON, dataset=data)
     real = session.convert(flavor="real", start_date="2000-01-31").dataset
     real.columns = data.columns
     assert np.all(abs(real.iloc[1:]) <= abs(data.iloc[1:]))
     data = dummy_df(freq="M")
-    session = Session(data_dir=TEST_DIR, dataset={
+    session = Session(location=TEST_CON, dataset={
                       "data1": data, "data2": data})
     real = session.convert(flavor="real").dataset["data1"]
     real.columns = data.columns
     assert np.all(abs(real) <= abs(data))
     data = dummy_df(freq="Q-DEC", periods=40, currency="USD")
-    session = Session(data_dir=TEST_DIR, dataset=data, inplace=True)
+    session = Session(location=TEST_CON, dataset=data, inplace=True)
     pcgdp = session.convert(flavor="pcgdp").dataset
     pcgdp.columns = data.columns
     assert np.all(abs(pcgdp) <= abs(data))
     data = dummy_df(freq="Q-DEC", periods=40)
-    session = Session(data_dir=TEST_DIR, dataset={
+    session = Session(location=TEST_CON, dataset={
                       "data1": data, "data2": data})
     pcgdp = session.convert(flavor="pcgdp").dataset["data1"]
     pcgdp.columns = data.columns
     assert np.all(abs(pcgdp) <= abs(data))
     with pytest.raises(ValueError):
         data = dummy_df(freq="Q-DEC", periods=40, currency="USD")
-        session = Session(data_dir=TEST_DIR, dataset=data)
+        session = Session(location=TEST_CON, dataset=data)
         session.convert(flavor="wrong")
     with pytest.raises(ValueError):
         data = dummy_df(freq="Q-DEC", periods=40, currency="USD")
-        session = Session(data_dir=TEST_DIR,
+        session = Session(location=TEST_CON,
                           dataset={"data1": data, "data2": data})
         session.convert(flavor="wrong")
     with pytest.raises(ValueError):
         data = dummy_df(freq="B", periods=200)
-        session = Session(data_dir=TEST_DIR,
+        session = Session(location=TEST_CON,
                           dataset=data)
         session.convert(flavor="gdp")

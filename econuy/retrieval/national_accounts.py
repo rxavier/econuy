@@ -1,15 +1,15 @@
 import datetime as dt
-from os import PathLike, path, mkdir
-from pathlib import Path
-from typing import Union, Optional, Dict
+from os import PathLike
+from typing import Union, Dict
+from urllib.error import URLError, HTTPError
 
 import pandas as pd
-from pandas.tseries.offsets import MonthEnd
-from urllib.error import URLError, HTTPError
 from opnieuw import retry
+from pandas.tseries.offsets import MonthEnd
+from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
-from econuy.utils import updates, metadata
+from econuy.utils import ops, metadata
 from econuy.utils.lstrings import nat_accounts_metadata
 
 
@@ -18,32 +18,40 @@ from econuy.utils.lstrings import nat_accounts_metadata
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def get(update_path: Union[str, PathLike, None] = None,
+def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
-        save_path: Union[str, PathLike, None] = None,
-        force_update: bool = False,
-        name: Optional[str] = None) -> Dict[str, pd.DataFrame]:
+        save_loc: Union[str, PathLike, Engine, Connection, None] = None,
+        name: str = "naccounts",
+        index_label: str = "index",
+        only_get: bool = False) -> Dict[str, pd.DataFrame]:
     """Get national accounts data.
 
     Parameters
     ----------
-    update_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to find a CSV
-        for updating, or ``None``, don't update.
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
     revise_rows : {'nodup', 'auto', int}
         Defines how to process data updates. An integer indicates how many rows
         to remove from the tail of the dataframe and replace with new data.
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to save the CSV,
-        or ``None``, don't save.
-    force_update : bool, default False
-        If ``True``, fetch data and update existing data even if it was
-        modified within its update window (for national accounts, 85 days).
-    name : str, default None
-        CSV filename for updating and/or saving.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'naccounts'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
 
     Returns
     -------
@@ -51,42 +59,39 @@ def get(update_path: Union[str, PathLike, None] = None,
         Each dataframe corresponds to a national accounts table.
 
     """
-    update_threshold = 80
-    if name is None:
-        name = "naccounts"
+    if only_get is True and update_loc is not None:
+        output = {}
+        for meta in nat_accounts_metadata.values():
+            data = ops._io(
+                operation="update", data_loc=update_loc,
+                name=f"{name}_{meta['Name']}", index_label=index_label
+            )
+            output.update({meta["Name"]: data})
+        if all(not value.equals(pd.DataFrame()) for value in output.values()):
+            return output
 
     parsed_excels = {}
     for file, meta in nat_accounts_metadata.items():
-
-        if update_path is not None:
-            full_update_path = (Path(update_path) /
-                                f"{name}_{meta['Name']}").with_suffix(
-                ".csv")
-            delta, previous_data = updates._check_modified(full_update_path)
-
-            if delta < update_threshold and force_update is False:
-                print(f"{full_update_path}.csv was modified within"
-                      f" {update_threshold} day(s). Skipping download...")
-                parsed_excels.update({meta["Name"]: previous_data})
-                continue
-
         raw = pd.read_excel(file, skiprows=9, nrows=meta["Rows"])
         proc = (raw.drop(columns=["Unnamed: 0"]).
                 dropna(axis=0, how="all").dropna(axis=1, how="all"))
         proc = proc.transpose()
         proc.columns = meta["Colnames"]
         proc.drop(["Unnamed: 1"], inplace=True)
-
         _fix_dates(proc)
-
         if meta["Unit"] == "Miles":
             proc = proc.divide(1000)
             unit_ = "Millones"
         else:
             unit_ = meta["Unit"]
-        if update_path is not None:
-            proc = updates._revise(new_data=proc, prev_data=previous_data,
-                                   revise_rows=revise_rows)
+
+        if update_loc is not None:
+            previous_data = ops._io(
+                operation="update", data_loc=update_loc,
+                name=f"{name}_{meta['Name']}", index_label=index_label
+            )
+            proc = ops._revise(new_data=proc, prev_data=previous_data,
+                               revise_rows=revise_rows)
         proc = proc.apply(pd.to_numeric, errors="coerce")
 
         metadata._set(proc, area="Actividad económica", currency="UYU",
@@ -95,12 +100,11 @@ def get(update_path: Union[str, PathLike, None] = None,
                       seas_adj=meta["Seas"], ts_type="Flujo",
                       cumperiods=1)
 
-        if save_path is not None:
-            full_save_path = (Path(save_path) /
-                              f"{name}_{meta['Name']}").with_suffix(".csv")
-            if not path.exists(path.dirname(full_save_path)):
-                mkdir(path.dirname(full_save_path))
-            proc.to_csv(full_save_path)
+        if save_loc is not None:
+            ops._io(
+                operation="save", data_loc=save_loc, data=proc,
+                name=f"{name}_{meta['Name']}", index_label=index_label
+            )
 
         parsed_excels.update({meta["Name"]: proc})
 
@@ -122,9 +126,13 @@ def _fix_dates(df):
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def _lin_gdp(update_path: Union[str, PathLike, None] = None,
-             save_path: Union[str, PathLike, None] = None,
-             force_update: bool = False):
+def _lin_gdp(update_loc: Union[str, PathLike, Engine,
+                               Connection, None] = None,
+             save_loc: Union[str, PathLike, Engine,
+                             Connection, None] = None,
+             name: str = "lin_gdp",
+             index_label: str = "index",
+             only_get: bool = True):
     """Get nominal GDP data in UYU and USD with forecasts.
 
     Update nominal GDP data for use in the `convert.convert_gdp()` function.
@@ -134,15 +142,24 @@ def _lin_gdp(update_path: Union[str, PathLike, None] = None,
 
     Parameters
     ----------
-    update_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to find a CSV
-        for updating, or ``None``, don't update.
-    save_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to save the CSV,
-        or ``None``, don't save.
-    force_update : bool, default False
-        If ``True``, fetch data and update existing data even if it was
-        modified within its update window (for national accounts, 80 days).
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'lin_gdp'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default True
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
 
     Returns
     -------
@@ -150,22 +167,17 @@ def _lin_gdp(update_path: Union[str, PathLike, None] = None,
         Quarterly GDP in UYU and USD with 1 year forecasts.
 
     """
-    update_threshold = 80
-    name = "lin_gdp"
+    if only_get is True and update_loc is not None:
+        output = ops._io(operation="update", data_loc=update_loc,
+                         name=name, index_label=index_label)
+        if not output.equals(pd.DataFrame()):
+            return output
 
-    if update_path is not None:
-        full_update_path = (Path(update_path) / name).with_suffix(".csv")
-        delta, previous_data = updates._check_modified(full_update_path)
-
-        if delta < update_threshold and force_update is False:
-            print(f"{full_update_path} was modified within {update_threshold} "
-                  f"day(s). Skipping download...")
-            return previous_data
-
-    data_uyu = get(update_path=update_path, revise_rows=4, save_path=save_path,
-                   force_update=False)["gdp_cur_nsa"]
+    data_uyu = get(update_loc=update_loc, only_get=only_get)["gdp_cur_nsa"]
     data_uyu = transform.rolling(data_uyu, periods=4, operation="sum")
-    data_usd = transform.convert_usd(data_uyu)
+    data_usd = transform.convert_usd(data_uyu,
+                                     update_loc=update_loc,
+                                     only_get=only_get)
 
     data = [data_uyu, data_usd]
     last_year = data_uyu.index.max().year
@@ -183,24 +195,33 @@ def _lin_gdp(update_path: Union[str, PathLike, None] = None,
         fcast = (gdp.loc[[dt.datetime(last_year - 1, 12, 31)]].
                  multiply(imf_data.iloc[1]).divide(imf_data.iloc[0]))
         fcast = fcast.rename(index={dt.datetime(last_year - 1, 12, 31):
-                                    dt.datetime(last_year, 12, 31)})
+                                        dt.datetime(last_year, 12, 31)})
         next_fcast = (gdp.loc[[dt.datetime(last_year - 1, 12, 31)]].
                       multiply(imf_data.iloc[2]).divide(imf_data.iloc[0]))
         next_fcast = next_fcast.rename(
             index={dt.datetime(last_year - 1, 12, 31):
-                   dt.datetime(last_year + 1, 12, 31)}
+                       dt.datetime(last_year + 1, 12, 31)}
         )
         fcast = fcast.append(next_fcast)
         gdp = gdp.append(fcast)
         results.append(gdp)
 
     output = pd.concat(results, axis=1)
-    output = output.resample("Q-DEC").interpolate("linear")
+    output = output.resample("Q-DEC").interpolate("linear").dropna(how="all")
+    arrays = []
+    for level in range(0, 9):
+        arrays.append(list(output.columns.get_level_values(level)))
+    arrays[0] = ["PBI UYU", "PBI USD"]
+    tuples = list(zip(*arrays))
+    output.columns = pd.MultiIndex.from_tuples(tuples,
+                                               names=["Indicador", "Área",
+                                                      "Frecuencia", "Moneda",
+                                                      "Inf. adj.", "Unidad",
+                                                      "Seas. Adj.", "Tipo",
+                                                      "Acum. períodos"])
 
-    if save_path is not None:
-        full_save_path = (Path(save_path) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(full_save_path)):
-            mkdir(path.dirname(full_save_path))
-        output.to_csv(full_save_path)
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=output, name=name, index_label=index_label)
 
     return output

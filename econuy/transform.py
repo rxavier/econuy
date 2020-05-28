@@ -1,23 +1,27 @@
 import platform
+import warnings
 from datetime import date
 from os import PathLike, getcwd, path
 from pathlib import Path
 from typing import Union, Optional, Tuple
-import warnings
 
 import numpy as np
 import pandas as pd
+from sqlalchemy.engine.base import Connection, Engine
 from statsmodels.api import tsa
 from statsmodels.tools.sm_exceptions import X13Error
 from statsmodels.tsa import x13
 
-from econuy.utils import metadata, updates
 from econuy.retrieval import cpi, national_accounts, nxr
+from econuy.utils import metadata
 
 
 def convert_usd(df: pd.DataFrame,
-                update_path: Union[str, PathLike, None] = None,
-                save_path: Union[str, PathLike, None] = None) -> pd.DataFrame:
+                update_loc: Union[str, PathLike, Engine,
+                                  Connection, None] = None,
+                save_loc: Union[str, PathLike, Engine,
+                                Connection, None] = None,
+                only_get: bool = True) -> pd.DataFrame:
     """
     Convert dataframe from UYU to USD.
 
@@ -33,12 +37,19 @@ def convert_usd(df: pd.DataFrame,
     ----------
     df : pd.DataFrame
         Input dataframe.
-    update_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to find a CSV
-        for updating, or ``None``, don't update.
-    save_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to save the CSV,
-        or ``None``, don't save.
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    only_get : bool, default True
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
 
     Returns
     -------
@@ -46,14 +57,13 @@ def convert_usd(df: pd.DataFrame,
 
     """
     inferred_freq = pd.infer_freq(df.index)
-    nxr_data = nxr.get_monthly(update_path=update_path, revise_rows=6,
-                               save_path=save_path, force_update=False)
+    nxr_data = nxr.get_monthly(update_loc=update_loc, save_loc=save_loc,
+                               only_get=only_get)
 
     if df.columns.get_level_values("Tipo")[0] == "Stock":
         metadata._set(nxr_data, ts_type="Stock")
         nxr_freq = resample(nxr_data, target=inferred_freq,
                             operation="average").iloc[:, [1]]
-
     else:
         metadata._set(nxr_data, ts_type="Flujo")
         nxr_freq = resample(nxr_data, target=inferred_freq,
@@ -71,8 +81,11 @@ def convert_usd(df: pd.DataFrame,
 
 def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
                  end_date: Union[str, date, None] = None,
-                 update_path: Union[str, PathLike, None] = None,
-                 save_path: Union[str, PathLike, None] = None) -> pd.DataFrame:
+                 update_loc: Union[str, PathLike, Engine,
+                                   Connection, None] = None,
+                 save_loc: Union[str, PathLike, Engine,
+                                 Connection, None] = None,
+                 only_get: bool = True) -> pd.DataFrame:
     """
     Convert dataframe to real prices.
 
@@ -93,12 +106,19 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     end_date : str, datetime.date or None, default None
         If ``start_date`` is set, calculate so that the data is in constant
         prices of ``start_date-end_date``.
-    update_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to find a CSV
-        for updating, or ``None``, don't update.
-    save_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to save the CSV,
-        or ``None``, don't save.
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    only_get : bool, default True
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
 
     Returns
     -------
@@ -106,9 +126,9 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
 
     """
     inferred_freq = pd.infer_freq(df.index)
-    cpi_data = cpi.get(update_path=update_path, revise_rows=6,
-                       save_path=save_path,
-                       force_update=False)
+    cpi_data = cpi.get(update_loc=update_loc, save_loc=save_loc,
+                       only_get=only_get)
+
     metadata._set(cpi_data, ts_type="Flujo")
     cpi_freq = resample(cpi_data, target=inferred_freq,
                         operation="average").iloc[:, [0]]
@@ -139,8 +159,11 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
 
 
 def convert_gdp(df: pd.DataFrame,
-                update_path: Union[str, PathLike, None] = None,
-                save_path: Union[str, PathLike, None] = None) -> pd.DataFrame:
+                update_loc: Union[str, PathLike, Engine,
+                                  Connection, None] = None,
+                save_loc: Union[str, PathLike, Engine,
+                                Connection, None] = None,
+                only_get: bool = True) -> pd.DataFrame:
     """
     Calculate dataframe as percentage of GDP.
 
@@ -155,12 +178,19 @@ def convert_gdp(df: pd.DataFrame,
     ----------
     df : pd.DataFrame
         Input dataframe.
-    update_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to find a CSV
-        for updating, or ``None``, don't update.
-    save_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to save the CSV,
-        or ``None``, don't save.
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    only_get : bool, default True
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
 
     Returns
     -------
@@ -174,8 +204,8 @@ def convert_gdp(df: pd.DataFrame,
 
     """
     inferred_freq = pd.infer_freq(df.index)
-    gdp = national_accounts._lin_gdp(update_path=update_path,
-                                     save_path=save_path, force_update=False)
+    gdp = national_accounts._lin_gdp(update_loc=update_loc,
+                                     save_loc=save_loc, only_get=only_get)
 
     if inferred_freq in ["M", "MS"]:
         gdp = resample(gdp, target=inferred_freq,
@@ -426,8 +456,8 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
         search_term = "x13as"
         if platform.system() == "Windows":
             search_term += ".exe"
-        binary_path = updates._rsearch(dir_file=getcwd(), n=search_parents,
-                                       search_term=search_term)
+        binary_path = _rsearch(dir_file=getcwd(), n=search_parents,
+                               search_term=search_term)
     elif isinstance(x13_binary, str):
         binary_path = x13_binary
     else:
@@ -535,6 +565,21 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
     return output
 
 
+def _rsearch(dir_file: Union[str, PathLike], search_term: str, n: int = 2):
+    """Recursively search for a file starting from the n-parent folder of
+    a supplied path."""
+    i = 0
+    while i < n:
+        i += 1
+        dir_file = path.dirname(dir_file)
+    try:
+        final_path = ([x for x in Path(dir_file).rglob(search_term)][0]
+                      .absolute().as_posix())
+    except IndexError:
+        final_path = True
+    return final_path
+
+
 def chg_diff(df: pd.DataFrame, operation: str = "chg",
              period_op: str = "last") -> pd.DataFrame:
     """
@@ -575,20 +620,20 @@ def chg_diff(df: pd.DataFrame, operation: str = "chg",
     inferred_freq = pd.infer_freq(df.index)
 
     type_change = {"last":
-                   {"chg": [lambda x: x.pct_change(periods=1),
-                            "% variación"],
-                    "diff": [lambda x: x.diff(periods=1),
-                             "Cambio"]},
+                       {"chg": [lambda x: x.pct_change(periods=1),
+                                "% variación"],
+                        "diff": [lambda x: x.diff(periods=1),
+                                 "Cambio"]},
                    "inter":
-                   {"chg": [lambda x: x.pct_change(periods=last_year),
-                            "% variación interanual"],
-                    "diff": [lambda x: x.diff(periods=last_year),
-                             "Cambio interanual"]},
+                       {"chg": [lambda x: x.pct_change(periods=last_year),
+                                "% variación interanual"],
+                        "diff": [lambda x: x.diff(periods=last_year),
+                                 "Cambio interanual"]},
                    "annual":
-                   {"chg": [lambda x: x.pct_change(periods=last_year),
-                            "% variación anual"],
-                    "diff": [lambda x: x.diff(periods=last_year),
-                             "Cambio anual"]}}
+                       {"chg": [lambda x: x.pct_change(periods=last_year),
+                                "% variación anual"],
+                        "diff": [lambda x: x.diff(periods=last_year),
+                                 "Cambio anual"]}}
 
     if inferred_freq == "M":
         last_year = 12

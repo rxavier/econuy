@@ -1,20 +1,23 @@
 import datetime as dt
-from os import PathLike, path, mkdir
-from pathlib import Path
-from typing import Union, Optional
+import re
+from os import PathLike
+from typing import Union
+from urllib import error
+from json.decoder import JSONDecodeError
 
 import numpy as np
 import pandas as pd
 import requests
-from pandas.tseries.offsets import MonthEnd
-from urllib import error
-from requests import exceptions
+from bs4 import BeautifulSoup
 from opnieuw import retry
+from pandas.tseries.offsets import MonthEnd
+from requests import exceptions
+from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
-from econuy.utils import updates, metadata
-from econuy.utils.lstrings import reer_url, ar_cpi_url, ar_cpi_payload
 from econuy.retrieval import cpi, nxr
+from econuy.utils import ops, metadata
+from econuy.utils.lstrings import reer_url, ar_cpi_url, ar_cpi_payload
 
 
 @retry(
@@ -22,32 +25,42 @@ from econuy.retrieval import cpi, nxr
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def get_official(update_path: Union[str, PathLike, None] = None,
+def get_official(update_loc: Union[str, PathLike, Engine,
+                                   Connection, None] = None,
                  revise_rows: Union[str, int] = "nodup",
-                 save_path: Union[str, PathLike, None] = None,
-                 force_update: bool = False,
-                 name: Optional[str] = None) -> pd.DataFrame:
+                 save_loc: Union[str, PathLike, Engine,
+                                 Connection, None] = None,
+                 name: str = "rxr_official",
+                 index_label: str = "index",
+                 only_get: bool = False) -> pd.DataFrame:
     """Get official real exchange rates from the BCU website.
 
     Parameters
     ----------
-    update_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to find a CSV
-        for updating, or ``None``, don't update.
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
     revise_rows : {'nodup', 'auto', int}
         Defines how to process data updates. An integer indicates how many rows
         to remove from the tail of the dataframe and replace with new data.
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to save the CSV,
-        or ``None``, don't save.
-    force_update : bool, default False
-        If ``True``, fetch data and update existing data even if it was
-        modified within its update window (for real exchange rates, 25 days).
-    name : str, default None
-        CSV filename for updating and/or saving.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'rxr_official'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
 
     Returns
     -------
@@ -55,73 +68,82 @@ def get_official(update_path: Union[str, PathLike, None] = None,
         Available: global, regional, extraregional, Argentina, Brazil, US.
 
     """
-    update_threshold = 25
-    if name is None:
-        name = "rxr_official"
+    if only_get is True and update_loc is not None:
+        output = ops._io(operation="update", data_loc=update_loc,
+                         name=name, index_label=index_label)
+        if not output.equals(pd.DataFrame()):
+            return output
 
-    if update_path is not None:
-        full_update_path = (Path(update_path) / name).with_suffix(".csv")
-        delta, previous_data = updates._check_modified(full_update_path)
-
-        if delta < update_threshold and force_update is False:
-            print(f"{full_update_path} was modified within {update_threshold} "
-                  f"day(s). Skipping download...")
-            return previous_data
-
-    raw = pd.read_excel(reer_url, skiprows=8, usecols="B:H", index_col=0)
+    r = requests.get(reer_url)
+    soup = BeautifulSoup(r.content, "html.parser")
+    links = soup.find_all(href=re.compile("eese[A-z0-9]+\\.xls$"))
+    xls = "https://www.bcu.gub.uy" + links[0]["href"]
+    raw = pd.read_excel(xls, skiprows=8, usecols="B:H", index_col=0)
     proc = raw.dropna(how="any")
     proc.columns = ["Global", "Regional", "Extrarregional",
                     "Argentina", "Brasil", "EEUU"]
     proc.index = pd.to_datetime(proc.index) + MonthEnd(1)
 
-    if update_path is not None:
-        proc = updates._revise(new_data=proc, prev_data=previous_data,
-                               revise_rows=revise_rows)
+    if update_loc is not None:
+        previous_data = ops._io(operation="update",
+                                data_loc=update_loc,
+                                name=name,
+                                index_label=index_label)
+        proc = ops._revise(new_data=proc, prev_data=previous_data,
+                           revise_rows=revise_rows)
 
     metadata._set(proc, area="Precios y salarios", currency="UYU/Otro",
                   inf_adj="No", unit="2017=100", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
 
-    if save_path is not None:
-        full_save_path = (Path(save_path) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(full_save_path)):
-            mkdir(path.dirname(full_save_path))
-        proc.to_csv(full_save_path)
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=proc, name=name, index_label=index_label)
 
     return proc
 
 
 @retry(
-    retry_on_exceptions=(error.HTTPError, error.URLError),
+    retry_on_exceptions=(error.HTTPError, error.URLError, JSONDecodeError),
     max_calls_total=10,
     retry_window_after_first_call_in_seconds=90,
 )
-def get_custom(update_path: Union[str, PathLike, None] = None,
+def get_custom(update_loc: Union[str, PathLike, Engine,
+                                 Connection, None] = None,
                revise_rows: Union[str, int] = "nodup",
-               save_path: Union[str, PathLike, None] = None,
-               force_update: bool = False,
-               name: Optional[str] = None) -> pd.DataFrame:
+               save_loc: Union[str, PathLike, Engine,
+                               Connection, None] = None,
+               name: str = "rxr_custom",
+               index_label: str = "index",
+               only_get: bool = False) -> pd.DataFrame:
     """Get official real exchange rates from the BCU website.
 
     Parameters
     ----------
-    update_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to find a CSV
-        for updating, or ``None``, don't update.
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
     revise_rows : {'nodup', 'auto', int}
         Defines how to process data updates. An integer indicates how many rows
         to remove from the tail of the dataframe and replace with new data.
         String can either be ``auto``, which automatically determines number of
         rows to replace from the inferred data frequency, or ``nodup``,
         which replaces existing periods with new data.
-    save_path : str, os.PathLike or None, default None
-        Path or path-like string pointing to a directory where to save the CSV,
-        or ``None``, don't save.
-    force_update : bool, default False
-        If ``True``, fetch data and update existing data even if it was
-        modified within its update window (for real exchange rates, 25 days).
-    name : str, default None
-        CSV filename for updating and/or saving.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'rxr_custom'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
 
     Returns
     -------
@@ -129,18 +151,11 @@ def get_custom(update_path: Union[str, PathLike, None] = None,
         Available: Argentina, Brazil, US.
 
     """
-    update_threshold = 25
-    if name is None:
-        name = "rxr_custom"
-
-    if update_path is not None:
-        full_update_path = (Path(update_path) / name).with_suffix(".csv")
-        delta, previous_data = updates._check_modified(full_update_path)
-
-        if delta < update_threshold and force_update is False:
-            print(f"{full_update_path} was modified within {update_threshold}"
-                  f" day(s). Skipping download...")
-            return previous_data
+    if only_get is True and update_loc is not None:
+        output = ops._io(operation="update", data_loc=update_loc,
+                         name=name, index_label=index_label)
+        if not output.equals(pd.DataFrame()):
+            return output
 
     url_ = "http://dataservices.imf.org/REST/SDMX_JSON.svc/CompactData/IFS/M."
     url_extra = ".?startPeriod=1970&endPeriod="
@@ -179,11 +194,10 @@ def get_custom(update_path: Union[str, PathLike, None] = None,
     proc["AR.ENDA_XDC_USD_RATE_black"] = ar_black_xr.iloc[:, 0]
     proc["AR_E_A"] = proc.iloc[:, [5, 6]].mean(axis=1)
 
-    uy_cpi = cpi.get(update_path=update_path, revise_rows=6,
-                     save_path=save_path, force_update=False)
-    uy_e = nxr.get_monthly(update_path=update_path, revise_rows=6,
-                           save_path=save_path,
-                           force_update=False).iloc[:, [1]]
+    uy_cpi = cpi.get(update_loc=update_loc, save_loc=save_loc,
+                     only_get=True)
+    uy_e = nxr.get_monthly(update_loc=update_loc, save_loc=save_loc,
+                           only_get=True).iloc[:, [1]]
     proc = pd.concat([proc, uy_cpi, uy_e], axis=1)
     proc = proc.interpolate(method="linear", limit_area="inside")
     proc = proc.dropna(how="any")
@@ -206,15 +220,17 @@ def get_custom(update_path: Union[str, PathLike, None] = None,
     output = transform.base_index(output, start_date="2010-01-01",
                                   end_date="2010-12-31", base=100)
 
-    if update_path is not None:
-        output = updates._revise(new_data=output, prev_data=previous_data,
-                                 revise_rows=revise_rows)
+    if update_loc is not None:
+        previous_data = ops._io(operation="update",
+                                data_loc=update_loc,
+                                name=name,
+                                index_label=index_label)
+        output = ops._revise(new_data=output, prev_data=previous_data,
+                             revise_rows=revise_rows)
 
-    if save_path is not None:
-        full_save_path = (Path(save_path) / name).with_suffix(".csv")
-        if not path.exists(path.dirname(full_save_path)):
-            mkdir(path.dirname(full_save_path))
-        output.to_csv(full_save_path)
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=output, name=name, index_label=index_label)
 
     return output
 
