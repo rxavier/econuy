@@ -43,9 +43,9 @@ session = Session(data_dir="econuy-data", revise_rows="nodup", force_update=Fals
 
 The `Session()` object is initialized with the `data_dir`, `revise_rows`,  `force_update`, `dataset`, `log`, `logger` and `inplace` attributes.
 
-* `data_dir` controls where data will be saved and where it will be looked for when updating. It defaults to "econuy-data", and will create the directory if it doesn't exist.
+* `location` controls where data will be saved and where it will be looked for when updating. It defaults to "econuy-data", and will create the directory if it doesn't exist.
 * `revise_rows` controls the updating mechanism. It can be an integer, denoting how many rows from the data held on disk to replace with new data, or a string. In the latter case, `auto` indicates that the amount of rows to be replaced will be determined from the inferred data frequency, while `nodup` replaces existing data with new data for each time period found in both.
-* `force_update` controls whether whether to redownload data even if existing data in disk was modified recently.
+* `only_get` controls whether to get data from local sources or attempt to download it.
 * `dataset` holds the current working dataset(s) and by default is initialized with an empty Pandas dataframe.
 * `log` controls how logging works. `0`, don't log; `1`, log to console; `2`, log to console and file with default file; ``str``, log to console and file with filename=str.
 * `logger` holds the current logger object from the logging module. Generally, the end user shouldn't set this manually.
@@ -57,9 +57,7 @@ The `Session()` object is initialized with the `data_dir`, `revise_rows`,  `forc
 
 Downloads the basic datasets. These are basically as provided by official sources, except various Pandas transformations are performed to render nice looking dataframes with appropiate column names, time indexes and properly defined values.
 
-Available options for the `dataset` argument are "cpi", "fiscal", "nxr", "naccounts", "labor", "rxr_custom", "rxr_official", "commodity_index", "reserves" and "fx_ops". Most are self explanatory but all are explained in the documentation.
-
-`override` allows setting the CSV's filename to a different one than default (each dataset has a default, for example, "cpi.csv"). 
+Available options for the `dataset` argument are "cpi", "fiscal", "nxr", "naccounts", "labor", "rxr_custom", "rxr_official", "commodity_index", "reserves_chg" and "fx_ops". Most are self explanatory but all are explained in the documentation.
 
 If you wanted CPI data:
 ```
