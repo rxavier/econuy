@@ -38,12 +38,12 @@ This is the recommended entry point for the package. It allows setting up the co
 ```
 from econuy.session import Session
 
-session = Session(data_dir="econuy-data", revise_rows="nodup", force_update=False, log=1, inplace=False)
+session = Session(location="econuy-data", revise_rows="nodup", only_get=False, log=1, inplace=False)
 ```
 
-The `Session()` object is initialized with the `data_dir`, `revise_rows`,  `force_update`, `dataset`, `log`, `logger` and `inplace` attributes.
+The `Session()` object is initialized with the `data_dir`, `revise_rows`,  `only_get`, `dataset`, `log`, `logger` and `inplace` attributes.
 
-* `location` controls where data will be saved and where it will be looked for when updating. It defaults to "econuy-data", and will create the directory if it doesn't exist.
+* `location` controls where data will be saved and where it will be looked for when updating. It defaults to "econuy-data", and will create the directory if it doesn't exist. It can also be a SQLAlchemy Connection or Engine object.
 * `revise_rows` controls the updating mechanism. It can be an integer, denoting how many rows from the data held on disk to replace with new data, or a string. In the latter case, `auto` indicates that the amount of rows to be replaced will be determined from the inferred data frequency, while `nodup` replaces existing data with new data for each time period found in both.
 * `only_get` controls whether to get data from local sources or attempt to download it.
 * `dataset` holds the current working dataset(s) and by default is initialized with an empty Pandas dataframe.
