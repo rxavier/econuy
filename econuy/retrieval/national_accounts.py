@@ -207,7 +207,7 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
         results.append(gdp)
 
     output = pd.concat(results, axis=1)
-    output = output.resample("Q-DEC").interpolate("linear")
+    output = output.resample("Q-DEC").interpolate("linear").dropna(how="all")
     arrays = []
     for level in range(0, 9):
         arrays.append(list(output.columns.get_level_values(level)))
