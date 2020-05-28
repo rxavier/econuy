@@ -56,7 +56,7 @@ def read(con: sqla.engine.base.Connection,
     if command is not None:
         output = pd.read_sql_query(sql=command, con=con,
                                    index_col=index_label, **kwargs)
-    elif table_name is not None:
+    else:
         if all(v is None for v in [cols, start_date, end_date]):
             output = pd.read_sql(sql=table_name, con=con,
                                  index_col=index_label,
@@ -87,9 +87,6 @@ def read(con: sqla.engine.base.Connection,
 
         output.columns = pd.MultiIndex.from_frame(metadata)
         output.rename_axis(None, inplace=True)
-
-    else:
-        output = pd.DataFrame()
 
     return output
 
