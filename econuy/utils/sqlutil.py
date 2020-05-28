@@ -11,7 +11,7 @@ from sqlalchemy import select, table, column, and_
 def read(con: sqla.engine.base.Connection,
          command: Optional[str] = None,
          table_name: Optional[str] = None,
-         cols: Union[str, Iterable[str]] = "*",
+         cols: Union[str, Iterable[str], None] = None,
          start_date: Optional[str] = None, end_date: Optional[str] = None,
          index_label: str = "index",
          **kwargs) -> pd.DataFrame:
@@ -32,7 +32,7 @@ def read(con: sqla.engine.base.Connection,
         be ignored.
     table_name : str or None, default None
         String representing which table should be retrieved from the databse.
-    cols : str, iterable or None, default '*'
+    cols : str, iterable or None, default None
         Column(s) to retrieve. By default, gets all all columns.
     start_date : str or None, default None
         Dates to filter. Inclusive.
@@ -56,35 +56,40 @@ def read(con: sqla.engine.base.Connection,
     if command is not None:
         output = pd.read_sql_query(sql=command, con=con,
                                    index_col=index_label, **kwargs)
-    elif table_name is not None and all(v is None for v in
-                                        [cols, start_date, end_date]):
-        output = pd.read_sql(sql=table_name, con=con,
-                             index_col=index_label,
-                             parse_dates=index_label, **kwargs)
-    else:
-        if isinstance(cols, Iterable) and not isinstance(cols, str):
-            cols = [column(x) for x in cols]
-        elif isinstance(cols, str) and cols != "*":
-            cols = column(cols)
-        command = select(cols).select_from(table(table_name))
-        dates = column(index_label)
-        if start_date is not None:
-            if end_date is not None:
-                command = command.where(and_(dates >= f"{start_date}",
-                                             dates <= f"{end_date}"))
+    elif table_name is not None:
+        if all(v is None for v in [cols, start_date, end_date]):
+            output = pd.read_sql(sql=table_name, con=con,
+                                 index_col=index_label,
+                                 parse_dates=index_label, **kwargs)
+        else:
+            if isinstance(cols, Iterable) and not isinstance(cols, str):
+                cols = [column(x) for x in cols]
+            elif isinstance(cols, str) and cols != "*":
+                cols = column(cols)
             else:
-                command = command.where(dates >= f"{start_date}")
-        elif end_date is not None:
-            command = command.where(dates <= f"{end_date}")
+                cols = "*"
+            command = select(cols).select_from(table(table_name))
+            dates = column(index_label)
+            if start_date is not None:
+                if end_date is not None:
+                    command = command.where(and_(dates >= f"{start_date}",
+                                                 dates <= f"{end_date}"))
+                else:
+                    command = command.where(dates >= f"{start_date}")
+            elif end_date is not None:
+                command = command.where(dates <= f"{end_date}")
 
-        output = pd.read_sql(sql=command, con=con,
-                             index_col=index_label,
-                             parse_dates=index_label, **kwargs)
+            output = pd.read_sql(sql=command, con=con,
+                                 index_col=index_label,
+                                 parse_dates=index_label, **kwargs)
         metadata = pd.read_sql(sql=f"{table_name}_metadata", con=con,
                                index_col="index")
 
         output.columns = pd.MultiIndex.from_frame(metadata)
         output.rename_axis(None, inplace=True)
+
+    else:
+        output = pd.DataFrame()
 
     return output
 
