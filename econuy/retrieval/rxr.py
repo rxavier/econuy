@@ -3,6 +3,7 @@ import re
 from os import PathLike
 from typing import Union
 from urllib import error
+from json.decoder import JSONDecodeError
 
 import numpy as np
 import pandas as pd
@@ -103,7 +104,7 @@ def get_official(update_loc: Union[str, PathLike, Engine,
 
 
 @retry(
-    retry_on_exceptions=(error.HTTPError, error.URLError),
+    retry_on_exceptions=(error.HTTPError, error.URLError, JSONDecodeError),
     max_calls_total=10,
     retry_window_after_first_call_in_seconds=90,
 )
