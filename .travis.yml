@@ -2,6 +2,9 @@ language: python
 python:
 - '3.7'
 cache: pip
+before_install:
+- sudo apt-get install python-dev
+- sudo apt-get install -y libpq-dev
 install:
 - pip install pipenv
 - pipenv install
@@ -11,8 +14,6 @@ before_script:
 - chmod +x x13as
 - cp x13as /home/travis/build/rxavier/econuy/econuy/resources
 - sudo apt-get install unrar
-- sudo apt-get install python-dev
-- sudo apt-get install -y libpq-dev
 script:
 - coverage run -m pytest
 after_success:
