@@ -11,6 +11,8 @@ before_script:
 - chmod +x x13as
 - cp x13as /home/travis/build/rxavier/econuy/econuy/resources
 - sudo apt-get install unrar
+- sudo apt-get install python-dev
+- sudo apt-get install -y libpq-dev
 script:
 - coverage run -m pytest
 after_success:
