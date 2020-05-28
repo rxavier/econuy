@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
 
-from econuy.retrieval import reserves, national_accounts
+from econuy.retrieval import national_accounts
 from econuy.session import Session
 from econuy.utils import metadata, sqlutil
 try:
@@ -21,15 +21,19 @@ sqlutil.insert_csvs(con=TEST_CON, directory=TEST_DIR)
 
 def test_changes():
     remove_clutter()
+    session = Session(location=TEST_CON)
     previous_data = pd.read_csv(path.join(TEST_DIR, "reserves_chg.csv"),
-                                index_col=0, header=list(range(9)))
+                                index_col=0, header=list(range(9)),
+                                float_precision="high")
     metadata._set(previous_data)
-    res = reserves.get_changes(
-        update_loc=TEST_DIR, save_loc=TEST_DIR)
+    res = session.get(dataset="reserves_chg").dataset
     previous_data.index = pd.to_datetime(previous_data.index)
-    compare = res.loc[previous_data.index].round(4)
+    compare = res.loc[previous_data.index].round(3)
     compare.columns = previous_data.columns
-    assert compare.equals(previous_data.round(4))
+    assert compare.equals(previous_data.round(3))
+    session.only_get = True
+    compare = session.get(dataset="reserves_chg").dataset
+    assert res.round(3).equals(compare.round(3))
     remove_clutter()
 
 
@@ -39,6 +43,9 @@ def test_rxr_official():
     tcr = session.get(dataset="rxr_official").dataset
     assert isinstance(tcr, pd.DataFrame)
     assert tcr.index[0] == dt.date(2000, 1, 31)
+    session.only_get = True
+    compare = session.get(dataset="rxr_official").dataset
+    assert tcr.round(4).equals(compare.round(4))
     remove_clutter()
 
 
@@ -53,6 +60,9 @@ def test_rxr_custom():
                   (tcr.index <= "2010-12-31")].mean().values.round(1)
     arr = np.array([100] * 5, dtype="float64")
     assert np.all(avs == arr)
+    session.only_get = True
+    compare = session.get(dataset="rxr_custom").dataset
+    assert tcr.round(4).equals(compare.round(4))
     remove_clutter()
 
 
@@ -63,13 +73,15 @@ def test_comm_index():
     assert isinstance(comm, pd.DataFrame)
     assert comm.index[0] == dt.date(2002, 1, 31)
     assert comm.iloc[0][0] == 100
+    session.only_get = True
+    compare = session.get(dataset="comm_index", only_get_prices=True).dataset
+    assert compare.round(4).equals(comm.round(4))
     remove_clutter()
 
 
 def test_lin():
     remove_clutter()
-    lin = national_accounts._lin_gdp(
-        update_loc="test-data", save_loc="test-data")
+    lin = national_accounts._lin_gdp(update_loc=TEST_DIR, save_loc=TEST_DIR)
     assert isinstance(lin, pd.DataFrame)
     assert (sorted(lin.columns.get_level_values("Moneda"))
             == sorted(["UYU", "USD"]))
@@ -87,6 +99,10 @@ def test_nxr_daily():
     compare = nxr.loc[previous_data.index].round(4)
     compare.columns = previous_data.columns
     assert compare.equals(previous_data.round(4))
+    session.only_get = True
+    compare = session.get(dataset="nxr_daily").dataset
+    assert compare.round(4).equals(nxr.round(4))
+    session.only_get = False
     remove_clutter()
 
 

@@ -147,6 +147,13 @@ def test_fiscal():
     with pytest.raises(ValueError):
         session.get_frequent(dataset="fiscal", aggregation="wrong")
     remove_clutter()
+    fiscal_ = session.get(dataset="fiscal").dataset
+    session.only_get = True
+    compare = session.get(dataset="fiscal").dataset
+    for v, v2 in zip(fiscal_.values(), compare.values()):
+        assert v.round(4).equals(v2.round(4))
+    remove_clutter()
+    session.only_get = False
 
 
 def test_labor():
@@ -158,6 +165,11 @@ def test_labor():
     labor_tfm = labor_tfm.iloc[:, [0, 1, 2]]
     remove_clutter()
     labor_ = session.get(dataset="labor").dataset
+    session.only_get = True
+    compare = session.get(dataset="labor").dataset
+    assert labor_.round(4).equals(compare.round(4))
+    remove_clutter()
+    session.only_get = False
     labor_trend, labor_sa = transform.decompose(labor_, outlier=True,
                                                 trading=True)
     labor_trend.columns = labor_tfm.columns
@@ -189,6 +201,11 @@ def test_wages():
     wages_tfm = full_wages.iloc[:, [0, 1, 2]]
     remove_clutter()
     wages_ = session.get(dataset="wages").dataset
+    session.only_get = True
+    compare = session.get(dataset="wages").dataset
+    assert wages_.round(4).equals(compare.round(4))
+    session.only_get = False
+    remove_clutter()
     wages_trend, wages_sa = transform.decompose(wages_, outlier=False,
                                                 trading=True)
     wages_trend = transform.base_index(wages_trend, start_date="2008-07-31")
