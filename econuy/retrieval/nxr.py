@@ -145,7 +145,10 @@ def get_daily(update_loc: Union[str, PathLike,
             name=name, index_label=index_label
         )
         metadata._set(previous_data)
-        start_date = previous_data.index[len(previous_data) - 1]
+        try:
+            start_date = previous_data.index[len(previous_data) - 1]
+        except IndexError:
+            pass
 
     today = dt.datetime.now() - dt.timedelta(days=1)
     runs = (today - start_date).days // 30
