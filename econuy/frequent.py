@@ -1,6 +1,6 @@
 from datetime import date
 from os import PathLike
-from typing import Union
+from typing import Union, Optional
 
 import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
@@ -82,7 +82,7 @@ def inflation(update_loc: Union[str, PathLike, Engine,
 
 
 def fiscal(aggregation: str = "gps", fss: bool = True,
-           unit: Union[str, None] = "gdp",
+           unit: Optional[str] = None,
            start_date: Union[str, date, None] = None,
            end_date: Union[str, date, None] = None,
            update_loc: Union[str, PathLike, Engine,
@@ -109,7 +109,7 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
         If ``True``, exclude the `FSS's <https://www.impo.com.uy/bases/decretos
         /71-2018/25>`_ income from gov't revenues and the FSS's
         interest revenues from gov't interest payments.
-    unit : {'gdp', 'usd', 'real', 'real_usd'}
+    unit : {None, 'gdp', 'usd', 'real', 'real_usd'}
         Unit in which data should be expressed. Possible values are ``real``,
         ``usd``, ``real_usd`` and ``gdp``. If ``None`` or another string is
         set, no unit calculations will be performed, rendering the data as is
