@@ -169,26 +169,31 @@ def get_daily(update_loc: Union[str, PathLike,
         data.append(pd.read_excel(url))
     except TypeError:
         pass
-    output = pd.concat(data, axis=0)
-    output = output.pivot(index="Fecha", columns="Moneda",
-                          values="Venta").rename_axis(None)
-    output.index = pd.to_datetime(output.index, format="%d/%m/%Y",
-                                  errors="coerce")
-    output.sort_index(inplace=True)
-    output.replace(",", ".", regex=True, inplace=True)
-    output.columns = ["Tipo de cambio US$, Cable"]
-    output = output.apply(pd.to_numeric, errors="coerce")
+    try:
+        output = pd.concat(data, axis=0)
+        output = output.pivot(index="Fecha", columns="Moneda",
+                              values="Venta").rename_axis(None)
+        output.index = pd.to_datetime(output.index, format="%d/%m/%Y",
+                                      errors="coerce")
+        output.sort_index(inplace=True)
+        output.replace(",", ".", regex=True, inplace=True)
+        output.columns = ["Tipo de cambio US$, Cable"]
+        output = output.apply(pd.to_numeric, errors="coerce")
 
-    metadata._set(output, area="Precios y salarios", currency="UYU/USD",
-                  inf_adj="No", unit="-", seas_adj="NSA",
-                  ts_type="-", cumperiods=1)
-    output.columns.set_levels(["-"], level=2, inplace=True)
+        metadata._set(output, area="Precios y salarios", currency="UYU/USD",
+                      inf_adj="No", unit="-", seas_adj="NSA",
+                      ts_type="-", cumperiods=1)
+        output.columns.set_levels(["-"], level=2, inplace=True)
 
-    if update_loc is not None:
-        output = pd.concat([previous_data, output])
+        if update_loc is not None:
+            output = pd.concat([previous_data, output])
 
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+        if save_loc is not None:
+            ops._io(operation="save", data_loc=save_loc,
+                    data=output, name=name, index_label=index_label)
+
+    except ValueError as e:
+        if str(e) == "No objects to concatenate":
+            return previous_data
 
     return output
