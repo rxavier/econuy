@@ -132,7 +132,8 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
                              Connection, None] = None,
              name: str = "lin_gdp",
              index_label: str = "index",
-             only_get: bool = True):
+             only_get: bool = True,
+             only_get_na: bool = True):
     """Get nominal GDP data in UYU and USD with forecasts.
 
     Update nominal GDP data for use in the `convert.convert_gdp()` function.
@@ -160,6 +161,9 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
         ``update_loc``.
+    only_get_na : bool, default True
+        If True, don't download national accounts data,
+        retrieve what is available from ``update_loc``.
 
     Returns
     -------
@@ -173,7 +177,7 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
         if not output.equals(pd.DataFrame()):
             return output
 
-    data_uyu = get(update_loc=update_loc, only_get=only_get)["gdp_cur_nsa"]
+    data_uyu = get(update_loc=update_loc, only_get=only_get_na)["gdp_cur_nsa"]
     data_uyu = transform.rolling(data_uyu, periods=4, operation="sum")
     data_usd = transform.convert_usd(data_uyu,
                                      update_loc=update_loc,
