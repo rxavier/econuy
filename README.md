@@ -9,7 +9,11 @@
 
 This project simplifies gathering and processing of Uruguay economic statistics. Data is retrieved from (mostly) government sources and can be transformed in several ways (converting to dollars, calculating rolling averages, resampling to other frequencies, etc.).
 
-If [this screenshot](https://i.imgur.com/Ku5OR0y.jpg) gives you anxiety, this package should be of interest:
+If [this screenshot](https://i.imgur.com/Ku5OR0y.jpg) gives you anxiety, this package should be of interest.
+
+# Webapp
+
+The econuy webapp is [hosted on Heroku](https://econuy.herokuapp.com/index).
 
 # Installation
 
@@ -41,7 +45,7 @@ from econuy.session import Session
 session = Session(location="econuy-data", revise_rows="nodup", only_get=False, log=1, inplace=False)
 ```
 
-The `Session()` object is initialized with the `data_dir`, `revise_rows`,  `only_get`, `dataset`, `log`, `logger` and `inplace` attributes.
+The `Session()` object is initialized with the `location`, `revise_rows`,  `only_get`, `dataset`, `log`, `logger` and `inplace` attributes.
 
 * `location` controls where data will be saved and where it will be looked for when updating. It defaults to "econuy-data", and will create the directory if it doesn't exist. It can also be a SQLAlchemy Connection or Engine object.
 * `revise_rows` controls the updating mechanism. It can be an integer, denoting how many rows from the data held on disk to replace with new data, or a string. In the latter case, `auto` indicates that the amount of rows to be replaced will be determined from the inferred data frequency, while `nodup` replaces existing data with new data for each time period found in both.
@@ -57,7 +61,7 @@ The `Session()` object is initialized with the `data_dir`, `revise_rows`,  `only
 
 Downloads the basic datasets. These are basically as provided by official sources, except various Pandas transformations are performed to render nice looking dataframes with appropiate column names, time indexes and properly defined values.
 
-Available options for the `dataset` argument are "cpi", "fiscal", "nxr", "naccounts", "labor", "rxr_custom", "rxr_official", "commodity_index", "reserves_chg" and "fx_ops". Most are self explanatory but all are explained in the documentation.
+Available options for the `dataset` argument are "cpi", "fiscal", "nxr_monthly", "nxr_daily", "naccounts", "labor", "rxr_custom", "rxr_official", "commodity_index" and "reserves_chg". Most are self explanatory but all are explained in the documentation.
 
 If you wanted CPI data:
 ```
@@ -101,9 +105,9 @@ Metadata for each dataset is held in Pandas MultiIndexes with the following:
 1) Indicator name
 2) Topic or area
 3) Frequency
-4) Unit/currency
-5) Current or inflation adjusted
-6) Base index period(s) (if applicable)
+4) Currency
+5) Inflation adjustment
+6) Unit
 7) Seasonal adjustment
 8) Type (stock or flow)
 9) Cumulative periods
@@ -131,6 +135,6 @@ This project is heavily based on getting data from online sources that could cha
 * ~~I now realize this project would greatly benefit from OOP and plan to implement it next.~~
 * ~~Tests.~~
 * CLI.
-* Website.
+* ~~Website.~~
 * Automating data updates.
 * Visualization.
