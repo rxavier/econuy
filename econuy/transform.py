@@ -409,7 +409,7 @@ x13._open_and_read = _new_open_and_read
 
 def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
               flavor: str = "both",
-              x13_binary: Union[str, PathLike] = "search",
+              x13_binary: Union[str, PathLike, None] = "search",
               search_parents: int = 1) -> Optional[Tuple[pd.DataFrame,
                                                          pd.DataFrame]]:
     """
@@ -432,9 +432,10 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
     flavor : {None, 'seas', 'trend'}
         Return both seasonally adjusted and trend dataframes or choose between
         them.
-    x13_binary: str or os.PathLike, default 'search'
+    x13_binary: str, os.PathLike or None, default 'search'
         Location of the X13 binary. If ``search`` is used, will attempt to find
-        the binary in the project structure.
+        the binary in the project structure. If ``None``, Statsmodels will
+        handle it.
     search_parents: int, default 1
         If ``search`` is chosen for ``x13_binary``, this parameter controls how
         many parent directories to go up before recursively searching for the
@@ -460,10 +461,12 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
                                search_term=search_term)
     elif isinstance(x13_binary, str):
         binary_path = x13_binary
-    else:
+    elif isinstance(x13_binary, PathLike):
         binary_path = Path(x13_binary).as_posix()
+    else:
+        binary_path = None
 
-    if path.isfile(binary_path) is False:
+    if isinstance(binary_path, str) and path.isfile(binary_path) is False:
         raise ValueError("X13 binary missing. Please refer to the README "
                          "for instructions on where to get binaries for "
                          "Windows and Unix, and how to compile it for macOS.")
