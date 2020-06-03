@@ -8,9 +8,9 @@ from typing import Union, Optional, Tuple
 import numpy as np
 import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
-from statsmodels.api import tsa
 from statsmodels.tools.sm_exceptions import X13Error
 from statsmodels.tsa import x13
+from statsmodels.tsa.x13 import x13_arima_analysis
 
 from econuy.retrieval import cpi, national_accounts, nxr
 from econuy.utils import metadata
@@ -410,8 +410,8 @@ x13._open_and_read = _new_open_and_read
 def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
               flavor: str = "both",
               x13_binary: Union[str, PathLike, None] = "search",
-              search_parents: int = 1) -> Optional[Tuple[pd.DataFrame,
-                                                         pd.DataFrame]]:
+              search_parents: int = 1,
+              **kwargs) -> Optional[Tuple[pd.DataFrame, pd.DataFrame]]:
     """
     Apply X13 decomposition. Return trend and seasonally adjusted dataframes.
 
@@ -440,6 +440,8 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
         If ``search`` is chosen for ``x13_binary``, this parameter controls how
         many parent directories to go up before recursively searching for the
         binary.
+    kwargs
+        Keyword arguments passed to statsmodels' ``x13_arima_analysis``.
 
     Returns
     -------
@@ -481,9 +483,9 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
     for column in range(len(df_proc.columns)):
         series = df_proc.iloc[:, column].dropna()
         try:
-            decomposition = tsa.x13_arima_analysis(
+            decomposition = x13_arima_analysis(
                 series, outlier=outlier, trading=trading, forecast_periods=0,
-                x12path=binary_path, prefer_x13=True
+                x12path=binary_path, prefer_x13=True, **kwargs
             )
             trend = decomposition.trend.reindex(df_proc.index)
             seas_adj = decomposition.seasadj.reindex(df_proc.index)
@@ -496,7 +498,7 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
                           f"parameters. Trying with outlier=False...")
                     return decompose(df=df, outlier=False, flavor=flavor,
                                      x13_binary=x13_binary,
-                                     search_parents=search_parents)
+                                     search_parents=search_parents, **kwargs)
 
                 except X13Error:
                     try:
@@ -506,7 +508,8 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
                         return decompose(df=df, outlier=False,
                                          trading=False, flavor=flavor,
                                          x13_binary=x13_binary,
-                                         search_parents=search_parents)
+                                         search_parents=search_parents,
+                                         **kwargs)
 
                     except X13Error:
                         print(f"X13 error found while processing "
@@ -523,7 +526,8 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
                           f"trading=False...")
                     return decompose(df=df, trading=False, flavor=flavor,
                                      x13_binary=x13_binary,
-                                     search_parents=search_parents)
+                                     search_parents=search_parents,
+                                     **kwargs)
 
                 except X13Error:
                     print(f"X13 error found while processing "
@@ -535,7 +539,7 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
                 try:
                     return decompose(df=df, flavor=flavor,
                                      x13_binary=x13_binary,
-                                     search_parents=search_parents)
+                                     search_parents=search_parents, **kwargs)
 
                 except X13Error:
                     print(f"X13 error found while processing "
