@@ -81,15 +81,19 @@ df = session.get_frequent(dataset="inflation")
 ### Session transformation methods
 
 These class methods take a `Session()` object with a valid dataset and allow performing preset transformation pipelines. For example:
-```
-df = session.get(dataset="nxr").decompose(flavor="trend", outlier=True, trading=False)
+
+```python
+from econuy.session import Session
+
+sess = Session(location="your/directory")
+df = sess.get(dataset="nxr").decompose(flavor="trend", method="x13", fallback="loess")
 ```
 will return a the Session object, with the dataset attribute holding the trend component of nominal exchange rate.
 
 Available transformation methods are 
 * `resample()` - resample data to a different frequency, taking into account whether data is of stock or flow type.
 * `chg_diff()` - calculate percent changes or differences for same period last year, last period or at annual rate.
-* `decompose()` - use X13-ARIMA to decompose series into trend and seasonally adjusted components.
+* `decompose()` - seasonally decompose series into trend and seasonally adjusted components.
 * `convert()` - convert to US dollars, constant prices or percent of GDP.
 * `base_index()` - set a period or window as 100, scale rest accordingly
 * `rolling()` - calculate rolling windows, either average or sum.
@@ -116,7 +120,7 @@ Metadata for each dataset is held in Pandas MultiIndexes with the following:
 
 ### X13 ARIMA binary
 
-If you want to use the `decompose()` method  you will need to supply the X13 binary (or place it somewhere reasonable and set `x13_binary="search"`). You can get it [from here](https://www.census.gov/srd/www/x13as/x13down_pc.html) for Windows or [from here](https://www.census.gov/srd/www/x13as/x13down_unix.html) for UNIX systems. For macOS you can compile it using the instructions found [here](https://github.com/christophsax/seasonal/wiki/Compiling-X-13ARIMA-SEATS-from-Source-for-OS-X) (choose the non-html version) or use my version (working under macOS Catalina) from [here](https://drive.google.com/open?id=1HxFoi57TWaBMV90NoOAbM8hWdZS9uoz_).
+If you want to use the `decompose()` functions with ``method="x13"``  you will need to supply the X13 binary (or place it somewhere reasonable and set `x13_binary="search"`). You can get it [from here](https://www.census.gov/srd/www/x13as/x13down_pc.html) for Windows or [from here](https://www.census.gov/srd/www/x13as/x13down_unix.html) for UNIX systems. For macOS you can compile it using the instructions found [here](https://github.com/christophsax/seasonal/wiki/Compiling-X-13ARIMA-SEATS-from-Source-for-OS-X) (choose the non-html version) or use my version (working under macOS Catalina) from [here](https://drive.google.com/open?id=1HxFoi57TWaBMV90NoOAbM8hWdZS9uoz_).
 
 ### unrar libraries
 
