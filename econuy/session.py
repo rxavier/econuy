@@ -372,30 +372,47 @@ class Session(object):
                            logger=self.logger,
                            inplace=self.inplace)
 
-    def decompose(self, flavor: str = "both",
+    def decompose(self, flavor: str = "both", method: str = "x13",
+                  force_x13: bool = False, fallback: str = "loess",
                   trading: bool = True, outlier: bool = True,
                   x13_binary: Union[str, PathLike] = "search",
-                  search_parents: int = 1):
+                  search_parents: int = 1, **kwargs):
         """
-        Use `X-13 ARIMA <https://www.census.gov/srd/www/x13as/>`_ to
-        decompose time series.
+        Apply seasonal decomposition.
 
         Parameters
         ----------
-        flavor : {'both', 'trend', 'seas'}
-            Whether to get the trend component, the seasonally adjusted series
-            or both.
+        flavor : {'both', 'seas', 'trend'}
+            Return both seasonally adjusted and trend dataframes or choose between
+            them.
+        method : {'x13', 'loess', 'ma'}
+            Decomposition method. ``X13`` refers to X13 ARIMA from the US Census,
+            ``loess`` refers to Loess decomposition and ``ma`` refers to moving
+            average decomposition, in all cases as implemented by
+            `statsmodels <https://www.statsmodels.org/dev/tsa.html>`_.
+        force_x13 : bool, default False
+            Whether to try different ``outlier`` and ``trading`` parameters
+            in statsmodels' `x13 arima analysis <https://www.statsmodels.org/dev/
+            generated/statsmodels.tsa.x13.x13_arima_analysis.html>`_ for each
+            series that fails. If ``False``, jump to the ``fallback`` method for
+            the whole dataframe at the first error.
+        fallback : {'loess', 'ma'}
+            Decomposition method to fall back to if ``method="x13"`` fails and
+            ``force_x13=False``.
         trading : bool, default True
-            Whether to automatically detect trading days.
+            Whether to automatically detect trading days in X13 ARIMA.
         outlier : bool, default True
-            Whether to automatically detect outliers.
-        x13_binary: str or os.PathLike, default 'search'
-            Location of the X13 binary. If ``search`` is used, will attempt to
-            find the binary in the project structure.
+            Whether to automatically detect outliers in X13 ARIMA.
+        x13_binary: str, os.PathLike or None, default 'search'
+            Location of the X13 binary. If ``search`` is used, will attempt to find
+            the binary in the project structure. If ``None``, Statsmodels will
+            handle it.
         search_parents: int, default 1
-            If ``search`` is chosen for ``x13_binary``, this parameter controls
-            how many parent directories to go up before recursively searching
-            for the binary.
+            If ``x13_binary=search``, this parameter controls how many parent
+            directories to go up before recursively searching for the binary.
+        kwargs
+            Keyword arguments passed to statsmodels' ``x13_arima_analysis``,
+            ``STL`` and ``seasonal_decompose``.
 
         Raises
         ------
@@ -412,6 +429,9 @@ class Session(object):
             for key, value in self.dataset.items():
                 table = transform.decompose(value,
                                             flavor=flavor,
+                                            method=method,
+                                            force_x13=force_x13,
+                                            fallback=fallback,
                                             trading=trading,
                                             outlier=outlier,
                                             x13_binary=x13_binary,
@@ -420,12 +440,15 @@ class Session(object):
         else:
             output = transform.decompose(self.dataset,
                                          flavor=flavor,
+                                         method=method,
+                                         force_x13=force_x13,
+                                         fallback=fallback,
                                          trading=trading,
                                          outlier=outlier,
                                          x13_binary=x13_binary,
                                          search_parents=search_parents)
         self.logger.info(f"Applied 'decompose' transformation with "
-                         f"'{flavor}' flavor.")
+                         f"'{method}' method and '{flavor}' flavor.")
         if self.inplace is True:
             self.dataset = output
             return self

@@ -8,9 +8,10 @@ from typing import Union, Optional, Tuple
 import numpy as np
 import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
-from statsmodels.api import tsa
 from statsmodels.tools.sm_exceptions import X13Error
 from statsmodels.tsa import x13
+from statsmodels.tsa.x13 import x13_arima_analysis
+from statsmodels.tsa.seasonal import STL, seasonal_decompose
 
 from econuy.retrieval import cpi, national_accounts, nxr
 from econuy.utils import metadata
@@ -407,39 +408,57 @@ def _new_open_and_read(fname):
 x13._open_and_read = _new_open_and_read
 
 
-def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
-              flavor: str = "both",
+def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
+              force_x13: bool = False, fallback: str = "loess",
+              outlier: bool = True, trading: bool = True,
               x13_binary: Union[str, PathLike, None] = "search",
-              search_parents: int = 1) -> Optional[Tuple[pd.DataFrame,
-                                                         pd.DataFrame]]:
+              search_parents: int = 1,
+              **kwargs) -> Optional[Tuple[pd.DataFrame, pd.DataFrame]]:
     """
-    Apply X13 decomposition. Return trend and seasonally adjusted dataframes.
+    Apply seasonal decomposition.
 
-    Decompose the series in a Pandas dataframe using the US Census X13
-    methodology. Will try different combinations of the ``trading`` and
-    ``outlier`` arguments if an X13 error is raised. Requires providing the X13
-    binary. Please refer to the README for instructions on where to get this
+    Decompose the series in a Pandas dataframe using either X13 ARIMA, Loess
+    or moving averages. X13 can be forced in case of failure by alternating
+    the underlying function's parameters. If not, it will fall back to one of
+    the other methods. If the X13 method is chosen, the X13 binary has to be
+    provided. Please refer to the README for instructions on where to get this
     binary.
 
     Parameters
     ----------
     df : pd.DataFrame
         Input dataframe.
-    trading : bool, default True
-        Whether to automatically detect trading days.
-    outlier : bool, default True
-        Whether to automatically detect outliers.
-    flavor : {None, 'seas', 'trend'}
+    flavor : {'both', 'seas', 'trend'}
         Return both seasonally adjusted and trend dataframes or choose between
         them.
+    method : {'x13', 'loess', 'ma'}
+        Decomposition method. ``X13`` refers to X13 ARIMA from the US Census,
+        ``loess`` refers to Loess decomposition and ``ma`` refers to moving
+        average decomposition, in all cases as implemented by
+        `statsmodels <https://www.statsmodels.org/dev/tsa.html>`_.
+    force_x13 : bool, default False
+        Whether to try different ``outlier`` and ``trading`` parameters
+        in statsmodels' `x13 arima analysis <https://www.statsmodels.org/dev/
+        generated/statsmodels.tsa.x13.x13_arima_analysis.html>`_ for each
+        series that fails. If ``False``, jump to the ``fallback`` method for
+        the whole dataframe at the first error.
+    fallback : {'loess', 'ma'}
+        Decomposition method to fall back to if ``method="x13"`` fails and
+        ``force_x13=False``.
+    trading : bool, default True
+        Whether to automatically detect trading days in X13 ARIMA.
+    outlier : bool, default True
+        Whether to automatically detect outliers in X13 ARIMA.
     x13_binary: str, os.PathLike or None, default 'search'
         Location of the X13 binary. If ``search`` is used, will attempt to find
         the binary in the project structure. If ``None``, Statsmodels will
         handle it.
     search_parents: int, default 1
-        If ``search`` is chosen for ``x13_binary``, this parameter controls how
-        many parent directories to go up before recursively searching for the
-        binary.
+        If ``x13_binary=search``, this parameter controls how many parent
+        directories to go up before recursively searching for the binary.
+    kwargs
+        Keyword arguments passed to statsmodels' ``x13_arima_analysis``,
+        ``STL`` and ``seasonal_decompose``.
 
     Returns
     -------
@@ -453,110 +472,148 @@ def decompose(df: pd.DataFrame, trading: bool = True, outlier: bool = True,
         If the path provided for the X13 binary does not point to a file.
 
     """
-    if x13_binary == "search":
-        search_term = "x13as"
-        if platform.system() == "Windows":
-            search_term += ".exe"
-        binary_path = _rsearch(dir_file=getcwd(), n=search_parents,
-                               search_term=search_term)
-    elif isinstance(x13_binary, str):
-        binary_path = x13_binary
-    elif isinstance(x13_binary, PathLike):
-        binary_path = Path(x13_binary).as_posix()
-    else:
-        binary_path = None
-
-    if isinstance(binary_path, str) and path.isfile(binary_path) is False:
-        raise ValueError("X13 binary missing. Please refer to the README "
-                         "for instructions on where to get binaries for "
-                         "Windows and Unix, and how to compile it for macOS.")
+    if method not in ["x13", "loess", "ma"]:
+        raise ValueError("method can only be 'x13', 'loess' or 'ma'.")
+    if fallback not in ["loess", "ma"]:
+        raise ValueError("method can only be 'loess' or 'ma'.")
 
     df_proc = df.copy()
     old_columns = df_proc.columns
     df_proc.columns = df_proc.columns.get_level_values(level=0)
     df_proc.index = pd.to_datetime(df_proc.index, errors="coerce")
 
+    binary_path = None
+    if method == "x13":
+        if x13_binary == "search":
+            search_term = "x13as"
+            if platform.system() == "Windows":
+                search_term += ".exe"
+            binary_path = _rsearch(dir_file=getcwd(), n=search_parents,
+                                   search_term=search_term)
+        elif isinstance(x13_binary, str):
+            binary_path = x13_binary
+        elif isinstance(x13_binary, PathLike):
+            binary_path = Path(x13_binary).as_posix()
+        else:
+            binary_path = None
+        if isinstance(binary_path, str) and path.isfile(
+                binary_path) is False:
+            raise ValueError(
+                "X13 binary missing. Please refer to the README "
+                "for instructions on where to get binaries for "
+                "Windows and Unix, and how to compile it for "
+                "macOS.")
     trends = []
     seas_adjs = []
-    for column in range(len(df_proc.columns)):
-        series = df_proc.iloc[:, column].dropna()
-        try:
-            decomposition = tsa.x13_arima_analysis(
-                series, outlier=outlier, trading=trading, forecast_periods=0,
-                x12path=binary_path, prefer_x13=True
-            )
-            trend = decomposition.trend.reindex(df_proc.index)
-            seas_adj = decomposition.seasadj.reindex(df_proc.index)
+    out_of_loop = False
+    if method == "x13":
+        for column in range(len(df_proc.columns)):
+            series = df_proc.iloc[:, column].dropna()
+            try:
+                decomposition = x13_arima_analysis(
+                    series, outlier=outlier, trading=trading,
+                    forecast_periods=0,
+                    x12path=binary_path, prefer_x13=True, **kwargs
+                )
+                trend = decomposition.trend.reindex(df_proc.index)
+                seas_adj = decomposition.seasadj.reindex(df_proc.index)
+                trends.append(trend)
+                seas_adjs.append(seas_adj)
 
-        except X13Error:
-            if outlier is True:
-                try:
-                    print(f"X13 error found while processing "
-                          f"'{df_proc.columns[column]}' with selected "
-                          f"parameters. Trying with outlier=False...")
-                    return decompose(df=df, outlier=False, flavor=flavor,
-                                     x13_binary=x13_binary,
-                                     search_parents=search_parents)
+            except X13Error:
+                if force_x13 is True:
+                    if outlier is True:
+                        try:
+                            print(f"X13 error found while processing "
+                                  f"'{df_proc.columns[column]}' with selected "
+                                  f"parameters. Trying with outlier=False...")
+                            return decompose(df=df, method=method,
+                                             outlier=False,
+                                             flavor=flavor, fallback=fallback,
+                                             force_x13=force_x13,
+                                             x13_binary=x13_binary,
+                                             search_parents=search_parents,
+                                             **kwargs)
+                        except X13Error:
+                            try:
+                                print(f"X13 error found while processing "
+                                      f"'{df_proc.columns[column]}' with "
+                                      f"trading=True. Trying with "
+                                      f"trading=False.")
+                                return decompose(df=df, method=method,
+                                                 outlier=False,  trading=False,
+                                                 flavor=flavor,
+                                                 fallback=fallback,
+                                                 force_x13=force_x13,
+                                                 x13_binary=x13_binary,
+                                                 search_parents=search_parents,
+                                                 **kwargs)
+                            except X13Error:
+                                print(f"X13 error found while processing "
+                                      f"'{df_proc.columns[column]}'. "
+                                      f"Filling with nan.")
+                                trend = pd.Series(np.nan, index=df_proc.index)
+                                seas_adj = pd.Series(np.nan,
+                                                     index=df_proc.index)
+                    elif trading is True:
+                        try:
+                            print(f"X13 error found while processing "
+                                  f"'{df_proc.columns[column]}' "
+                                  f"with trading=True. Trying with "
+                                  f"trading=False...")
+                            return decompose(df=df, method=method,
+                                             trading=False, flavor=flavor,
+                                             fallback=fallback,
+                                             force_x13=force_x13,
+                                             x13_binary=x13_binary,
+                                             search_parents=search_parents,
+                                             **kwargs)
+                        except X13Error:
+                            print(f"X13 error found while processing "
+                                  f"'{df_proc.columns[column]}'. Filling "
+                                  f"with nan.")
+                            trend = pd.Series(np.nan, index=df_proc.index)
+                            seas_adj = pd.Series(np.nan, index=df_proc.index)
 
-                except X13Error:
-                    try:
-                        print(f"X13 error found while processing "
-                              f"'{df_proc.columns[column]}' with "
-                              f"trading=True. Trying with trading=False...")
-                        return decompose(df=df, outlier=False,
-                                         trading=False, flavor=flavor,
-                                         x13_binary=x13_binary,
-                                         search_parents=search_parents)
+                    trends.append(trend)
+                    seas_adjs.append(seas_adj)
 
-                    except X13Error:
-                        print(f"X13 error found while processing "
-                              f"'{df_proc.columns[column]}'. "
-                              f"Filling with nan.")
-                        trend = pd.Series(np.nan, index=df_proc.index)
-                        seas_adj = pd.Series(np.nan, index=df_proc.index)
+                else:
+                    out_of_loop = True
+                    break
 
-            elif trading is True:
-                try:
-                    print(f"X13 error found while processing "
-                          f"'{df_proc.columns[column]}' "
-                          f"with trading=True. Trying with "
-                          f"trading=False...")
-                    return decompose(df=df, trading=False, flavor=flavor,
-                                     x13_binary=x13_binary,
-                                     search_parents=search_parents)
+        if out_of_loop is True:
+            trends = []
+            seas_adjs = []
+            for column in range(len(df_proc.columns)):
+                series = df_proc.iloc[:, column].dropna()
+                if fallback == "loess":
+                    res = STL(series).fit()
+                elif fallback == "ma":
+                    res = seasonal_decompose(series, extrapolate_trend="freq")
+                trends.append(res.trend.reindex(df_proc.index))
+                seas_adjs.append(res.seasonal.reindex(df_proc.index))
 
-                except X13Error:
-                    print(f"X13 error found while processing "
-                          f"'{df_proc.columns[column]}'. Filling with nan.")
-                    trend = pd.Series(np.nan, index=df_proc.index)
-                    seas_adj = pd.Series(np.nan, index=df_proc.index)
-
-            else:
-                try:
-                    return decompose(df=df, flavor=flavor,
-                                     x13_binary=x13_binary,
-                                     search_parents=search_parents)
-
-                except X13Error:
-                    print(f"X13 error found while processing "
-                          f"'{df_proc.columns[column]}'. "
-                          f"Filling with nan.")
-                    trend = pd.Series(np.nan, index=df_proc.index)
-                    seas_adj = pd.Series(np.nan, index=df_proc.index)
-
-        trends.append(trend)
-        seas_adjs.append(seas_adj)
+    if method == "loess":
+        for column in range(len(df_proc.columns)):
+            series = df_proc.iloc[:, column].dropna()
+            res = STL(series, **kwargs).fit()
+            trends.append(res.trend.reindex(df_proc.index))
+            seas_adjs.append(res.seasonal.reindex(df_proc.index))
+    if method == "ma":
+        for column in range(len(df_proc.columns)):
+            series = df_proc.iloc[:, column].dropna()
+            res = seasonal_decompose(series, extrapolate_trend="freq",
+                                     **kwargs)
+            trends.append(res.trend.reindex(df_proc.index))
+            seas_adjs.append(res.seasonal.reindex(df_proc.index))
 
     trends = pd.concat(trends, axis=1)
     seas_adjs = pd.concat(seas_adjs, axis=1)
-
     trends.columns = old_columns
     seas_adjs.columns = old_columns
-
     metadata._set(trends, seas_adj="Tendencia")
-
     metadata._set(seas_adjs, seas_adj="SA")
-
     output = pd.DataFrame()
     if flavor == "both":
         output = (trends, seas_adjs)
