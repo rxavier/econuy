@@ -39,10 +39,10 @@ python setup.py install
 
 This is the recommended entry point for the package. It allows setting up the common behavior for downloads, and holds the current working dataset.
 
-```
+```python
 from econuy.session import Session
 
-session = Session(location="econuy-data", revise_rows="nodup", only_get=False, log=1, inplace=False)
+sess = Session(location="your/directory", revise_rows="nodup", only_get=False, log=1, inplace=False)
 ```
 
 The `Session()` object is initialized with the `location`, `revise_rows`,  `only_get`, `dataset`, `log`, `logger` and `inplace` attributes.
@@ -64,8 +64,11 @@ Downloads the basic datasets. These are basically as provided by official source
 Available options for the `dataset` argument are "cpi", "fiscal", "nxr_monthly", "nxr_daily", "naccounts", "labor", "rxr_custom", "rxr_official", "commodity_index" and "reserves_chg". Most are self explanatory but all are explained in the documentation.
 
 If you wanted CPI data:
-```
-df = session.get(dataset="cpi").dataset
+```python
+from econuy.session import Session
+
+sess = Session(location="your/directory")
+df = sess.get(dataset="cpi").dataset
 ```
 Note that the previous code block accessed the `dataset` attribute in order to get a dataframe. Alternatively, one could also call the `final()` method after calling `get()`.
 
@@ -73,9 +76,16 @@ Note that the previous code block accessed the `dataset` attribute in order to g
 
 Gives access to predefined data pipelines that output frequently used data. These are based on the datasets provided by `get()`, but are transformed to render data that you might find more immediately useful.
 
-For example, the following downloads CPI data, calculates annual inflation (pct change from a year ago), monthly inflation, and seasonally adjusted and trend monthly inflation.
-```
-df = session.get_frequent(dataset="inflation")
+For example, the following downloads CPI data, calculates annual inflation (pct change from a year ago), monthly inflation, and seasonally adjusted and trend monthly inflation. Also, it uses a SQL database for data updating and saving.
+```python
+from sqlalchemy import create_engine
+
+from econuy.session import Session
+
+eng = create_engine("dialect+driver://user:pwd@host:port/database")
+
+sess = Session(location=eng)
+df = sess.get_frequent(dataset="inflation")
 ```
 
 ### Session transformation methods
