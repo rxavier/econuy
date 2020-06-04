@@ -592,21 +592,21 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
                 elif fallback == "ma":
                     res = seasonal_decompose(series, extrapolate_trend="freq")
                 trends.append(res.trend.reindex(df_proc.index))
-                seas_adjs.append(res.seasonal.reindex(df_proc.index))
+                seas_adjs.append(series - res.seasonal.reindex(df_proc.index))
 
     if method == "loess":
         for column in range(len(df_proc.columns)):
             series = df_proc.iloc[:, column].dropna()
             res = STL(series, **kwargs).fit()
             trends.append(res.trend.reindex(df_proc.index))
-            seas_adjs.append(res.seasonal.reindex(df_proc.index))
+            seas_adjs.append(series - res.seasonal.reindex(df_proc.index))
     if method == "ma":
         for column in range(len(df_proc.columns)):
             series = df_proc.iloc[:, column].dropna()
             res = seasonal_decompose(series, extrapolate_trend="freq",
                                      **kwargs)
             trends.append(res.trend.reindex(df_proc.index))
-            seas_adjs.append(res.seasonal.reindex(df_proc.index))
+            seas_adjs.append(series - res.seasonal.reindex(df_proc.index))
 
     trends = pd.concat(trends, axis=1)
     seas_adjs = pd.concat(seas_adjs, axis=1)
