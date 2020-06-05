@@ -555,7 +555,7 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
                                           "successful. Filling with NaN.",
                                           UserWarning)
                             trends = pd.DataFrame(
-                                data=np.full([259, 59], np.nan),
+                                data=np.full(df_proc.shape, np.nan),
                                 index=df_proc.index, columns=df_proc.columns
                             )
                             seas_adjs = trends.copy()
@@ -577,7 +577,7 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
                                       "successful. Filling with NaN.",
                                       UserWarning)
                         trends = pd.DataFrame(
-                            data=np.full([259, 59], np.nan),
+                            data=np.full(df_proc.shape, np.nan),
                             index=df_proc.index, columns=df_proc.columns
                         )
                         seas_adjs = trends.copy()
