@@ -40,7 +40,7 @@ python setup.py install
 This is the recommended entry point for the package. It allows setting up the common behavior for downloads, and holds the current working dataset.
 
 ```python
-from econuy.session import Session
+from econuy import Session
 
 sess = Session(location="your/directory", revise_rows="nodup", only_get=False, log=1, inplace=False)
 ```
@@ -65,7 +65,7 @@ Available options for the `dataset` argument are "cpi", "fiscal", "nxr_monthly",
 
 If you wanted CPI data:
 ```python
-from econuy.session import Session
+from econuy import Session
 
 sess = Session(location="your/directory")
 df = sess.get(dataset="cpi").dataset
@@ -93,7 +93,7 @@ df = sess.get_frequent(dataset="inflation")
 These class methods take a `Session()` object with a valid dataset and allow performing preset transformation pipelines. For example:
 
 ```python
-from econuy.session import Session
+from econuy import Session
 
 sess = Session(location="your/directory")
 df = sess.get(dataset="nxr").decompose(flavor="trend", method="x13", fallback="loess")
