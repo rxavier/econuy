@@ -174,7 +174,8 @@ def test_decompose():
     df["Real"] = df["Real"] + noise
     session = Session(location=TEST_CON, dataset=df[["Real"]])
     trend, seas = session.decompose(flavor="both", trading=True,
-                                    outlier=True, fallback="loess").dataset
+                                    outlier=True, fallback="loess",
+                                    ignore_warnings=False).dataset
     trend.columns, seas.columns = ["Trend"], ["Seas"]
     out = pd.concat([df, trend, seas], axis=1)
     std = out.std()
@@ -190,7 +191,8 @@ def test_decompose():
     assert std["Real"] >= std["Trend"]
     session = Session(location=TEST_CON, dataset=df[["Real"]])
     trend, seas = session.decompose(flavor="both", trading=False,
-                                    outlier=False, fallback="ma").dataset
+                                    outlier=False, fallback="ma",
+                                    ignore_warnings=False).dataset
     trend.columns, seas.columns = ["Trend"], ["Seas"]
     out = pd.concat([df, trend, seas], axis=1)
     std = out.std()
@@ -208,7 +210,8 @@ def test_decompose():
     trend = session.decompose(flavor="trend", trading=True,
                               outlier=False, force_x13=True).dataset
     seas = session.decompose(flavor="seas", trading=True,
-                             outlier=False, force_x13=True).dataset
+                             outlier=False, force_x13=True,
+                             ignore_warnings=False).dataset
     trend.columns, seas.columns = ["Trend"], ["Seas"]
     out = pd.concat([df, trend, seas], axis=1)
     std = out.std()

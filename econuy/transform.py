@@ -412,7 +412,7 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
               force_x13: bool = False, fallback: str = "loess",
               outlier: bool = True, trading: bool = True,
               x13_binary: Union[str, PathLike, None] = "search",
-              search_parents: int = 1,
+              search_parents: int = 1, ignore_warnings: bool = True,
               **kwargs) -> Optional[Tuple[pd.DataFrame, pd.DataFrame]]:
     """
     Apply seasonal decomposition.
@@ -457,6 +457,7 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
         If ``x13_binary=search``, this parameter controls how many parent
         directories to go up before recursively searching for the binary.
     ignore_warnings : bool, default True
+        Whether to suppress X13Warnings from statsmodels.
     kwargs
         Keyword arguments passed to statsmodels' ``x13_arima_analysis``,
         ``STL`` and ``seasonal_decompose``.
@@ -507,11 +508,17 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
 
     if method == "x13":
         try:
-            results = df_proc.apply(
-                lambda x: x13a(x.dropna(), outlier=outlier,
-                               trading=trading, x12path=binary_path,
-                               prefer_x13=True, **kwargs)
-            )
+            with warnings.catch_warnings():
+                if ignore_warnings is True:
+                    action = "ignore"
+                else:
+                    action = "default"
+                warnings.filterwarnings(action=action, category=X13Warning)
+                results = df_proc.apply(
+                    lambda x: x13a(x.dropna(), outlier=outlier,
+                                   trading=trading, x12path=binary_path,
+                                   prefer_x13=True, **kwargs)
+                )
             trends = results.apply(lambda x: x.trend.reindex(df_proc.index)).T
             seas_adjs = results.apply(lambda x: x.seasadj.
                                       reindex(df_proc.index)).T

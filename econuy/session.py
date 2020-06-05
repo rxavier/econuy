@@ -376,7 +376,8 @@ class Session(object):
                   force_x13: bool = False, fallback: str = "loess",
                   trading: bool = True, outlier: bool = True,
                   x13_binary: Union[str, PathLike] = "search",
-                  search_parents: int = 1, **kwargs):
+                  search_parents: int = 1, ignore_warnings: bool = True,
+                  **kwargs):
         """
         Apply seasonal decomposition.
 
@@ -410,6 +411,8 @@ class Session(object):
         search_parents: int, default 1
             If ``x13_binary=search``, this parameter controls how many parent
             directories to go up before recursively searching for the binary.
+        ignore_warnings : bool, default True
+            Whether to suppress X13Warnings from statsmodels.
         kwargs
             Keyword arguments passed to statsmodels' ``x13_arima_analysis``,
             ``STL`` and ``seasonal_decompose``.
@@ -435,7 +438,9 @@ class Session(object):
                                             trading=trading,
                                             outlier=outlier,
                                             x13_binary=x13_binary,
-                                            search_parents=search_parents)
+                                            search_parents=search_parents,
+                                            ignore_warnings=ignore_warnings,
+                                            **kwargs)
                 output.update({key: table})
         else:
             output = transform.decompose(self.dataset,
@@ -446,7 +451,9 @@ class Session(object):
                                          trading=trading,
                                          outlier=outlier,
                                          x13_binary=x13_binary,
-                                         search_parents=search_parents)
+                                         search_parents=search_parents,
+                                         ignore_warnings=ignore_warnings,
+                                         **kwargs)
         self.logger.info(f"Applied 'decompose' transformation with "
                          f"'{method}' method and '{flavor}' flavor.")
         if self.inplace is True:
