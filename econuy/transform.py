@@ -600,7 +600,7 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
     else:
         if method == "loess":
             results = df_proc.apply(
-                lambda x: STL(x).fit(), result_type="expand")
+                lambda x: STL(x.dropna()).fit(), result_type="expand")
         if method == "ma":
             results = df_proc.apply(
                 lambda x: seasonal_decompose(x.dropna(),
