@@ -80,7 +80,7 @@ For example, the following downloads CPI data, calculates annual inflation (pct 
 ```python
 from sqlalchemy import create_engine
 
-from econuy.session import Session
+from econuy import Session
 
 eng = create_engine("dialect+driver://user:pwd@host:port/database")
 
