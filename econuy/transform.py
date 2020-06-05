@@ -8,7 +8,7 @@ from typing import Union, Optional, Tuple
 import numpy as np
 import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
-from statsmodels.tools.sm_exceptions import X13Error
+from statsmodels.tools.sm_exceptions import X13Error, X13Warning
 from statsmodels.tsa import x13
 from statsmodels.tsa.x13 import x13_arima_analysis as x13a
 from statsmodels.tsa.seasonal import STL, seasonal_decompose
@@ -456,6 +456,7 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
     search_parents: int, default 1
         If ``x13_binary=search``, this parameter controls how many parent
         directories to go up before recursively searching for the binary.
+    ignore_warnings : bool, default True
     kwargs
         Keyword arguments passed to statsmodels' ``x13_arima_analysis``,
         ``STL`` and ``seasonal_decompose``.
@@ -519,8 +520,9 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
             if force_x13 is True:
                 if outlier is True:
                     try:
-                        print("X13 error found with selected "
-                              "parameters. Trying with outlier=False.")
+                        warnings.warn("X13 error found with selected "
+                                      "parameters. Trying with outlier=False.",
+                                      UserWarning)
                         return decompose(df=df, method=method,
                                          outlier=False,
                                          flavor=flavor, fallback=fallback,
@@ -530,8 +532,9 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
                                          **kwargs)
                     except X13Error:
                         try:
-                            print("X13 error found with trading=True. "
-                                  "Trying with trading=False.")
+                            warnings.warn("X13 error found with trading=True. "
+                                          "Trying with trading=False.",
+                                          UserWarning)
                             return decompose(df=df, method=method,
                                              outlier=False, trading=False,
                                              flavor=flavor,
@@ -541,8 +544,9 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
                                              search_parents=search_parents,
                                              **kwargs)
                         except X13Error:
-                            print("No combination of parameters successful. "
-                                  "Filling with NaN.")
+                            warnings.warn("No combination of parameters "
+                                          "successful. Filling with NaN.",
+                                          UserWarning)
                             trends = pd.DataFrame(
                                 data=np.full([259, 59], np.nan),
                                 index=df_proc.index, columns=df_proc.columns
@@ -551,8 +555,9 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
 
                 elif trading is True:
                     try:
-                        print("X13 error found with trading=True. Trying "
-                              "with trading=False...")
+                        warnings.warn("X13 error found with trading=True. "
+                                      "Trying with trading=False...",
+                                      UserWarning)
                         return decompose(df=df, method=method,
                                          trading=False, flavor=flavor,
                                          fallback=fallback,
@@ -561,8 +566,9 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
                                          search_parents=search_parents,
                                          **kwargs)
                     except X13Error:
-                        print("No combination of parameters successful. "
-                              "Filling with NaN.")
+                        warnings.warn("No combination of parameters "
+                                      "successful. Filling with NaN.",
+                                      UserWarning)
                         trends = pd.DataFrame(
                             data=np.full([259, 59], np.nan),
                             index=df_proc.index, columns=df_proc.columns
