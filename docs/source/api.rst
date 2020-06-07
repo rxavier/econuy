@@ -30,6 +30,10 @@ Retrieval functions
    :members:
    :undoc-members:
    :show-inheritance:
+.. automodule:: econuy.retrieval.trade
+   :members:
+   :undoc-members:
+   :show-inheritance:
 .. automodule:: econuy.retrieval.rxr
    :members:
    :undoc-members:
