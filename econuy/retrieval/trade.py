@@ -1,14 +1,21 @@
-from typing import Union, Dict
 from os import PathLike
+from typing import Union, Dict
+from urllib.error import URLError, HTTPError
 
 import pandas as pd
+from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from sqlalchemy.engine.base import Connection, Engine
 
-from econuy.utils.lstrings import trade_urls
 from econuy.utils import ops, metadata
+from econuy.utils.lstrings import trade_urls
 
 
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
 def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
