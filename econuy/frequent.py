@@ -6,7 +6,7 @@ import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
-from econuy.retrieval import nxr, cpi, fiscal_accounts, labor
+from econuy.retrieval import nxr, cpi, fiscal_accounts, labor, trade
 from econuy.utils import metadata, ops
 from econuy.utils.lstrings import fiscal_metadata, wap_url
 
@@ -438,3 +438,54 @@ def labor_real_wages(seas_adj: Union[str, None] = None,
                 data=output, name=name, index_label=index_label)
 
     return output
+
+
+def trade_balance(update_loc: Union[str, PathLike, Engine,
+                                    Connection, None] = None,
+                  save_loc: Union[str, PathLike, Engine,
+                                  Connection, None] = None,
+                  name: str = "tfm_tb",
+                  index_label: str = "index",
+                  only_get: bool = True) -> pd.DataFrame:
+    """
+    Get real wages. Allow choosing seasonal adjustment.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'tfm_tb'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default True
+        If True, don't download data, retrieve what is available from
+        ``update_loc`` for the commodity index.
+
+    Returns
+    -------
+    Net trade balance value by region/country : pd.DataFrame
+
+    """
+    data = trade.get(update_loc=update_loc, save_loc=save_loc,
+                     only_get=only_get)
+    exports = data["tb_x_dest_val"].rename(columns=
+                                           {"Total exportaciones": "Total"})
+    imports = data["tb_m_orig_val"].rename(columns=
+                                           {"Total importaciones": "Total"})
+    net = exports - imports
+
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=net, name=name, index_label=index_label)
+
+    return net

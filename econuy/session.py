@@ -9,7 +9,7 @@ from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import frequent, transform
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
-                              labor, rxr, commodity_index, reserves)
+                              labor, rxr, commodity_index, reserves, trade)
 from econuy.utils import logutil, ops
 
 
@@ -127,7 +127,7 @@ class Session(object):
         ----------
         dataset : {'cpi', 'nxr_monthly', 'nxr_daily', 'fiscal', 'naccounts', \
                 'labor', 'wages', 'comm_index', 'rxr_custom', 'rxr_official', \
-                'reserves_changes'}
+                'reserves_changes', 'trade'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -226,6 +226,12 @@ class Session(object):
                                           save_loc=save_loc,
                                           only_get=self.only_get,
                                           **kwargs)
+        elif dataset == "trade":
+            output = trade.get(update_loc=update_loc,
+                               revise_rows=self.revise_rows,
+                               save_loc=save_loc,
+                               only_get=self.only_get,
+                               **kwargs)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 
@@ -244,7 +250,7 @@ class Session(object):
 
         Parameters
         ----------
-        dataset : {'inflation', 'fiscal', 'labor', 'real_wages'}
+        dataset : {'inflation', 'fiscal', 'labor', 'real_wages', 'net_trade'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -299,6 +305,11 @@ class Session(object):
                                                save_loc=save_loc,
                                                only_get=self.only_get,
                                                **kwargs)
+        elif dataset == "net_trade":
+            output = frequent.trade_balance(update_loc=update_loc,
+                                            save_loc=save_loc,
+                                            only_get=self.only_get,
+                                            **kwargs)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 

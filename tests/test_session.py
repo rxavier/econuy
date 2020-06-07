@@ -240,6 +240,25 @@ def test_naccounts():
     remove_clutter()
 
 
+def test_trade():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    tb_ = session.get(dataset="trade").dataset
+    assert isinstance(tb_, dict)
+    assert len(tb_) == 12
+    remove_clutter()
+    net = session.get_frequent(dataset="net_trade").dataset
+    compare = (tb_["tb_x_dest_val"].
+               rename(columns={"Total exportaciones": "Total"})
+               - tb_["tb_m_orig_val"].
+               rename(columns={"Total importaciones": "Total"}))
+    compare.columns = net.columns
+    assert net.equals(compare)
+    remove_clutter()
+
+
 def test_edge():
     remove_clutter()
     session = Session(location=TEST_DIR)
