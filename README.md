@@ -59,9 +59,9 @@ The `Session()` object is initialized with the `location`, `revise_rows`,  `only
 
 #### `get()`
 
-Downloads the basic datasets. These are basically as provided by official sources, except various Pandas transformations are performed to render nice looking dataframes with appropiate column names, time indexes and properly defined values.
+Downloads the basic datasets. These are generally as provided by official sources, except various Pandas transformations are performed to render nice looking dataframes with appropiate column names, time indexes and properly defined values. In select cases, I drop columns that I feel don't add relevant information for the target audience of this package, or that are inconsistent with other datasets.
 
-Available options for the `dataset` argument are "cpi", "fiscal", "nxr_monthly", "nxr_daily", "naccounts", "labor", "rxr_custom", "rxr_official", "commodity_index" and "reserves_chg". Most are self explanatory but all are explained in the documentation.
+Available options for the `dataset` argument are "cpi", "fiscal", "nxr_monthly", "nxr_daily", "naccounts", "labor", "rxr_custom", "rxr_official", "commodity_index", "trade" and "reserves_chg". Most are self explanatory but all are explained in the documentation.
 
 If you wanted CPI data:
 ```python
