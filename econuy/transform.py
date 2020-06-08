@@ -238,7 +238,8 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
 
     Resample taking into account dataframe ``Type`` so that stock data is not
     averaged or summed when resampling; only last value of target frequency
-    is considered.
+    is considered. Also, trim partial bins, i.e. do not calculate the resampled
+    period if it is not complete.
 
     Parameters
     ----------
@@ -272,6 +273,12 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
         set to flow.
 
     """
+    pd_frequencies = {"A": 1,
+                      "A-DEC": 1,
+                      "Q": 4,
+                      "Q-DEC": 4,
+                      "M": 12}
+
     if df.columns.get_level_values("Tipo")[0] == "-":
         warnings.warn("Dataframe has no Type, setting to 'Flujo'", UserWarning)
         df.columns = df.columns.set_levels(["Flujo"], level="Tipo")
@@ -299,6 +306,15 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
     else:
         resampled_df = df.resample(target, convention="end").asfreq()
         resampled_df = resampled_df.interpolate(method=interpolation)
+
+    infer_base = pd.infer_freq(df.index)
+    base_freq = pd_frequencies[infer_base]
+    target_freq = pd_frequencies[target]
+    if target_freq < base_freq:
+        count = int(base_freq / target_freq)
+        proc = df.resample(target).count()
+        proc = proc.loc[proc.iloc[:, 0] == count]
+        resampled_df = resampled_df.reindex(proc.index)
 
     metadata._set(resampled_df)
 

@@ -125,7 +125,7 @@ def test_rolling():
 
 
 def test_resample():
-    data_m = dummy_df(freq="M", ts_type="Flujo", cumperiods=2)
+    data_m = dummy_df(freq="M", periods=204, ts_type="Flujo", cumperiods=2)
     session = Session(location=TEST_CON, dataset=data_m)
     trf_none = session.resample(target="Q-DEC", operation="sum").dataset
     trf_none.columns = data_m.columns
@@ -148,10 +148,10 @@ def test_resample():
     trf_none.columns = data_m.columns
     assert trf_none.equals(data_m.resample("A-DEC", convention="end").asfreq())
     with pytest.warns(UserWarning):
-        data_m = dummy_df(freq="M", ts_type="-")
+        data_m = dummy_df(freq="M", periods=204, ts_type="-")
         transform.resample(data_m, target="Q-DEC")
     with pytest.raises(ValueError):
-        data_m = dummy_df(freq="M", ts_type="Flujo")
+        data_m = dummy_df(freq="M", periods=204, ts_type="Flujo")
         transform.resample(data_m, target="Q-DEC", operation="wrong")
 
 
