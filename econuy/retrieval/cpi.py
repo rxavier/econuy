@@ -78,7 +78,7 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     cpi = cpi.apply(pd.to_numeric, errors="coerce")
     metadata._set(cpi, area="Precios y salarios", currency="-",
-                  inf_adj="No", unit="2010-10-31=100", seas_adj="NSA",
+                  inf_adj="No", unit="2010-10=100", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
 
     if save_loc is not None:

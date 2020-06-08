@@ -329,7 +329,7 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     product.columns = ["Índice de precios de productos primarios"]
 
     metadata._set(product, area="Sector externo", currency="USD",
-                  inf_adj="No", unit="2002-01-31=100", seas_adj="NSA",
+                  inf_adj="No", unit="2002-01=100", seas_adj="NSA",
                   ts_type="Flujo", cumperiods=1)
 
     if save_loc is not None:

@@ -448,7 +448,7 @@ def trade_balance(update_loc: Union[str, PathLike, Engine,
                   index_label: str = "index",
                   only_get: bool = True) -> pd.DataFrame:
     """
-    Get real wages. Allow choosing seasonal adjustment.
+    Get trade balance values by country/region.
 
     Parameters
     ----------
@@ -499,7 +499,7 @@ def terms_of_trade(update_loc: Union[str, PathLike, Engine,
                    index_label: str = "index",
                    only_get: bool = True) -> pd.DataFrame:
     """
-    Get real wages. Allow choosing seasonal adjustment.
+    Get terms of trade.
 
     Parameters
     ----------
