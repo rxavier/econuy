@@ -1,6 +1,6 @@
 import platform
 import warnings
-from datetime import date
+from datetime import date, datetime
 from os import PathLike, getcwd, path
 from pathlib import Path
 from typing import Union, Optional, Tuple
@@ -147,12 +147,15 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
             lambda x: x / cpi_to_use *
                       cpi_to_use.iloc[df.index.get_loc(start_date,
                                                        method="nearest")])
-        col_text = f"Const. {start_date}"
+        m_start = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m")
+        col_text = f"Const. {m_start}"
     else:
         converted_df = df.apply(
             lambda x: x / cpi_to_use * cpi_to_use[start_date:end_date].mean()
         )
-        col_text = f"Const. {start_date}_{end_date}"
+        m_start = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m")
+        m_end = datetime.strptime(end_date, "%Y-%m-%d").strftime("%Y-%m")
+        col_text = f"Const. {m_start}_{m_end}"
 
     metadata._set(converted_df, inf_adj=col_text)
 
@@ -404,11 +407,14 @@ def base_index(df: pd.DataFrame, start_date: Union[str, date],
         indexed = df.apply(
             lambda x: x / x.iloc[x.index.get_loc(start_date, method="nearest")]
                       * base)
-        metadata._set(indexed, unit=f"{start_date}={base}")
+        m_start = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m")
+        metadata._set(indexed, unit=f"{m_start}={base}")
 
     else:
         indexed = df.apply(lambda x: x / x[start_date:end_date].mean() * base)
-        metadata._set(indexed, unit=f"{start_date}_{end_date}={base}")
+        m_start = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m")
+        m_end = datetime.strptime(end_date, "%Y-%m-%d").strftime("%Y-%m")
+        metadata._set(indexed, unit=f"{m_start}_{m_end}={base}")
 
     return indexed
 
