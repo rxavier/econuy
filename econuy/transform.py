@@ -239,10 +239,9 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
     Wrapper for the `resample method <https://pandas.pydata.org/pandas-docs
     stable/reference/api/pandas.DataFrame.resample.html>`_ in Pandas.
 
-    Resample taking into account dataframe ``Type`` so that stock data is not
-    averaged or summed when resampling; only last value of target frequency
-    is considered. Also, trim partial bins, i.e. do not calculate the resampled
-    period if it is not complete.
+    Trim partial bins, i.e. do not calculate the resampled
+    period if it is not complete (unless the input dataframe has no defined
+    frequency, in which case no trimming is done).
 
     Parameters
     ----------
@@ -252,9 +251,9 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
         Target frequency to resample to. See
         `Pandas offset aliases <https://pandas.pydata.org/pandas-docs/stable/
         user_guide/timeseries.html#offset-aliases>`_
-    operation : {'sum', 'average', 'upsample'}
+    operation : {'sum', 'average', 'upsample', 'end'}
         Operation to use for resampling.
-    interpolation : bool, default True
+    interpolation : str, default 'linear'
         Method to use when missing data are produced as a result of resampling.
         See `Pandas interpolation method <https://pandas.pydata.org/pandas-docs
         /stable/reference/api/pandas.Series.interpolate.html>`_
@@ -272,7 +271,7 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
     Warns
     -----
     UserWarning
-        If input dataframe has ``-`` as frequency in its metadata, warn and
+        If input dataframe has ``-`` as type in its metadata, warn and
         set to flow.
 
     """
@@ -282,44 +281,45 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
                       "Q-DEC": 4,
                       "M": 12}
 
-    if df.columns.get_level_values("Tipo")[0] == "-":
-        warnings.warn("Dataframe has no Type, setting to 'Flujo'", UserWarning)
-        df.columns = df.columns.set_levels(["Flujo"], level="Tipo")
-
-    if df.columns.get_level_values("Tipo")[0] == "Flujo":
-        if operation == "sum":
-            resampled_df = df.resample(target).sum()
-        elif operation == "average":
-            resampled_df = df.resample(target).mean()
-        elif operation == "upsample":
-            resampled_df = df.resample(target).asfreq()
-            resampled_df = resampled_df.interpolate(method=interpolation)
+    if operation == "sum":
+        resampled_df = df.resample(target).sum()
+    elif operation == "average":
+        resampled_df = df.resample(target).mean()
+    elif operation == "end":
+        if df.columns.get_level_values("Frecuencia")[0] == "-":
+            resampled_df = df.resample(target).last()
         else:
-            raise ValueError("Only 'sum', 'average' and 'upsample' "
-                             "are accepted operations")
-
-        cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
-        if cum_periods != 1:
-            input_notna = df.iloc[:, 0].count()
-            output_notna = resampled_df.iloc[:, 0].count()
-            cum_adj = round(output_notna / input_notna)
-            metadata._set(resampled_df,
-                          cumperiods=int(cum_periods * cum_adj))
-
-    else:
-        resampled_df = df.resample(target, convention="end").asfreq()
+            resampled_df = df.asfreq(freq=target)
+    elif operation == "upsample":
+        if df.columns.get_level_values("Frecuencia")[0] == "-":
+            resampled_df = df.resample(target).last()
+        else:
+            resampled_df = df.asfreq(freq=target)
         resampled_df = resampled_df.interpolate(method=interpolation)
+    else:
+        raise ValueError("Only 'sum', 'average', 'end' and 'upsample' "
+                         "are accepted operations")
 
-    infer_base = pd.infer_freq(df.index)
-    base_freq = pd_frequencies[infer_base]
-    target_freq = pd_frequencies[target]
-    if target_freq < base_freq:
-        count = int(base_freq / target_freq)
-        proc = df.resample(target).count()
-        proc = proc.loc[proc.iloc[:, 0] == count]
-        resampled_df = resampled_df.reindex(proc.index)
+    cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
+    if cum_periods != 1:
+        input_notna = df.iloc[:, 0].count()
+        output_notna = resampled_df.iloc[:, 0].count()
+        cum_adj = round(output_notna / input_notna)
+        metadata._set(resampled_df,
+                      cumperiods=int(cum_periods * cum_adj))
+
+    if df.columns.get_level_values("Frecuencia")[0] != "-":
+        infer_base = pd.infer_freq(df.index)
+        base_freq = pd_frequencies[infer_base]
+        target_freq = pd_frequencies[target]
+        if target_freq < base_freq:
+            count = int(base_freq / target_freq)
+            proc = df.resample(target).count()
+            proc = proc.loc[proc.iloc[:, 0] == count]
+            resampled_df = resampled_df.reindex(proc.index)
 
     metadata._set(resampled_df)
+    resampled_df = resampled_df.dropna(how="all")
 
     return resampled_df
 
