@@ -489,3 +489,58 @@ def trade_balance(update_loc: Union[str, PathLike, Engine,
                 data=net, name=name, index_label=index_label)
 
     return net
+
+
+def terms_of_trade(update_loc: Union[str, PathLike, Engine,
+                                     Connection, None] = None,
+                   save_loc: Union[str, PathLike, Engine,
+                                   Connection, None] = None,
+                   name: str = "tfm_tot",
+                   index_label: str = "index",
+                   only_get: bool = True) -> pd.DataFrame:
+    """
+    Get real wages. Allow choosing seasonal adjustment.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'tfm_tot'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default True
+        If True, don't download data, retrieve what is available from
+        ``update_loc`` for the commodity index.
+
+    Returns
+    -------
+    Terms of trade (exports/imports) : pd.DataFrame
+
+    """
+    data = trade.get(update_loc=update_loc, save_loc=save_loc,
+                     only_get=only_get)
+    exports = data["tb_x_dest_pri"].rename(columns=
+                                           {"Total exportaciones": "Total"})
+    imports = data["tb_m_orig_pri"].rename(columns=
+                                           {"Total importaciones": "Total"})
+    tot = exports / imports
+    tot = tot.loc[:, ["Total"]]
+    tot.rename(columns={"Total": "Términos de intercambio"}, inplace=True)
+    tot = transform.base_index(tot, start_date="2005-01-01",
+                               end_date="2005-12-31")
+
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=tot, name=name, index_label=index_label)
+
+    return tot
