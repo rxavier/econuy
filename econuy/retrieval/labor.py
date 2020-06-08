@@ -169,7 +169,7 @@ def get_wages(update_loc: Union[str, PathLike,
 
     wages = wages.apply(pd.to_numeric, errors="coerce")
     metadata._set(wages, area="Mercado laboral", currency="UYU",
-                  inf_adj="No", unit="2008-07-31=100", seas_adj="NSA",
+                  inf_adj="No", unit="2008-07=100", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
 
     if save_loc is not None:
