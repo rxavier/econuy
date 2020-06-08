@@ -259,6 +259,28 @@ def test_trade():
     remove_clutter()
 
 
+def test_tot():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    tb_ = session.get(dataset="trade").dataset
+    assert isinstance(tb_, dict)
+    assert len(tb_) == 12
+    remove_clutter()
+    net = session.get_frequent(dataset="tot").dataset
+    compare = (tb_["tb_x_dest_pri"].
+               rename(columns={"Total exportaciones": "Total"})
+               / tb_["tb_m_orig_pri"].
+               rename(columns={"Total importaciones": "Total"}))
+    compare = compare.loc[:, ["Total"]]
+    compare = transform.base_index(compare, start_date="2005-01-01",
+                                   end_date="2005-12-31")
+    compare.columns = net.columns
+    assert net.equals(compare)
+    remove_clutter()
+
+
 def test_edge():
     remove_clutter()
     session = Session(location=TEST_DIR)

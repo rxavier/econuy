@@ -250,7 +250,8 @@ class Session(object):
 
         Parameters
         ----------
-        dataset : {'inflation', 'fiscal', 'labor', 'real_wages', 'net_trade'}
+        dataset : {'inflation', 'fiscal', 'labor', 'real_wages', \
+                'net_trade', 'tot'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -310,6 +311,11 @@ class Session(object):
                                             save_loc=save_loc,
                                             only_get=self.only_get,
                                             **kwargs)
+        elif dataset == "tot" or dataset == "terms_of_trade":
+            output = frequent.terms_of_trade(update_loc=update_loc,
+                                             save_loc=save_loc,
+                                             only_get=self.only_get,
+                                             **kwargs)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 
