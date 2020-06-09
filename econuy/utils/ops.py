@@ -38,7 +38,7 @@ def _load(data_loc: Union[str, PathLike,
                                             parse_dates=True,
                                             float_precision="high")
     except (ProgrammingError, OperationalError, FileNotFoundError):
-        print(f"Data does not exist. No data will be updated")
+        print("Data does not exist. No data will be updated")
         previous_data = pd.DataFrame()
 
     return previous_data

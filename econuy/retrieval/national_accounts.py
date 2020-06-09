@@ -199,12 +199,12 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
         fcast = (gdp.loc[[dt.datetime(last_year - 1, 12, 31)]].
                  multiply(imf_data.iloc[1]).divide(imf_data.iloc[0]))
         fcast = fcast.rename(index={dt.datetime(last_year - 1, 12, 31):
-                                        dt.datetime(last_year, 12, 31)})
+                                    dt.datetime(last_year, 12, 31)})
         next_fcast = (gdp.loc[[dt.datetime(last_year - 1, 12, 31)]].
                       multiply(imf_data.iloc[2]).divide(imf_data.iloc[0]))
         next_fcast = next_fcast.rename(
             index={dt.datetime(last_year - 1, 12, 31):
-                       dt.datetime(last_year + 1, 12, 31)}
+                   dt.datetime(last_year + 1, 12, 31)}
         )
         fcast = fcast.append(next_fcast)
         gdp = gdp.append(fcast)

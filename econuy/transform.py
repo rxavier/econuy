@@ -144,9 +144,9 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
         col_text = "Const."
     elif end_date is None:
         converted_df = df.apply(
-            lambda x: x / cpi_to_use *
-                      cpi_to_use.iloc[df.index.get_loc(start_date,
-                                                       method="nearest")])
+            lambda x: x / cpi_to_use
+                      * cpi_to_use.iloc[df.index.get_loc(start_date,
+                                                         method="nearest")])
         m_start = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m")
         col_text = f"Const. {m_start}"
     else:
@@ -405,8 +405,9 @@ def base_index(df: pd.DataFrame, start_date: Union[str, date],
     """
     if end_date is None:
         indexed = df.apply(
-            lambda x: x / x.iloc[x.index.get_loc(start_date, method="nearest")]
-                      * base)
+            lambda x: x
+                      / x.iloc[x.index.get_loc(start_date,
+                                               method="nearest")] * base)
         m_start = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m")
         metadata._set(indexed, unit=f"{m_start}={base}")
 
@@ -414,7 +415,10 @@ def base_index(df: pd.DataFrame, start_date: Union[str, date],
         indexed = df.apply(lambda x: x / x[start_date:end_date].mean() * base)
         m_start = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m")
         m_end = datetime.strptime(end_date, "%Y-%m-%d").strftime("%Y-%m")
-        metadata._set(indexed, unit=f"{m_start}_{m_end}={base}")
+        if m_start == m_end:
+            metadata._set(indexed, unit=f"{m_start}={base}")
+        else:
+            metadata._set(indexed, unit=f"{m_start}_{m_end}={base}")
 
     return indexed
 
@@ -705,8 +709,7 @@ def chg_diff(df: pd.DataFrame, operation: str = "chg",
     type_change = {"last":
                        {"chg": [lambda x: x.pct_change(periods=1),
                                 "% variación"],
-                        "diff": [lambda x: x.diff(periods=1),
-                                 "Cambio"]},
+                        "diff": [lambda x: x.diff(periods=1), "Cambio"]},
                    "inter":
                        {"chg": [lambda x: x.pct_change(periods=last_year),
                                 "% variación interanual"],
