@@ -217,8 +217,8 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     proc["Egresos: Totales GC-BPS aj. FSS"] = (proc["Egresos: Totales GC-BPS"]
                                                - proc["Intereses: FSS"])
     proc["Resultado: Primario SPNF aj. FSS"] = (
-            proc["Resultado: Primario SPNF"]
-            - proc["Ingresos: FSS"])
+        proc["Resultado: Primario SPNF"]
+        - proc["Ingresos: FSS"])
     proc["Resultado: Global SPNF aj. FSS"] = (proc["Resultado: Global SPNF"]
                                               - proc["Ingresos: FSS"]
                                               + proc["Intereses: FSS"])
@@ -228,12 +228,12 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
                                              - proc["Ingresos: FSS"]
                                              + proc["Intereses: FSS"])
     proc["Resultado: Primario GC-BPS aj. FSS"] = (
-            proc["Resultado: Primario GC-BPS"]
-            - proc["Ingresos: FSS"])
+        proc["Resultado: Primario GC-BPS"]
+        - proc["Ingresos: FSS"])
     proc["Resultado: Global GC-BPS aj. FSS"] = (
-            proc["Resultado: Global GC-BPS"]
-            - proc["Ingresos: FSS"]
-            + proc["Intereses: FSS"])
+        proc["Resultado: Global GC-BPS"]
+        - proc["Ingresos: FSS"]
+        + proc["Intereses: FSS"])
 
     output = proc.loc[:, fiscal_metadata[aggregation][fss]]
     metadata._set(output, area="Cuentas fiscales y deuda",

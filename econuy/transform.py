@@ -709,9 +709,9 @@ def chg_diff(df: pd.DataFrame, operation: str = "chg",
     inferred_freq = pd.infer_freq(df.index)
 
     type_change = {"last":
-                       {"chg": [lambda x: x.pct_change(periods=1),
-                                "% variación"],
-                        "diff": [lambda x: x.diff(periods=1), "Cambio"]},
+                   {"chg": [lambda x: x.pct_change(periods=1),
+                            "% variación"],
+                    "diff": [lambda x: x.diff(periods=1), "Cambio"]},
                    "inter":
                        {"chg": [lambda x: x.pct_change(periods=last_year),
                                 "% variación interanual"],
