@@ -134,9 +134,8 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     cpi_freq = resample(cpi_data, target=inferred_freq,
                         operation="average").iloc[:, [0]]
     cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
-    cpi_freq = rolling(cpi_freq, periods=cum_periods,
-                       operation="average")
-    cpi_to_use = cpi_freq[cpi_freq.index.isin(df.index)].iloc[:, 0]
+    cpi_to_use = rolling(cpi_freq, periods=cum_periods,
+                         operation="average").squeeze()
 
     if start_date is None:
         converted_df = df.apply(lambda x:
@@ -155,8 +154,12 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
         )
         m_start = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m")
         m_end = datetime.strptime(end_date, "%Y-%m-%d").strftime("%Y-%m")
-        col_text = f"Const. {m_start}_{m_end}"
+        if m_start == m_end:
+            col_text = f"Const. {m_start}"
+        else:
+            col_text = f"Const. {m_start}_{m_end}"
 
+    converted_df = converted_df.reindex(df.index)
     metadata._set(converted_df, inf_adj=col_text)
 
     return converted_df
