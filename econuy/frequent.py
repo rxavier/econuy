@@ -535,7 +535,7 @@ def terms_of_trade(update_loc: Union[str, PathLike, Engine,
         columns={"Total exportaciones": "Total"}
     )
     imports = data["tb_m_orig_pri"].rename(
-        columns={"Total exportaciones": "Total"}
+        columns={"Total importaciones": "Total"}
     )
     tot = exports / imports
     tot = tot.loc[:, ["Total"]]
