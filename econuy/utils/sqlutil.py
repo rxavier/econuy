@@ -63,12 +63,14 @@ def read(con: sqla.engine.base.Connection,
                                  parse_dates=index_label, **kwargs)
         else:
             if isinstance(cols, Iterable) and not isinstance(cols, str):
-                cols = [column(x) for x in cols]
+                cols_sql = [column(x) for x in cols]
+                cols_sql.append(column("index"))
             elif isinstance(cols, str) and cols != "*":
-                cols = column(cols)
+                cols_sql = column(cols)
+                cols_sql.append(column("index"))
             else:
-                cols = "*"
-            command = select(cols).select_from(table(table_name))
+                cols_sql = "*"
+            command = select(cols_sql).select_from(table(table_name))
             dates = column(index_label)
             if start_date is not None:
                 if end_date is not None:
@@ -84,6 +86,9 @@ def read(con: sqla.engine.base.Connection,
                                  parse_dates=index_label, **kwargs)
         metadata = pd.read_sql(sql=f"{table_name}_metadata", con=con,
                                index_col="index")
+        if isinstance(cols, Iterable) and not isinstance(cols, str):
+            metadata = metadata.loc[metadata["Indicador"].isin(cols)]
+            metadata = metadata.set_index("Indicador").loc[cols].reset_index()
 
         output.columns = pd.MultiIndex.from_frame(metadata)
         output.rename_axis(None, inplace=True)
