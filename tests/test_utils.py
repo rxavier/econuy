@@ -39,5 +39,6 @@ def test_sqlutil():
                  end_date="2012-01-15")
     sqlutil.read(con=TEST_CON, table_name="nxr_daily",
                  start_date="2011-01-14")
-    sqlutil.read(con=TEST_CON, table_name="nxr_daily",
-                 end_date="2012-01-15")
+    sqlutil.read(con=TEST_CON, table_name="reserves_chg",
+                 end_date="2012-01-01",
+                 cols=["1. Compras netas de moneda extranjera"])
