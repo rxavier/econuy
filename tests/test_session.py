@@ -41,28 +41,14 @@ def test_prices_inflation():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    inflation = session.get_frequent(dataset="inflation").dataset
+    measures = session.get_frequent(dataset="price_measures").dataset
     remove_clutter()
     prices = session.get(dataset="cpi").dataset
-    remove_clutter()
-    inter = transform.chg_diff(prices, period_op="inter")
-    compare = inflation.iloc[:, [1]]
-    inter.columns = compare.columns
-    assert compare.equals(inter)
-    monthly = transform.chg_diff(prices, period_op="last")
-    compare = inflation.iloc[:, [2]]
-    monthly.columns = compare.columns
-    assert compare.equals(monthly)
-    trend, seasadj = transform.decompose(prices, trading=True, outlier=False)
-    monthly_sa = transform.chg_diff(seasadj)
-    compare = inflation.iloc[:, [3]]
-    monthly_sa.columns = compare.columns
-    assert compare.equals(monthly_sa)
-    monthly_trend = transform.chg_diff(trend)
-    compare = inflation.iloc[:, [4]]
-    monthly_trend.columns = compare.columns
-    assert monthly_trend.equals(monthly_trend)
-    remove_clutter()
+    prices = transform.base_index(prices, start_date="2010-12-01",
+                                  end_date="2010-12-31")
+    compare = measures.iloc[:, [0]]
+    compare.columns = prices.columns
+    assert compare.equals(prices)
 
 
 def test_fiscal():
@@ -295,7 +281,7 @@ def test_edge():
     session = Session(location="new_dir")
     assert path.isdir("new_dir")
     shutil.rmtree(session.location)
-    Session(location=TEST_DIR).get_frequent(dataset="inflation",
+    Session(location=TEST_DIR).get_frequent(dataset="price_measures",
                                             update=False, save=False)
     remove_clutter()
 

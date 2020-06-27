@@ -250,7 +250,7 @@ class Session(object):
 
         Parameters
         ----------
-        dataset : {'inflation', 'fiscal', 'labor', 'real_wages', \
+        dataset : {'cpi_measures', 'fiscal', 'labor', 'real_wages', \
                 'net_trade', 'tot'}
             Type of data to download.
         update : bool, default True
@@ -286,11 +286,11 @@ class Session(object):
         else:
             save_loc = None
 
-        if dataset == "inflation":
-            output = frequent.inflation(update_loc=update_loc,
-                                        save_loc=save_loc,
-                                        only_get=self.only_get,
-                                        **kwargs)
+        if dataset == "cpi_measures" or dataset == "price_measures":
+            output = frequent.cpi_measures(update_loc=update_loc,
+                                           save_loc=save_loc,
+                                           only_get=self.only_get,
+                                           **kwargs)
         elif dataset == "fiscal":
             output = frequent.fiscal(update_loc=update_loc,
                                      save_loc=save_loc,

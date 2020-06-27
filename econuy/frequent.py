@@ -1,84 +1,18 @@
 from datetime import date
 from os import PathLike
 from typing import Union, Optional
+from urllib.error import HTTPError, URLError
 
 import pandas as pd
+from opnieuw import retry
+from scipy.stats.mstats_basic import winsorize
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
 from econuy.retrieval import nxr, cpi, fiscal_accounts, labor, trade
 from econuy.utils import metadata, ops
-from econuy.utils.lstrings import fiscal_metadata, wap_url
-
-
-def inflation(update_loc: Union[str, PathLike, Engine,
-                                Connection, None] = None,
-              save_loc: Union[str, PathLike, Engine,
-                              Connection, None] = None,
-              only_get: bool = True,
-              name: str = "tfm_prices",
-              index_label: str = "index") -> pd.DataFrame:
-    """
-    Get common inflation measures.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    name : str, default 'tfm_prices'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
-    only_get : bool, default True
-        If True, don't download data, retrieve what is available from
-        ``update_loc`` for the commodity index.
-
-    Returns
-    -------
-    Prices measures : pd.DataFrame
-        Columns: CPI index, annual inflation, monthly inflation, seasonally
-        adjusted monthly inflation and trend monthly inflation.
-
-    """
-    data = cpi.get(update_loc=update_loc,
-                   save_loc=save_loc, only_get=only_get)
-    interannual = transform.chg_diff(data, operation="chg", period_op="inter")
-    monthly = transform.chg_diff(data, operation="chg", period_op="last")
-    trend, seasadj = transform.decompose(data, trading=True, outlier=False)
-    monthly_sa = transform.chg_diff(seasadj, operation="chg",
-                                    period_op="last")
-    monthly_trend = transform.chg_diff(trend, operation="chg",
-                                       period_op="last")
-    output = pd.concat([data, interannual, monthly,
-                        monthly_sa, monthly_trend], axis=1)
-
-    arrays = []
-    for level in range(0, 9):
-        arrays.append(list(output.columns.get_level_values(level)))
-    arrays[0] = ["IPC", "Inflación anual", "Inflación mensual",
-                 "Inflación mensual SA", "Inflación mensual tendencial"]
-    tuples = list(zip(*arrays))
-    output.columns = pd.MultiIndex.from_tuples(tuples,
-                                               names=["Indicador", "Área",
-                                                      "Frecuencia", "Moneda",
-                                                      "Inf. adj.", "Unidad",
-                                                      "Seas. Adj.", "Tipo",
-                                                      "Acum. períodos"])
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
-
-    return output
+from econuy.utils.lstrings import (fiscal_metadata, wap_url, cpi_product_url1,
+                                   cpi_product_url2, prod_details)
 
 
 def fiscal(aggregation: str = "gps", fss: bool = True,
@@ -274,6 +208,11 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     return output
 
 
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
 def labor_rate_people(seas_adj: Union[str, None] = None,
                       update_loc: Union[str, PathLike, Engine,
                                         Connection, None] = None,
@@ -548,3 +487,149 @@ def terms_of_trade(update_loc: Union[str, PathLike, Engine,
                 data=tot, name=name, index_label=index_label)
 
     return tot
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def cpi_measures(update_loc: Union[str, PathLike,
+                                   Engine, Connection, None] = None,
+                 revise_rows: Union[str, int] = "nodup",
+                 save_loc: Union[str, PathLike, Engine,
+                                 Connection, None] = None,
+                 name: str = "cpi_measures", index_label: str = "index",
+                 only_get: bool = False) -> pd.DataFrame:
+    """Get core CPI, trimmed-mean CPI, tradabe CPI and non-tradable CPI.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'cpi_measures'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
+
+    Returns
+    -------
+    Monthly CPI measures : pd.DataFrame
+
+    """
+    if only_get is True and update_loc is not None:
+        output = ops._io(operation="update", data_loc=update_loc,
+                         name=name, index_label=index_label)
+        if not output.equals(pd.DataFrame()):
+            return output
+
+    xls = pd.ExcelFile(cpi_product_url1)
+    weights = pd.read_excel(xls, sheet_name=xls.sheet_names[0],
+                            usecols="A:C", skiprows=14,
+                            index_col=0).dropna(how="any")
+    weights.columns = ["Item", "Weight"]
+    weights_8 = weights.loc[weights.index.str.len() == 8]
+    sheets = []
+    for sheet in xls.sheet_names:
+        raw = pd.read_excel(xls, sheet_name=sheet, usecols="D:IN",
+                            skiprows=9).dropna(how="all")
+        proc = raw.loc[:, raw.columns.str.
+                              contains("Indice|Índice")].dropna(how="all")
+        sheets.append(proc.T)
+    output = pd.concat(sheets)
+    output = output.iloc[:, 1:]
+    output.columns = [weights["Item"], weights.index]
+    output.index = pd.date_range(start="2010-12-31", periods=len(output),
+                                 freq="M")
+    diff_8 = output.loc[:, output.columns.get_level_values(level=1).str.len()
+                           == 8].pct_change()
+    win = pd.DataFrame(winsorize(diff_8, limits=(0.05, 0.05), axis=1))
+    win.index = diff_8.index
+    win.columns = diff_8.columns.get_level_values(level=1)
+    cpi_win = win.mul(weights_8.loc[:, "Weight"].T)
+    cpi_win = cpi_win.sum(axis=1).add(1).cumprod().mul(100)
+
+    prod_97 = (pd.read_excel(cpi_product_url2, skiprows=5).dropna(how="any")
+               .set_index("Rubros, Agrupaciones y Subrubros").T)
+    prod_97 = prod_97.loc[:, prod_details[1]].pct_change()
+    output_8 = output.loc[:, prod_details[0]].pct_change()
+    output_8 = output_8.loc[:, ~output_8.columns.get_level_values(level=0)
+        .duplicated()]
+    output_8.columns = output_8.columns.get_level_values(level=0)
+    prod_97.columns = output_8.columns.get_level_values(level=0)
+    complete = pd.concat([prod_97, output_8.iloc[1:]])
+    complete.index = pd.date_range(start="1997-03-31", freq="M",
+                                   periods=len(complete))
+    weights_complete = weights.loc[weights["Item"].isin(complete.columns)]
+    weights_complete = weights_complete.loc[~weights_complete["Item"]
+        .duplicated()].set_index("Item")
+    tradable = complete.loc[:, [bool(x) for x in prod_details[2]]]
+    tradable_weights = weights_complete.loc[
+        weights_complete.index.isin(tradable.columns), "Weight"
+    ].T
+    tradable_weights = tradable_weights.div(tradable_weights.sum())
+    tradable = (tradable.mul(tradable_weights).sum(axis=1)
+                .add(1).cumprod().mul(100))
+
+    non_tradable = complete.loc[:, [not bool(x) for x in prod_details[2]]]
+    non_tradable_weights = weights_complete.loc[
+        weights_complete.index.isin(non_tradable.columns), "Weight"
+    ].T
+    non_tradable_weights = non_tradable_weights.div(non_tradable_weights.sum())
+    non_tradable = (non_tradable.mul(non_tradable_weights)
+                    .sum(axis=1).add(1).cumprod().mul(100))
+
+    core = complete.loc[:, [bool(x) for x in prod_details[3]]]
+    core_weights = weights_complete.loc[
+        weights_complete.index.isin(core.columns), "Weight"
+    ].T
+    core_weights = core_weights.div(core_weights.sum())
+    core = (core.mul(core_weights)
+            .sum(axis=1).add(1).cumprod().mul(100))
+
+    cpi_re = cpi.get(update_loc=update_loc, save_loc=save_loc, only_get=True)
+    output = pd.concat([cpi_re, tradable, non_tradable, core, cpi_win], axis=1)
+    output = transform.base_index(output, start_date="2010-12-01",
+                                  end_date="2010-12-31")
+    output.columns = ["Índice de precios al consumo: total",
+                      "Índice de precios al consumo: transables",
+                      "Índice de precios al consumo: no transables",
+                      "Índice de precios al consumo: subyacente",
+                      "Índice de precios al consumo: Winsorized 0.05"]
+
+    if update_loc is not None:
+        previous_data = ops._io(
+            operation="update", data_loc=update_loc,
+            name=name, index_label=index_label
+        )
+        output = ops._revise(new_data=output, prev_data=previous_data,
+                             revise_rows=revise_rows)
+
+    output = output.apply(pd.to_numeric, errors="coerce")
+    metadata._set(output, area="Precios y salarios", currency="-",
+                  inf_adj="No", unit="2010-12=100", seas_adj="NSA",
+                  ts_type="-", cumperiods=1)
+
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=output, name=name, index_label=index_label)
+
+    return output
