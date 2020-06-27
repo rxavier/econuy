@@ -1,3 +1,3 @@
 from econuy.session import Session
 
-__version__ = "0.9.8"
+__version__ = "0.10.0"
