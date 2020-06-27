@@ -521,7 +521,7 @@ def cpi_measures(update_loc: Union[str, PathLike,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'cpi_measures'
+    name : str, default 'tfm_prices'
         Either CSV filename for updating and/or saving, or table name if
         using SQL.
     index_label : str, default 'index'
