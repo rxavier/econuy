@@ -1,8 +1,10 @@
 from datetime import date
 from os import PathLike
 from typing import Union, Optional
+from urllib.error import HTTPError, URLError
 
 import pandas as pd
+from opnieuw import retry
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
@@ -274,6 +276,11 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     return output
 
 
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
 def labor_rate_people(seas_adj: Union[str, None] = None,
                       update_loc: Union[str, PathLike, Engine,
                                         Connection, None] = None,
