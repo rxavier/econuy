@@ -499,7 +499,7 @@ def cpi_measures(update_loc: Union[str, PathLike,
                  revise_rows: Union[str, int] = "nodup",
                  save_loc: Union[str, PathLike, Engine,
                                  Connection, None] = None,
-                 name: str = "cpi_measures", index_label: str = "index",
+                 name: str = "tfm_prices", index_label: str = "index",
                  only_get: bool = False) -> pd.DataFrame:
     """Get core CPI, trimmed-mean CPI, tradabe CPI and non-tradable CPI.
 
