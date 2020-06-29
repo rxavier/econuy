@@ -1,11 +1,14 @@
+import warnings
 from datetime import date
 from os import PathLike
 from typing import Union, Optional
 from urllib.error import HTTPError, URLError
 
 import pandas as pd
+import numpy as np
 from opnieuw import retry
 from scipy.stats.mstats_basic import winsorize
+from scipy.stats import stats
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
@@ -633,3 +636,33 @@ def cpi_measures(update_loc: Union[str, PathLike,
                 data=output, name=name, index_label=index_label)
 
     return output
+
+
+# The `_contains_nan` function needs to be monkey-patched to avoid an error
+# when checking whether a Series is True
+def _new_contains_nan(a, nan_policy='propagate'):
+    policies = ['propagate', 'raise', 'omit']
+    if nan_policy not in policies:
+        raise ValueError("nan_policy must be one of {%s}" %
+                         ', '.join("'%s'" % s for s in policies))
+    try:
+        with np.errstate(invalid='ignore'):
+            # This [0] gets the value instead of the array, fixing the error
+            contains_nan = np.isnan(np.sum(a))[0]
+    except TypeError:
+        try:
+            contains_nan = np.nan in set(a.ravel())
+        except TypeError:
+            contains_nan = False
+            nan_policy = 'omit'
+            warnings.warn("The input array could not be properly checked for "
+                          "nan values. nan values will be ignored.",
+                          RuntimeWarning)
+
+    if contains_nan and nan_policy == 'raise':
+        raise ValueError("The input contains nan values")
+
+    return contains_nan, nan_policy
+
+
+stats._contains_nan = _new_contains_nan
