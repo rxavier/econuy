@@ -44,6 +44,7 @@ def test_prices_inflation():
     measures = session.get_frequent(dataset="price_measures").dataset
     remove_clutter()
     prices = session.get(dataset="cpi").dataset
+    prices = prices.loc[prices.index >= "1997-03-31"]
     prices = transform.base_index(prices, start_date="2010-12-01",
                                   end_date="2010-12-31")
     compare = measures.iloc[:, [0]]
