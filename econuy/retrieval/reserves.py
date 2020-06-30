@@ -80,7 +80,8 @@ def get_changes(update_loc: Union[str, PathLike, Engine,
             metadata._set(previous_data)
             previous_data.columns.set_levels(["-"], level=2, inplace=True)
             previous_data.columns = reserves_cols[1:46]
-            previous_data.index = pd.to_datetime(previous_data.index)
+            previous_data.index = (pd.to_datetime(previous_data.index)
+                                   .normalize())
             urls = urls[-18:]
             first_dates = first_dates[-18:]
 
@@ -98,7 +99,8 @@ def get_changes(update_loc: Union[str, PathLike, Engine,
             proc = proc.iloc[:, 1:46]
             proc.columns = reserves_cols[1:46]
             proc = proc.iloc[1:]
-            proc.index = pd.to_datetime(proc.index, errors="coerce")
+            proc.index = (pd.to_datetime(proc.index, errors="coerce")
+                          .normalize())
             proc = proc.loc[proc.index.dropna()]
             proc = proc.loc[first_day:last_day]
             reports.append(proc)
