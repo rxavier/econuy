@@ -609,6 +609,7 @@ def cpi_measures(update_loc: Union[str, PathLike,
             .sum(axis=1).add(1).cumprod().mul(100))
 
     cpi_re = cpi.get(update_loc=update_loc, save_loc=save_loc, only_get=True)
+    cpi_re = cpi_re.loc[cpi_re.index >= "1997-03-31"]
     output = pd.concat([cpi_re, tradable, non_tradable, core, cpi_win], axis=1)
     output = transform.base_index(output, start_date="2010-12-01",
                                   end_date="2010-12-31")
