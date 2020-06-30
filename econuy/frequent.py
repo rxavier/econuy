@@ -504,7 +504,7 @@ def cpi_measures(update_loc: Union[str, PathLike,
                                  Connection, None] = None,
                  name: str = "tfm_prices", index_label: str = "index",
                  only_get: bool = False) -> pd.DataFrame:
-    """Get core CPI, trimmed-mean CPI, tradabe CPI and non-tradable CPI.
+    """Get core CPI, Winsorized CPI, tradabe CPI and non-tradable CPI.
 
     Parameters
     ----------
