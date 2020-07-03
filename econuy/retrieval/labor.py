@@ -70,11 +70,14 @@ def get_rates(update_loc: Union[str, PathLike,
     labor_raw = pd.read_excel(labor_url, skiprows=39).dropna(axis=0, thresh=2)
     labor = labor_raw[~labor_raw["Unnamed: 0"].str.contains("-|/|Total",
                                                             regex=True)]
-    labor = labor[["Unnamed: 1", "Unnamed: 4", "Unnamed: 7"]]
     labor.index = pd.date_range(start="2006-01-01",
                                 periods=len(labor), freq="M")
-    labor.columns = ["Tasa de actividad", "Tasa de empleo",
-                     "Tasa de desempleo"]
+    labor = labor.drop(columns="Unnamed: 0")
+    labor.columns = ["Tasa de actividad: total", "Tasa de actividad: hombres",
+                     "Tasa de actividad: mujeres", "Tasa de empleo: total",
+                     "Tasa de empleo: hombres", "Tasa de empleo: mujeres",
+                     "Tasa de desempleo: total", "Tasa de desempleo: hombres",
+                     "Tasa de desempleo: mujeres"]
 
     if update_loc is not None:
         previous_data = ops._io(operation="update",

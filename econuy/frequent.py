@@ -229,7 +229,7 @@ def labor_rate_people(seas_adj: Union[str, None] = None,
 
     Parameters
     ----------
-    seas_adj : {'trend', 'seas', None}
+    seas_adj : {None, 'trend', 'seas'}
         Whether to seasonally adjust.
     update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                   default None
@@ -264,6 +264,11 @@ def labor_rate_people(seas_adj: Union[str, None] = None,
         raise ValueError("'seas_adj' can be 'trend', 'seas' or None.")
 
     rates = labor.get_rates(update_loc=update_loc, only_get=only_get)
+    rates = rates.loc[:, ["Tasa de actividad: total", "Tasa de empleo: total",
+                          "Tasa de desempleo: total"]]
+    rates.columns.set_levels(rates.columns.levels[0].str.replace(": total",
+                                                                 ""),
+                             level=0, inplace=True)
 
     if seas_adj in ["trend", "seas"]:
         trend, seasadj = transform.decompose(rates, trading=True, outlier=True)

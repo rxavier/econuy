@@ -151,10 +151,12 @@ def test_labor():
     labor_tfm = session.get_frequent(dataset="labor", seas_adj="trend").dataset
     labor_tfm = labor_tfm.iloc[:, [0, 1, 2]]
     remove_clutter()
-    labor_ = session.get(dataset="labor").dataset
+    labor_ = session.get(dataset="labor").dataset.iloc[:, [0, 3, 6]]
     session.only_get = True
-    compare = session.get(dataset="labor").dataset
-    assert labor_.round(4).equals(compare.round(4))
+    compare = session.get(dataset="labor").dataset.iloc[:, [0, 3, 6]]
+    compare = transform.decompose(compare, flavor="trend")
+    compare.columns = labor_tfm.columns
+    assert labor_tfm.round(4).equals(compare.round(4))
     remove_clutter()
     session.only_get = False
     labor_trend, labor_sa = transform.decompose(labor_, outlier=True,
