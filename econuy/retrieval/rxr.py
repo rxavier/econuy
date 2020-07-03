@@ -78,10 +78,11 @@ def get_official(update_loc: Union[str, PathLike, Engine,
     soup = BeautifulSoup(r.content, "html.parser")
     links = soup.find_all(href=re.compile("eese[A-z0-9]+\\.xls$"))
     xls = "https://www.bcu.gub.uy" + links[0]["href"]
-    raw = pd.read_excel(xls, skiprows=8, usecols="B:H", index_col=0)
+    raw = pd.read_excel(xls, skiprows=8, usecols="B:N", index_col=0)
     proc = raw.dropna(how="any")
-    proc.columns = ["Global", "Regional", "Extrarregional",
-                    "Argentina", "Brasil", "EEUU"]
+    proc.columns = ["Global", "Extrarregional", "Regional",
+                    "Argentina", "Brasil", "EE.UU.", "México", "Alemania",
+                    "España", "Reino Unido", "Italia", "China"]
     proc.index = pd.to_datetime(proc.index) + MonthEnd(1)
 
     if update_loc is not None:
