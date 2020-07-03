@@ -69,9 +69,9 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         if all(not value.equals(pd.DataFrame()) for value in output.values()):
             return output
 
-    data = pd.DataFrame()
     output = {}
     for file, meta in trade_urls.items():
+        print(file)
         xls = pd.ExcelFile(meta["url"])
         sheets = []
         for sheet in xls.sheet_names:
@@ -82,34 +82,38 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
             raw.index = (pd.to_datetime(raw.index, errors="coerce")
                          + MonthEnd(0))
             proc = raw[raw.index.notnull()].dropna(thresh=5, axis=1)
-            proc = proc.loc[:, meta["old_colnames"]]
+            if file != "m_sect_val":
+                proc = proc.loc[:, meta["old_colnames"]]
+            else:
+                proc = proc.loc[:, ~(proc == "miles de dólares").any()]
+                proc = proc.drop(columns=["DESTINO ECONÓMICO"])
             proc.columns = meta["new_colnames"]
             sheets.append(proc)
-            data = pd.concat(sheets).sort_index()
-            data = data.apply(pd.to_numeric, errors="coerce")
-            if meta["unit"] == "Millones":
-                data = data.div(1000)
+        data = pd.concat(sheets).sort_index()
+        data = data.apply(pd.to_numeric, errors="coerce")
+        if meta["unit"] == "Millones":
+            data = data.div(1000)
 
-            if update_loc is not None:
-                previous_data = ops._io(
-                    operation="update", data_loc=update_loc,
-                    name=f"{name}_{file}", index_label=index_label
-                )
-                data = ops._revise(new_data=data,
-                                   prev_data=previous_data,
-                                   revise_rows=revise_rows)
-
-            metadata._set(
-                data, area="Sector externo", currency=meta["currency"],
-                inf_adj="No", unit=meta["unit"], seas_adj="NSA",
-                ts_type="Flujo", cumperiods=1
+        if update_loc is not None:
+            previous_data = ops._io(
+                operation="update", data_loc=update_loc,
+                name=f"{name}_{file}", index_label=index_label
             )
+            data = ops._revise(new_data=data,
+                               prev_data=previous_data,
+                               revise_rows=revise_rows)
 
-            if save_loc is not None:
-                ops._io(
-                    operation="save", data_loc=save_loc, data=data,
-                    name=f"{name}_{file}", index_label=index_label
-                )
+        metadata._set(
+            data, area="Sector externo", currency=meta["currency"],
+            inf_adj="No", unit=meta["unit"], seas_adj="NSA",
+            ts_type="Flujo", cumperiods=1
+        )
+
+        if save_loc is not None:
+            ops._io(
+                operation="save", data_loc=save_loc, data=data,
+                name=f"{name}_{file}", index_label=index_label
+            )
 
         output.update({f"{name}_{file}": data})
 
