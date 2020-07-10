@@ -17,7 +17,7 @@ from sqlalchemy.engine.base import Connection, Engine
 from econuy import transform
 from econuy.retrieval import cpi, nxr
 from econuy.utils import ops, metadata
-from econuy.utils.lstrings import reer_url, ar_cpi_url, ar_cpi_payload
+from econuy.utils.lstrings import urls
 
 
 @retry(
@@ -74,7 +74,7 @@ def get_official(update_loc: Union[str, PathLike, Engine,
         if not output.equals(pd.DataFrame()):
             return output
 
-    r = requests.get(reer_url)
+    r = requests.get(urls["rxr_official"]["dl"]["main"])
     soup = BeautifulSoup(r.content, "html.parser")
     links = soup.find_all(href=re.compile("eese[A-z0-9]+\\.xls$"))
     xls = "https://www.bcu.gub.uy" + links[0]["href"]
@@ -255,10 +255,7 @@ def get_custom(update_loc: Union[str, PathLike, Engine,
 )
 def _missing_ar():
     """Get Argentina's non-official exchange rate and CPI."""
-    today_fmt = dt.datetime.now().strftime("%d-%m-%Y")
-    black_url = (f"https://mercados.ambito.com/dolar/informal/"
-                 f"historico-general/11-01-2002/{today_fmt}")
-    black_r = requests.get(black_url).json()
+    black_r = requests.get(urls["rxr_custom"]["dl"]["ar_black"]).json()
     black_xr = pd.DataFrame(black_r)
     black_xr.set_index(0, drop=True, inplace=True)
     black_xr.drop("Fecha", inplace=True)
@@ -267,14 +264,15 @@ def _missing_ar():
     black_xr = black_xr.mean(axis=1).to_frame().sort_index()
     black_xr = black_xr.resample("M").mean()
 
-    cpi_r = requests.get(ar_cpi_url, params=ar_cpi_payload)
+    cpi_r = requests.get(urls["rxr_custom"]["dl"]["ar_cpi"],
+                         params=urls["rxr_custom"]["dl"]["ar_cpi_payload"])
     cpi_ar = pd.read_html(cpi_r.content)[0]
     cpi_ar.set_index("Fecha", drop=True, inplace=True)
     cpi_ar.index = pd.to_datetime(cpi_ar.index, format="%d/%m/%Y")
     cpi_ar.columns = ["nivel"]
     cpi_ar = cpi_ar.divide(10)
 
-    ps_url = "http://www.inflacionverdadera.com/Argentina_inflation.xls"
+    ps_url = urls["rxr_custom"]["dl"]["inf_black"]
     cpi_ps = pd.read_excel(ps_url)
     cpi_ps.set_index("date", drop=True, inplace=True)
     cpi_ps.index = cpi_ps.index + MonthEnd(1)

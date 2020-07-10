@@ -10,7 +10,7 @@ from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
 from econuy.utils import ops, metadata
-from econuy.utils.lstrings import nat_accounts_metadata
+from econuy.utils.lstrings import na_metadata
 
 
 @retry(
@@ -61,18 +61,18 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     """
     if only_get is True and update_loc is not None:
         output = {}
-        for meta in nat_accounts_metadata.values():
+        for filename, meta in na_metadata.items():
             data = ops._io(
                 operation="update", data_loc=update_loc,
-                name=f"{name}_{meta['Name']}", index_label=index_label
+                name=f"{name}_{filename}", index_label=index_label
             )
-            output.update({meta["Name"]: data})
+            output.update({filename: data})
         if all(not value.equals(pd.DataFrame()) for value in output.values()):
             return output
 
     parsed_excels = {}
-    for file, meta in nat_accounts_metadata.items():
-        raw = pd.read_excel(file, skiprows=9, nrows=meta["Rows"])
+    for filename, meta in na_metadata.items():
+        raw = pd.read_excel(meta["url"], skiprows=9, nrows=meta["Rows"])
         proc = (raw.drop(columns=["Unnamed: 0"]).
                 dropna(axis=0, how="all").dropna(axis=1, how="all"))
         proc = proc.transpose()
@@ -88,7 +88,7 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         if update_loc is not None:
             previous_data = ops._io(
                 operation="update", data_loc=update_loc,
-                name=f"{name}_{meta['Name']}", index_label=index_label
+                name=f"{name}_{filename}", index_label=index_label
             )
             proc = ops._revise(new_data=proc, prev_data=previous_data,
                                revise_rows=revise_rows)
@@ -103,10 +103,10 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         if save_loc is not None:
             ops._io(
                 operation="save", data_loc=save_loc, data=proc,
-                name=f"{name}_{meta['Name']}", index_label=index_label
+                name=f"{name}_{filename}", index_label=index_label
             )
 
-        parsed_excels.update({meta["Name"]: proc})
+        parsed_excels.update({filename: proc})
 
     return parsed_excels
 

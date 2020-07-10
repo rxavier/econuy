@@ -17,8 +17,7 @@ from requests import exceptions
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy.utils import ops, metadata
-from econuy.utils.lstrings import (beef_url, pulp_url, soybean_url,
-                                   what_url, imf_url, milk1_url, milk2_url)
+from econuy.utils.lstrings import urls
 
 
 @retry(
@@ -161,7 +160,8 @@ def _prices(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         if not output.equals(pd.DataFrame()):
             return output
 
-    raw_beef = (pd.read_excel(beef_url, header=4, index_col=0)
+    url = urls["commodity_index"]["dl"]
+    raw_beef = (pd.read_excel(url["beef"], header=4, index_col=0)
                 .dropna(how="all"))
     raw_beef.columns = raw_beef.columns.str.strip()
     proc_beef = raw_beef["Ing. Prom./Ton."].to_frame()
@@ -174,7 +174,7 @@ def _prices(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     )
     beef = proc_beef.resample("M").mean()
 
-    raw_pulp_r = requests.get(pulp_url)
+    raw_pulp_r = requests.get(url["pulp"])
     temp_dir = tempfile.TemporaryDirectory()
     with zipfile.ZipFile(BytesIO(raw_pulp_r.content), "r") as f:
         f.extractall(path=temp_dir.name)
@@ -187,8 +187,8 @@ def _prices(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     pulp = proc_pulp
 
     soy_wheat = []
-    for url in [soybean_url, what_url]:
-        raw = pd.read_csv(url, index_col=0)
+    for link in [url["soybean"], url["wheat"]]:
+        raw = pd.read_csv(link, index_col=0)
         proc = (raw["Settle"] * bushel_conv).to_frame()
         proc.index = pd.to_datetime(proc.index, format="%Y-%m-%d")
         proc.sort_index(inplace=True)
@@ -196,7 +196,7 @@ def _prices(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     soybean = soy_wheat[0]
     wheat = soy_wheat[1]
 
-    milk_r = requests.get(milk1_url)
+    milk_r = requests.get(url["milk1"])
     milk_soup = BeautifulSoup(milk_r.content, "html.parser")
     links = milk_soup.find_all(href=re.compile("Oceanía"))
     xls = links[0]["href"]
@@ -212,7 +212,7 @@ def _prices(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                                     periods=len(proc_milk), freq="M")
     proc_milk = proc_milk.iloc[:, 2].to_frame()
 
-    prev_milk = pd.read_excel(milk2_url, sheet_name="Dairy Products Prices",
+    prev_milk = pd.read_excel(url["milk2"], sheet_name="Dairy Products Prices",
                               index_col=0, usecols="A,D", skiprows=5)
     prev_milk = prev_milk.resample("M").mean()
     eurusd_r = requests.get(
@@ -229,7 +229,7 @@ def _prices(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     prev_milk.columns, proc_milk.columns = ["Price"], ["Price"]
     milk = prev_milk.append(proc_milk)
 
-    raw_imf = pd.read_excel(imf_url)
+    raw_imf = pd.read_excel(url["imf"])
     raw_imf.columns = raw_imf.iloc[0, :]
     proc_imf = raw_imf.iloc[3:, 1:]
     proc_imf.index = pd.date_range(start="1980-01-31",

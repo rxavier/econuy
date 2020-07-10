@@ -8,7 +8,7 @@ from pandas.tseries.offsets import MonthEnd
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy.utils import ops, metadata
-from econuy.utils.lstrings import trade_urls
+from econuy.utils.lstrings import trade_metadata
 
 
 @retry(
@@ -60,7 +60,7 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     """
     if only_get is True and update_loc is not None:
         output = {}
-        for file in trade_urls.keys():
+        for file in trade_metadata.keys():
             data = ops._io(
                 operation="update", data_loc=update_loc,
                 name=f"{name}_{file}", index_label=index_label
@@ -70,7 +70,7 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
             return output
 
     output = {}
-    for file, meta in trade_urls.items():
+    for file, meta in trade_metadata.items():
         print(file)
         xls = pd.ExcelFile(meta["url"])
         sheets = []

@@ -14,8 +14,7 @@ from sqlalchemy.engine.base import Connection, Engine
 from econuy import transform
 from econuy.retrieval import nxr, cpi, fiscal_accounts, labor, trade
 from econuy.utils import metadata, ops
-from econuy.utils.lstrings import (fiscal_metadata, wap_url, cpi_product_url1,
-                                   cpi_product_url2, prod_details)
+from econuy.utils.lstrings import fiscal_metadata, urls, prod_details
 
 
 def fiscal(aggregation: str = "gps", fss: bool = True,
@@ -277,8 +276,9 @@ def labor_rate_people(seas_adj: Union[str, None] = None,
         elif seas_adj == "seas":
             rates = seasadj
 
-    working_age = pd.read_excel(wap_url, skiprows=7,
-                                index_col=0, nrows=92).dropna(how="all")
+    working_age = pd.read_excel(urls["tfm_labor"]["dl"]["population"],
+                                skiprows=7, index_col=0,
+                                nrows=92).dropna(how="all")
     ages = list(range(14, 90)) + ["90 y más"]
     working_age = working_age.loc[ages].sum()
     working_age.index = pd.date_range(start="1996-06-30", end="2050-06-30",
@@ -549,7 +549,7 @@ def cpi_measures(update_loc: Union[str, PathLike,
         if not output.equals(pd.DataFrame()):
             return output
 
-    xls = pd.ExcelFile(cpi_product_url1)
+    xls = pd.ExcelFile(urls["tfm_prices"]["dl"]["main"])
     weights = pd.read_excel(xls, sheet_name=xls.sheet_names[0],
                             usecols="A:C", skiprows=14,
                             index_col=0).dropna(how="any")
@@ -575,7 +575,8 @@ def cpi_measures(update_loc: Union[str, PathLike,
     cpi_win = win.mul(weights_8.loc[:, "Weight"].T)
     cpi_win = cpi_win.sum(axis=1).add(1).cumprod().mul(100)
 
-    prod_97 = (pd.read_excel(cpi_product_url2, skiprows=5).dropna(how="any")
+    prod_97 = (pd.read_excel(urls["tfm_prices"]["dl"]["historical"],
+                             skiprows=5).dropna(how="any")
                .set_index("Rubros, Agrupaciones y Subrubros").T)
     prod_97 = prod_97.loc[:, prod_details[1]].pct_change()
     output_8 = output.loc[:, prod_details[0]].pct_change()
