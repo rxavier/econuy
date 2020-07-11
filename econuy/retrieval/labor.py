@@ -8,7 +8,7 @@ from pandas.tseries.offsets import MonthEnd
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy.utils import ops, metadata
-from econuy.utils.lstrings import labor_url, wages1_url, wages2_url
+from econuy.utils.lstrings import urls
 
 
 @retry(
@@ -67,7 +67,8 @@ def get_rates(update_loc: Union[str, PathLike,
         if not output.equals(pd.DataFrame()):
             return output
 
-    labor_raw = pd.read_excel(labor_url, skiprows=39).dropna(axis=0, thresh=2)
+    labor_raw = pd.read_excel(urls["labor"]["dl"]["main"],
+                              skiprows=39).dropna(axis=0, thresh=2)
     labor = labor_raw[~labor_raw["Unnamed: 0"].str.contains("-|/|Total",
                                                             regex=True)]
     labor.index = pd.date_range(start="2006-01-01",
@@ -152,9 +153,11 @@ def get_wages(update_loc: Union[str, PathLike,
         if not output.equals(pd.DataFrame()):
             return output
 
-    historical = pd.read_excel(wages1_url, skiprows=8, usecols="A:B")
+    historical = pd.read_excel(urls["wages"]["dl"]["historical"],
+                               skiprows=8, usecols="A:B")
     historical = historical.dropna(how="any").set_index("Unnamed: 0")
-    current = pd.read_excel(wages2_url, skiprows=8, usecols="A,C:D")
+    current = pd.read_excel(urls["wages"]["dl"]["current"],
+                            skiprows=8, usecols="A,C:D")
     current = current.dropna(how="any").set_index("Unnamed: 0")
     wages = pd.concat([historical, current], axis=1)
     wages.index = wages.index + MonthEnd(1)

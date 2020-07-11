@@ -13,7 +13,7 @@ from requests.exceptions import ConnectionError, HTTPError
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy.utils import ops, metadata
-from econuy.utils.lstrings import fiscal_url, fiscal_sheets
+from econuy.utils.lstrings import urls, fiscal_sheets
 
 
 @retry(
@@ -75,7 +75,7 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         if all(not value.equals(pd.DataFrame()) for value in output.values()):
             return output
 
-    response = requests.get(fiscal_url)
+    response = requests.get(urls["fiscal"]["dl"]["main"])
     soup = BeautifulSoup(response.content, "html.parser")
     links = soup.find_all(href=re.compile("\\.rar$"))
     rar = links[0]["href"]

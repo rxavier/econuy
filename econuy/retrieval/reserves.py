@@ -10,8 +10,7 @@ from opnieuw import retry
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy.utils import metadata, ops
-from econuy.utils.lstrings import (reserves_url, reserves_cols,
-                                   missing_reserves_url)
+from econuy.utils.lstrings import urls, reserves_cols
 
 
 @retry(
@@ -66,11 +65,11 @@ def get_changes(update_loc: Union[str, PathLike, Engine,
     files = [month + str(year) for year in years for month in months]
     first_dates = list(pd.date_range(start="2013-01-01",
                                      periods=len(files), freq="MS"))
-
-    urls = [f"{reserves_url}{file}.xls" for file in files]
-    wrong_may14 = f"{reserves_url}may2014.xls"
-    fixed_may14 = f"{reserves_url}mayo2014.xls"
-    urls = [fixed_may14 if x == wrong_may14 else x for x in urls]
+    url = urls["reserves_chg"]["dl"]["main"]
+    links = [f"{url}{file}.xls" for file in files]
+    wrong_may14 = f"{url}may2014.xls"
+    fixed_may14 = f"{url}mayo2014.xls"
+    links = [fixed_may14 if x == wrong_may14 else x for x in links]
 
     if update_loc is not None:
         previous_data = ops._io(operation="update",
@@ -82,13 +81,13 @@ def get_changes(update_loc: Union[str, PathLike, Engine,
             previous_data.columns = reserves_cols[1:46]
             previous_data.index = (pd.to_datetime(previous_data.index)
                                    .normalize())
-            urls = urls[-18:]
+            links = links[-18:]
             first_dates = first_dates[-18:]
 
     reports = []
-    for url, first_day in zip(urls, first_dates):
+    for link, first_day in zip(links, first_dates):
         try:
-            raw = pd.read_excel(url, sheet_name="ACTIVOS DE RESERVA",
+            raw = pd.read_excel(link, sheet_name="ACTIVOS DE RESERVA",
                                 skiprows=3)
             last_day = (first_day
                         + relativedelta(months=1)
@@ -106,10 +105,10 @@ def get_changes(update_loc: Union[str, PathLike, Engine,
             reports.append(proc)
 
         except urllib.error.HTTPError:
-            print(f"{url} could not be reached.")
+            print(f"{link} could not be reached.")
             pass
 
-    mar14 = pd.read_excel(missing_reserves_url, index_col=0)
+    mar14 = pd.read_excel(urls["reserves_chg"]["dl"]["missing"], index_col=0)
     mar14.columns = reserves_cols[1:46]
     reserves = pd.concat(reports + [mar14], sort=False).sort_index()
 

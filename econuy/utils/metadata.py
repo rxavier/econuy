@@ -1,7 +1,9 @@
-from typing import Optional
+from typing import Optional, Tuple, List
 import warnings
 
 import pandas as pd
+
+from econuy.utils.lstrings import urls
 
 
 def _set(
@@ -93,3 +95,30 @@ def _set(
 
         tuples = list(zip(*arrays))
         df.columns = pd.MultiIndex.from_tuples(tuples, names=names)
+
+
+def _get_sources(dataset: str,
+                html_urls: bool = True) -> Tuple[List[Optional[str]],
+                                                 List[str], List[str]]:
+    """Given a dataset name, return source URLs and provider."""
+    if dataset.startswith("tfm"):
+        dataset = "_".join(dataset.split(sep="_")[:2])
+
+    direct = urls[dataset]["source"]["direct"]
+    indirect = urls[dataset]["source"]["indirect"]
+    provider = urls[dataset]["source"]["provider"]
+
+    if html_urls is True:
+        direct_html = []
+        texts = [f"URL {x}" for x in list(range(1, len(direct) + 1))]
+        for url, text in zip(direct, texts):
+            direct_html.append(f"<a href='{url}'>{text}</a>")
+        indirect_html = []
+        texts = [f"URL {x}" for x in list(range(1, len(indirect) + 1))]
+        for url, text in zip(indirect, texts):
+            indirect_html.append(f"<a href='{url}'>{text}</a>")
+        direct = " | ".join(direct_html)
+        indirect = " | ".join(indirect_html)
+        provider = " | ".join(provider)
+
+    return direct, indirect, provider

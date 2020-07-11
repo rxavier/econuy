@@ -8,7 +8,7 @@ from pandas.tseries.offsets import MonthEnd
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy.utils import ops, metadata
-from econuy.utils.lstrings import cpi_url
+from econuy.utils.lstrings import urls
 
 
 @retry(
@@ -62,7 +62,8 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         if not output.equals(pd.DataFrame()):
             return output
 
-    cpi_raw = pd.read_excel(cpi_url, skiprows=7).dropna(axis=0, thresh=2)
+    cpi_raw = pd.read_excel(urls["cpi"]["dl"]["main"],
+                            skiprows=7).dropna(axis=0, thresh=2)
     cpi = (cpi_raw.drop(["Mensual", "Acum.año", "Acum.12 meses"], axis=1).
            dropna(axis=0, how="all").set_index("Mes y año").rename_axis(None))
     cpi.columns = ["Índice de precios al consumo"]
