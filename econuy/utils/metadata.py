@@ -98,11 +98,13 @@ def _set(
 
 
 def _get_sources(dataset: str,
-                html_urls: bool = True) -> Tuple[List[Optional[str]],
-                                                 List[str], List[str]]:
+                 html_urls: bool = True) -> Tuple[List[Optional[str]],
+                                                  List[str], List[str]]:
     """Given a dataset name, return source URLs and provider."""
     if dataset.startswith("tfm"):
         dataset = "_".join(dataset.split(sep="_")[:2])
+    elif dataset.startswith("fiscal"):
+        dataset = dataset.split(sep="_")[0]
 
     direct = urls[dataset]["source"]["direct"]
     indirect = urls[dataset]["source"]["indirect"]
