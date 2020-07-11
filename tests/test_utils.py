@@ -3,6 +3,7 @@ from os import path
 import pytest
 from sqlalchemy import create_engine
 
+from econuy.utils.metadata import _get_sources
 from econuy.retrieval import cpi
 from econuy.utils import sqlutil
 try:
@@ -42,3 +43,9 @@ def test_sqlutil():
     sqlutil.read(con=TEST_CON, table_name="reserves_chg",
                  end_date="2012-01-01",
                  cols=["1. Compras netas de moneda extranjera"])
+
+
+def test_sources():
+    source_1 = _get_sources("tfm_labor_test")
+    source_2 = _get_sources("tfm_labor")
+    assert source_1 == source_2
