@@ -625,7 +625,7 @@ urls = {"cpi":
             {"dl": {"main": "https://www.bcu.gub.uy/_layouts/BCU.Cotizaciones/handler/FileHandler.ashx?op=downloadcotizacionesexcel&KeyValuePairs={%22KeyValuePairs%22:{%22Monedas%22:[{%22Val%22:%222224%22,%22Text%22:%22DLS.%20USA%20CABLE%22}],"},
              "source": {"direct": [],
                         "indirect": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Cotizaciones.aspx"],
-                        "provider": ["INE"]}},
+                        "provider": ["BCU"]}},
         "commodity_index":
             {"dl": {"beef": "https://www.inac.uy/innovaportal/v/9799/10/innova.front/serie-semanal-ingreso-medio-de-exportacion---bovino-ovino-y-otros-productos",
                     "pulp": f"https://www.insee.fr/en/statistiques/serie/telecharger/010600339?ordre=antechronologique&"
