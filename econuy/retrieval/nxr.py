@@ -154,13 +154,14 @@ def get_daily(update_loc: Union[str, PathLike,
     today = dt.datetime.now() - dt.timedelta(days=1)
     runs = (today - start_date).days // 30
     data = []
-    url = urls['nxr_daily']['dl']['main']
+    base_url = urls['nxr_daily']['dl']['main']
     if runs > 0:
         for i in range(1, runs + 1):
             from_ = (start_date + dt.timedelta(days=1)).strftime('%d/%m/%Y')
             to_ = (start_date + dt.timedelta(days=30)).strftime('%d/%m/%Y')
             dates = f"%22FechaDesde%22:%22{from_}%22,%22FechaHasta%22:%22{to_}"
-            url = f"{url}{dates}%22,%22Grupo%22:%222%22}}" + "}"
+            url = f"{base_url}{dates}%22,%22Grupo%22:%222%22}}" + "}"
+            print(url)
             try:
                 data.append(pd.read_excel(url))
                 start_date = dt.datetime.strptime(to_, '%d/%m/%Y')
@@ -169,7 +170,7 @@ def get_daily(update_loc: Union[str, PathLike,
     from_ = (start_date + dt.timedelta(days=1)).strftime('%d/%m/%Y')
     to_ = (dt.datetime.now() - dt.timedelta(days=1)).strftime('%d/%m/%Y')
     dates = f"%22FechaDesde%22:%22{from_}%22,%22FechaHasta%22:%22{to_}"
-    url = f"{url}{dates}%22,%22Grupo%22:%222%22}}" + "}"
+    url = f"{base_url}{dates}%22,%22Grupo%22:%222%22}}" + "}"
     try:
         data.append(pd.read_excel(url))
     except TypeError:
