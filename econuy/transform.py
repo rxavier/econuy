@@ -242,11 +242,19 @@ def convert_gdp(df: pd.DataFrame,
     inferred_freq = pd.infer_freq(df.index)
     gdp = national_accounts._lin_gdp(update_loc=update_loc,
                                      save_loc=save_loc, only_get=only_get)
-
+    cum = df.columns.get_level_values("Acum. períodos")[0]
     if inferred_freq in ["M", "MS"]:
         gdp = resample(gdp, target=inferred_freq,
                        operation="upsample", interpolation="linear")
-    elif inferred_freq in ["Q", "Q-DEC", "A", "A-DEC"]:
+        if cum != 12 and df.columns.get_level_values("Tipo")[0] == "Flujo":
+            converter = int(12 / cum)
+            df = df.rolling(converter).sum()
+    elif inferred_freq in ["Q", "Q-DEC"]:
+        gdp = gdp.resample(inferred_freq, convention="end").asfreq()
+        if cum != 4 and df.columns.get_level_values("Tipo")[0] == "Flujo":
+            converter = int(4 / cum)
+            df = df.rolling(converter).sum()
+    elif inferred_freq in ["A", "A-DEC"]:
         gdp = gdp.resample(inferred_freq, convention="end").asfreq()
     elif inferred_freq in ["D", "B", "C", "W", None]:
         if df.columns.get_level_values("Tipo")[0] == "Flujo":
