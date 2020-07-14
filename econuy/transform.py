@@ -34,6 +34,9 @@ def convert_usd(df: pd.DataFrame,
     input dataframe's frequency and whether columns represent rolling averages
     or sums.
 
+    If input dataframe's frequency is higher than monthly (daily, business,
+    etc.), resample to monthly frequency.
+
     Parameters
     ----------
     df : pd.DataFrame
@@ -108,6 +111,9 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     columns represent rolling averages or sums. Allow choosing a single period,
     a range of dates or no period as a base (i.e., period for which the
     average/sum of input dataframe and output dataframe is the same).
+
+    If input dataframe's frequency is higher than monthly (daily, business,
+    etc.), resample to monthly frequency.
 
     Parameters
     ----------
@@ -204,6 +210,12 @@ def convert_gdp(df: pd.DataFrame,
     currency for chossing UYU or USD GDP. If frequency of input dataframe is
     higher than quarterly, GDP will be upsampled and linear interpolation will
     be performed to complete missing data.
+
+    If input dataframe's "Acum." level is not 12 for monthly frequency or 4
+    for quarterly frequency, internally calculate rolling input dataframe.
+
+    If input dataframe's frequency is higher than monthly (daily, business,
+    etc.), resample to monthly frequency.
 
     Parameters
     ----------
