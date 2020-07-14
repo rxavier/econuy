@@ -338,22 +338,22 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
                       "A-DEC": 1,
                       "Q": 4,
                       "Q-DEC": 4,
-                      "M": 12}
+                      "M": 12,
+                      "W": 52.143,
+                      "W-SUN": 52.143,
+                      "2W": 26.071,
+                      "2W-SUN": 26.071,
+                      "B": 240,
+                      "D": 365}
 
     if operation == "sum":
         resampled_df = df.resample(target).sum()
     elif operation == "average":
         resampled_df = df.resample(target).mean()
     elif operation == "end":
-        if df.columns.get_level_values("Frecuencia")[0] == "-":
-            resampled_df = df.resample(target).last()
-        else:
-            resampled_df = df.asfreq(freq=target)
+        resampled_df = df.resample(target).last()
     elif operation == "upsample":
-        if df.columns.get_level_values("Frecuencia")[0] == "-":
-            resampled_df = df.resample(target).last()
-        else:
-            resampled_df = df.asfreq(freq=target)
+        resampled_df = df.resample(target).last()
         resampled_df = resampled_df.interpolate(method=interpolation)
     else:
         raise ValueError("Only 'sum', 'average', 'end' and 'upsample' "
@@ -367,15 +367,19 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
         metadata._set(resampled_df,
                       cumperiods=int(cum_periods * cum_adj))
 
-    if df.columns.get_level_values("Frecuencia")[0] != "-":
+    if operation in ["sum", "average", "end"]:
         infer_base = pd.infer_freq(df.index)
-        base_freq = pd_frequencies[infer_base]
-        target_freq = pd_frequencies[target]
-        if target_freq < base_freq:
-            count = int(base_freq / target_freq)
-            proc = df.resample(target).count()
-            proc = proc.loc[proc.iloc[:, 0] == count]
-            resampled_df = resampled_df.reindex(proc.index)
+        try:
+            base_freq = pd_frequencies[infer_base]
+            target_freq = pd_frequencies[target]
+            if target_freq < base_freq:
+                count = int(base_freq / target_freq)
+                proc = df.resample(target).count()
+                proc = proc.loc[proc.iloc[:, 0] >= count]
+                resampled_df = resampled_df.reindex(proc.index)
+        except KeyError:
+            warnings.warn("No bin trimming performed because frequencies "
+                          "could not be assigned a numeric value", UserWarning)
 
     metadata._set(resampled_df)
     resampled_df = resampled_df.dropna(how="all")
@@ -415,7 +419,14 @@ def rolling(df: pd.DataFrame, periods: Optional[int] = None,
                       "A-DEC": 1,
                       "Q": 4,
                       "Q-DEC": 4,
-                      "M": 12}
+                      "M": 12,
+                      "MS": 12,
+                      "W": 52,
+                      "W-SUN": 52,
+                      "2W": 26,
+                      "2W-SUN": 26,
+                      "B": 260,
+                      "D": 365}
 
     window_operation = {
         "sum": lambda x: x.rolling(window=periods,
