@@ -57,6 +57,11 @@ def convert_usd(df: pd.DataFrame,
     Input dataframe measured in US dollars : pd.DataFrame
 
     """
+    if df.columns.get_level_values("Moneda")[0] == "USD":
+        warnings.warn("Input dataframe already in dollars. No transformations"
+                      " made", UserWarning)
+        return df
+
     inferred_freq = pd.infer_freq(df.index)
     nxr_data = nxr.get_monthly(update_loc=update_loc, save_loc=save_loc,
                                only_get=only_get)
@@ -126,6 +131,11 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     Input dataframe measured at constant prices : pd.DataFrame
 
     """
+    if "Const" in df.columns.get_level_values("Inf. adj.")[0]:
+        warnings.warn("Input dataframe already in real terms. No "
+                      "transformations made", UserWarning)
+        return df
+
     inferred_freq = pd.infer_freq(df.index)
     cpi_data = cpi.get(update_loc=update_loc, save_loc=save_loc,
                        only_get=only_get)
@@ -210,6 +220,11 @@ def convert_gdp(df: pd.DataFrame,
         or 'A-DEC'.
 
     """
+    if df.columns.get_level_values("Unidad")[0] == "% PBI":
+        warnings.warn("Input dataframe already in percent of GDP. No "
+                      "transformations made", UserWarning)
+        return df
+
     inferred_freq = pd.infer_freq(df.index)
     gdp = national_accounts._lin_gdp(update_loc=update_loc,
                                      save_loc=save_loc, only_get=only_get)
