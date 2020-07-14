@@ -63,6 +63,13 @@ def convert_usd(df: pd.DataFrame,
         return df
 
     inferred_freq = pd.infer_freq(df.index)
+    if inferred_freq in ["D", "B", "C", "W", None]:
+        if df.columns.get_level_values("Tipo")[0] == "Flujo":
+            df = df.resample("M").sum()
+        else:
+            df = df.resample("M").mean()
+        inferred_freq = pd.infer_freq(df.index)
+
     nxr_data = nxr.get_monthly(update_loc=update_loc, save_loc=save_loc,
                                only_get=only_get)
 
@@ -137,6 +144,13 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
         return df
 
     inferred_freq = pd.infer_freq(df.index)
+    if inferred_freq in ["D", "B", "C", "W", None]:
+        if df.columns.get_level_values("Tipo")[0] == "Flujo":
+            df = df.resample("M").sum()
+        else:
+            df = df.resample("M").mean()
+        inferred_freq = pd.infer_freq(df.index)
+
     cpi_data = cpi.get(update_loc=update_loc, save_loc=save_loc,
                        only_get=only_get)
 
@@ -216,8 +230,8 @@ def convert_gdp(df: pd.DataFrame,
     Raises
     ------
     ValueError
-        If frequency of input dataframe not any of 'M', 'MS', 'Q', 'Q-DEC', 'A'
-        or 'A-DEC'.
+        If frequency of input dataframe not any of 'D', 'C', 'W', 'B', 'M',
+        'MS', 'Q', 'Q-DEC', 'A' or 'A-DEC'.
 
     """
     if df.columns.get_level_values("Unidad")[0] == "% PBI":
@@ -234,9 +248,16 @@ def convert_gdp(df: pd.DataFrame,
                        operation="upsample", interpolation="linear")
     elif inferred_freq in ["Q", "Q-DEC", "A", "A-DEC"]:
         gdp = gdp.resample(inferred_freq, convention="end").asfreq()
+    elif inferred_freq in ["D", "B", "C", "W", None]:
+        if df.columns.get_level_values("Tipo")[0] == "Flujo":
+            df = df.resample("M").sum()
+        else:
+            df = df.resample("M").mean()
+        gdp = resample(gdp, target="M",
+                       operation="upsample", interpolation="linear")
     else:
-        raise ValueError("Frequency of input dataframe not any of 'M', 'MS', "
-                         "'Q', 'Q-DEC', 'A' or 'A-DEC'.")
+        raise ValueError("Frequency of input dataframe not any of 'D', 'C', "
+                         "'W', 'B', 'M', 'MS', 'Q', 'Q-DEC', 'A' or 'A-DEC'.")
 
     if df.columns.get_level_values("Moneda")[0] == "USD":
         gdp = gdp.iloc[:, 1].to_frame()
