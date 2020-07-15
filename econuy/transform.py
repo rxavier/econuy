@@ -34,6 +34,9 @@ def convert_usd(df: pd.DataFrame,
     input dataframe's frequency and whether columns represent rolling averages
     or sums.
 
+    If input dataframe's frequency is higher than monthly (daily, business,
+    etc.), resample to monthly frequency.
+
     Parameters
     ----------
     df : pd.DataFrame
@@ -57,7 +60,19 @@ def convert_usd(df: pd.DataFrame,
     Input dataframe measured in US dollars : pd.DataFrame
 
     """
+    if df.columns.get_level_values("Moneda")[0] == "USD":
+        warnings.warn("Input dataframe already in dollars. No transformations"
+                      " made", UserWarning)
+        return df
+
     inferred_freq = pd.infer_freq(df.index)
+    if inferred_freq in ["D", "B", "C", "W", None]:
+        if df.columns.get_level_values("Tipo")[0] == "Flujo":
+            df = df.resample("M").sum()
+        else:
+            df = df.resample("M").mean()
+        inferred_freq = pd.infer_freq(df.index)
+
     nxr_data = nxr.get_monthly(update_loc=update_loc, save_loc=save_loc,
                                only_get=only_get)
 
@@ -97,6 +112,9 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     a range of dates or no period as a base (i.e., period for which the
     average/sum of input dataframe and output dataframe is the same).
 
+    If input dataframe's frequency is higher than monthly (daily, business,
+    etc.), resample to monthly frequency.
+
     Parameters
     ----------
     df : pd.DataFrame
@@ -126,7 +144,19 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     Input dataframe measured at constant prices : pd.DataFrame
 
     """
+    if "Const" in df.columns.get_level_values("Inf. adj.")[0]:
+        warnings.warn("Input dataframe already in real terms. No "
+                      "transformations made", UserWarning)
+        return df
+
     inferred_freq = pd.infer_freq(df.index)
+    if inferred_freq in ["D", "B", "C", "W", None]:
+        if df.columns.get_level_values("Tipo")[0] == "Flujo":
+            df = df.resample("M").sum()
+        else:
+            df = df.resample("M").mean()
+        inferred_freq = pd.infer_freq(df.index)
+
     cpi_data = cpi.get(update_loc=update_loc, save_loc=save_loc,
                        only_get=only_get)
 
@@ -181,6 +211,12 @@ def convert_gdp(df: pd.DataFrame,
     higher than quarterly, GDP will be upsampled and linear interpolation will
     be performed to complete missing data.
 
+    If input dataframe's "Acum." level is not 12 for monthly frequency or 4
+    for quarterly frequency, internally calculate rolling input dataframe.
+
+    If input dataframe's frequency is higher than monthly (daily, business,
+    etc.), resample to monthly frequency.
+
     Parameters
     ----------
     df : pd.DataFrame
@@ -206,22 +242,42 @@ def convert_gdp(df: pd.DataFrame,
     Raises
     ------
     ValueError
-        If frequency of input dataframe not any of 'M', 'MS', 'Q', 'Q-DEC', 'A'
-        or 'A-DEC'.
+        If frequency of input dataframe not any of 'D', 'C', 'W', 'B', 'M',
+        'MS', 'Q', 'Q-DEC', 'A' or 'A-DEC'.
 
     """
+    if df.columns.get_level_values("Unidad")[0] == "% PBI":
+        warnings.warn("Input dataframe already in percent of GDP. No "
+                      "transformations made", UserWarning)
+        return df
+
     inferred_freq = pd.infer_freq(df.index)
     gdp = national_accounts._lin_gdp(update_loc=update_loc,
                                      save_loc=save_loc, only_get=only_get)
-
+    cum = df.columns.get_level_values("Acum. períodos")[0]
     if inferred_freq in ["M", "MS"]:
         gdp = resample(gdp, target=inferred_freq,
                        operation="upsample", interpolation="linear")
-    elif inferred_freq in ["Q", "Q-DEC", "A", "A-DEC"]:
+        if cum != 12 and df.columns.get_level_values("Tipo")[0] == "Flujo":
+            converter = int(12 / cum)
+            df = rolling(df, periods=converter, operation="sum")
+    elif inferred_freq in ["Q", "Q-DEC"]:
         gdp = gdp.resample(inferred_freq, convention="end").asfreq()
+        if cum != 4 and df.columns.get_level_values("Tipo")[0] == "Flujo":
+            converter = int(4 / cum)
+            df = rolling(df, periods=converter, operation="sum")
+    elif inferred_freq in ["A", "A-DEC"]:
+        gdp = gdp.resample(inferred_freq, convention="end").asfreq()
+    elif inferred_freq in ["D", "B", "C", "W", None]:
+        if df.columns.get_level_values("Tipo")[0] == "Flujo":
+            df = df.resample("M").sum()
+        else:
+            df = df.resample("M").mean()
+        gdp = resample(gdp, target="M",
+                       operation="upsample", interpolation="linear")
     else:
-        raise ValueError("Frequency of input dataframe not any of 'M', 'MS', "
-                         "'Q', 'Q-DEC', 'A' or 'A-DEC'.")
+        raise ValueError("Frequency of input dataframe not any of 'D', 'C', "
+                         "'W', 'B', 'M', 'MS', 'Q', 'Q-DEC', 'A' or 'A-DEC'.")
 
     if df.columns.get_level_values("Moneda")[0] == "USD":
         gdp = gdp.iloc[:, 1].to_frame()
@@ -282,22 +338,22 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
                       "A-DEC": 1,
                       "Q": 4,
                       "Q-DEC": 4,
-                      "M": 12}
+                      "M": 12,
+                      "W": 52.143,
+                      "W-SUN": 52.143,
+                      "2W": 26.071,
+                      "2W-SUN": 26.071,
+                      "B": 240,
+                      "D": 365}
 
     if operation == "sum":
         resampled_df = df.resample(target).sum()
     elif operation == "average":
         resampled_df = df.resample(target).mean()
     elif operation == "end":
-        if df.columns.get_level_values("Frecuencia")[0] == "-":
-            resampled_df = df.resample(target).last()
-        else:
-            resampled_df = df.asfreq(freq=target)
+        resampled_df = df.resample(target).last()
     elif operation == "upsample":
-        if df.columns.get_level_values("Frecuencia")[0] == "-":
-            resampled_df = df.resample(target).last()
-        else:
-            resampled_df = df.asfreq(freq=target)
+        resampled_df = df.resample(target).last()
         resampled_df = resampled_df.interpolate(method=interpolation)
     else:
         raise ValueError("Only 'sum', 'average', 'end' and 'upsample' "
@@ -311,15 +367,19 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
         metadata._set(resampled_df,
                       cumperiods=int(cum_periods * cum_adj))
 
-    if df.columns.get_level_values("Frecuencia")[0] != "-":
+    if operation in ["sum", "average", "end"]:
         infer_base = pd.infer_freq(df.index)
-        base_freq = pd_frequencies[infer_base]
-        target_freq = pd_frequencies[target]
-        if target_freq < base_freq:
-            count = int(base_freq / target_freq)
-            proc = df.resample(target).count()
-            proc = proc.loc[proc.iloc[:, 0] == count]
-            resampled_df = resampled_df.reindex(proc.index)
+        try:
+            base_freq = pd_frequencies[infer_base]
+            target_freq = pd_frequencies[target]
+            if target_freq < base_freq:
+                count = int(base_freq / target_freq)
+                proc = df.resample(target).count()
+                proc = proc.loc[proc.iloc[:, 0] >= count]
+                resampled_df = resampled_df.reindex(proc.index)
+        except KeyError:
+            warnings.warn("No bin trimming performed because frequencies "
+                          "could not be assigned a numeric value", UserWarning)
 
     metadata._set(resampled_df)
     resampled_df = resampled_df.dropna(how="all")
@@ -359,7 +419,14 @@ def rolling(df: pd.DataFrame, periods: Optional[int] = None,
                       "A-DEC": 1,
                       "Q": 4,
                       "Q-DEC": 4,
-                      "M": 12}
+                      "M": 12,
+                      "MS": 12,
+                      "W": 52,
+                      "W-SUN": 52,
+                      "2W": 26,
+                      "2W-SUN": 26,
+                      "B": 260,
+                      "D": 365}
 
     window_operation = {
         "sum": lambda x: x.rolling(window=periods,

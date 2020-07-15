@@ -305,7 +305,7 @@ def test_convert():
     real = session.convert(flavor="real").dataset["data1"]
     real.columns = data.columns
     assert np.all(abs(real) <= abs(data))
-    data = dummy_df(freq="Q-DEC", periods=40, currency="USD")
+    data = dummy_df(freq="A-DEC", periods=10, currency="USD")
     session = Session(location=TEST_CON, dataset=data, inplace=True)
     pcgdp = session.convert(flavor="pcgdp").dataset
     pcgdp.columns = data.columns
@@ -326,7 +326,31 @@ def test_convert():
                           dataset={"data1": data, "data2": data})
         session.convert(flavor="wrong")
     with pytest.raises(ValueError):
-        data = dummy_df(freq="B", periods=200)
+        data = dummy_df(freq="H", periods=200)
         session = Session(location=TEST_CON,
                           dataset=data)
         session.convert(flavor="gdp")
+    data_d = dummy_df(freq="D", periods=600, ts_type="Flujo")
+    session = Session(location=TEST_CON, dataset=data_d)
+    real = session.convert(flavor="real", start_date="2000-01-31")
+    pcgdp = session.convert(flavor="pcgdp")
+    usd = session.convert(flavor="usd")
+    data_d = dummy_df(freq="D", periods=600, ts_type="Stock", currency="USD")
+    session = Session(location=TEST_CON, dataset=data_d)
+    real = session.convert(flavor="real", start_date="2000-01-31",
+                           end_date="2000-12-31")
+    pcgdp = session.convert(flavor="pcgdp")
+    usd = session.convert(flavor="usd")
+    real_2 = session.convert(flavor="real", start_date="2000-01-31",
+                             end_date="2000-12-31")
+    assert real.dataset.equals(real_2.dataset)
+    pcgdp_2 = session.convert(flavor="pcgdp")
+    assert pcgdp.dataset.equals(pcgdp_2.dataset)
+    usd_2 = session.convert(flavor="usd")
+    assert usd.dataset.equals(usd_2.dataset)
+    data_m = dummy_df(freq="M", ts_type="Flujo")
+    session = Session(location=TEST_CON, dataset=data_m)
+    pcgdp = session.convert(flavor="pcgdp")
+    data_q = dummy_df(freq="Q-DEC", ts_type="Flujo")
+    session = Session(location=TEST_CON, dataset=data_q)
+    pcgdp = session.convert(flavor="pcgdp")

@@ -71,7 +71,6 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     output = {}
     for file, meta in trade_metadata.items():
-        print(file)
         xls = pd.ExcelFile(meta["url"])
         sheets = []
         for sheet in xls.sheet_names:

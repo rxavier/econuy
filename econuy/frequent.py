@@ -489,6 +489,7 @@ def terms_of_trade(update_loc: Union[str, PathLike, Engine,
     tot.rename(columns={"Total": "Términos de intercambio"}, inplace=True)
     tot = transform.base_index(tot, start_date="2005-01-01",
                                end_date="2005-12-31")
+    metadata._set(tot, ts_type="-")
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
