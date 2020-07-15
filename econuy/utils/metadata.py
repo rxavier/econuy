@@ -112,7 +112,7 @@ def _get_sources(dataset: str,
 
     if html_urls is True:
         direct_html = []
-        texts = list(range(1, len(indirect) + 1))
+        texts = list(range(1, len(direct) + 1))
         for url, text in zip(direct, texts):
             direct_html.append(f"<a href='{url}'>{text}</a>")
         indirect_html = []
