@@ -79,6 +79,11 @@ def get_rates(update_loc: Union[str, PathLike,
                      "Tasa de empleo: hombres", "Tasa de empleo: mujeres",
                      "Tasa de desempleo: total", "Tasa de desempleo: hombres",
                      "Tasa de desempleo: mujeres"]
+    missing = pd.read_excel(urls["labor"]["dl"]["missing"],
+                            index_col=0, header=0)
+    missing.columns = labor.columns
+    labor = labor.append(missing)
+    labor = labor.loc[~labor.index.duplicated(keep="first")]
 
     if update_loc is not None:
         previous_data = ops._io(operation="update",
