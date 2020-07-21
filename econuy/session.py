@@ -127,7 +127,7 @@ class Session(object):
         ----------
         dataset : {'cpi', 'nxr_monthly', 'nxr_daily', 'fiscal', 'naccounts', \
                 'labor', 'wages', 'comm_index', 'rxr_custom', 'rxr_official', \
-                'reserves_changes', 'trade'}
+                'reserves', 'reserves_changes', 'trade'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -221,6 +221,11 @@ class Session(object):
                                          save_loc=save_loc,
                                          only_get=self.only_get,
                                          **kwargs)
+        elif dataset == "reserves":
+            output = reserves.get(update_loc=update_loc,
+                                  save_loc=save_loc,
+                                  only_get=self.only_get,
+                                  **kwargs)
         elif dataset == "reserves_changes" or dataset == "reserves_chg":
             output = reserves.get_changes(update_loc=update_loc,
                                           save_loc=save_loc,
