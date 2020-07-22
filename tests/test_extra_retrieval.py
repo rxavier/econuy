@@ -113,3 +113,12 @@ def test_nxr_monthly():
     assert len(nxr.columns) == 2
     assert isinstance(nxr.index[0], pd._libs.tslibs.timestamps.Timestamp)
     remove_clutter()
+
+
+def test_reserves():
+    remove_clutter()
+    session = Session(location=TEST_DIR)
+    reserves = session.get(dataset="reserves").dataset
+    assert len(reserves.columns) == 6
+    assert isinstance(reserves.index[0], pd._libs.tslibs.timestamps.Timestamp)
+    remove_clutter()

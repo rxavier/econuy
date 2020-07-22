@@ -270,6 +270,19 @@ def test_tot():
     remove_clutter()
 
 
+def test_public_debt():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    debt = session.get(dataset="public_debt").dataset
+    assert isinstance(debt, dict)
+    assert len(debt) == 4
+    net_debt = session.get_custom(dataset="net_public_debt").dataset
+    assert net_debt.index.__len__() < debt["gps"].index.__len__()
+    remove_clutter()
+
+
 def test_edge():
     remove_clutter()
     session = Session(location=TEST_DIR)
