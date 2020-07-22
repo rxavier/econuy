@@ -64,3 +64,22 @@ Frequent functions
    :members:
    :undoc-members:
    :show-inheritance:
+
+Utility functions
+------------------------
+.. automodule:: econuy.utils.logutil
+   :members:
+   :undoc-members:
+   :show-inheritance:
+.. automodule:: econuy.utils.metadata
+   :members:
+   :undoc-members:
+   :show-inheritance:
+.. automodule:: econuy.utils.ops
+   :members:
+   :undoc-members:
+   :show-inheritance:
+.. automodule:: econuy.utils.sqlutil
+   :members:
+   :undoc-members:
+   :show-inheritance:
