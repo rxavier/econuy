@@ -26,6 +26,10 @@ Retrieval functions
    :members:
    :undoc-members:
    :show-inheritance:
+.. automodule:: econuy.retrieval.public_debt
+   :members:
+   :undoc-members:
+   :show-inheritance:
 .. automodule:: econuy.retrieval.labor
    :members:
    :undoc-members:

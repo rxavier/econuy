@@ -12,7 +12,8 @@ from scipy.stats import stats
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
-from econuy.retrieval import nxr, cpi, fiscal_accounts, labor, trade
+from econuy.retrieval import (nxr, cpi, fiscal_accounts,
+                              labor, trade, public_debt, reserves)
 from econuy.utils import metadata, ops
 from econuy.utils.lstrings import fiscal_metadata, urls, prod_details
 
@@ -202,6 +203,68 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
                                         update_loc=update_loc,
                                         save_loc=save_loc,
                                         only_get=only_get)
+
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=output, name=name, index_label=index_label)
+
+    return output
+
+
+def net_public_debt(update_loc: Union[str, PathLike, Engine,
+                                      Connection, None] = None,
+                    save_loc: Union[str, PathLike, Engine,
+                                    Connection, None] = None,
+                    only_get: bool = True,
+                    name: str = "tfm_public_debt",
+                    index_label: str = "index") -> pd.DataFrame:
+    """
+    Get net public debt excluding financial deposits at the central bank.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'tfm_public_debt'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL. Options will be appended to the base name.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default True
+        If True, don't download data, retrieve what is available from
+        ``update_loc`` for the commodity index.
+
+    Returns
+    -------
+    Net public debt excl. financial deposits at the central bank : pd.DataFrame
+
+    """
+    data = public_debt.get(update_loc=update_loc,
+                           save_loc=save_loc, only_get=only_get)
+    gross_debt = data["gps"].loc[:, ["Total deuda"]]
+    assets = data["assets"].loc[:, ["Total activos"]]
+    gross_debt.columns = ["Deuda neta del sector"
+                          " público global excl. encajes"]
+    assets.columns = gross_debt.columns
+    deposits = reserves.get(update_loc=update_loc,
+                            save_loc=save_loc, only_get=only_get).loc[:,
+               ["Obligaciones en ME con el sector financiero"]
+               ]
+    deposits = (transform.resample(deposits, target="Q-DEC", operation="end")
+                .reindex(gross_debt.index).squeeze())
+    output = gross_debt.add(assets).add(deposits, axis=0).dropna()
+
+    metadata._set(output, area="Cuentas fiscales y deuda",
+                  currency="USD", inf_adj="No", unit="Millones",
+                  seas_adj="NSA", ts_type="Stock", cumperiods=1)
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,

@@ -9,7 +9,8 @@ from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import frequent, transform
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
-                              labor, rxr, commodity_index, reserves, trade)
+                              labor, rxr, commodity_index, reserves, trade,
+                              public_debt)
 from econuy.utils import logutil, ops
 
 
@@ -175,6 +176,12 @@ class Session(object):
                                          save_loc=save_loc,
                                          only_get=self.only_get,
                                          **kwargs)
+        elif dataset == "public_debt":
+            output = public_debt.get(update_loc=update_loc,
+                                     revise_rows=self.revise_rows,
+                                     save_loc=save_loc,
+                                     only_get=self.only_get,
+                                     **kwargs)
         elif dataset == "nxr_monthly" or dataset == "nxr_m":
             output = nxr.get_monthly(update_loc=update_loc,
                                      revise_rows=self.revise_rows,
@@ -301,6 +308,11 @@ class Session(object):
                                      save_loc=save_loc,
                                      only_get=self.only_get,
                                      **kwargs)
+        elif dataset == "net_public_debt":
+            output = frequent.net_public_debt(update_loc=update_loc,
+                                              save_loc=save_loc,
+                                              only_get=self.only_get,
+                                              **kwargs)
         elif dataset == "labor" or dataset == "labour":
             output = frequent.labor_rate_people(update_loc=update_loc,
                                                 save_loc=save_loc,
