@@ -263,7 +263,7 @@ class Session(object):
                      dataset: str,
                      update: bool = True,
                      save: bool = True,
-                     **kwargs):
+                     **kwargs): #pragma: no cover
         """
         Get frequently used datasets.
 
