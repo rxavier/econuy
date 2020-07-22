@@ -57,7 +57,7 @@ def get(update_loc: Union[str, PathLike, Engine,
 
     Returns
     -------
-    Daily international reserves changes : pd.DataFrame
+    Daily international reserves : pd.DataFrame
 
     """
     if only_get is True and update_loc is not None:
