@@ -267,6 +267,8 @@ class Session(object):
         """
         Get frequently used datasets.
 
+        This method will be renamed to 'get_custom' in a future version.
+
         Parameters
         ----------
         dataset : {'cpi_measures', 'fiscal', 'labor', 'real_wages', \
@@ -368,7 +370,7 @@ class Session(object):
                    save: bool = True,
                    **kwargs):
         """
-        Get frequently used datasets.
+        Get custom datasets.
 
         Parameters
         ----------

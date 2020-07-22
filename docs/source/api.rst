@@ -7,8 +7,9 @@ Session class
    :members:
    :undoc-members:
    :show-inheritance:
+   :exclude-members: get_frequent
 
-Retrieval functions
+Data retrieval functions
 ------------------------
 .. automodule:: econuy.retrieval.cpi
    :members:
@@ -58,8 +59,8 @@ Transformation functions
    :undoc-members:
    :show-inheritance:
 
-Frequent functions
-------------------------
+Custom data retrieval functions
+-------------------------------
 .. automodule:: econuy.frequent
    :members:
    :undoc-members:
