@@ -310,7 +310,7 @@ def net_public_debt(update_loc: Union[str, PathLike, Engine,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'tfm_public_debt'
+    name : str, default 'tfm_pubdebt'
         Either CSV filename for updating and/or saving, or table name if
         using SQL. Options will be appended to the base name.
     index_label : str, default 'index'
@@ -413,6 +413,7 @@ def labor_rate_people(extend: bool = True,
     rates = rates.loc[:, ["Tasa de actividad: total", "Tasa de empleo: total",
                           "Tasa de desempleo: total"]]
     if extend is True:
+        name = name + "_extended"
         act_5000 = pd.read_excel(urls["tfm_labor"]["dl"]["act_5000"],
                                  sheet_name="Mensual", index_col=0, skiprows=8,
                                  usecols="A:B").dropna(how="any")

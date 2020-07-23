@@ -105,6 +105,8 @@ def _get_sources(dataset: str,
         dataset = "_".join(dataset.split(sep="_")[:2])
     elif dataset.startswith("fiscal"):
         dataset = dataset.split(sep="_")[0]
+    elif dataset.startswith("public_debt"):
+        dataset = "_".join(dataset.split(sep="_")[:2])
 
     direct = urls[dataset]["source"]["direct"]
     indirect = urls[dataset]["source"]["indirect"]
