@@ -297,7 +297,7 @@ def net_public_debt(update_loc: Union[str, PathLike, Engine,
                     save_loc: Union[str, PathLike, Engine,
                                     Connection, None] = None,
                     only_get: bool = True,
-                    name: str = "tfm_public_debt",
+                    name: str = "tfm_pubdebt",
                     index_label: str = "index") -> pd.DataFrame:
     """
     Get net public debt excluding financial deposits at the central bank.
