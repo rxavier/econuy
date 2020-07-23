@@ -7,8 +7,9 @@ Session class
    :members:
    :undoc-members:
    :show-inheritance:
+   :exclude-members: get_frequent
 
-Retrieval functions
+Data retrieval functions
 ------------------------
 .. automodule:: econuy.retrieval.cpi
    :members:
@@ -22,7 +23,15 @@ Retrieval functions
    :members:
    :undoc-members:
    :show-inheritance:
+.. automodule:: econuy.retrieval.industrial_production
+   :members:
+   :undoc-members:
+   :show-inheritance:
 .. automodule:: econuy.retrieval.fiscal_accounts
+   :members:
+   :undoc-members:
+   :show-inheritance:
+.. automodule:: econuy.retrieval.public_debt
    :members:
    :undoc-members:
    :show-inheritance:
@@ -54,9 +63,28 @@ Transformation functions
    :undoc-members:
    :show-inheritance:
 
-Frequent functions
-------------------------
+Custom data retrieval functions
+-------------------------------
 .. automodule:: econuy.frequent
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Utility functions
+------------------------
+.. automodule:: econuy.utils.logutil
+   :members:
+   :undoc-members:
+   :show-inheritance:
+.. automodule:: econuy.utils.metadata
+   :members:
+   :undoc-members:
+   :show-inheritance:
+.. automodule:: econuy.utils.ops
+   :members:
+   :undoc-members:
+   :show-inheritance:
+.. automodule:: econuy.utils.sqlutil
    :members:
    :undoc-members:
    :show-inheritance:

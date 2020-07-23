@@ -41,7 +41,7 @@ def test_prices_inflation():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    measures = session.get_frequent(dataset="price_measures").dataset
+    measures = session.get_custom(dataset="price_measures").dataset
     remove_clutter()
     prices = session.get(dataset="cpi").dataset
     prices = prices.loc[prices.index >= "1997-03-31"]
@@ -57,7 +57,7 @@ def test_fiscal():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    fiscal_tfm = session.get_frequent(dataset="fiscal", aggregation="nfps",
+    fiscal_tfm = session.get_custom(dataset="fiscal", aggregation="nfps",
                                       fss=True, unit="gdp").dataset
     remove_clutter()
     fiscal_ = session.get(dataset="fiscal").dataset
@@ -102,13 +102,13 @@ def test_fiscal():
     compare_gdp.columns = fiscal_tfm.columns
     assert compare_gdp.equals(fiscal_tfm)
     remove_clutter()
-    fiscal_tfm = session.get_frequent(dataset="fiscal", aggregation="nfps",
+    fiscal_tfm = session.get_custom(dataset="fiscal", aggregation="nfps",
                                       fss=True, unit="usd").dataset
     compare_usd = transform.convert_usd(compare)
     compare_usd.columns = fiscal_tfm.columns
     assert compare_usd.equals(fiscal_tfm)
     remove_clutter()
-    fiscal_tfm = session.get_frequent(dataset="fiscal", aggregation="nfps",
+    fiscal_tfm = session.get_custom(dataset="fiscal", aggregation="nfps",
                                       fss=True, unit="real").dataset
     compare_real = transform.convert_real(compare)
     compare_real.columns = fiscal_tfm.columns
@@ -116,7 +116,7 @@ def test_fiscal():
     remove_clutter()
     start_date = "2010-01-31"
     end_date = "2010-12-31"
-    fiscal_tfm = session.get_frequent(dataset="fiscal", aggregation="nfps",
+    fiscal_tfm = session.get_custom(dataset="fiscal", aggregation="nfps",
                                       fss=True, unit="real_usd",
                                       start_date=start_date,
                                       end_date=end_date).dataset
@@ -129,10 +129,10 @@ def test_fiscal():
     assert compare_real_usd.equals(fiscal_tfm)
     remove_clutter()
     with pytest.raises(ValueError):
-        session.get_frequent(dataset="fiscal", aggregation="nfps",
+        session.get_custom(dataset="fiscal", aggregation="nfps",
                              unit="wrong")
     with pytest.raises(ValueError):
-        session.get_frequent(dataset="fiscal", aggregation="wrong")
+        session.get_custom(dataset="fiscal", aggregation="wrong")
     remove_clutter()
     fiscal_ = session.get(dataset="fiscal").dataset
     session.only_get = True
@@ -148,7 +148,8 @@ def test_labor():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    labor_tfm = session.get_frequent(dataset="labor", seas_adj="trend").dataset
+    labor_tfm = session.get_custom(dataset="labor", seas_adj="trend",
+                                   extend=False).dataset
     labor_tfm = labor_tfm.iloc[:, [0, 1, 2]]
     remove_clutter()
     labor_ = session.get(dataset="labor").dataset.iloc[:, [0, 3, 6]]
@@ -164,20 +165,25 @@ def test_labor():
     labor_trend.columns = labor_tfm.columns
     assert labor_trend.equals(labor_tfm)
     remove_clutter()
-    labor_tfm = session.get_frequent(dataset="labor", seas_adj="seas").dataset
+    labor_tfm = session.get_custom(dataset="labor", seas_adj="seas",
+                                   extend=False).dataset
     labor_tfm = labor_tfm.iloc[:, [0, 1, 2]]
     labor_sa.columns = labor_tfm.columns
     assert labor_sa.equals(labor_tfm)
     remove_clutter()
-    labor_tfm = session.get_frequent(dataset="labor", seas_adj=None).dataset
+    labor_tfm = session.get_custom(dataset="labor", seas_adj=None,
+                                   extend=False).dataset
     compare = labor_.iloc[:, 0].div(labor_.iloc[:, 1]).round(4)
     compare_2 = labor_tfm.iloc[:, 3].div(labor_tfm.iloc[:, 4]).round(4)
     assert compare.equals(compare_2)
     compare = labor_tfm.iloc[:, 3].mul(labor_.iloc[:, 2]).div(100).round(4)
     assert compare.equals(labor_tfm.iloc[:, 5].round(4))
     remove_clutter()
+    labor_ext = session.get_custom(dataset="labor", extend=True).dataset
+    assert len(labor_ext) > len(labor_tfm)
+    remove_clutter()
     with pytest.raises(ValueError):
-        session.get_frequent(dataset="labor", seas_adj="wrong")
+        session.get_custom(dataset="labor", seas_adj="wrong")
 
 
 def test_wages():
@@ -185,7 +191,7 @@ def test_wages():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    full_wages = session.get_frequent(dataset="real_wages",
+    full_wages = session.get_custom(dataset="real_wages",
                                       seas_adj="trend").dataset
     wages_tfm = full_wages.iloc[:, [0, 1, 2]]
     remove_clutter()
@@ -201,13 +207,13 @@ def test_wages():
     wages_trend.columns = wages_tfm.columns
     assert wages_trend.equals(wages_tfm)
     remove_clutter()
-    full_wages = session.get_frequent(dataset="wages", seas_adj="seas").dataset
+    full_wages = session.get_custom(dataset="wages", seas_adj="seas").dataset
     wages_tfm = full_wages.iloc[:, [0, 1, 2]]
     wages_sa = transform.base_index(wages_sa, start_date="2008-07-31")
     wages_sa.columns = wages_tfm.columns
     assert wages_sa.equals(wages_tfm)
     remove_clutter()
-    full_wages = session.get_frequent(dataset="wages", seas_adj=None).dataset
+    full_wages = session.get_custom(dataset="wages", seas_adj=None).dataset
     real_wages = full_wages.iloc[:, [3, 4, 5]]
     compare = transform.convert_real(wages_)
     compare = transform.base_index(compare, start_date="2008-07-31")
@@ -215,7 +221,7 @@ def test_wages():
     assert real_wages.equals(compare)
     remove_clutter()
     with pytest.raises(ValueError):
-        session.get_frequent(dataset="wages", seas_adj="wrong")
+        session.get_custom(dataset="wages", seas_adj="wrong")
 
 
 def test_naccounts():
@@ -238,7 +244,7 @@ def test_trade():
     assert isinstance(tb_, dict)
     assert len(tb_) == 12
     remove_clutter()
-    net = session.get_frequent(dataset="net_trade").dataset
+    net = session.get_custom(dataset="net_trade").dataset
     compare = (tb_["tb_x_dest_val"].
                rename(columns={"Total exportaciones": "Total"})
                - tb_["tb_m_orig_val"].
@@ -257,7 +263,7 @@ def test_tot():
     assert isinstance(tb_, dict)
     assert len(tb_) == 12
     remove_clutter()
-    net = session.get_frequent(dataset="tot").dataset
+    net = session.get_custom(dataset="tot").dataset
     compare = (tb_["tb_x_dest_pri"].
                rename(columns={"Total exportaciones": "Total"})
                / tb_["tb_m_orig_pri"].
@@ -270,6 +276,40 @@ def test_tot():
     remove_clutter()
 
 
+def test_public_debt():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    debt = session.get(dataset="public_debt").dataset
+    assert isinstance(debt, dict)
+    assert len(debt) == 4
+    net_debt = session.get_custom(dataset="net_public_debt").dataset
+    assert net_debt.index.__len__() < debt["gps"].index.__len__()
+    remove_clutter()
+
+
+def test_industrial_production():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    indprod = session.get(dataset="industrial_production").dataset
+    remove_clutter()
+    core = session.get_custom(dataset="core_industrial").dataset
+    core = core.loc[:, ["Núcleo industrial"]]
+    compare = (indprod["Industrias manufactureras sin refinería"]
+               - indprod.loc[:, 1549] * 0.082210446
+               - indprod.loc[:, 2101] * 0.008097608)
+    compare = pd.concat([compare], keys=["Núcleo industrial"],
+                        names=["Indicador"], axis=1)
+    compare = transform.base_index(compare, start_date="2006-01-01",
+                                   end_date="2006-12-31")
+    compare.columns = core.columns
+    assert core.round(2).equals(compare.round(2))
+    remove_clutter()
+
+
 def test_edge():
     remove_clutter()
     session = Session(location=TEST_DIR)
@@ -279,12 +319,12 @@ def test_edge():
     with pytest.raises(ValueError):
         session.get(dataset="wrong")
     with pytest.raises(ValueError):
-        session.get_frequent(dataset="wrong")
+        session.get_custom(dataset="wrong")
     remove_clutter()
     session = Session(location="new_dir")
     assert path.isdir("new_dir")
     shutil.rmtree(session.location)
-    Session(location=TEST_DIR).get_frequent(dataset="price_measures",
+    Session(location=TEST_DIR).get_custom(dataset="price_measures",
                                             update=False, save=False)
     remove_clutter()
 

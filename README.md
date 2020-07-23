@@ -72,11 +72,11 @@ df = sess.get(dataset="cpi").dataset
 ```
 Note that the previous code block accessed the `dataset` attribute in order to get a dataframe. Alternatively, one could also call the `final()` method after calling `get()`.
 
-#### `get_frequent()`
+#### `get_custom()`
 
-Gives access to predefined data pipelines that output frequently used data. These are based on the datasets provided by `get()`, but are transformed to render data that you might find more immediately useful.
+Gives access to predefined data pipelines that output frequently used data not provided officially. These are based on the datasets provided by `get()`, but are transformed to render data that you might find more immediately useful.
 
-For example, the following downloads CPI data, calculates annual inflation (pct change from a year ago), monthly inflation, and seasonally adjusted and trend monthly inflation. Also, it uses a SQL database for data updating and saving.
+For example, the following calculates tradable CPI, non-tradable CPI, core CPI and Winsorized CPI. Also, it uses a SQL database for data updating and saving.
 ```python
 from sqlalchemy import create_engine
 
@@ -85,7 +85,7 @@ from econuy import Session
 eng = create_engine("dialect+driver://user:pwd@host:port/database")
 
 sess = Session(location=eng)
-df = sess.get_frequent(dataset="inflation")
+df = sess.get_custom(dataset="inflation")
 ```
 
 ### Session transformation methods

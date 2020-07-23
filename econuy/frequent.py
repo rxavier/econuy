@@ -6,15 +6,93 @@ from urllib.error import HTTPError, URLError
 
 import pandas as pd
 import numpy as np
+from pandas.tseries.offsets import MonthEnd
 from opnieuw import retry
 from scipy.stats.mstats_basic import winsorize
 from scipy.stats import stats
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
-from econuy.retrieval import nxr, cpi, fiscal_accounts, labor, trade
+from econuy.retrieval import (nxr, cpi, fiscal_accounts, industrial_production,
+                              labor, trade, public_debt, reserves)
 from econuy.utils import metadata, ops
 from econuy.utils.lstrings import fiscal_metadata, urls, prod_details
+
+
+def core_industrial(update_loc: Union[str, PathLike, Engine,
+                                      Connection, None] = None,
+                    save_loc: Union[str, PathLike, Engine,
+                                    Connection, None] = None,
+                    name: str = "tfm_industrial",
+                    index_label: str = "index",
+                    only_get: bool = True) -> pd.DataFrame:
+    """
+    Get total industrial production, industrial production excluding oil
+    refinery and core industrial production.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'tfm_industrial'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default True
+        If True, don't download data, retrieve what is available from
+        ``update_loc`` for the commodity index.
+
+    Returns
+    -------
+    Measures of industrial production : pd.DataFrame
+
+    """
+    data = industrial_production.get(update_loc=update_loc, save_loc=save_loc,
+                                     only_get=only_get)
+    weights = pd.read_excel(urls["tfm_industrial"]["dl"]["weights"],
+                            skiprows=3).dropna(how="all")
+    weights = weights.rename(columns={"Unnamed: 5": "Pond. división",
+                                      "Unnamed: 6": "Pond. agrupación",
+                                      "Unnamed: 7": "Pond. clase"})
+    other_foods = (
+            weights.loc[weights["clase"] == 1549]["Pond. clase"].values[0]
+            * weights.loc[(weights["agrupacion"] == 154) &
+                          (weights["clase"] == 0)][
+                "Pond. agrupación"].values[0]
+            * weights.loc[(weights["division"] == 15) &
+                          (weights["agrupacion"] == 0)][
+                "Pond. división"].values[0]
+            / 1000000)
+    pulp = (weights.loc[weights["clase"] == 2101]["Pond. clase"].values[0]
+            * weights.loc[(weights["division"] == 21) &
+                          (weights["agrupacion"] == 0)][
+                "Pond. división"].values[0]
+            / 10000)
+    output = data.loc[:, ["Industrias manufactureras",
+                          "Industrias manufactureras sin refinería"]]
+    exclude = (data.loc[:, 1549] * other_foods
+               + data.loc[:, 2101] * pulp)
+    core = data["Industrias manufactureras sin refinería"] - exclude
+    core = pd.concat([core], keys=["Núcleo industrial"],
+                     names=["Indicador"], axis=1)
+    output = pd.concat([output, core], axis=1)
+    output = transform.base_index(output, start_date="2006-01-01",
+                                  end_date="2006-12-31")
+
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=output, name=name, index_label=index_label)
+
+    return output
 
 
 def fiscal(aggregation: str = "gps", fss: bool = True,
@@ -210,12 +288,75 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     return output
 
 
+def net_public_debt(update_loc: Union[str, PathLike, Engine,
+                                      Connection, None] = None,
+                    save_loc: Union[str, PathLike, Engine,
+                                    Connection, None] = None,
+                    only_get: bool = True,
+                    name: str = "tfm_public_debt",
+                    index_label: str = "index") -> pd.DataFrame:
+    """
+    Get net public debt excluding financial deposits at the central bank.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'tfm_pubdebt'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL. Options will be appended to the base name.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default True
+        If True, don't download data, retrieve what is available from
+        ``update_loc`` for the commodity index.
+
+    Returns
+    -------
+    Net public debt excl. financial deposits at the central bank : pd.DataFrame
+
+    """
+    data = public_debt.get(update_loc=update_loc,
+                           save_loc=save_loc, only_get=only_get)
+    gross_debt = data["gps"].loc[:, ["Total deuda"]]
+    assets = data["assets"].loc[:, ["Total activos"]]
+    gross_debt.columns = ["Deuda neta del sector"
+                          " público global excl. encajes"]
+    assets.columns = gross_debt.columns
+    deposits = reserves.get(update_loc=update_loc,
+                            save_loc=save_loc, only_get=only_get).loc[:,
+               ["Obligaciones en ME con el sector financiero"]
+               ]
+    deposits = (transform.resample(deposits, target="Q-DEC", operation="end")
+                .reindex(gross_debt.index).squeeze())
+    output = gross_debt.add(assets).add(deposits, axis=0).dropna()
+
+    metadata._set(output, area="Cuentas fiscales y deuda",
+                  currency="USD", inf_adj="No", unit="Millones",
+                  seas_adj="NSA", ts_type="Stock", cumperiods=1)
+
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=output, name=name, index_label=index_label)
+
+    return output
+
+
 @retry(
     retry_on_exceptions=(HTTPError, URLError),
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def labor_rate_people(seas_adj: Union[str, None] = None,
+def labor_rate_people(extend: bool = True,
+                      seas_adj: Union[str, None] = None,
                       update_loc: Union[str, PathLike, Engine,
                                         Connection, None] = None,
                       save_loc: Union[str, PathLike, Engine,
@@ -226,8 +367,14 @@ def labor_rate_people(seas_adj: Union[str, None] = None,
     """
     Get labor data, both rates and persons. Allow choosing seasonal adjustment.
 
+    Optionally extend national data between 1991 and 2005 with data for
+    jurisdictions with more than 5,000 inhabitants.
+
     Parameters
     ----------
+    extend : bool, default True
+        Whether to extend national data with 1991-2005 data for non-small
+        jurisdictions.
     seas_adj : {None, 'trend', 'seas'}
         Whether to seasonally adjust.
     update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
@@ -265,6 +412,23 @@ def labor_rate_people(seas_adj: Union[str, None] = None,
     rates = labor.get_rates(update_loc=update_loc, only_get=only_get)
     rates = rates.loc[:, ["Tasa de actividad: total", "Tasa de empleo: total",
                           "Tasa de desempleo: total"]]
+    if extend is True:
+        name = name + "_extended"
+        act_5000 = pd.read_excel(urls["tfm_labor"]["dl"]["act_5000"],
+                                 sheet_name="Mensual", index_col=0, skiprows=8,
+                                 usecols="A:B").dropna(how="any")
+        emp_5000 = pd.read_excel(urls["tfm_labor"]["dl"]["emp_5000"],
+                                 sheet_name="Mensual", index_col=0, skiprows=8,
+                                 usecols="A:B").dropna(how="any")
+        des_5000 = pd.read_excel(urls["tfm_labor"]["dl"]["des_5000"],
+                                 sheet_name="Mensual", index_col=0, skiprows=7,
+                                 usecols="A:B").dropna(how="any")
+        for df in [act_5000, emp_5000, des_5000]:
+            df.index = df.index + MonthEnd(0)
+        rates_5000 = pd.concat([act_5000, emp_5000, des_5000], axis=1)
+        rates_prev = rates_5000.loc[rates_5000.index < "2006-01-31"]
+        rates_prev.columns = rates.columns
+        rates = pd.concat([rates_prev, rates])
     rates.columns.set_levels(rates.columns.levels[0].str.replace(": total",
                                                                  ""),
                              level=0, inplace=True)
@@ -284,7 +448,7 @@ def labor_rate_people(seas_adj: Union[str, None] = None,
     working_age.index = pd.date_range(start="1996-06-30", end="2050-06-30",
                                       freq="A-JUN")
     monthly_working_age = working_age.resample("M").interpolate("linear")
-    monthly_working_age = monthly_working_age.loc[rates.index]
+    monthly_working_age = monthly_working_age.reindex(rates.index)
     persons = rates.iloc[:, [0, 1]].div(100).mul(monthly_working_age, axis=0)
     persons["Desempleados"] = rates.iloc[:, 2].div(100).mul(persons.iloc[:, 0])
     persons.columns = ["Activos", "Empleados", "Desempleados"]

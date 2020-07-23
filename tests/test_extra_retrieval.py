@@ -52,7 +52,7 @@ def test_rxr_official():
 def test_rxr_custom():
     remove_clutter()
     session = Session(location=TEST_DIR)
-    tcr = session.get(dataset="rxr_custom").dataset
+    tcr = session.get_custom(dataset="rxr_custom").dataset
     assert isinstance(tcr, pd.DataFrame)
     assert tcr.index[0] == dt.date(1979, 12, 31)
     assert len(tcr.columns) == 5
@@ -61,7 +61,7 @@ def test_rxr_custom():
     arr = np.array([100] * 5, dtype="float64")
     assert np.all(avs == arr)
     session.only_get = True
-    compare = session.get(dataset="rxr_custom").dataset
+    compare = session.get_custom(dataset="rxr_custom").dataset
     assert tcr.round(4).equals(compare.round(4))
     remove_clutter()
 
@@ -69,12 +69,12 @@ def test_rxr_custom():
 def test_comm_index():
     remove_clutter()
     session = Session(location=TEST_DIR)
-    comm = session.get(dataset="comm_index").dataset
+    comm = session.get_custom(dataset="comm_index").dataset
     assert isinstance(comm, pd.DataFrame)
     assert comm.index[0] == dt.date(2002, 1, 31)
     assert comm.iloc[0][0] == 100
     session.only_get = True
-    compare = session.get(dataset="comm_index", only_get_prices=True).dataset
+    compare = session.get_custom(dataset="comm_index", only_get_prices=True).dataset
     assert compare.round(4).equals(comm.round(4))
     remove_clutter()
 
@@ -112,4 +112,13 @@ def test_nxr_monthly():
     nxr = session.get(dataset="nxr_m").dataset
     assert len(nxr.columns) == 2
     assert isinstance(nxr.index[0], pd._libs.tslibs.timestamps.Timestamp)
+    remove_clutter()
+
+
+def test_reserves():
+    remove_clutter()
+    session = Session(location=TEST_DIR)
+    reserves = session.get(dataset="reserves").dataset
+    assert len(reserves.columns) == 6
+    assert isinstance(reserves.index[0], pd._libs.tslibs.timestamps.Timestamp)
     remove_clutter()

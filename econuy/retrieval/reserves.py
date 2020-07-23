@@ -15,6 +15,90 @@ from econuy.utils.lstrings import urls, reserves_cols
 
 @retry(
     retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def get(update_loc: Union[str, PathLike, Engine,
+                          Connection, None] = None,
+        revise_rows: Union[str, int] = "nodup",
+        save_loc: Union[str, PathLike, Engine,
+                        Connection, None] = None,
+        name: str = "reserves",
+        index_label: str = "index",
+        only_get: bool = False) -> pd.DataFrame:
+    """Get international reserves data.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    name : str, default 'reserves'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
+
+    Returns
+    -------
+    Daily international reserves : pd.DataFrame
+
+    """
+    if only_get is True and update_loc is not None:
+        output = ops._io(operation="update", data_loc=update_loc,
+                         name=name, index_label=index_label)
+        if not output.equals(pd.DataFrame()):
+            return output
+
+    raw = pd.read_excel(urls["reserves"]["dl"]["main"], usecols="D:J",
+                        index_col=0, skiprows=5, na_values="n/d")
+    proc = raw.dropna(how="any", thresh=1)
+    reserves = proc[proc.index.notnull()]
+    reserves.columns = ["Activos de reserva",
+                        "Otros activos externos de corto plazo",
+                        "Obligaciones en ME con el sector público",
+                        "Obligaciones en ME con el sector financiero",
+                        "Activos de reserva sin sector público y financiero",
+                        "Posición en ME del BCU"]
+    reserves = reserves.apply(pd.to_numeric, errors="coerce")
+
+    if update_loc is not None:
+        previous_data = ops._io(operation="update",
+                                data_loc=update_loc,
+                                name=name,
+                                index_label=index_label)
+        reserves = ops._revise(new_data=reserves, prev_data=previous_data,
+                               revise_rows=revise_rows)
+
+    metadata._set(reserves, area="Reservas internacionales", currency="USD",
+                  inf_adj="No", unit="Millones", seas_adj="NSA",
+                  ts_type="Stock", cumperiods=1)
+
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=reserves, name=name, index_label=index_label)
+
+    return reserves
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
     max_calls_total=10,
     retry_window_after_first_call_in_seconds=90,
 )
@@ -25,7 +109,7 @@ def get_changes(update_loc: Union[str, PathLike, Engine,
                 name: str = "reserves_chg",
                 index_label: str = "index",
                 only_get: bool = False) -> pd.DataFrame:
-    """Get international reserves change data.
+    """Get international reserves changes data.
 
     Parameters
     ----------
