@@ -79,8 +79,12 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
             / 10000)
     output = data.loc[:, ["Industrias manufactureras",
                           "Industrias manufactureras sin refinería"]]
-    exclude = (data.loc[:, 1549] * other_foods
-               + data.loc[:, 2101] * pulp)
+    try:
+        exclude = (data.loc[:, "1549"] * other_foods
+                   + data.loc[:, "2101"] * pulp)
+    except KeyError:
+        exclude = (data.loc[:, 1549] * other_foods
+                   + data.loc[:, 2101] * pulp)
     core = data["Industrias manufactureras sin refinería"] - exclude
     core = pd.concat([core], keys=["Núcleo industrial"],
                      names=["Indicador"], axis=1)
