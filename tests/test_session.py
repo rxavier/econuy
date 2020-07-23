@@ -148,7 +148,8 @@ def test_labor():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    labor_tfm = session.get_custom(dataset="labor", seas_adj="trend").dataset
+    labor_tfm = session.get_custom(dataset="labor", seas_adj="trend",
+                                   extend=False).dataset
     labor_tfm = labor_tfm.iloc[:, [0, 1, 2]]
     remove_clutter()
     labor_ = session.get(dataset="labor").dataset.iloc[:, [0, 3, 6]]
@@ -164,17 +165,22 @@ def test_labor():
     labor_trend.columns = labor_tfm.columns
     assert labor_trend.equals(labor_tfm)
     remove_clutter()
-    labor_tfm = session.get_custom(dataset="labor", seas_adj="seas").dataset
+    labor_tfm = session.get_custom(dataset="labor", seas_adj="seas",
+                                   extend=False).dataset
     labor_tfm = labor_tfm.iloc[:, [0, 1, 2]]
     labor_sa.columns = labor_tfm.columns
     assert labor_sa.equals(labor_tfm)
     remove_clutter()
-    labor_tfm = session.get_custom(dataset="labor", seas_adj=None).dataset
+    labor_tfm = session.get_custom(dataset="labor", seas_adj=None,
+                                   extend=False).dataset
     compare = labor_.iloc[:, 0].div(labor_.iloc[:, 1]).round(4)
     compare_2 = labor_tfm.iloc[:, 3].div(labor_tfm.iloc[:, 4]).round(4)
     assert compare.equals(compare_2)
     compare = labor_tfm.iloc[:, 3].mul(labor_.iloc[:, 2]).div(100).round(4)
     assert compare.equals(labor_tfm.iloc[:, 5].round(4))
+    remove_clutter()
+    labor_ext = session.get_custom(dataset="labor", extend=True).dataset
+    assert len(labor_ext) > len(labor_tfm)
     remove_clutter()
     with pytest.raises(ValueError):
         session.get_custom(dataset="labor", seas_adj="wrong")

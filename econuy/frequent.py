@@ -6,6 +6,7 @@ from urllib.error import HTTPError, URLError
 
 import pandas as pd
 import numpy as np
+from pandas.tseries.offsets import MonthEnd
 from opnieuw import retry
 from scipy.stats.mstats_basic import winsorize
 from scipy.stats import stats
@@ -62,15 +63,19 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
     weights = weights.rename(columns={"Unnamed: 5": "Pond. división",
                                       "Unnamed: 6": "Pond. agrupación",
                                       "Unnamed: 7": "Pond. clase"})
-    other_foods = (weights.loc[weights["clase"] == 1549]["Pond. clase"].values[0]
-                   * weights.loc[(weights["agrupacion"] == 154) &
-                                 (weights["clase"] == 0)]["Pond. agrupación"].values[0]
-                   * weights.loc[(weights["division"] == 15) &
-                                 (weights["agrupacion"] == 0)]["Pond. división"].values[0]
-                   / 1000000)
+    other_foods = (
+            weights.loc[weights["clase"] == 1549]["Pond. clase"].values[0]
+            * weights.loc[(weights["agrupacion"] == 154) &
+                          (weights["clase"] == 0)][
+                "Pond. agrupación"].values[0]
+            * weights.loc[(weights["division"] == 15) &
+                          (weights["agrupacion"] == 0)][
+                "Pond. división"].values[0]
+            / 1000000)
     pulp = (weights.loc[weights["clase"] == 2101]["Pond. clase"].values[0]
             * weights.loc[(weights["division"] == 21) &
-                          (weights["agrupacion"] == 0)]["Pond. división"].values[0]
+                          (weights["agrupacion"] == 0)][
+                "Pond. división"].values[0]
             / 10000)
     output = data.loc[:, ["Industrias manufactureras",
                           "Industrias manufactureras sin refinería"]]
@@ -350,7 +355,8 @@ def net_public_debt(update_loc: Union[str, PathLike, Engine,
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def labor_rate_people(seas_adj: Union[str, None] = None,
+def labor_rate_people(extend: bool = True,
+                      seas_adj: Union[str, None] = None,
                       update_loc: Union[str, PathLike, Engine,
                                         Connection, None] = None,
                       save_loc: Union[str, PathLike, Engine,
@@ -361,8 +367,14 @@ def labor_rate_people(seas_adj: Union[str, None] = None,
     """
     Get labor data, both rates and persons. Allow choosing seasonal adjustment.
 
+    Optionally extend national data between 1991 and 2005 with data for
+    jurisdictions with more than 5,000 inhabitants.
+
     Parameters
     ----------
+    extend : bool, default True
+        Whether to extend national data with 1991-2005 data for non-small
+        jurisdictions.
     seas_adj : {None, 'trend', 'seas'}
         Whether to seasonally adjust.
     update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
@@ -400,6 +412,22 @@ def labor_rate_people(seas_adj: Union[str, None] = None,
     rates = labor.get_rates(update_loc=update_loc, only_get=only_get)
     rates = rates.loc[:, ["Tasa de actividad: total", "Tasa de empleo: total",
                           "Tasa de desempleo: total"]]
+    if extend is True:
+        act_5000 = pd.read_excel(urls["tfm_labor"]["dl"]["act_5000"],
+                                 sheet_name="Mensual", index_col=0, skiprows=8,
+                                 usecols="A:B").dropna(how="any")
+        emp_5000 = pd.read_excel(urls["tfm_labor"]["dl"]["emp_5000"],
+                                 sheet_name="Mensual", index_col=0, skiprows=8,
+                                 usecols="A:B").dropna(how="any")
+        des_5000 = pd.read_excel(urls["tfm_labor"]["dl"]["des_5000"],
+                                 sheet_name="Mensual", index_col=0, skiprows=7,
+                                 usecols="A:B").dropna(how="any")
+        for df in [act_5000, emp_5000, des_5000]:
+            df.index = df.index + MonthEnd(0)
+        rates_5000 = pd.concat([act_5000, emp_5000, des_5000], axis=1)
+        rates_prev = rates_5000.loc[rates_5000.index < "2006-01-31"]
+        rates_prev.columns = rates.columns
+        rates = pd.concat([rates_prev, rates])
     rates.columns.set_levels(rates.columns.levels[0].str.replace(": total",
                                                                  ""),
                              level=0, inplace=True)
@@ -419,7 +447,7 @@ def labor_rate_people(seas_adj: Union[str, None] = None,
     working_age.index = pd.date_range(start="1996-06-30", end="2050-06-30",
                                       freq="A-JUN")
     monthly_working_age = working_age.resample("M").interpolate("linear")
-    monthly_working_age = monthly_working_age.loc[rates.index]
+    monthly_working_age = monthly_working_age.reindex(rates.index)
     persons = rates.iloc[:, [0, 1]].div(100).mul(monthly_working_age, axis=0)
     persons["Desempleados"] = rates.iloc[:, 2].div(100).mul(persons.iloc[:, 0])
     persons.columns = ["Activos", "Empleados", "Desempleados"]
