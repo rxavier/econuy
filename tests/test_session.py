@@ -283,6 +283,27 @@ def test_public_debt():
     remove_clutter()
 
 
+def test_industrial_production():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    indprod = session.get(dataset="industrial_production").dataset
+    remove_clutter()
+    core = session.get_custom(dataset="core_industrial").dataset
+    core = core.loc[:, ["Núcleo industrial"]]
+    compare = (indprod["Industrias manufactureras sin refinería"]
+               - indprod.loc[:, 1549] * 0.082210446
+               - indprod.loc[:, 2101] * 0.008097608)
+    compare = pd.concat([compare], keys=["Núcleo industrial"],
+                        names=["Indicador"], axis=1)
+    compare = transform.base_index(compare, start_date="2006-01-01",
+                                   end_date="2006-12-31")
+    compare.columns = core.columns
+    assert core.round(2).equals(compare.round(2))
+    remove_clutter()
+
+
 def test_edge():
     remove_clutter()
     session = Session(location=TEST_DIR)

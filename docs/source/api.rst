@@ -23,6 +23,10 @@ Data retrieval functions
    :members:
    :undoc-members:
    :show-inheritance:
+.. automodule:: econuy.retrieval.industrial_production
+   :members:
+   :undoc-members:
+   :show-inheritance:
 .. automodule:: econuy.retrieval.fiscal_accounts
    :members:
    :undoc-members:

@@ -11,7 +11,7 @@ from sqlalchemy.engine.base import Connection, Engine
 from econuy import frequent, transform
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
                               labor, rxr, commodity_index, reserves, trade,
-                              public_debt)
+                              public_debt, industrial_production)
 from econuy.utils import logutil, ops
 
 
@@ -129,7 +129,8 @@ class Session(object):
         ----------
         dataset : {'cpi', 'nxr_monthly', 'nxr_daily', 'fiscal', \
                 'public_debt', 'naccounts', 'labor', 'wages', 'rxr_official', \
-                'reserves', 'reserves_changes', 'trade'}
+                'reserves', 'reserves_changes', 'trade', \
+                'industrial_production'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -171,6 +172,12 @@ class Session(object):
                              save_loc=save_loc,
                              only_get=self.only_get,
                              **kwargs)
+        elif dataset == "industrial_production":
+            output = industrial_production.get(update_loc=update_loc,
+                                               revise_rows=self.revise_rows,
+                                               save_loc=save_loc,
+                                               only_get=self.only_get,
+                                               **kwargs)
         elif dataset == "fiscal":
             output = fiscal_accounts.get(update_loc=update_loc,
                                          revise_rows=self.revise_rows,
@@ -376,7 +383,7 @@ class Session(object):
         ----------
         dataset : {'cpi_measures', 'fiscal', 'labor', 'real_wages', \
                 'net_trade', 'tot', 'net_public_debt', 'commodity_index', \
-                'rxr_custom'}
+                'rxr_custom', 'core_industrial'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -416,6 +423,11 @@ class Session(object):
                                            save_loc=save_loc,
                                            only_get=self.only_get,
                                            **kwargs)
+        elif dataset == "core_industrial":
+            output = frequent.core_industrial(update_loc=update_loc,
+                                              save_loc=save_loc,
+                                              only_get=self.only_get,
+                                              **kwargs)
         elif dataset == "fiscal":
             output = frequent.fiscal(update_loc=update_loc,
                                      save_loc=save_loc,

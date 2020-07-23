@@ -12,10 +12,82 @@ from scipy.stats import stats
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
-from econuy.retrieval import (nxr, cpi, fiscal_accounts,
+from econuy.retrieval import (nxr, cpi, fiscal_accounts, industrial_production,
                               labor, trade, public_debt, reserves)
 from econuy.utils import metadata, ops
 from econuy.utils.lstrings import fiscal_metadata, urls, prod_details
+
+
+def core_industrial(update_loc: Union[str, PathLike, Engine,
+                                      Connection, None] = None,
+                    save_loc: Union[str, PathLike, Engine,
+                                    Connection, None] = None,
+                    name: str = "tfm_industrial",
+                    index_label: str = "index",
+                    only_get: bool = True) -> pd.DataFrame:
+    """
+    Get total industrial production, industrial production excluding oil
+    refinery and core industrial production.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'tfm_industrial'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default True
+        If True, don't download data, retrieve what is available from
+        ``update_loc`` for the commodity index.
+
+    Returns
+    -------
+    Measures of industrial production : pd.DataFrame
+
+    """
+    data = industrial_production.get(update_loc=update_loc, save_loc=save_loc,
+                                     only_get=only_get)
+    weights = pd.read_excel(urls["tfm_industrial"]["dl"]["weights"],
+                            skiprows=3).dropna(how="all")
+    weights = weights.rename(columns={"Unnamed: 5": "Pond. división",
+                                      "Unnamed: 6": "Pond. agrupación",
+                                      "Unnamed: 7": "Pond. clase"})
+    other_foods = (weights.loc[weights["clase"] == 1549]["Pond. clase"].values[0]
+                   * weights.loc[(weights["agrupacion"] == 154) &
+                                 (weights["clase"] == 0)]["Pond. agrupación"].values[0]
+                   * weights.loc[(weights["division"] == 15) &
+                                 (weights["agrupacion"] == 0)]["Pond. división"].values[0]
+                   / 1000000)
+    pulp = (weights.loc[weights["clase"] == 2101]["Pond. clase"].values[0]
+            * weights.loc[(weights["division"] == 21) &
+                          (weights["agrupacion"] == 0)]["Pond. división"].values[0]
+            / 10000)
+    output = data.loc[:, ["Industrias manufactureras",
+                          "Industrias manufactureras sin refinería"]]
+    exclude = (data.loc[:, 1549] * other_foods
+               + data.loc[:, 2101] * pulp)
+    core = data["Industrias manufactureras sin refinería"] - exclude
+    core = pd.concat([core], keys=["Núcleo industrial"],
+                     names=["Indicador"], axis=1)
+    output = pd.concat([output, core], axis=1)
+    output = transform.base_index(output, start_date="2006-01-01",
+                                  end_date="2006-12-31")
+
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=output, name=name, index_label=index_label)
+
+    return output
 
 
 def fiscal(aggregation: str = "gps", fss: bool = True,

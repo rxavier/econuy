@@ -672,6 +672,10 @@ urls = {"cpi":
                                         "http://www.ine.gub.uy/c/document_library/get_file?uuid=97f07fd8-9410-476e-bf81-e6b1c11467ef&groupId=10181"],
                              "indirect": ["http://www.ine.gub.uy/web/guest/ims-indice-medio-de-salarios"],
                              "provider": ["INE"]}},
+        "industrial_production": {"dl": {"main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181"},
+                                  "source": {"direct": ["http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181"],
+                                             "indirect": ["http://www.ine.gub.uy/web/guest/industria-manufacturera"],
+                                             "provider": ["INE"]}},
         "naccounts_ind_con_nsa": {"dl": {"main": na_metadata["ind_con_nsa"]["url"]},
                            "source": {"direct": [na_metadata["ind_con_nsa"]["url"]],
                                       "indirect": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm"],
@@ -807,7 +811,13 @@ urls = {"cpi":
                     "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls",
                                           "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/MonedayCredito/Activos-de-Reserva/reservas.xls"],
                                "indirect": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"],
-                               "provider": ["Estimaciones de econuy en base a BCU"]}}}
+                               "provider": ["Estimaciones de econuy en base a BCU"]}},
+        "tfm_industrial": {"dl": {"main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181",
+                                  "weights": "http://www.ine.gub.uy/c/document_library/get_file?uuid=864b4bc2-626d-49ab-82ef-1bcf08360da1&groupId=10181"},
+                           "source": {"direct": ["http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181",
+                                                 "http://www.ine.gub.uy/c/document_library/get_file?uuid=1768051c-5b85-42ea-8340-b8b44ee2948c&groupId=10181"],
+                                      "indirect": ["http://www.ine.gub.uy/web/guest/industria-manufacturera"],
+                                      "provider": ["Estimaciones de eocnuy en base a INE"]}}}
 
 fiscal_sheets = {
     "Sector Público No Financiero":
