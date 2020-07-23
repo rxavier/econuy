@@ -823,7 +823,7 @@ urls = {"cpi":
                            "source": {"direct": ["http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181",
                                                  "http://www.ine.gub.uy/c/document_library/get_file?uuid=1768051c-5b85-42ea-8340-b8b44ee2948c&groupId=10181"],
                                       "indirect": ["http://www.ine.gub.uy/web/guest/industria-manufacturera"],
-                                      "provider": ["Estimaciones de eocnuy en base a INE"]}}}
+                                      "provider": ["Estimaciones de econuy en base a INE"]}}}
 
 fiscal_sheets = {
     "Sector Público No Financiero":
