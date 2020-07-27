@@ -66,7 +66,7 @@ def read(con: sqla.engine.base.Connection,
                 cols_sql = [column(x) for x in cols]
                 cols_sql.append(column("index"))
             elif isinstance(cols, str) and cols != "*":
-                cols_sql = column(cols)
+                cols_sql = [column(cols)]
                 cols_sql.append(column("index"))
             else:
                 cols_sql = "*"
