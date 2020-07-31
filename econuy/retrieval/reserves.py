@@ -77,6 +77,7 @@ def get(update_loc: Union[str, PathLike, Engine,
                         "Activos de reserva sin sector público y financiero",
                         "Posición en ME del BCU"]
     reserves = reserves.apply(pd.to_numeric, errors="coerce")
+    reserves = reserves.loc[~reserves.index.duplicated(keep="first")]
 
     if update_loc is not None:
         previous_data = ops._io(operation="update",
