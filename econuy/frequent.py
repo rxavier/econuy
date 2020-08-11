@@ -16,7 +16,7 @@ from econuy import transform
 from econuy.retrieval import (nxr, cpi, fiscal_accounts, industrial_production,
                               labor, trade, public_debt, reserves)
 from econuy.utils import metadata, ops
-from econuy.utils.lstrings import fiscal_metadata, urls, prod_details
+from econuy.utils.lstrings import fiscal_metadata, urls, cpi_details
 
 
 def core_industrial(update_loc: Union[str, PathLike, Engine,
@@ -718,7 +718,7 @@ def cpi_measures(update_loc: Union[str, PathLike,
         if not output.equals(pd.DataFrame()):
             return output
 
-    xls = pd.ExcelFile(urls["tfm_prices"]["dl"]["main"])
+    xls = pd.ExcelFile(urls["tfm_prices"]["dl"]["2010"])
     weights = pd.read_excel(xls, sheet_name=xls.sheet_names[0],
                             usecols="A:C", skiprows=14,
                             index_col=0).dropna(how="any")
@@ -731,67 +731,92 @@ def cpi_measures(update_loc: Union[str, PathLike,
         proc = raw.loc[:, raw.columns.str.
                               contains("Indice|Índice")].dropna(how="all")
         sheets.append(proc.T)
-    output = pd.concat(sheets)
-    output = output.iloc[:, 1:]
-    output.columns = [weights["Item"], weights.index]
-    output.index = pd.date_range(start="2010-12-31", periods=len(output),
-                                 freq="M")
-    diff_8 = output.loc[:, output.columns.get_level_values(level=1).str.len()
-                           == 8].pct_change()
+    complete_10 = pd.concat(sheets)
+    complete_10 = complete_10.iloc[:, 1:]
+    complete_10.columns = [weights["Item"], weights.index]
+    complete_10.index = pd.date_range(start="2010-12-31",
+                                      periods=len(complete_10), freq="M")
+    diff_8 = complete_10.loc[:,
+             complete_10.columns.get_level_values(level=1).str.len()
+             == 8].pct_change()
     win = pd.DataFrame(winsorize(diff_8, limits=(0.05, 0.05), axis=1))
     win.index = diff_8.index
     win.columns = diff_8.columns.get_level_values(level=1)
     cpi_win = win.mul(weights_8.loc[:, "Weight"].T)
     cpi_win = cpi_win.sum(axis=1).add(1).cumprod().mul(100)
 
-    prod_97 = (pd.read_excel(urls["tfm_prices"]["dl"]["historical"],
+    prod_97 = (pd.read_excel(urls["tfm_prices"]["dl"]["1997"],
                              skiprows=5).dropna(how="any")
-               .set_index("Rubros, Agrupaciones y Subrubros").T)
-    prod_97 = prod_97.loc[:, prod_details[1]].pct_change()
-    output_8 = output.loc[:, prod_details[0]].pct_change()
-    output_8 = output_8.loc[:, ~output_8.columns.get_level_values(level=0)
+               .set_index(
+        "Rubros, Agrupaciones, Subrubros, Familias y Artículos")
+               .T)
+    weights_97 = (pd.read_excel(urls["tfm_prices"]["dl"]["1997_weights"],
+                                index_col=0)
+                  .drop_duplicates(subset="Descripción", keep="first"))
+    weights_97["Weight"] = (weights_97["Rubro"]
+                            .fillna(
+        weights_97["Agrupación, subrubro, familia"])
+                            .fillna(weights_97["Artículo"])
+                            .drop(columns=["Rubro",
+                                           "Agrupación, subrubro, familia",
+                                           "Artículo"]))
+    prod_97 = prod_97.loc[:, list(cpi_details["1997_base"].keys())]
+    prod_97.index = pd.date_range(start="1997-03-31",
+                                  periods=len(prod_97), freq="M")
+    weights_97 = (weights_97[weights_97["Descripción"]
+                  .isin(cpi_details["1997_weights"])]
+                  .set_index("Descripción")
+                  .drop(columns=["Rubro", "Agrupación, subrubro, "
+                                          "familia", "Artículo"])).div(100)
+    weights_97.index = prod_97.columns
+    prod_10 = complete_10.loc[:, list(cpi_details["2010_base"].keys())]
+    prod_10 = prod_10.loc[:, ~prod_10.columns.get_level_values(level=0)
         .duplicated()]
-    output_8.columns = output_8.columns.get_level_values(level=0)
-    prod_97.columns = output_8.columns.get_level_values(level=0)
-    complete = pd.concat([prod_97, output_8.iloc[1:]])
-    complete.index = pd.date_range(start="1997-03-31", freq="M",
-                                   periods=len(complete))
-    weights_complete = weights.loc[weights["Item"].isin(complete.columns)]
-    weights_complete = weights_complete.loc[~weights_complete["Item"]
-        .duplicated()].set_index("Item")
-    tradable = complete.loc[:, [bool(x) for x in prod_details[2]]]
-    tradable_weights = weights_complete.loc[
-        weights_complete.index.isin(tradable.columns), "Weight"
-    ].T
-    tradable_weights = tradable_weights.div(tradable_weights.sum())
-    tradable = (tradable.mul(tradable_weights).sum(axis=1)
-                .add(1).cumprod().mul(100))
+    prod_10.columns = prod_10.columns.get_level_values(level=0)
+    weights_10 = (weights.loc[weights["Item"]
+                  .isin(list(cpi_details["2010_base"].keys()))]
+                  .drop_duplicates(subset="Item",
+                                   keep="first")).set_index("Item")
+    items = []
+    weights = []
+    for item, weight, details in zip([prod_10, prod_97],
+                                     [weights_10, weights_97],
+                                     ["2010_base", "1997_base"]):
+        for tradable in [True, False]:
+            items.append(
+                item.loc[:, [k for k, v in cpi_details[details].items()
+                             if v["Tradable"] is tradable]])
+            aux = weight.loc[[k for k, v in cpi_details[details].items()
+                              if v["Tradable"] is tradable]]
+            weights.append(aux.div(aux.sum()))
+        for core in [True, False]:
+            items.append(
+                item.loc[:, [k for k, v in cpi_details[details].items()
+                             if v["Core"] is core]])
+            aux = weight.loc[[k for k, v in cpi_details[details].items()
+                              if v["Core"] is core]]
+            weights.append(aux.div(aux.sum()))
 
-    non_tradable = complete.loc[:, [not bool(x) for x in prod_details[2]]]
-    non_tradable_weights = weights_complete.loc[
-        weights_complete.index.isin(non_tradable.columns), "Weight"
-    ].T
-    non_tradable_weights = non_tradable_weights.div(non_tradable_weights.sum())
-    non_tradable = (non_tradable.mul(non_tradable_weights)
-                    .sum(axis=1).add(1).cumprod().mul(100))
+    intermediate = []
+    for item, weight in zip(items, weights):
+        intermediate.append(item.mul(weight.squeeze()).sum(1))
 
-    core = complete.loc[:, [bool(x) for x in prod_details[3]]]
-    core_weights = weights_complete.loc[
-        weights_complete.index.isin(core.columns), "Weight"
-    ].T
-    core_weights = core_weights.div(core_weights.sum())
-    core = (core.mul(core_weights)
-            .sum(axis=1).add(1).cumprod().mul(100))
+    output = []
+    for x, y in zip(intermediate[:4], intermediate[4:]):
+        aux = pd.concat([y.pct_change().loc[y.index < "2011-01-01"],
+                         x.pct_change().loc[x.index > "2011-01-01"]])
+        output.append(aux.fillna(0).add(1).cumprod().mul(100))
 
     cpi_re = cpi.get(update_loc=update_loc, save_loc=save_loc, only_get=True)
     cpi_re = cpi_re.loc[cpi_re.index >= "1997-03-31"]
-    output = pd.concat([cpi_re, tradable, non_tradable, core, cpi_win], axis=1)
+    output = pd.concat([cpi_re] + output + [cpi_win], axis=1)
     output = transform.base_index(output, start_date="2010-12-01",
                                   end_date="2010-12-31")
     output.columns = ["Índice de precios al consumo: total",
                       "Índice de precios al consumo: transables",
                       "Índice de precios al consumo: no transables",
                       "Índice de precios al consumo: subyacente",
+                      "Índice de precios al consumo: residual",
                       "Índice de precios al consumo: Winsorized 0.05"]
 
     if update_loc is not None:
