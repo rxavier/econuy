@@ -49,7 +49,7 @@ setup(
     keywords=["uruguay", "economy", "economic", "statistics", "data"],
     install_requires=pipfile_lock_requirements,
     extras_require={
-        "pgsql":  ["psycopg2==2.8.5"]},
+        "pgsql": ["psycopg2==2.8.5"]},
     packages=packages,
     python_requires=">=3.6"
 )

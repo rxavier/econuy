@@ -58,7 +58,7 @@ def test_fiscal():
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
     fiscal_tfm = session.get_custom(dataset="fiscal", aggregation="nfps",
-                                      fss=True, unit="gdp").dataset
+                                    fss=True, unit="gdp").dataset
     remove_clutter()
     fiscal_ = session.get(dataset="fiscal").dataset
     nfps = fiscal_["nfps"]
@@ -103,13 +103,13 @@ def test_fiscal():
     assert compare_gdp.equals(fiscal_tfm)
     remove_clutter()
     fiscal_tfm = session.get_custom(dataset="fiscal", aggregation="nfps",
-                                      fss=True, unit="usd").dataset
+                                    fss=True, unit="usd").dataset
     compare_usd = transform.convert_usd(compare)
     compare_usd.columns = fiscal_tfm.columns
     assert compare_usd.equals(fiscal_tfm)
     remove_clutter()
     fiscal_tfm = session.get_custom(dataset="fiscal", aggregation="nfps",
-                                      fss=True, unit="real").dataset
+                                    fss=True, unit="real").dataset
     compare_real = transform.convert_real(compare)
     compare_real.columns = fiscal_tfm.columns
     assert compare_real.equals(fiscal_tfm)
@@ -117,9 +117,9 @@ def test_fiscal():
     start_date = "2010-01-31"
     end_date = "2010-12-31"
     fiscal_tfm = session.get_custom(dataset="fiscal", aggregation="nfps",
-                                      fss=True, unit="real_usd",
-                                      start_date=start_date,
-                                      end_date=end_date).dataset
+                                    fss=True, unit="real_usd",
+                                    start_date=start_date,
+                                    end_date=end_date).dataset
     compare_real_usd = transform.convert_real(compare, start_date=start_date,
                                               end_date=end_date)
     xr = nxr.get_monthly(update_loc=None, save_loc=None)
@@ -130,7 +130,7 @@ def test_fiscal():
     remove_clutter()
     with pytest.raises(ValueError):
         session.get_custom(dataset="fiscal", aggregation="nfps",
-                             unit="wrong")
+                           unit="wrong")
     with pytest.raises(ValueError):
         session.get_custom(dataset="fiscal", aggregation="wrong")
     remove_clutter()
@@ -192,7 +192,7 @@ def test_wages():
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
     full_wages = session.get_custom(dataset="real_wages",
-                                      seas_adj="trend").dataset
+                                    seas_adj="trend").dataset
     wages_tfm = full_wages.iloc[:, [0, 1, 2]]
     remove_clutter()
     wages_ = session.get(dataset="wages").dataset
@@ -325,7 +325,7 @@ def test_edge():
     assert path.isdir("new_dir")
     shutil.rmtree(session.location)
     Session(location=TEST_DIR).get_custom(dataset="price_measures",
-                                            update=False, save=False)
+                                          update=False, save=False)
     remove_clutter()
 
 

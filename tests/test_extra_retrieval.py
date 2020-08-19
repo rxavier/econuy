@@ -74,7 +74,9 @@ def test_comm_index():
     assert comm.index[0] == dt.date(2002, 1, 31)
     assert comm.iloc[0][0] == 100
     session.only_get = True
-    compare = session.get_custom(dataset="comm_index", only_get_prices=True).dataset
+    compare = session.get_custom(
+        dataset="comm_index",
+        only_get_prices=True).dataset
     assert compare.round(4).equals(comm.round(4))
     remove_clutter()
 

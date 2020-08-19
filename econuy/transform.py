@@ -175,7 +175,7 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
         month = df.iloc[df.index.get_loc(start_date, method="nearest")].name
         converted_df = df.apply(
             lambda x: x / cpi_to_use
-                      * cpi_to_use.loc[month])
+            * cpi_to_use.loc[month])
         m_start = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m")
         col_text = f"Const. {m_start}"
     else:
