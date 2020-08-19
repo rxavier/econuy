@@ -13,7 +13,7 @@ If [this screenshot](https://i.imgur.com/Ku5OR0y.jpg) gives you anxiety, this pa
 
 # Webapp
 
-The econuy webapp is [hosted on Heroku](https://econuy.herokuapp.com/index).
+A webapp with a limited but interactive version of econuy is available at https://econ.uy. Check out the [repo](https://github.com/rxavier/econuy-web) as well.
 
 # Installation
 
@@ -151,4 +151,4 @@ This project is heavily based on getting data from online sources that could cha
 * CLI.
 * ~~Website.~~
 * Automating data updates.
-* Visualization.
+* ~~Visualization.~~ (I have decided that visualization should be up to the end-user. However, the [webapp](https://econ.uy) is available for this purpose)
