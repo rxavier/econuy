@@ -18,7 +18,7 @@ cycler==0.10.0
 decorator==4.4.2
 defusedxml==0.6.0
 docutils==0.16
--e git+https://github.com/rxavier/uy-econ.git@c03ef31553255f5a14799195d377efdff89bd971#egg=econuy
+-e git+https://github.com/rxavier/uy-econ.git@ba11e9a12cb42b6404625a54a8cd336dde85a568#egg=econuy
 entrypoints==0.3
 flake8==3.8.3
 html5lib==1.0.1
