@@ -95,6 +95,24 @@ def _set(
 
         tuples = list(zip(*arrays))
         df.columns = pd.MultiIndex.from_tuples(tuples, names=names)
+        return
+
+
+def _modify_multiindex(df: pd.DataFrame, levels: List[int],
+                       new_arrays: List[List[str]]):
+    arrays = []
+    for level in range(0, 9):
+        arrays.append(list(df.columns.get_level_values(level)))
+    for level, new_array in zip(levels, new_arrays):
+        arrays[level] = new_array
+    tuples = list(zip(*arrays))
+    df.columns = pd.MultiIndex.from_tuples(tuples,
+                                           names=["Indicador", "Área",
+                                                  "Frecuencia", "Moneda",
+                                                  "Inf. adj.", "Unidad",
+                                                  "Seas. Adj.", "Tipo",
+                                                  "Acum. períodos"])
+    return
 
 
 def _get_sources(dataset: str,

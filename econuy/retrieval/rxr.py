@@ -220,17 +220,9 @@ def get_custom(update_loc: Union[str, PathLike, Engine,
                   ts_type="-", cumperiods=1)
     output = transform.base_index(output, start_date="2010-01-01",
                                   end_date="2010-12-31", base=100)
-    arrays = []
-    for level in range(0, 9):
-        arrays.append(list(output.columns.get_level_values(level)))
-    arrays[3] = ["UYU/ARS", "UYU/BRL", "UYU/USD", "ARS/USD", "BRL/USD"]
-    tuples = list(zip(*arrays))
-    output.columns = pd.MultiIndex.from_tuples(tuples,
-                                               names=["Indicador", "Área",
-                                                      "Frecuencia", "Moneda",
-                                                      "Inf. adj.", "Unidad",
-                                                      "Seas. Adj.", "Tipo",
-                                                      "Acum. períodos"])
+    metadata._modify_multiindex(output, levels=[3],
+                                new_arrays=[["UYU/ARS", "UYU/BRL", "UYU/USD",
+                                             "ARS/USD", "BRL/USD"]])
 
     if update_loc is not None:
         previous_data = ops._io(operation="update",
