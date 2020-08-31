@@ -257,7 +257,7 @@ class Session(object):
                                revise_rows=self.revise_rows,
                                save_loc=save_loc,
                                only_get=self.only_get,
-                               **kwargs),
+                               **kwargs)
         elif dataset == "call":
             output = call.get(update_loc=update_loc,
                               revise_rows=self.revise_rows,
