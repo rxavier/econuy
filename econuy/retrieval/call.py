@@ -1,3 +1,4 @@
+import os
 import datetime as dt
 from os import PathLike
 from typing import Union
@@ -7,8 +8,11 @@ import pandas as pd
 import chromedriver_autoinstaller
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from selenium.common.exceptions import WebDriverException
 from opnieuw import retry
 from sqlalchemy.engine.base import Connection, Engine
+from dotenv import load_dotenv
 
 from econuy.utils import ops, metadata
 from econuy.utils.lstrings import urls
@@ -59,17 +63,13 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     Daily call rate : pd.DataFrame
 
     """
-    chromedriver_autoinstaller.install()
-
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
                          name=name, index_label=index_label)
         if not output.equals(pd.DataFrame()):
             return output
 
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(options=chrome_options)
+    driver = _build_chrome_driver()
     driver.get(urls["call"]["dl"]["main"])
     start = driver.find_element(by="name",
                                 value="ctl00$ContentPlaceHolder1$dateDesde$dateInput")
@@ -109,3 +109,19 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                 data=call, name=name, index_label=index_label)
 
     return call
+
+
+def _build_chrome_driver():
+    """Utility function for building a Selenium Chrome driver"""
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--no-sandbox")
+    try:
+        load_dotenv("econuy/.env")
+        service = Service(executable_path=os.environ.get("CHROMEDRIVER_PATH"))
+        chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_PATH")
+        return webdriver.Chrome(options=chrome_options, service=service)
+    except (WebDriverException, TypeError):
+        chromedriver_autoinstaller.install()
+        return webdriver.Chrome(options=chrome_options)

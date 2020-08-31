@@ -37,6 +37,7 @@ html5lib = "==1.0.1"
 scipy = "==1.5.0"
 selenium = "==4.0.0a6.post2"
 chromedriver-autoinstaller = "==0.2.2"
+python-dotenv = "==0.14.0"
 
 [requires]
 python_version = "3.7"
