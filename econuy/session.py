@@ -11,7 +11,7 @@ from sqlalchemy.engine.base import Connection, Engine
 from econuy import frequent, transform
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
                               labor, rxr, commodity_index, reserves, trade,
-                              public_debt, industrial_production)
+                              public_debt, industrial_production, call)
 from econuy.utils import logutil, ops
 
 
@@ -130,7 +130,7 @@ class Session(object):
         dataset : {'cpi', 'nxr_monthly', 'nxr_daily', 'fiscal', \
                 'public_debt', 'naccounts', 'labor', 'wages', 'rxr_official', \
                 'reserves', 'reserves_changes', 'trade', \
-                'industrial_production'}
+                'industrial_production', 'call'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -257,7 +257,13 @@ class Session(object):
                                revise_rows=self.revise_rows,
                                save_loc=save_loc,
                                only_get=self.only_get,
-                               **kwargs)
+                               **kwargs),
+        elif dataset == "call":
+            output = call.get(update_loc=update_loc,
+                              revise_rows=self.revise_rows,
+                              save_loc=save_loc,
+                              only_get=self.only_get,
+                              **kwargs)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 
