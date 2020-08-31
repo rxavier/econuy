@@ -1,5 +1,4 @@
 import logging
-import warnings
 from datetime import date
 from os import PathLike, path, makedirs
 from pathlib import Path
@@ -8,7 +7,7 @@ from typing import Union, Optional
 import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
 
-from econuy import frequent, transform
+from econuy import custom, transform
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
                               labor, rxr, commodity_index, reserves, trade,
                               public_debt, industrial_production, call)
@@ -219,29 +218,12 @@ class Session(object):
                                      save_loc=save_loc,
                                      only_get=self.only_get,
                                      **kwargs)
-        elif dataset == "rxr_custom" or dataset == "rxr-custom":
-            warnings.warn("'rxr_custom' will only be accesible through the "
-                          "'get_custom' method in a future version",
-                          FutureWarning)
-            output = rxr.get_custom(update_loc=update_loc,
-                                    revise_rows=self.revise_rows,
-                                    save_loc=save_loc,
-                                    only_get=self.only_get,
-                                    **kwargs)
         elif dataset == "rxr_official" or dataset == "rxr-official":
             output = rxr.get_official(update_loc=update_loc,
                                       revise_rows=self.revise_rows,
                                       save_loc=save_loc,
                                       only_get=self.only_get,
                                       **kwargs)
-        elif dataset == "commodity_index" or dataset == "comm_index":
-            warnings.warn("'commodity_index' will only be accesible through "
-                          "the 'get_custom' method in a future version",
-                          FutureWarning)
-            output = commodity_index.get(update_loc=update_loc,
-                                         save_loc=save_loc,
-                                         only_get=self.only_get,
-                                         **kwargs)
         elif dataset == "reserves":
             output = reserves.get(update_loc=update_loc,
                                   save_loc=save_loc,
@@ -264,111 +246,6 @@ class Session(object):
                               save_loc=save_loc,
                               only_get=self.only_get,
                               **kwargs)
-        else:
-            raise ValueError("Invalid keyword for 'dataset' parameter.")
-
-        self.dataset = output
-        self.logger.info(f"Retrieved '{dataset}' dataset.")
-
-        return self
-
-    def get_frequent(self,
-                     dataset: str,
-                     update: bool = True,
-                     save: bool = True,
-                     **kwargs): #pragma: no cover
-        """
-        Get frequently used datasets.
-
-        This method will be renamed to 'get_custom' in a future version.
-
-        Parameters
-        ----------
-        dataset : {'cpi_measures', 'fiscal', 'labor', 'real_wages', \
-                'net_trade', 'tot', 'net_public_debt', 'commodity_index', \
-                'rxr_custom'}
-            Type of data to download.
-        update : bool, default True
-            Whether to update an existing dataset.
-        save : bool, default  True
-            Whether to save the dataset.
-        **kwargs
-            Keyword arguments.
-
-        Returns
-        -------
-        :class:`~econuy.session.Session`
-            Loads the downloaded dataframe into the :attr:`dataset` attribute.
-
-        Raises
-        ------
-        ValueError
-            If an invalid string is given to the ``dataset`` argument.
-
-        """
-        warnings.warn("This method will be renamed 'get_custom' in a "
-                      "future version", FutureWarning)
-
-        if update is True:
-            if isinstance(self.location, (str, PathLike)):
-                update_loc = Path(self.location)
-            else:
-                update_loc = self.location
-        else:
-            update_loc = None
-        if save is True:
-            if isinstance(self.location, (str, PathLike)):
-                save_loc = Path(self.location)
-            else:
-                save_loc = self.location
-        else:
-            save_loc = None
-
-        if dataset == "cpi_measures" or dataset == "price_measures":
-            output = frequent.cpi_measures(update_loc=update_loc,
-                                           save_loc=save_loc,
-                                           only_get=self.only_get,
-                                           **kwargs)
-        elif dataset == "fiscal":
-            output = frequent.fiscal(update_loc=update_loc,
-                                     save_loc=save_loc,
-                                     only_get=self.only_get,
-                                     **kwargs)
-        elif dataset == "net_public_debt":
-            output = frequent.net_public_debt(update_loc=update_loc,
-                                              save_loc=save_loc,
-                                              only_get=self.only_get,
-                                              **kwargs)
-        elif dataset == "labor" or dataset == "labour":
-            output = frequent.labor_rate_people(update_loc=update_loc,
-                                                save_loc=save_loc,
-                                                only_get=self.only_get,
-                                                **kwargs)
-        elif dataset == "wages" or dataset == "real_wages":
-            output = frequent.labor_real_wages(update_loc=update_loc,
-                                               save_loc=save_loc,
-                                               only_get=self.only_get,
-                                               **kwargs)
-        elif dataset == "net_trade":
-            output = frequent.trade_balance(update_loc=update_loc,
-                                            save_loc=save_loc,
-                                            only_get=self.only_get,
-                                            **kwargs)
-        elif dataset == "tot" or dataset == "terms_of_trade":
-            output = frequent.terms_of_trade(update_loc=update_loc,
-                                             save_loc=save_loc,
-                                             only_get=self.only_get,
-                                             **kwargs)
-        elif dataset == "rxr_custom" or dataset == "rxr-custom":
-            output = rxr.get_custom(update_loc=update_loc,
-                                    save_loc=save_loc,
-                                    only_get=self.only_get,
-                                    **kwargs)
-        elif dataset == "commodity_index" or dataset == "comm_index":
-            output = commodity_index.get(update_loc=update_loc,
-                                         save_loc=save_loc,
-                                         only_get=self.only_get,
-                                         **kwargs)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 
@@ -425,45 +302,45 @@ class Session(object):
             save_loc = None
 
         if dataset == "cpi_measures" or dataset == "price_measures":
-            output = frequent.cpi_measures(update_loc=update_loc,
-                                           save_loc=save_loc,
-                                           only_get=self.only_get,
-                                           **kwargs)
+            output = custom.cpi_measures(update_loc=update_loc,
+                                         save_loc=save_loc,
+                                         only_get=self.only_get,
+                                         **kwargs)
         elif dataset == "core_industrial":
-            output = frequent.core_industrial(update_loc=update_loc,
-                                              save_loc=save_loc,
-                                              only_get=self.only_get,
-                                              **kwargs)
-        elif dataset == "fiscal":
-            output = frequent.fiscal(update_loc=update_loc,
-                                     save_loc=save_loc,
-                                     only_get=self.only_get,
-                                     **kwargs)
-        elif dataset == "net_public_debt":
-            output = frequent.net_public_debt(update_loc=update_loc,
-                                              save_loc=save_loc,
-                                              only_get=self.only_get,
-                                              **kwargs)
-        elif dataset == "labor" or dataset == "labour":
-            output = frequent.labor_rate_people(update_loc=update_loc,
-                                                save_loc=save_loc,
-                                                only_get=self.only_get,
-                                                **kwargs)
-        elif dataset == "wages" or dataset == "real_wages":
-            output = frequent.labor_real_wages(update_loc=update_loc,
-                                               save_loc=save_loc,
-                                               only_get=self.only_get,
-                                               **kwargs)
-        elif dataset == "net_trade":
-            output = frequent.trade_balance(update_loc=update_loc,
+            output = custom.core_industrial(update_loc=update_loc,
                                             save_loc=save_loc,
                                             only_get=self.only_get,
                                             **kwargs)
-        elif dataset == "tot" or dataset == "terms_of_trade":
-            output = frequent.terms_of_trade(update_loc=update_loc,
+        elif dataset == "fiscal":
+            output = custom.fiscal(update_loc=update_loc,
+                                   save_loc=save_loc,
+                                   only_get=self.only_get,
+                                   **kwargs)
+        elif dataset == "net_public_debt":
+            output = custom.net_public_debt(update_loc=update_loc,
+                                            save_loc=save_loc,
+                                            only_get=self.only_get,
+                                            **kwargs)
+        elif dataset == "labor" or dataset == "labour":
+            output = custom.labor_rate_people(update_loc=update_loc,
+                                              save_loc=save_loc,
+                                              only_get=self.only_get,
+                                              **kwargs)
+        elif dataset == "wages" or dataset == "real_wages":
+            output = custom.labor_real_wages(update_loc=update_loc,
                                              save_loc=save_loc,
                                              only_get=self.only_get,
                                              **kwargs)
+        elif dataset == "net_trade":
+            output = custom.trade_balance(update_loc=update_loc,
+                                          save_loc=save_loc,
+                                          only_get=self.only_get,
+                                          **kwargs)
+        elif dataset == "tot" or dataset == "terms_of_trade":
+            output = custom.terms_of_trade(update_loc=update_loc,
+                                           save_loc=save_loc,
+                                           only_get=self.only_get,
+                                           **kwargs)
         elif dataset == "rxr_custom" or dataset == "rxr-custom":
             output = rxr.get_custom(update_loc=update_loc,
                                     save_loc=save_loc,
