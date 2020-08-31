@@ -207,11 +207,11 @@ def get_custom(update_loc: Union[str, PathLike, Engine,
 
     output = pd.DataFrame()
     output["UY_E_P"] = proc["UY_E"] / proc["UY_P"]
-    output["TCR_UY_AR"] = output["UY_E_P"] / proc["AR_E_A"] * proc["AR_P"]
-    output["TCR_UY_BR"] = output["UY_E_P"] / proc["BR_E"] * proc["BR_P"]
-    output["TCR_UY_US"] = output["UY_E_P"] * proc["US_P"]
-    output["TCR_AR_US"] = proc["BR_E"] * proc["US_P"] / proc["BR_P"]
-    output["TCR_BR_US"] = proc["AR_E"] * proc["US_P"] / proc["AR_P"]
+    output["Tipo de cambio real: Uruguay-Argentina"] = output["UY_E_P"] / proc["AR_E_A"] * proc["AR_P"]
+    output["Tipo de cambio real: Uruguay-Brasil"] = output["UY_E_P"] / proc["BR_E"] * proc["BR_P"]
+    output["Tipo de cambio real: Uruguay-EE.UU."] = output["UY_E_P"] * proc["US_P"]
+    output["Tipo de cambio real: Argentina-EE.UU."] = proc["BR_E"] * proc["US_P"] / proc["BR_P"]
+    output["Tipo de cambio real: Brasil-EE.UU."] = proc["AR_E"] * proc["US_P"] / proc["AR_P"]
     output.drop("UY_E_P", axis=1, inplace=True)
     output.rename_axis(None, inplace=True)
 
