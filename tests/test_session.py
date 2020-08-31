@@ -1,4 +1,5 @@
 import shutil
+import datetime as dt
 from os import listdir, remove, path
 from pathlib import Path
 from typing import Tuple
@@ -232,6 +233,16 @@ def test_naccounts():
     na_ = session.get(dataset="na").dataset
     assert isinstance(na_, dict)
     assert len(na_) == 6
+    remove_clutter()
+
+
+def test_call():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    call_rate = session.get(dataset="call").dataset
+    assert call_rate.index[0] == dt.datetime(2002, 1, 2)
     remove_clutter()
 
 

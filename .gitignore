@@ -13,8 +13,6 @@ econuy/econuy-data/
 
 econuy/utils/x13as
 
-.spyproject/
-
 econuy.egg-info/
 
 dist/
@@ -34,5 +32,3 @@ docs/Makefile
 pytest.ini
 
 econuy/.env
-
-econuy/.flaskenv

@@ -617,7 +617,14 @@ trade_metadata = {
                          "Resto del mundo: China"]}
 }
 
-urls = {"cpi":
+urls = {"call":
+        {"dl": {
+            "main": "https://web.bevsa.com.uy/Mercado/MercadoDinero/CallHistoricoDiario.aspx"},
+            "source": {"direct": [],
+                "indirect": [
+                    "https://web.bevsa.com.uy/Mercado/MercadoDinero/CallHistoricoDiario.aspx"],
+                "provider": ["BEVSA"]}},
+        "cpi":
             {"dl": {
                 "main": "http://ine.gub.uy/c/document_library/get_file?uuid=2e92084a-94ec-4fec-b5ca-42b40d5d2826&groupId=10181"},
              "source": {"direct": [

@@ -61,7 +61,7 @@ The `Session()` object is initialized with the `location`, `revise_rows`,  `only
 
 Downloads the basic datasets. These are generally as provided by official sources, except various Pandas transformations are performed to render nice looking dataframes with appropiate column names, time indexes and properly defined values. In select cases, I drop columns that I feel don't add relevant information for the target audience of this package, or that are inconsistent with other datasets.
 
-Available options for the `dataset` argument are "cpi", "fiscal", "nxr_monthly", "nxr_daily", "naccounts", "labor", "rxr_custom", "rxr_official", "commodity_index", "trade" and "reserves_chg". Most are self explanatory but all are explained in the documentation.
+Available options for the `dataset` argument are "cpi", "fiscal", "nxr_monthly", "nxr_daily", "naccounts", "labor", "rxr_official", "trade", "reserves_chg", "industrial_production" and "call". Most are self explanatory but all are explained in the documentation.
 
 If you wanted CPI data:
 ```python
@@ -76,7 +76,7 @@ Note that the previous code block accessed the `dataset` attribute in order to g
 
 Gives access to predefined data pipelines that output frequently used data not provided officially. These are based on the datasets provided by `get()`, but are transformed to render data that you might find more immediately useful.
 
-For example, the following calculates tradable CPI, non-tradable CPI, core CPI and Winsorized CPI. Also, it uses a SQL database for data updating and saving.
+For example, the following calculates tradable CPI, non-tradable CPI, core CPI, residual CPI and Winsorized CPI. Also, it uses a SQL database for data updating and saving.
 ```python
 from sqlalchemy import create_engine
 
@@ -85,7 +85,7 @@ from econuy import Session
 eng = create_engine("dialect+driver://user:pwd@host:port/database")
 
 sess = Session(location=eng)
-df = sess.get_custom(dataset="inflation")
+df = sess.get_custom(dataset="cpi_measures")
 ```
 
 ### Session transformation methods
@@ -135,6 +135,10 @@ If you want to use the `decompose()` functions with ``method="x13"``  you will n
 ### unrar libraries
 
 The [patool](https://github.com/wummel/patool) library is used in order to access fiscal data, which is provided by the MEF in `.rar` format. This library requires that you have the unrar binaries in your system, which you can get them from [here](https://www.rarlab.com/rar_add.htm).
+
+### Selenium webdrivers
+
+Some retrieval functions (fow now, only `econuy.retrieval.call.get()`) need Selenium to be configured in order to scrape data. These functions include a `driver` parameter in which a Selenium Webdriver can be passed, or they will attempt to configure a Chrome webdriver, even downloading the chromedriver binary if needed (which still needs a Chrome installation).
 
 ----
 

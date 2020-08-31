@@ -7,7 +7,6 @@ Session class
    :members:
    :undoc-members:
    :show-inheritance:
-   :exclude-members: get_frequent
 
 Data retrieval functions
 ------------------------
@@ -55,6 +54,10 @@ Data retrieval functions
    :members:
    :undoc-members:
    :show-inheritance:
+.. automodule:: econuy.retrieval.call
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Transformation functions
 ------------------------
@@ -65,7 +68,7 @@ Transformation functions
 
 Custom data retrieval functions
 -------------------------------
-.. automodule:: econuy.frequent
+.. automodule:: econuy.custom
    :members:
    :undoc-members:
    :show-inheritance:
