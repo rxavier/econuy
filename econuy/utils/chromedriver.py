@@ -18,7 +18,7 @@ def _build():
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--no-sandbox")
     try:
-        load_dotenv(Path(get_project_root(), "econuy", ".env"))
+        load_dotenv(Path(get_project_root(), ".env"))
         service = Service(executable_path=os.environ.get("CHROMEDRIVER_PATH"))
         chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_PATH")
         return webdriver.Chrome(options=chrome_options, service=service)

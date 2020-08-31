@@ -48,10 +48,10 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'cpi'
+    name : str, default 'call'
         Either CSV filename for updating and/or saving, or table name if
         using SQL.
-    index_label : str, default 'call'
+    index_label : str, default 'index'
         Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
@@ -85,6 +85,7 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                                  value="ContentPlaceHolder1_LinkFiltrar")
     submit.click()
     tables = pd.read_html(driver.page_source, decimal=",", thousands=".")
+    driver.close()
     raw = tables[8].iloc[:, :-2]
     call = raw.set_index("FECHA")
     call.index = pd.to_datetime(call.index, format="%d/%m/%Y")
