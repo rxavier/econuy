@@ -1,20 +1,15 @@
-import os
 import datetime as dt
 from os import PathLike
 from typing import Union
 from urllib.error import URLError, HTTPError
 
 import pandas as pd
-import chromedriver_autoinstaller
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.remote.webdriver import WebDriver
 from opnieuw import retry
 from sqlalchemy.engine.base import Connection, Engine
-from dotenv import load_dotenv
 
 from econuy.utils import ops, metadata
+from econuy.utils.chromedriver import _build
 from econuy.utils.lstrings import urls
 
 
@@ -28,8 +23,12 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
         name: str = "call",
         index_label: str = "index",
-        only_get: bool = False) -> pd.DataFrame:
+        only_get: bool = False,
+        driver: WebDriver = None) -> pd.DataFrame:
     """Get 1-day call interest rate data.
+
+    This function requires a Selenium webdriver. It can be provided in the
+    driver parameter, or it will attempt to configure a Chrome webdriver.
 
     Parameters
     ----------
@@ -57,6 +56,8 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
+    driver : selenium.webdriver.chrome.webdriver.WebDriver, default None
+        Selenium webdriver for scraping. If None, build a Chrome webdriver.
 
     Returns
     -------
@@ -69,7 +70,8 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         if not output.equals(pd.DataFrame()):
             return output
 
-    driver = _build_chrome_driver()
+    if driver is None:
+        driver = _build()
     driver.get(urls["call"]["dl"]["main"])
     start = driver.find_element(by="name",
                                 value="ctl00$ContentPlaceHolder1$dateDesde$dateInput")
@@ -109,19 +111,3 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                 data=call, name=name, index_label=index_label)
 
     return call
-
-
-def _build_chrome_driver():
-    """Utility function for building a Selenium Chrome driver"""
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--no-sandbox")
-    try:
-        load_dotenv("econuy/.env")
-        service = Service(executable_path=os.environ.get("CHROMEDRIVER_PATH"))
-        chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_PATH")
-        return webdriver.Chrome(options=chrome_options, service=service)
-    except (WebDriverException, TypeError):
-        chromedriver_autoinstaller.install()
-        return webdriver.Chrome(options=chrome_options)
