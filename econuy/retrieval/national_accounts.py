@@ -190,7 +190,7 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
 
     results = []
     for table, gdp in zip(["NGDP", "NGDPD"], data):
-        table_url = (f"https://www.imf.org/external/pubs/ft/weo/2019/02/weodat"
+        table_url = (f"https://www.imf.org/external/pubs/ft/weo/2020/01/weodat"
                      f"a/weorept.aspx?sy={last_year - 1}&ey={last_year + 1}"
                      f"&scsm=1&ssd=1&sort=country&ds=.&br=1&pr1.x=27&pr1.y=9&c"
                      f"=298&s={table}&grp=0&a=")
