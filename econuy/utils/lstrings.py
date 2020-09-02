@@ -624,6 +624,17 @@ urls = {"call":
                 "indirect": [
                     "https://web.bevsa.com.uy/Mercado/MercadoDinero/CallHistoricoDiario.aspx"],
                 "provider": ["BEVSA"]}},
+        "bonds":
+            {"dl": {
+                "usd": "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceITBGL.aspx",
+                "ui": "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceINDUI.aspx",
+                "uyu": "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceITLUP.aspx"},
+                "source": {"direct": [],
+                           "indirect": [
+                               "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceITBGL.aspx",
+                               "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceINDUI.aspx",
+                               "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceITLUP.aspx"],
+                           "provider": ["BEVSA"]}},
         "cpi":
             {"dl": {
                 "main": "http://ine.gub.uy/c/document_library/get_file?uuid=2e92084a-94ec-4fec-b5ca-42b40d5d2826&groupId=10181"},

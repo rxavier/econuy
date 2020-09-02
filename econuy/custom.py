@@ -1,4 +1,6 @@
 import warnings
+import time
+import datetime as dt
 from datetime import date
 from os import PathLike
 from typing import Union, Optional
@@ -7,6 +9,7 @@ from urllib.error import HTTPError, URLError
 import pandas as pd
 import numpy as np
 from pandas.tseries.offsets import MonthEnd
+from selenium.webdriver.remote.webdriver import WebDriver
 from opnieuw import retry
 from scipy.stats.mstats_basic import winsorize
 from scipy.stats import stats
@@ -17,6 +20,7 @@ from econuy.retrieval import (nxr, cpi, fiscal_accounts, industrial_production,
                               labor, trade, public_debt, reserves)
 from econuy.utils import metadata, ops
 from econuy.utils.lstrings import fiscal_metadata, urls, cpi_details
+from econuy.utils.chromedriver import _build
 
 
 def core_industrial(update_loc: Union[str, PathLike, Engine,
@@ -64,14 +68,14 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
                                       "Unnamed: 6": "Pond. agrupación",
                                       "Unnamed: 7": "Pond. clase"})
     other_foods = (
-        weights.loc[weights["clase"] == 1549]["Pond. clase"].values[0]
-        * weights.loc[(weights["agrupacion"] == 154) &
-                      (weights["clase"] == 0)][
-            "Pond. agrupación"].values[0]
-        * weights.loc[(weights["division"] == 15) &
+            weights.loc[weights["clase"] == 1549]["Pond. clase"].values[0]
+            * weights.loc[(weights["agrupacion"] == 154) &
+                          (weights["clase"] == 0)][
+                "Pond. agrupación"].values[0]
+            * weights.loc[(weights["division"] == 15) &
                           (weights["agrupacion"] == 0)][
                 "Pond. división"].values[0]
-        / 1000000)
+            / 1000000)
     pulp = (weights.loc[weights["clase"] == 2101]["Pond. clase"].values[0]
             * weights.loc[(weights["division"] == 21) &
                           (weights["agrupacion"] == 0)][
@@ -235,8 +239,8 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
     proc["Egresos: Totales GC-BPS aj. FSS"] = (proc["Egresos: Totales GC-BPS"]
                                                - proc["Intereses: FSS"])
     proc["Resultado: Primario SPNF aj. FSS"] = (
-        proc["Resultado: Primario SPNF"]
-        - proc["Ingresos: FSS"])
+            proc["Resultado: Primario SPNF"]
+            - proc["Ingresos: FSS"])
     proc["Resultado: Global SPNF aj. FSS"] = (proc["Resultado: Global SPNF"]
                                               - proc["Ingresos: FSS"]
                                               + proc["Intereses: FSS"])
@@ -246,12 +250,12 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
                                              - proc["Ingresos: FSS"]
                                              + proc["Intereses: FSS"])
     proc["Resultado: Primario GC-BPS aj. FSS"] = (
-        proc["Resultado: Primario GC-BPS"]
-        - proc["Ingresos: FSS"])
+            proc["Resultado: Primario GC-BPS"]
+            - proc["Ingresos: FSS"])
     proc["Resultado: Global GC-BPS aj. FSS"] = (
-        proc["Resultado: Global GC-BPS"]
-        - proc["Ingresos: FSS"]
-        + proc["Intereses: FSS"])
+            proc["Resultado: Global GC-BPS"]
+            - proc["Ingresos: FSS"]
+            + proc["Intereses: FSS"])
 
     output = proc.loc[:, fiscal_metadata[aggregation][fss]]
     metadata._set(output, area="Cuentas fiscales y deuda",
@@ -729,7 +733,7 @@ def cpi_measures(update_loc: Union[str, PathLike,
         raw = pd.read_excel(xls, sheet_name=sheet, usecols="D:IN",
                             skiprows=9).dropna(how="all")
         proc = raw.loc[:, raw.columns.str.
-                       contains("Indice|Índice")].dropna(how="all")
+                              contains("Indice|Índice")].dropna(how="all")
         sheets.append(proc.T)
     complete_10 = pd.concat(sheets)
     complete_10 = complete_10.iloc[:, 1:]
@@ -737,9 +741,9 @@ def cpi_measures(update_loc: Union[str, PathLike,
     complete_10.index = pd.date_range(start="2010-12-31",
                                       periods=len(complete_10), freq="M")
     diff_8 = complete_10.loc[:,
-                             complete_10.columns.get_level_values(
-                                 level=1).str.len()
-                             == 8].pct_change()
+             complete_10.columns.get_level_values(
+                 level=1).str.len()
+             == 8].pct_change()
     win = pd.DataFrame(winsorize(diff_8, limits=(0.05, 0.05), axis=1))
     win.index = diff_8.index
     win.columns = diff_8.columns.get_level_values(level=1)
@@ -750,32 +754,32 @@ def cpi_measures(update_loc: Union[str, PathLike,
                              skiprows=5).dropna(how="any")
                .set_index(
         "Rubros, Agrupaciones, Subrubros, Familias y Artículos")
-        .T)
+               .T)
     weights_97 = (pd.read_excel(urls["tfm_prices"]["dl"]["1997_weights"],
                                 index_col=0)
                   .drop_duplicates(subset="Descripción", keep="first"))
     weights_97["Weight"] = (weights_97["Rubro"]
                             .fillna(
         weights_97["Agrupación, subrubro, familia"])
-        .fillna(weights_97["Artículo"])
-        .drop(columns=["Rubro",
-                       "Agrupación, subrubro, familia",
-                       "Artículo"]))
+                            .fillna(weights_97["Artículo"])
+                            .drop(columns=["Rubro",
+                                           "Agrupación, subrubro, familia",
+                                           "Artículo"]))
     prod_97 = prod_97.loc[:, list(cpi_details["1997_base"].keys())]
     prod_97.index = pd.date_range(start="1997-03-31",
                                   periods=len(prod_97), freq="M")
     weights_97 = (weights_97[weights_97["Descripción"]
-                             .isin(cpi_details["1997_weights"])]
+                  .isin(cpi_details["1997_weights"])]
                   .set_index("Descripción")
                   .drop(columns=["Rubro", "Agrupación, subrubro, "
                                           "familia", "Artículo"])).div(100)
     weights_97.index = prod_97.columns
     prod_10 = complete_10.loc[:, list(cpi_details["2010_base"].keys())]
     prod_10 = prod_10.loc[:, ~prod_10.columns.get_level_values(level=0)
-                          .duplicated()]
+        .duplicated()]
     prod_10.columns = prod_10.columns.get_level_values(level=0)
     weights_10 = (weights.loc[weights["Item"]
-                              .isin(list(cpi_details["2010_base"].keys()))]
+                  .isin(list(cpi_details["2010_base"].keys()))]
                   .drop_duplicates(subset="Item",
                                    keep="first")).set_index("Item")
     items = []
@@ -868,3 +872,115 @@ def _new_contains_nan(a, nan_policy='propagate'):
 
 
 stats._contains_nan = _new_contains_nan
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=8,
+    retry_window_after_first_call_in_seconds=60,
+)
+def bonds(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
+          revise_rows: Union[str, int] = "nodup",
+          save_loc: Union[str, PathLike, Engine, Connection, None] = None,
+          name: str = "bonds",
+          index_label: str = "index",
+          only_get: bool = False,
+          driver: WebDriver = None) -> pd.DataFrame:
+    """Get interest rate yield for US-denominated bonds, inflation-linked bonds
+    and peso bonds.
+
+    This function requires a Selenium webdriver. It can be provided in the
+    driver parameter, or it will attempt to configure a Chrome webdriver.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'bonds'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
+    driver : selenium.webdriver.chrome.webdriver.WebDriver, default None
+        Selenium webdriver for scraping. If None, build a Chrome webdriver.
+
+    Returns
+    -------
+    Daily bond yields in basis points : pd.DataFrame
+
+    """
+    if only_get is True and update_loc is not None:
+        output = ops._io(operation="update", data_loc=update_loc,
+                         name=name, index_label=index_label)
+        if not output.equals(pd.DataFrame()):
+            return output
+
+    if driver is None:
+        driver = _build()
+    dfs = []
+    for url in urls["bonds"]["dl"].values():
+
+        driver.get(url)
+        start = driver.find_element(by="name",
+                                    value="ctl00$ContentPlaceHolder1$dateDesde$dateInput")
+        start.clear()
+        start.send_keys("01/01/2000")
+        end = driver.find_element(by="name",
+                                  value="ctl00$ContentPlaceHolder1$dateHasta$dateInput")
+        end.clear()
+        end.send_keys(dt.datetime.now().strftime("%d/%m/%Y"))
+        submit = driver.find_element(by="id",
+                                     value="ContentPlaceHolder1_LinkFiltrar")
+        submit.click()
+        time.sleep(5)
+        tables = pd.read_html(driver.page_source, decimal=",", thousands=".")
+
+        raw = tables[8]
+        df = raw.set_index("FECHA")
+        df.index = pd.to_datetime(df.index, format="%d/%m/%Y")
+        df.sort_index(inplace=True)
+        df = df.loc[:, df.columns.isin(["Puntos Básicos", "BPS", "TASA"])]
+        dfs.append(df)
+    driver.close()
+    output = dfs[0].join(dfs[1], how="outer").join(dfs[2], how="outer")
+    output.columns = ["Bonos soberanos en dólares", "Bonos soberanos en UI",
+                      "Bonos soberanos en pesos"]
+
+    if update_loc is not None:
+        previous_data = ops._io(
+            operation="update", data_loc=update_loc,
+            name=name, index_label=index_label
+        )
+        output = ops._revise(new_data=output, prev_data=previous_data,
+                                revise_rows=revise_rows)
+
+    output = output.apply(pd.to_numeric, errors="coerce")
+    metadata._set(output, area="Mercado financiero", currency="-",
+                  inf_adj="No", unit="PBS", seas_adj="NSA",
+                  ts_type="-", cumperiods=1)
+    metadata._modify_multiindex(output, levels=[3, 4],
+                                new_arrays=[["USD", "UYU", "UYU"],
+                                            ["No", "Const.", "No"]])
+
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=output, name=name, index_label=index_label)
+
+    return output
