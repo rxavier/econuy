@@ -246,6 +246,16 @@ def test_call():
     remove_clutter()
 
 
+def test_bonds():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    bonds = session.get_custom(dataset="bonds").dataset
+    assert bonds.index[0] == dt.datetime(2003, 6, 2)
+    remove_clutter()
+
+
 def test_trade():
     remove_clutter()
     session = Session(location=TEST_CON)

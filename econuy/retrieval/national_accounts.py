@@ -212,17 +212,8 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
 
     output = pd.concat(results, axis=1)
     output = output.resample("Q-DEC").interpolate("linear").dropna(how="all")
-    arrays = []
-    for level in range(0, 9):
-        arrays.append(list(output.columns.get_level_values(level)))
-    arrays[0] = ["PBI UYU", "PBI USD"]
-    tuples = list(zip(*arrays))
-    output.columns = pd.MultiIndex.from_tuples(tuples,
-                                               names=["Indicador", "Área",
-                                                      "Frecuencia", "Moneda",
-                                                      "Inf. adj.", "Unidad",
-                                                      "Seas. Adj.", "Tipo",
-                                                      "Acum. períodos"])
+    metadata._modify_multiindex(output, levels=[0],
+                                new_arrays=[["PBI UYU", "PBI USD"]])
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,

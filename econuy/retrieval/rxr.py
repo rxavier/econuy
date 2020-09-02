@@ -207,11 +207,11 @@ def get_custom(update_loc: Union[str, PathLike, Engine,
 
     output = pd.DataFrame()
     output["UY_E_P"] = proc["UY_E"] / proc["UY_P"]
-    output["TCR_UY_AR"] = output["UY_E_P"] / proc["AR_E_A"] * proc["AR_P"]
-    output["TCR_UY_BR"] = output["UY_E_P"] / proc["BR_E"] * proc["BR_P"]
-    output["TCR_UY_US"] = output["UY_E_P"] * proc["US_P"]
-    output["TCR_AR_US"] = proc["BR_E"] * proc["US_P"] / proc["BR_P"]
-    output["TCR_BR_US"] = proc["AR_E"] * proc["US_P"] / proc["AR_P"]
+    output["Tipo de cambio real: Uruguay-Argentina"] = output["UY_E_P"] / proc["AR_E_A"] * proc["AR_P"]
+    output["Tipo de cambio real: Uruguay-Brasil"] = output["UY_E_P"] / proc["BR_E"] * proc["BR_P"]
+    output["Tipo de cambio real: Uruguay-EE.UU."] = output["UY_E_P"] * proc["US_P"]
+    output["Tipo de cambio real: Argentina-EE.UU."] = proc["BR_E"] * proc["US_P"] / proc["BR_P"]
+    output["Tipo de cambio real: Brasil-EE.UU."] = proc["AR_E"] * proc["US_P"] / proc["AR_P"]
     output.drop("UY_E_P", axis=1, inplace=True)
     output.rename_axis(None, inplace=True)
 
@@ -220,17 +220,9 @@ def get_custom(update_loc: Union[str, PathLike, Engine,
                   ts_type="-", cumperiods=1)
     output = transform.base_index(output, start_date="2010-01-01",
                                   end_date="2010-12-31", base=100)
-    arrays = []
-    for level in range(0, 9):
-        arrays.append(list(output.columns.get_level_values(level)))
-    arrays[3] = ["UYU/ARS", "UYU/BRL", "UYU/USD", "ARS/USD", "BRL/USD"]
-    tuples = list(zip(*arrays))
-    output.columns = pd.MultiIndex.from_tuples(tuples,
-                                               names=["Indicador", "Área",
-                                                      "Frecuencia", "Moneda",
-                                                      "Inf. adj.", "Unidad",
-                                                      "Seas. Adj.", "Tipo",
-                                                      "Acum. períodos"])
+    metadata._modify_multiindex(output, levels=[3],
+                                new_arrays=[["UYU/ARS", "UYU/BRL", "UYU/USD",
+                                             "ARS/USD", "BRL/USD"]])
 
     if update_loc is not None:
         previous_data = ops._io(operation="update",

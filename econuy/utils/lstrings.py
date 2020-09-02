@@ -624,6 +624,17 @@ urls = {"call":
                 "indirect": [
                     "https://web.bevsa.com.uy/Mercado/MercadoDinero/CallHistoricoDiario.aspx"],
                 "provider": ["BEVSA"]}},
+        "bonds":
+            {"dl": {
+                "usd": "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceITBGL.aspx",
+                "ui": "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceINDUI.aspx",
+                "uyu": "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceITLUP.aspx"},
+                "source": {"direct": [],
+                           "indirect": [
+                               "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceITBGL.aspx",
+                               "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceINDUI.aspx",
+                               "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceITLUP.aspx"],
+                           "provider": ["BEVSA"]}},
         "cpi":
             {"dl": {
                 "main": "http://ine.gub.uy/c/document_library/get_file?uuid=2e92084a-94ec-4fec-b5ca-42b40d5d2826&groupId=10181"},
@@ -679,10 +690,10 @@ urls = {"call":
                         "provider": [
                             "Estimaciones de econuy en base a INAC, INSEE, Quandl, INALE, Comisión Europea, FMI y Naciones Unidas"]}},
         "fiscal": {"dl": {
-            "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos"},
+            "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"},
                    "source": {"direct": [],
                               "indirect": [
-                                  "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos"],
+                                  "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"],
                               "provider": ["MEF"]}},
         "public_debt": {"dl": {
             "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"},
