@@ -679,10 +679,10 @@ urls = {"call":
                         "provider": [
                             "Estimaciones de econuy en base a INAC, INSEE, Quandl, INALE, Comisión Europea, FMI y Naciones Unidas"]}},
         "fiscal": {"dl": {
-            "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos"},
+            "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"},
                    "source": {"direct": [],
                               "indirect": [
-                                  "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos"],
+                                  "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"],
                               "provider": ["MEF"]}},
         "public_debt": {"dl": {
             "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"},

@@ -1,10 +1,8 @@
 import re
-import tempfile
-from os import PathLike, path, listdir
+from os import PathLike
 from typing import Union, Dict
 
 import pandas as pd
-import patoolib
 import requests
 from bs4 import BeautifulSoup
 from opnieuw import retry
@@ -77,48 +75,40 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     response = requests.get(urls["fiscal"]["dl"]["main"])
     soup = BeautifulSoup(response.content, "html.parser")
-    links = soup.find_all(href=re.compile("\\.rar$"))
-    rar = links[0]["href"]
-    temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
-    with open(temp_rar, "wb") as f:
-        f.write(requests.get(rar).content)
+    links = soup.find_all(href=re.compile("\\.xlsx$"))
+    link = links[0]["href"]
+    xls = pd.ExcelFile(link)
+    output = {}
+    for sheet, meta in fiscal_sheets.items():
+        data = (pd.read_excel(xls, sheet_name=sheet).
+                dropna(axis=0, thresh=4).dropna(axis=1, thresh=4).
+                transpose().set_index(2, drop=True))
+        data.columns = data.iloc[0]
+        data = data[data.index.notnull()].rename_axis(None)
+        data.index = data.index + MonthEnd(1)
+        data.columns = meta["Colnames"]
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
-        path_temp = path.join(temp_dir, listdir(temp_dir)[0])
+        if update_loc is not None:
+            previous_data = ops._io(
+                operation="update", data_loc=update_loc,
+                name=f"{name}_{meta['Name']}", index_label=index_label
+            )
+            data = ops._revise(new_data=data,
+                               prev_data=previous_data,
+                               revise_rows=revise_rows)
+        data = data.apply(pd.to_numeric, errors="coerce")
+        metadata._set(
+            data, area="Cuentas fiscales y deuda", currency="UYU",
+            inf_adj="No", unit="Millones", seas_adj="NSA",
+            ts_type="Flujo", cumperiods=1
+        )
 
-        output = {}
-        with pd.ExcelFile(path_temp) as xls:
-            for sheet, meta in fiscal_sheets.items():
-                data = (pd.read_excel(xls, sheet_name=sheet).
-                        dropna(axis=0, thresh=4).dropna(axis=1, thresh=4).
-                        transpose().set_index(2, drop=True))
-                data.columns = data.iloc[0]
-                data = data[data.index.notnull()].rename_axis(None)
-                data.index = data.index + MonthEnd(1)
-                data.columns = meta["Colnames"]
+        if save_loc is not None:
+            ops._io(
+                operation="save", data_loc=save_loc, data=data,
+                name=f"{name}_{meta['Name']}", index_label=index_label
+            )
 
-                if update_loc is not None:
-                    previous_data = ops._io(
-                        operation="update", data_loc=update_loc,
-                        name=f"{name}_{meta['Name']}", index_label=index_label
-                    )
-                    data = ops._revise(new_data=data,
-                                       prev_data=previous_data,
-                                       revise_rows=revise_rows)
-                data = data.apply(pd.to_numeric, errors="coerce")
-                metadata._set(
-                    data, area="Cuentas fiscales y deuda", currency="UYU",
-                    inf_adj="No", unit="Millones", seas_adj="NSA",
-                    ts_type="Flujo", cumperiods=1
-                )
-
-                if save_loc is not None:
-                    ops._io(
-                        operation="save", data_loc=save_loc, data=data,
-                        name=f"{name}_{meta['Name']}", index_label=index_label
-                    )
-
-                output.update({meta["Name"]: data})
+        output.update({meta["Name"]: data})
 
     return output
