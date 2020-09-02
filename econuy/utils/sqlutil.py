@@ -24,14 +24,14 @@ def read(con: sqla.engine.base.Connection,
     Parameters
     ----------
     con : sqlalchemy.engine.base.Connection
-        Connection to PostgreSQL database.
+        Connection to SQL database.
     command : str, sqlalchemy.sql.Selectable or None, default None
         Command to pass to `pandas.read_sql_query <https://pandas.pydata.org/
         pandas-docs/stable/reference/api/pandas.read_sql_query.html>`_. If this
-        paramter is not None, `table`, `cols`, `start_date` and `end_date` will
-        be ignored.
+        parameter is not None, `table`, `cols`, `start_date` and `end_date`
+        will be ignored.
     table_name : str or None, default None
-        String representing which table should be retrieved from the databse.
+        String representing which table should be retrieved from the database.
     cols : str, iterable or None, default None
         Column(s) to retrieve. By default, gets all all columns.
     start_date : str or None, default None
