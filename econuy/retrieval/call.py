@@ -1,4 +1,5 @@
 import datetime as dt
+import time
 from os import PathLike
 from typing import Union
 from urllib.error import URLError, HTTPError
@@ -84,6 +85,7 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     submit = driver.find_element(by="id",
                                  value="ContentPlaceHolder1_LinkFiltrar")
     submit.click()
+    time.sleep(5)
     tables = pd.read_html(driver.page_source, decimal=",", thousands=".")
     driver.close()
     raw = tables[8].iloc[:, :-2]

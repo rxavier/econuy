@@ -949,7 +949,7 @@ def bonds(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         submit = driver.find_element(by="id",
                                      value="ContentPlaceHolder1_LinkFiltrar")
         submit.click()
-        time.sleep(5)
+        time.sleep(10)
         tables = pd.read_html(driver.page_source, decimal=",", thousands=".")
 
         raw = tables[8]
