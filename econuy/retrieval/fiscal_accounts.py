@@ -98,7 +98,7 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                                revise_rows=revise_rows)
         data = data.apply(pd.to_numeric, errors="coerce")
         metadata._set(
-            data, area="Cuentas fiscales y deuda", currency="UYU",
+            data, area="Sector público", currency="UYU",
             inf_adj="No", unit="Millones", seas_adj="NSA",
             ts_type="Flujo", cumperiods=1
         )

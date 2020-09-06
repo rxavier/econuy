@@ -95,7 +95,7 @@ def test_fiscal():
 
     cols = fiscal_metadata["nfps"][True]
     compare = proc.loc[:, cols]
-    metadata._set(compare, area="Cuentas fiscales y deuda",
+    metadata._set(compare, area="Sector público",
                   currency="UYU", inf_adj="No", unit="No",
                   seas_adj="NSA", ts_type="Flujo", cumperiods=1)
     compare_gdp = transform.rolling(compare, periods=12, operation="sum")

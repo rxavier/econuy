@@ -137,7 +137,7 @@ def get(update_loc: Union[str, PathLike,
             data = ops._revise(new_data=data,
                                prev_data=previous_data,
                                revise_rows=revise_rows)
-        metadata._set(data, area="Cuentas fiscales y deuda", currency="USD",
+        metadata._set(data, area="Sector público", currency="USD",
                       inf_adj="No", unit="Millones", seas_adj="NSA",
                       ts_type="Stock", cumperiods=1)
 

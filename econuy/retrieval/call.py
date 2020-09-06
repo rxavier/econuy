@@ -105,7 +105,7 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                            revise_rows=revise_rows)
 
     call = call.apply(pd.to_numeric, errors="coerce")
-    metadata._set(call, area="Mercado financiero", currency="UYU",
+    metadata._set(call, area="Sector financiero", currency="UYU",
                   inf_adj="No", unit="Tasa", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
 
