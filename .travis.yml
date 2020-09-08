@@ -5,6 +5,7 @@ cache: pip
 before_install:
 - sudo apt-get install python-dev
 - sudo apt-get install -y libpq-dev
+- sudo apt-get install python3-tk ghostscript
 install:
 - pip install pipenv
 - pipenv install

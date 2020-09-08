@@ -134,7 +134,11 @@ If you want to use the `decompose()` functions with ``method="x13"``  you will n
 
 ### Selenium webdrivers
 
-Some retrieval functions (fow now, only `econuy.retrieval.call.get()`) need Selenium to be configured in order to scrape data. These functions include a `driver` parameter in which a Selenium Webdriver can be passed, or they will attempt to configure a Chrome webdriver, even downloading the chromedriver binary if needed (which still needs a Chrome installation).
+Some retrieval functions need Selenium to be configured in order to scrape data. These functions include a `driver` parameter in which a Selenium Webdriver can be passed, or they will attempt to configure a Chrome webdriver, even downloading the chromedriver binary if needed (which still needs a Chrome installation).
+
+### Ghostscript and Tkinter
+
+This project uses [Camelot](https://github.com/camelot-dev/camelot) to extract data from PDF tables, which relies on two dependencies that need to be installed in your system. Instructions for these can be found [here](https://camelot-py.readthedocs.io/en/master/user/install-deps.html)
 
 ----
 
