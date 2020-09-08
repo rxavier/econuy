@@ -66,7 +66,7 @@ def get(update_loc: Union[str, PathLike,
 
     raw = pd.read_excel(urls["deposits"]["dl"]["main"],
                         sheet_name="Total Sist. Banc.",
-                        skiprows=8, usecols="A:k", index_col=0)
+                        skiprows=8, usecols="A:S", index_col=0)
     output = raw.loc[~pd.isna(raw.index)].dropna(how="all", axis=1)
     output.index = output.index + MonthEnd(0)
     output.columns = ["Depósitos: S. privado - MN",

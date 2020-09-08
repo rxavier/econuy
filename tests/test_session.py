@@ -236,6 +236,38 @@ def test_naccounts():
     remove_clutter()
 
 
+def test_deposits():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    deposits = session.get(dataset="deposits").dataset
+    assert deposits.index[0] == dt.datetime(1998, 12, 31)
+    remove_clutter()
+
+
+def test_credit():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    credit = session.get(dataset="credit").dataset
+    assert credit.index[0] == dt.datetime(1998, 12, 31)
+    remove_clutter()
+
+
+def test_taxes():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    taxes = session.get(dataset="taxes").dataset
+    assert taxes.index[0] == dt.datetime(1982, 1, 31)
+    assert len(taxes.columns) == 38
+    assert taxes[-1:].count().sum() == 10
+    remove_clutter()
+
+
 def test_call():
     remove_clutter()
     session = Session(location=TEST_CON)
