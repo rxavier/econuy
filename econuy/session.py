@@ -11,7 +11,7 @@ from econuy import custom, transform
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
                               labor, rxr, commodity_index, reserves, trade,
                               public_debt, industrial_production, call,
-                              deposits, credits)
+                              deposits, credits, rates)
 from econuy.utils import logutil, ops
 
 
@@ -131,7 +131,7 @@ class Session(object):
                 'public_debt', 'naccounts', 'labor', 'wages', 'rxr_official', \
                 'reserves', 'reserves_changes', 'trade', \
                 'industrial_production', 'call', 'deposits', \
-                'credit', 'taxes'}
+                'credit', 'rates', 'taxes'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -260,6 +260,12 @@ class Session(object):
                                  save_loc=save_loc,
                                  only_get=self.only_get,
                                  **kwargs)
+        elif dataset == "rates":
+            output = rates.get(update_loc=update_loc,
+                               revise_rows=self.revise_rows,
+                               save_loc=save_loc,
+                               only_get=self.only_get,
+                               **kwargs)
         elif dataset == "taxes":
             output = fiscal_accounts.get_taxes(update_loc=update_loc,
                                                revise_rows=self.revise_rows,

@@ -256,6 +256,16 @@ def test_credit():
     remove_clutter()
 
 
+def test_rates():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    rates = session.get(dataset="rates").dataset
+    assert rates.index[0] == dt.datetime(1998, 1, 31)
+    remove_clutter()
+
+
 def test_taxes():
     remove_clutter()
     session = Session(location=TEST_CON)
