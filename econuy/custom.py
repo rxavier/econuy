@@ -258,7 +258,7 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
             + proc["Intereses: FSS"])
 
     output = proc.loc[:, fiscal_metadata[aggregation][fss]]
-    metadata._set(output, area="Cuentas fiscales y deuda",
+    metadata._set(output, area="Sector público",
                   currency="UYU", inf_adj="No", unit="Millones",
                   seas_adj="NSA", ts_type="Flujo", cumperiods=1)
 
@@ -347,7 +347,7 @@ def net_public_debt(update_loc: Union[str, PathLike, Engine,
                 .reindex(gross_debt.index).squeeze())
     output = gross_debt.add(assets).add(deposits, axis=0).dropna()
 
-    metadata._set(output, area="Cuentas fiscales y deuda",
+    metadata._set(output, area="Sector público",
                   currency="USD", inf_adj="No", unit="Millones",
                   seas_adj="NSA", ts_type="Stock", cumperiods=1)
 
@@ -972,7 +972,7 @@ def bonds(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                                 revise_rows=revise_rows)
 
     output = output.apply(pd.to_numeric, errors="coerce")
-    metadata._set(output, area="Mercado financiero", currency="-",
+    metadata._set(output, area="Sector financiero", currency="-",
                   inf_adj="No", unit="PBS", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
     metadata._modify_multiindex(output, levels=[3, 4],

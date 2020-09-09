@@ -87,7 +87,7 @@ def get(update_loc: Union[str, PathLike, Engine,
         reserves = ops._revise(new_data=reserves, prev_data=previous_data,
                                revise_rows=revise_rows)
 
-    metadata._set(reserves, area="Reservas internacionales", currency="USD",
+    metadata._set(reserves, area="Sector externo", currency="USD",
                   inf_adj="No", unit="Millones", seas_adj="NSA",
                   ts_type="Stock", cumperiods=1)
 
@@ -202,7 +202,7 @@ def get_changes(update_loc: Union[str, PathLike, Engine,
         reserves = reserves.loc[~reserves.index.duplicated(keep="last")]
 
     reserves = reserves.apply(pd.to_numeric, errors="coerce")
-    metadata._set(reserves, area="Reservas internacionales",
+    metadata._set(reserves, area="Sector externo",
                   currency="USD", inf_adj="No", unit="Millones",
                   seas_adj="NSA", ts_type="Flujo", cumperiods=1)
     reserves.columns.set_levels(["-"], level=2, inplace=True)

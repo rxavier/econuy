@@ -635,6 +635,27 @@ urls = {"call":
                                "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceINDUI.aspx",
                                "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceITLUP.aspx"],
                            "provider": ["BEVSA"]}},
+        "deposits":
+            {"dl": {
+                "main": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Depositos.xls"},
+                "source": {"direct": ["https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Depositos.xls"],
+                           "indirect": [
+                               "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Series-estadisticas-Depositos.aspx"],
+                           "provider": ["BCU"]}},
+        "credits":
+            {"dl": {
+                "main": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Creditos.xls"},
+                "source": {"direct": ["https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Creditos.xls"],
+                           "indirect": [
+                               "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Series-Estadisticas-Creditos.aspx"],
+                           "provider": ["BCU"]}},
+        "rates":
+            {"dl": {
+                "main": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/tasas.xls"},
+                "source": {"direct": ["https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/tasas.xls"],
+                           "indirect": [
+                               "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Series-Estadisticas-Tasas.aspx"],
+                           "provider": ["BCU"]}},
         "cpi":
             {"dl": {
                 "main": "http://ine.gub.uy/c/document_library/get_file?uuid=2e92084a-94ec-4fec-b5ca-42b40d5d2826&groupId=10181"},
@@ -695,6 +716,14 @@ urls = {"call":
                               "indirect": [
                                   "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"],
                               "provider": ["MEF"]}},
+        "taxes": {"dl": {
+            "main": "https://www.dgi.gub.uy/wdgi/afiledownload?2,4,865,O,S,0,19353%3BS%3B100%3B108,",
+            "report": f"https://www.dgi.gub.uy/wdgi/page?2,principal,dgi--datos-y-series-estadisticas--informes-mensuales-de-la-recaudacion-{dt.datetime.now().year},O,es,0,"},
+            "source": {"direct": ["https://www.dgi.gub.uy/wdgi/afiledownload?2,4,865,O,S,0,19353%3BS%3B100%3B108,"],
+                       "indirect": [
+                           "https://www.dgi.gub.uy/wdgi/page?2,principal,dgi--datos-y-series-estadisticas--serie-de-datos--recaudacion-anual-y-mensual-por-impuesto,O,es,0,",
+                           f"https://www.dgi.gub.uy/wdgi/page?2,principal,dgi--datos-y-series-estadisticas--informes-mensuales-de-la-recaudacion-{dt.datetime.now().year},O,es,0,"],
+                       "provider": ["DGI"]}},
         "public_debt": {"dl": {
             "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"},
                         "source": {"direct": [

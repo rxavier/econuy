@@ -10,7 +10,8 @@ from sqlalchemy.engine.base import Connection, Engine
 from econuy import custom, transform
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
                               labor, rxr, commodity_index, reserves, trade,
-                              public_debt, industrial_production, call)
+                              public_debt, industrial_production, call,
+                              deposits, credits)
 from econuy.utils import logutil, ops
 
 
@@ -129,7 +130,8 @@ class Session(object):
         dataset : {'cpi', 'nxr_monthly', 'nxr_daily', 'fiscal', \
                 'public_debt', 'naccounts', 'labor', 'wages', 'rxr_official', \
                 'reserves', 'reserves_changes', 'trade', \
-                'industrial_production', 'call'}
+                'industrial_production', 'call', 'deposits', \
+                'credit', 'taxes'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -246,6 +248,24 @@ class Session(object):
                               save_loc=save_loc,
                               only_get=self.only_get,
                               **kwargs)
+        elif dataset == "deposits":
+            output = deposits.get(update_loc=update_loc,
+                                  revise_rows=self.revise_rows,
+                                  save_loc=save_loc,
+                                  only_get=self.only_get,
+                                  **kwargs)
+        elif dataset == "credit" or dataset == "credits":
+            output = credits.get(update_loc=update_loc,
+                                 revise_rows=self.revise_rows,
+                                 save_loc=save_loc,
+                                 only_get=self.only_get,
+                                 **kwargs)
+        elif dataset == "taxes":
+            output = fiscal_accounts.get_taxes(update_loc=update_loc,
+                                               revise_rows=self.revise_rows,
+                                               save_loc=save_loc,
+                                               only_get=self.only_get,
+                                               **kwargs)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 
