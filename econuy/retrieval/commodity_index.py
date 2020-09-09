@@ -198,7 +198,7 @@ def _prices(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     milk_r = requests.get(url["milk1"])
     milk_soup = BeautifulSoup(milk_r.content, "html.parser")
-    links = milk_soup.find_all(href=re.compile("Oceanía"))
+    links = milk_soup.find_all(href=re.compile("Oceanía|Oceania"))
     xls = links[0]["href"]
     raw_milk = pd.read_excel(requests.utils.quote(xls).replace("%3A", ":"),
                              skiprows=14,
