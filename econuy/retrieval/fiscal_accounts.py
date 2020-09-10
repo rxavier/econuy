@@ -16,7 +16,7 @@ from sqlalchemy.engine.base import Connection, Engine
 from selenium.webdriver.remote.webdriver import WebDriver
 
 from econuy.utils import ops, metadata
-from econuy.utils.lstrings import urls, fiscal_sheets
+from econuy.utils.lstrings import urls, fiscal_sheets, taxes_columns
 from econuy.utils.chromedriver import _build
 
 
@@ -173,13 +173,7 @@ def get_taxes(
     raw.index = pd.to_datetime(raw.index, errors="coerce")
     output = raw.loc[~pd.isna(raw.index)]
     output.index = output.index + MonthEnd(0)
-    name_splits = [name.split("-") for name in output.columns]
-    colnames = [f"{x[0].title()} - {x[1]}"
-                if len(x) > 1 else x[0].title()
-                for x in name_splits]
-    colnames = [" ".join(x.split()) for x in colnames]
-    colnames = [x.replace("Ii", "II").replace("Dgi", "DGI") for x in colnames]
-    output.columns = colnames
+    output.columns = taxes_columns
     output = output.div(1000000)
     latest = _get_taxes_from_pdf(output, **kwargs)
     output = pd.concat([output, latest], sort=False)
@@ -252,16 +246,16 @@ def _get_taxes_from_pdf(excel_data: pd.DataFrame,
                      "Categoría II", "IASS", "IRNR",
                      "Impuesto de Primaria",
                      "6) Total Bruto (suma de (1) a (5))"]]
-            table.columns = ["Impuesto Al Valor Agregado - IVA",
-                             "Impuesto Específico Interno - IMESI",
-                             "Impuesto A La Enajenación De Los Bienes Agropecuarios - IMEBA",
-                             "Impuesto A Las Rentas De Las Actividades Económicas - IRAE",
-                             "Impuesto A La Renta De Las Personas Físicas Categoría I - IRPF Cat I",
-                             "Impuesto A La Renta De Las Personas Físicas Categoría II - IRPF Cat II",
-                             "Impuesto De Asistencia A La Seguridad Social - IASS",
-                             "Impuesto A Las Rentas De Los No Residentes - IRNR",
-                             "Impuesto De Educación Primaria",
-                             "Recaudación Total De La DGI"]
+            table.columns = ['IVA - Valor Agregado',
+                             'IMESI - Específico Interno',
+                             'IMEBA - Enajenación de Bienes Agropecuarios',
+                             'IRAE - Rentas de Actividades Económicas',
+                             'IRPF Cat I - Renta de las Personas Físicas',
+                             'IRPF Cat II - Rentas de las Personas Físicas',
+                             'IASS - Asistencia a la Seguridad Social',
+                             'IRNR - Rentas de No Residentes',
+                             'Impuesto de Educación Primaria',
+                             'Recaudación Total de la DGI']
             data.append(table)
     output = pd.concat(data)
 

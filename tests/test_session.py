@@ -10,7 +10,7 @@ from sqlalchemy import create_engine, inspect
 
 from econuy import transform
 from econuy.retrieval import nxr
-from econuy import Session
+from econuy.session import Session
 from econuy.utils import metadata, sqlutil
 from econuy.utils.lstrings import fiscal_metadata
 try:
