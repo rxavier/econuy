@@ -1,4 +1,5 @@
 import re
+import warnings
 import datetime as dt
 from tempfile import NamedTemporaryFile
 from os import PathLike
@@ -8,12 +9,14 @@ import pandas as pd
 import requests
 import camelot
 from PyPDF2 import pdf as pdf2
+from PyPDF2.utils import PdfReadWarning
 from bs4 import BeautifulSoup
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from requests.exceptions import ConnectionError, HTTPError
 from sqlalchemy.engine.base import Connection, Engine
 from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.common.exceptions import WebDriverException
 
 from econuy.utils import ops, metadata
 from econuy.utils.lstrings import urls, fiscal_sheets, taxes_columns
@@ -177,6 +180,7 @@ def get_taxes(
     output = output.div(1000000)
     latest = _get_taxes_from_pdf(output, **kwargs)
     output = pd.concat([output, latest], sort=False)
+    output = output.loc[~output.index.duplicated(keep="first")]
 
     if update_loc is not None:
         previous_data = ops._io(operation="update",
@@ -200,63 +204,60 @@ def get_taxes(
 
 def _get_taxes_from_pdf(excel_data: pd.DataFrame,
                         driver: WebDriver = None) -> pd.DataFrame:
+    extra_url = ",O,es,0,"
     last_month = excel_data.index[-1].month
-    month_match = {1: "Enero",
-                   2: "Febrero",
-                   3: "Marzo",
-                   4: "Abril",
-                   5: "Mayo",
-                   6: "Junio",
-                   7: "Julio",
-                   8: "Agosto",
-                   9: "Setiembre",
-                   10: "Octubre",
-                   11: "Noviembre",
-                   12: "Diciembre"}
+    last_year = excel_data.index[-1].year
+    if last_month == 12:
+        reports_year = [f"{urls['taxes']['dl']['report']}{year}{extra_url}"
+                        for year in [last_year + 1]]
+    else:
+        reports_year = [f"{urls['taxes']['dl']['report']}{year}{extra_url}"
+                        for year in [last_year, last_year + 1]]
     if driver is None:
         driver = _build()
-    driver.get(urls["taxes"]["dl"]["report"])
-    soup = BeautifulSoup(driver.page_source, "html.parser")
-    pdfs = soup.find_all("a", class_=re.compile("TitleStyle"))
-    pdfs_iterator = pdfs.copy()
-    driver.close()
-    for pdf in pdfs_iterator:
-        if month_match[last_month + 1] not in pdf.text:
-            pdfs.remove(pdf)
-        else:
-            break
-    dates = pd.date_range(start=dt.datetime(dt.datetime.now().year,
-                                            last_month + 1, 1), freq="M",
-                          periods=len(pdfs))
     data = []
-    for pdf, date in zip(pdfs, dates):
-        with NamedTemporaryFile(suffix=".pdf") as f:
-            r = requests.get(f"https://www.dgi.gub.uy/wdgi/{pdf['href']}")
-            f.write(r.content)
-            pages = pdf2.PdfFileReader(f.name).getNumPages()
-            tables = camelot.read_pdf(f.name, flavor="stream",
-                                      pages=str(pages), strip_text=".")
-            table = tables[0].df.iloc[2:, 0:2]
-            table.columns = ["Impuesto", date]
-            table.set_index("Impuesto", inplace=True)
-            table = (table.apply(pd.to_numeric, errors="coerce")
-                     .dropna(how="any").T)
-            table = table.loc[:,
-                    ["IVA", "IMESI", "IMEBA", "IRAE", "Categoría I",
-                     "Categoría II", "IASS", "IRNR",
-                     "Impuesto de Primaria",
-                     "6) Total Bruto (suma de (1) a (5))"]]
-            table.columns = ['IVA - Valor Agregado',
-                             'IMESI - Específico Interno',
-                             'IMEBA - Enajenación de Bienes Agropecuarios',
-                             'IRAE - Rentas de Actividades Económicas',
-                             'IRPF Cat I - Renta de las Personas Físicas',
-                             'IRPF Cat II - Rentas de las Personas Físicas',
-                             'IASS - Asistencia a la Seguridad Social',
-                             'IRNR - Rentas de No Residentes',
-                             'Impuesto de Educación Primaria',
-                             'Recaudación Total de la DGI']
-            data.append(table)
+    for year_url in reports_year:
+        try:
+            driver.get(year_url)
+        except WebDriverException:
+            continue
+        soup = BeautifulSoup(driver.page_source, "html.parser")
+        pdfs = soup.find_all("a", class_=re.compile("TitleStyle"),
+                             text=re.compile("recaudación"))
+        dates = pd.date_range(start=dt.datetime(dt.datetime.now().year,
+                                                1, 1), freq="M",
+                              periods=len(pdfs))
+        for pdf, date in zip(pdfs, dates):
+            with NamedTemporaryFile(suffix=".pdf") as f:
+                r = requests.get(f"https://www.dgi.gub.uy/wdgi/{pdf['href']}")
+                f.write(r.content)
+                with warnings.catch_warnings():
+                    warnings.filterwarnings("ignore", category=PdfReadWarning)
+                    pages = pdf2.PdfFileReader(f.name).getNumPages()
+                tables = camelot.read_pdf(f.name, flavor="stream",
+                                          pages=str(pages), strip_text=".")
+                table = tables[0].df.iloc[2:, 0:2]
+                table.columns = ["Impuesto", date]
+                table.set_index("Impuesto", inplace=True)
+                table = (table.apply(pd.to_numeric, errors="coerce")
+                         .dropna(how="any").T)
+                table = table.loc[:,
+                        ["IVA", "IMESI", "IMEBA", "IRAE", "Categoría I",
+                         "Categoría II", "IASS", "IRNR",
+                         "Impuesto de Primaria",
+                         "6) Total Bruto (suma de (1) a (5))"]]
+                table.columns = ['IVA - Valor Agregado',
+                                 'IMESI - Específico Interno',
+                                 'IMEBA - Enajenación de Bienes Agropecuarios',
+                                 'IRAE - Rentas de Actividades Económicas',
+                                 'IRPF Cat I - Renta de las Personas Físicas',
+                                 'IRPF Cat II - Rentas de las Personas Físicas',
+                                 'IASS - Asistencia a la Seguridad Social',
+                                 'IRNR - Rentas de No Residentes',
+                                 'Impuesto de Educación Primaria',
+                                 'Recaudación Total de la DGI']
+                data.append(table)
+    driver.quit()
     output = pd.concat(data)
 
     return output
