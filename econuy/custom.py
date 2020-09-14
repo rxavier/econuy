@@ -956,7 +956,8 @@ def bonds(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         df = raw.set_index("FECHA")
         df.index = pd.to_datetime(df.index, format="%d/%m/%Y")
         df.sort_index(inplace=True)
-        df = df.loc[:, df.columns.isin(["Puntos Básicos", "BPS", "TASA"])]
+        df = df.loc[:, df.columns.isin(["BPS", "RENDIMIENTO"])]
+        df.columns = [url]
         dfs.append(df)
     driver.quit()
     output = dfs[0].join(dfs[1], how="outer").join(dfs[2], how="outer")
