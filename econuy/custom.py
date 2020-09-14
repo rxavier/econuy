@@ -958,7 +958,7 @@ def bonds(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         df.sort_index(inplace=True)
         df = df.loc[:, df.columns.isin(["Puntos Básicos", "BPS", "TASA"])]
         dfs.append(df)
-    driver.close()
+    driver.quit()
     output = dfs[0].join(dfs[1], how="outer").join(dfs[2], how="outer")
     output.columns = ["Bonos soberanos en dólares", "Bonos soberanos en UI",
                       "Bonos soberanos en pesos"]
