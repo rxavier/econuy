@@ -208,24 +208,22 @@ def _get_taxes_from_pdf(excel_data: pd.DataFrame,
     last_month = excel_data.index[-1].month
     last_year = excel_data.index[-1].year
     if last_month == 12:
-        reports_year = [f"{urls['taxes']['dl']['report']}{year}{extra_url}"
-                        for year in [last_year + 1]]
+        reports_year = [last_year + 1]
     else:
-        reports_year = [f"{urls['taxes']['dl']['report']}{year}{extra_url}"
-                        for year in [last_year, last_year + 1]]
+        reports_year = [last_year, last_year + 1]
     if driver is None:
         driver = _build()
     data = []
-    for year_url in reports_year:
+    for year in reports_year:
+        url = f"{urls['taxes']['dl']['report']}{year}{extra_url}"
         try:
-            driver.get(year_url)
+            driver.get(url)
         except WebDriverException:
             continue
         soup = BeautifulSoup(driver.page_source, "html.parser")
         pdfs = soup.find_all("a", class_=re.compile("TitleStyle"),
                              text=re.compile("recaudación"))
-        dates = pd.date_range(start=dt.datetime(dt.datetime.now().year,
-                                                1, 1), freq="M",
+        dates = pd.date_range(start=dt.datetime(year, 1, 1), freq="M",
                               periods=len(pdfs))
         for pdf, date in zip(pdfs, dates):
             with NamedTemporaryFile(suffix=".pdf") as f:
