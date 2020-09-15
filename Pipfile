@@ -4,7 +4,6 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-notebook = "*"
 sphinx-autobuild = "*"
 sphinx-autodoc-typehints = "*"
 mock = "*"
@@ -27,7 +26,6 @@ requests = "==2.22.0"
 beautifulsoup4 = "==4.8.1"
 numpy = "==1.17.4"
 lxml = "==4.4.2"
-econuy = {editable = true, path = "."}
 bleach = "==3.1.4"
 opnieuw = "==1.0.0"
 sqlalchemy = "==1.3.16"

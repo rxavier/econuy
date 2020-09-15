@@ -87,7 +87,7 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     submit.click()
     time.sleep(5)
     tables = pd.read_html(driver.page_source, decimal=",", thousands=".")
-    driver.close()
+    driver.quit()
     raw = tables[8].iloc[:, :-2]
     call = raw.set_index("FECHA")
     call.index = pd.to_datetime(call.index, format="%d/%m/%Y")
