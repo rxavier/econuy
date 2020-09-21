@@ -42,6 +42,7 @@ openpyxl==3.0.5
 opnieuw==1.0.0
 packaging==20.4
 pandas==0.25.3
+patool==1.12
 patsy==0.5.1
 pdfminer.six==20200726
 pluggy==0.13.1

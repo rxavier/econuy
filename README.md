@@ -128,6 +128,10 @@ Metadata for each dataset is held in Pandas MultiIndexes with the following:
 
 ## External binaries and libraries
 
+### unrar libraries	
+
+The [patool](https://github.com/wummel/patool) library is used in order to access data provided in `.rar` format. This library requires that you have the unrar binaries in your system, which you can get from [here](https://www.rarlab.com/rar_add.htm).
+
 ### X13 ARIMA binary
 
 If you want to use the `decompose()` functions with ``method="x13"``  you will need to supply the X13 binary (or place it somewhere reasonable and set `x13_binary="search"`). You can get it [from here](https://www.census.gov/srd/www/x13as/x13down_pc.html) for Windows or [from here](https://www.census.gov/srd/www/x13as/x13down_unix.html) for UNIX systems. For macOS you can compile it using the instructions found [here](https://github.com/christophsax/seasonal/wiki/Compiling-X-13ARIMA-SEATS-from-Source-for-OS-X) (choose the non-html version) or use my version (working under macOS Catalina) from [here](https://drive.google.com/open?id=1HxFoi57TWaBMV90NoOAbM8hWdZS9uoz_).

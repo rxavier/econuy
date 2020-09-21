@@ -298,6 +298,25 @@ def test_bonds():
     remove_clutter()
 
 
+def test_energy():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    diesel = session.get(dataset="diesel").dataset
+    assert diesel.index[0] == dt.datetime(2004, 1, 31)
+    assert len(diesel.columns) == 21
+    remove_clutter()
+    gasoline = session.get(dataset="gasoline").dataset
+    assert gasoline.index[0] == dt.datetime(2004, 1, 31)
+    assert len(gasoline.columns) == 21
+    remove_clutter()
+    electricity = session.get(dataset="electricity").dataset
+    assert electricity.index[0] == dt.datetime(2000, 1, 31)
+    assert len(electricity.columns) == 8
+    remove_clutter()
+
+
 def test_trade():
     remove_clutter()
     session = Session(location=TEST_CON)

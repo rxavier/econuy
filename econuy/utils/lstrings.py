@@ -731,6 +731,24 @@ urls = {"call":
                                    "indirect": [
                                        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"],
                                    "provider": ["BCU"]}},
+        "diesel": {"dl": {
+            "main": "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-petroleo-derivados"},
+            "source": {"direct": [],
+                "indirect": [
+                    "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-petroleo-derivados"],
+                "provider": ["MIEM"]}},
+        "gasoline": {"dl": {
+            "main": "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-petroleo-derivados"},
+            "source": {"direct": [],
+                       "indirect": [
+                           "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-petroleo-derivados"],
+                       "provider": ["MIEM"]}},
+        "electricity": {"dl": {
+            "main": "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-energia-electrica"},
+            "source": {"direct": [],
+                       "indirect": [
+                           "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-energia-electrica"],
+                       "provider": ["MIEM"]}},
         "labor": {"dl": {
             "main": "http://ine.gub.uy/c/document_library/get_file?uuid=50ae926c-1ddc-4409-afc6-1fecf641e3d0&groupId=10181",
             "missing": "https://docs.google.com/spreadsheets/d/1amqU3fUSok0kDB_LYvCZlBtVpkZeTK5vW5O8bShlOtw/export?format=xlsx&authuser=0"},

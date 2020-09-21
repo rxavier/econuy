@@ -37,6 +37,7 @@ chromedriver-autoinstaller = "==0.2.2"
 python-dotenv = "==0.14.0"
 camelot-py = {extras = ["cv"], version = "==0.8.2"}
 pypdf2 = "==1.26.0"
+patool = "==1.12"
 
 [requires]
 python_version = "3.7"

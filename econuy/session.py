@@ -11,7 +11,7 @@ from econuy import custom, transform
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
                               labor, rxr, commodity_index, reserves, trade,
                               public_debt, industrial_production, call,
-                              deposits, credits, rates)
+                              deposits, credits, rates, energy)
 from econuy.utils import logutil, ops
 
 
@@ -272,6 +272,24 @@ class Session(object):
                                                save_loc=save_loc,
                                                only_get=self.only_get,
                                                **kwargs)
+        elif dataset == "diesel":
+            output = energy.get_diesel(update_loc=update_loc,
+                                       revise_rows=self.revise_rows,
+                                       save_loc=save_loc,
+                                       only_get=self.only_get,
+                                       **kwargs)
+        elif dataset == "gasoline":
+            output = energy.get_gasoline(update_loc=update_loc,
+                                         revise_rows=self.revise_rows,
+                                         save_loc=save_loc,
+                                         only_get=self.only_get,
+                                         **kwargs)
+        elif dataset == "electricity":
+            output = energy.get_electricity(update_loc=update_loc,
+                                            revise_rows=self.revise_rows,
+                                            save_loc=save_loc,
+                                            only_get=self.only_get,
+                                            **kwargs)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 
