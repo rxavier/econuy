@@ -1,4 +1,5 @@
 from os import PathLike
+import warnings
 from typing import Union
 from urllib.error import URLError, HTTPError
 
@@ -118,7 +119,7 @@ def get_wages(update_loc: Union[str, PathLike,
               name: str = "wages",
               index_label: str = "index",
               only_get: bool = False) -> pd.DataFrame:
-    """Get general, public and private sector wages data
+    """Get nominal general, public and private sector wages data
 
     Parameters
     ----------
@@ -152,6 +153,9 @@ def get_wages(update_loc: Union[str, PathLike,
     Monthly wages separated by public and private sector : pd.DataFrame
 
     """
+    warnings.warn("This retrieval function will be renamed and made private"
+                  " in a future version.", FutureWarning)
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
                          name=name, index_label=index_label)
