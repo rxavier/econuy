@@ -766,13 +766,32 @@ urls = {"call":
                              "indirect": [
                                  "http://www.ine.gub.uy/web/guest/ims-indice-medio-de-salarios"],
                              "provider": ["INE"]}},
-        "industrial_production": {"dl": {
-            "main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181"},
-                                  "source": {"direct": [
-                                      "http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181"],
-                                             "indirect": [
-                                                 "http://www.ine.gub.uy/web/guest/industria-manufacturera"],
-                                             "provider": ["INE"]}},
+        "hours": {"dl": {
+            "main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=167e0db0-95ca-45d2-8e81-3b8c5bb8f9ee&groupId=10181",
+            "historical": "http://www.ine.gub.uy/c/document_library/get_file?uuid=73ac6ede-8452-48b8-ad32-993d3b047091&groupId=10181",
+            "missing": "https://docs.google.com/spreadsheets/d/1amqU3fUSok0kDB_LYvCZlBtVpkZeTK5vW5O8bShlOtw/export?format=xlsx&authuser=0"},
+            "source": {"direct": [
+                "http://www.ine.gub.uy/c/document_library/get_file?uuid=73ac6ede-8452-48b8-ad32-993d3b047091&groupId=10181",
+                "http://www.ine.gub.uy/c/document_library/get_file?uuid=167e0db0-95ca-45d2-8e81-3b8c5bb8f9ee&groupId=10181"],
+                "indirect": [
+                    "http://www.ine.gub.uy/web/guest/actividad-empleo-y-desempleo"],
+                "provider": ["INE"]}},
+        "household_income": {"dl": {
+            "main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=40bd0267-3922-478d-8bc0-252f508a72fe&groupId=10181",
+            "missing": "https://docs.google.com/spreadsheets/d/1amqU3fUSok0kDB_LYvCZlBtVpkZeTK5vW5O8bShlOtw/export?format=xlsx&authuser=0"},
+            "source": {"direct": [
+                "http://www.ine.gub.uy/c/document_library/get_file?uuid=40bd0267-3922-478d-8bc0-252f508a72fe&groupId=10181"],
+                "indirect": [
+                    "http://www.ine.gub.uy/web/guest/gastos-e-ingresos-de-las-personas-y-los-hogares"],
+                "provider": ["INE"]}},
+        "capita_income": {"dl": {
+            "main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=ca57dafa-8091-4c2f-8df8-7b8445859b93&groupId=10181",
+            "missing": "https://docs.google.com/spreadsheets/d/1amqU3fUSok0kDB_LYvCZlBtVpkZeTK5vW5O8bShlOtw/export?format=xlsx&authuser=0"},
+            "source": {"direct": [
+                "http://www.ine.gub.uy/c/document_library/get_file?uuid=ca57dafa-8091-4c2f-8df8-7b8445859b93&groupId=10181"],
+                "indirect": [
+                    "http://www.ine.gub.uy/web/guest/gastos-e-ingresos-de-las-personas-y-los-hogares"],
+                "provider": ["INE"]}},
         "naccounts_ind_con_nsa": {
             "dl": {"main": na_metadata["ind_con_nsa"]["url"]},
             "source": {"direct": [na_metadata["ind_con_nsa"]["url"]],

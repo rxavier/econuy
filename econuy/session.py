@@ -11,7 +11,7 @@ from econuy import custom, transform
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
                               labor, rxr, commodity_index, reserves, trade,
                               public_debt, industrial_production, call,
-                              deposits, credits, rates, energy)
+                              deposits, credits, rates, energy, income)
 from econuy.utils import logutil, ops
 
 
@@ -131,7 +131,8 @@ class Session(object):
                 'public_debt', 'naccounts', 'labor', 'wages', 'rxr_official', \
                 'reserves', 'reserves_changes', 'trade', \
                 'industrial_production', 'call', 'deposits', \
-                'credit', 'rates', 'taxes'}
+                'credit', 'rates', 'taxes', 'diesel', 'gasoline', \
+                'electricity', 'household_income', 'capita_income', 'hours'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -290,6 +291,24 @@ class Session(object):
                                             save_loc=save_loc,
                                             only_get=self.only_get,
                                             **kwargs)
+        elif dataset == "hours":
+            output = labor.get_hours(update_loc=update_loc,
+                                     revise_rows=self.revise_rows,
+                                     save_loc=save_loc,
+                                     only_get=self.only_get,
+                                     **kwargs)
+        elif dataset == "household_income":
+            output = income.get_household(update_loc=update_loc,
+                                          revise_rows=self.revise_rows,
+                                          save_loc=save_loc,
+                                          only_get=self.only_get,
+                                          **kwargs)
+        elif dataset == "capita_income":
+            output = income.get_capita(update_loc=update_loc,
+                                       revise_rows=self.revise_rows,
+                                       save_loc=save_loc,
+                                       only_get=self.only_get,
+                                       **kwargs)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 
