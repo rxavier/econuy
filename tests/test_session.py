@@ -324,6 +324,25 @@ def test_income():
     remove_clutter()
 
 
+def test_sectors():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    cattle = session.get(dataset="cattle").dataset
+    assert cattle.index[0] == dt.datetime(2005, 1, 2)
+    assert len(cattle.columns) == 6
+    remove_clutter()
+    milk = session.get(dataset="milk").dataset
+    assert milk.index[0] == dt.datetime(2002, 1, 31)
+    assert len(milk.columns) == 1
+    remove_clutter()
+    cement = session.get(dataset="cement").dataset
+    assert cement.index[0] == dt.datetime(1990, 1, 31)
+    assert len(cement.columns) == 3
+    remove_clutter()
+
+
 def test_energy():
     remove_clutter()
     session = Session(location=TEST_CON)
@@ -343,6 +362,39 @@ def test_energy():
     remove_clutter()
 
 
+def test_confidence():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    consumer = session.get(dataset="consumer_confidence").dataset
+    assert consumer.index[0] == dt.datetime(2007, 8, 31)
+    assert len(consumer.columns) == 4
+    remove_clutter()
+
+
+def test_containers():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    cement = session.get(dataset="containers").dataset
+    assert cement.index[0] == dt.datetime(2007, 1, 31)
+    assert len(cement.columns) == 11
+    remove_clutter()
+
+
+def test_bond_index():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    risk = session.get(dataset="bond_index").dataset
+    assert risk.index[0] == dt.datetime(1999, 1, 1)
+    assert len(risk.columns) == 1
+    remove_clutter()
+
+
 def test_trade():
     remove_clutter()
     session = Session(location=TEST_CON)
@@ -359,17 +411,6 @@ def test_trade():
                rename(columns={"Total importaciones": "Total"}))
     compare.columns = net.columns
     assert net.equals(compare)
-    remove_clutter()
-
-
-def test_tot():
-    remove_clutter()
-    session = Session(location=TEST_CON)
-    assert isinstance(session, Session)
-    assert isinstance(session.dataset, pd.DataFrame)
-    tb_ = session.get(dataset="trade").dataset
-    assert isinstance(tb_, dict)
-    assert len(tb_) == 12
     remove_clutter()
     net = session.get_custom(dataset="tot").dataset
     compare = (tb_["tb_x_dest_pri"].

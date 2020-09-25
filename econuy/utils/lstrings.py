@@ -842,6 +842,44 @@ urls = {"call":
                 "indirect": [
                     "http://www.ine.gub.uy/web/guest/industria-manufacturera"],
                 "provider": ["INE"]}},
+        "cattle": {"dl": {
+            "main": "https://www.inac.uy/innovaportal/v/11998/10/innova.front/serie-semanal-faena---bovinos-y-ovinos"},
+            "source": {"direct": [
+                "https://www.inac.uy/innovaportal/v/11998/10/innova.front/serie-semanal-faena---bovinos-y-ovinos"],
+                "indirect": [
+                    "https://www.inac.uy/innovaportal/v/5539/10/innova.front/faena"],
+                "provider": ["INAC"]}},
+        "milk": {"dl": {
+            "main": "https://www.inale.org/estadisticas/remision-a-planta/"},
+            "source": {"direct": [],
+                "indirect": [
+                    "https://www.inale.org/estadisticas/remision-a-planta/"],
+                "provider": ["INALE"]}},
+        "cement": {"dl": {
+            "main": "http://www.ciu.com.uy/innovaportal/file/83062/1/cemento-web.xlsx"},
+            "source": {"direct": ["http://www.ciu.com.uy/innovaportal/file/83062/1/cemento-web.xlsx"],
+                       "indirect": [
+                           "http://www.ciu.com.uy/innovaportal/v/83062/9/innova.front/series-de-ventas-mensuales-por-destino.html"],
+                       "provider": ["AFCPU y CIU"]}},
+        "container": {"dl": {
+            "main": "http://www.anp.com.uy/inicio/institucional/cifras/montevideo/estadisticas/contenedores/contenedores_movilizados/"},
+            "source": {"direct": [],
+                       "indirect": [
+                           "http://www.anp.com.uy/inicio/institucional/cifras/montevideo/estadisticas/contenedores/contenedores_movilizados/"],
+                       "provider": ["ANP"]}},
+        "consumer_confidence": {"dl": {
+            "main": "https://ucu.edu.uy/sites/default/files/facultad/fce/i_competitividad/serie_icc_-_agosto_20.xlsx"},
+            "source": {"direct": ["https://ucu.edu.uy/sites/default/files/facultad/fce/i_competitividad/serie_icc_-_agosto_20.xlsx"],
+                       "indirect": [
+                           "https://ucu.edu.uy/es/icc"],
+                       "provider": ["UCU"]}},
+        "ubi": {"dl": {
+            "historical": "https://www4.rafap.com.uy/internet/images/indicadores/UBI_Historico.xls",
+            "current": "https://www4.rafap.com.uy/internet/servlet/hextubicd"},
+            "source": {"direct": [],
+                       "indirect": [
+                           "https://www.rafap.com.uy/mvdcms/Institucional/UBI-uc89"],
+                       "provider": ["República AFAP"]}},
         "reserves_chg": {"dl": {
             "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Informe%20Diario%20Pasivos%20Monetarios/infd_",
             "missing": "https://docs.google.com/spreadsheets/d/1tXwv8SaigbBrfBSSCVGBjSs88f3dgTq4nIANPn7vjYI/export?format=xlsx&authuser=0"},
