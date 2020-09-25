@@ -11,7 +11,8 @@ from econuy import custom, transform
 from econuy.retrieval import (cpi, nxr, fiscal_accounts, national_accounts,
                               labor, rxr, commodity_index, reserves, trade,
                               public_debt, industrial_production, call,
-                              deposits, credits, rates)
+                              deposits, credits, rates, energy, income,
+                              sectors, confidence, risk)
 from econuy.utils import logutil, ops
 
 
@@ -131,7 +132,10 @@ class Session(object):
                 'public_debt', 'naccounts', 'labor', 'wages', 'rxr_official', \
                 'reserves', 'reserves_changes', 'trade', \
                 'industrial_production', 'call', 'deposits', \
-                'credit', 'rates', 'taxes'}
+                'credit', 'rates', 'taxes', 'diesel', 'gasoline', \
+                'electricity', 'household_income', 'capita_income', 'hours', \
+                'cattle', 'milk', 'cement', 'consumer_confidence', \
+                'containers', 'bond_index'}
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -272,6 +276,78 @@ class Session(object):
                                                save_loc=save_loc,
                                                only_get=self.only_get,
                                                **kwargs)
+        elif dataset == "diesel":
+            output = energy.get_diesel(update_loc=update_loc,
+                                       revise_rows=self.revise_rows,
+                                       save_loc=save_loc,
+                                       only_get=self.only_get,
+                                       **kwargs)
+        elif dataset == "gasoline":
+            output = energy.get_gasoline(update_loc=update_loc,
+                                         revise_rows=self.revise_rows,
+                                         save_loc=save_loc,
+                                         only_get=self.only_get,
+                                         **kwargs)
+        elif dataset == "electricity":
+            output = energy.get_electricity(update_loc=update_loc,
+                                            revise_rows=self.revise_rows,
+                                            save_loc=save_loc,
+                                            only_get=self.only_get,
+                                            **kwargs)
+        elif dataset == "hours":
+            output = labor.get_hours(update_loc=update_loc,
+                                     revise_rows=self.revise_rows,
+                                     save_loc=save_loc,
+                                     only_get=self.only_get,
+                                     **kwargs)
+        elif dataset == "household_income":
+            output = income.get_household(update_loc=update_loc,
+                                          revise_rows=self.revise_rows,
+                                          save_loc=save_loc,
+                                          only_get=self.only_get,
+                                          **kwargs)
+        elif dataset == "capita_income":
+            output = income.get_capita(update_loc=update_loc,
+                                       revise_rows=self.revise_rows,
+                                       save_loc=save_loc,
+                                       only_get=self.only_get,
+                                       **kwargs)
+        elif dataset == "cattle":
+            output = sectors.get_cattle(update_loc=update_loc,
+                                        revise_rows=self.revise_rows,
+                                        save_loc=save_loc,
+                                        only_get=self.only_get,
+                                        **kwargs)
+        elif dataset == "milk":
+            output = sectors.get_milk(update_loc=update_loc,
+                                      revise_rows=self.revise_rows,
+                                      save_loc=save_loc,
+                                      only_get=self.only_get,
+                                      **kwargs)
+        elif dataset == "cement":
+            output = sectors.get_cement(update_loc=update_loc,
+                                        revise_rows=self.revise_rows,
+                                        save_loc=save_loc,
+                                        only_get=self.only_get,
+                                        **kwargs)
+        elif dataset == "consumer_confidence":
+            output = confidence.get_consumer(update_loc=update_loc,
+                                             revise_rows=self.revise_rows,
+                                             save_loc=save_loc,
+                                             only_get=self.only_get,
+                                             **kwargs)
+        elif dataset == "containers":
+            output = trade.get_containers(update_loc=update_loc,
+                                          revise_rows=self.revise_rows,
+                                          save_loc=save_loc,
+                                          only_get=self.only_get,
+                                          **kwargs)
+        elif dataset == "bond_index":
+            output = risk.get_bond_index(update_loc=update_loc,
+                                         revise_rows=self.revise_rows,
+                                         save_loc=save_loc,
+                                         only_get=self.only_get,
+                                         **kwargs)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 

@@ -731,6 +731,24 @@ urls = {"call":
                                    "indirect": [
                                        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"],
                                    "provider": ["BCU"]}},
+        "diesel": {"dl": {
+            "main": "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-petroleo-derivados"},
+            "source": {"direct": [],
+                "indirect": [
+                    "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-petroleo-derivados"],
+                "provider": ["MIEM"]}},
+        "gasoline": {"dl": {
+            "main": "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-petroleo-derivados"},
+            "source": {"direct": [],
+                       "indirect": [
+                           "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-petroleo-derivados"],
+                       "provider": ["MIEM"]}},
+        "electricity": {"dl": {
+            "main": "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-energia-electrica"},
+            "source": {"direct": [],
+                       "indirect": [
+                           "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-energia-electrica"],
+                       "provider": ["MIEM"]}},
         "labor": {"dl": {
             "main": "http://ine.gub.uy/c/document_library/get_file?uuid=50ae926c-1ddc-4409-afc6-1fecf641e3d0&groupId=10181",
             "missing": "https://docs.google.com/spreadsheets/d/1amqU3fUSok0kDB_LYvCZlBtVpkZeTK5vW5O8bShlOtw/export?format=xlsx&authuser=0"},
@@ -748,13 +766,32 @@ urls = {"call":
                              "indirect": [
                                  "http://www.ine.gub.uy/web/guest/ims-indice-medio-de-salarios"],
                              "provider": ["INE"]}},
-        "industrial_production": {"dl": {
-            "main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181"},
-                                  "source": {"direct": [
-                                      "http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181"],
-                                             "indirect": [
-                                                 "http://www.ine.gub.uy/web/guest/industria-manufacturera"],
-                                             "provider": ["INE"]}},
+        "hours": {"dl": {
+            "main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=167e0db0-95ca-45d2-8e81-3b8c5bb8f9ee&groupId=10181",
+            "historical": "http://www.ine.gub.uy/c/document_library/get_file?uuid=73ac6ede-8452-48b8-ad32-993d3b047091&groupId=10181",
+            "missing": "https://docs.google.com/spreadsheets/d/1amqU3fUSok0kDB_LYvCZlBtVpkZeTK5vW5O8bShlOtw/export?format=xlsx&authuser=0"},
+            "source": {"direct": [
+                "http://www.ine.gub.uy/c/document_library/get_file?uuid=73ac6ede-8452-48b8-ad32-993d3b047091&groupId=10181",
+                "http://www.ine.gub.uy/c/document_library/get_file?uuid=167e0db0-95ca-45d2-8e81-3b8c5bb8f9ee&groupId=10181"],
+                "indirect": [
+                    "http://www.ine.gub.uy/web/guest/actividad-empleo-y-desempleo"],
+                "provider": ["INE"]}},
+        "household_income": {"dl": {
+            "main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=40bd0267-3922-478d-8bc0-252f508a72fe&groupId=10181",
+            "missing": "https://docs.google.com/spreadsheets/d/1amqU3fUSok0kDB_LYvCZlBtVpkZeTK5vW5O8bShlOtw/export?format=xlsx&authuser=0"},
+            "source": {"direct": [
+                "http://www.ine.gub.uy/c/document_library/get_file?uuid=40bd0267-3922-478d-8bc0-252f508a72fe&groupId=10181"],
+                "indirect": [
+                    "http://www.ine.gub.uy/web/guest/gastos-e-ingresos-de-las-personas-y-los-hogares"],
+                "provider": ["INE"]}},
+        "capita_income": {"dl": {
+            "main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=ca57dafa-8091-4c2f-8df8-7b8445859b93&groupId=10181",
+            "missing": "https://docs.google.com/spreadsheets/d/1amqU3fUSok0kDB_LYvCZlBtVpkZeTK5vW5O8bShlOtw/export?format=xlsx&authuser=0"},
+            "source": {"direct": [
+                "http://www.ine.gub.uy/c/document_library/get_file?uuid=ca57dafa-8091-4c2f-8df8-7b8445859b93&groupId=10181"],
+                "indirect": [
+                    "http://www.ine.gub.uy/web/guest/gastos-e-ingresos-de-las-personas-y-los-hogares"],
+                "provider": ["INE"]}},
         "naccounts_ind_con_nsa": {
             "dl": {"main": na_metadata["ind_con_nsa"]["url"]},
             "source": {"direct": [na_metadata["ind_con_nsa"]["url"]],
@@ -798,6 +835,51 @@ urls = {"call":
                                 "indirect": [
                                     "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"],
                                 "provider": ["BCU"]}},
+        "industrial_production": {"dl": {
+            "main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181"},
+            "source": {"direct": [
+                "http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181"],
+                "indirect": [
+                    "http://www.ine.gub.uy/web/guest/industria-manufacturera"],
+                "provider": ["INE"]}},
+        "cattle": {"dl": {
+            "main": "https://www.inac.uy/innovaportal/v/11998/10/innova.front/serie-semanal-faena---bovinos-y-ovinos"},
+            "source": {"direct": [
+                "https://www.inac.uy/innovaportal/v/11998/10/innova.front/serie-semanal-faena---bovinos-y-ovinos"],
+                "indirect": [
+                    "https://www.inac.uy/innovaportal/v/5539/10/innova.front/faena"],
+                "provider": ["INAC"]}},
+        "milk": {"dl": {
+            "main": "https://www.inale.org/estadisticas/remision-a-planta/"},
+            "source": {"direct": [],
+                "indirect": [
+                    "https://www.inale.org/estadisticas/remision-a-planta/"],
+                "provider": ["INALE"]}},
+        "cement": {"dl": {
+            "main": "http://www.ciu.com.uy/innovaportal/file/83062/1/cemento-web.xlsx"},
+            "source": {"direct": ["http://www.ciu.com.uy/innovaportal/file/83062/1/cemento-web.xlsx"],
+                       "indirect": [
+                           "http://www.ciu.com.uy/innovaportal/v/83062/9/innova.front/series-de-ventas-mensuales-por-destino.html"],
+                       "provider": ["AFCPU y CIU"]}},
+        "container": {"dl": {
+            "main": "http://www.anp.com.uy/inicio/institucional/cifras/montevideo/estadisticas/contenedores/contenedores_movilizados/"},
+            "source": {"direct": [],
+                       "indirect": [
+                           "http://www.anp.com.uy/inicio/institucional/cifras/montevideo/estadisticas/contenedores/contenedores_movilizados/"],
+                       "provider": ["ANP"]}},
+        "consumer_confidence": {"dl": {
+            "main": "https://ucu.edu.uy/sites/default/files/facultad/fce/i_competitividad/serie_icc_-_agosto_20.xlsx"},
+            "source": {"direct": ["https://ucu.edu.uy/sites/default/files/facultad/fce/i_competitividad/serie_icc_-_agosto_20.xlsx"],
+                       "indirect": [
+                           "https://ucu.edu.uy/es/icc"],
+                       "provider": ["UCU"]}},
+        "ubi": {"dl": {
+            "historical": "https://www4.rafap.com.uy/internet/images/indicadores/UBI_Historico.xls",
+            "current": "https://www4.rafap.com.uy/internet/servlet/hextubicd"},
+            "source": {"direct": [],
+                       "indirect": [
+                           "https://www.rafap.com.uy/mvdcms/Institucional/UBI-uc89"],
+                       "provider": ["República AFAP"]}},
         "reserves_chg": {"dl": {
             "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Informe%20Diario%20Pasivos%20Monetarios/infd_",
             "missing": "https://docs.google.com/spreadsheets/d/1tXwv8SaigbBrfBSSCVGBjSs88f3dgTq4nIANPn7vjYI/export?format=xlsx&authuser=0"},

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "3985d026715206a6fa4d073e53e3a95f7e1267f2c651ee70f5aef61234b5e428"
+            "sha256": "b5be62db8e103b85626ca6e352d3798517882291cb75a26a9500a9dd0f3acbeb"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -336,6 +336,14 @@
             ],
             "index": "pypi",
             "version": "==0.25.3"
+        },
+        "patool": {
+            "hashes": [
+                "sha256:3f642549c9a78f5b8bef1af92df385b521d360520d1f34e4dba3fd1dee2a21bc",
+                "sha256:e3180cf8bfe13bedbcf6f5628452fca0c2c84a3b5ae8c2d3f55720ea04cb1097"
+            ],
+            "index": "pypi",
+            "version": "==1.12"
         },
         "patsy": {
             "hashes": [
@@ -848,11 +856,11 @@
         },
         "pygments": {
             "hashes": [
-                "sha256:2594e8fdb06fef91552f86f4fd3a244d148ab24b66042036e64f29a291515048",
-                "sha256:2df50d16b45b977217e02cba6c8422aaddb859f3d0570a88e09b00eafae89c6e"
+                "sha256:307543fe65c0947b126e83dd5a61bd8acbd84abec11f43caebaf5534cbc17998",
+                "sha256:926c3f319eda178d1bd90851e4317e6d8cdb5e292a3386aac9bd75eca29cf9c7"
             ],
             "markers": "python_version >= '3.5'",
-            "version": "==2.7.0"
+            "version": "==2.7.1"
         },
         "pyparsing": {
             "hashes": [

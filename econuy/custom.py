@@ -172,6 +172,9 @@ def fiscal(aggregation: str = "gps", fss: bool = True,
         keywords.
 
     """
+    if unit is not None:
+        warnings.warn("The 'unit' argument will be removed in a "
+                      "future version.", FutureWarning)
     if unit not in ["gdp", "usd", "real", "real_usd", None]:
         raise ValueError("'unit' can be 'gdp', 'usd', 'real', 'real_usd' or"
                          " None.")
@@ -414,6 +417,13 @@ def labor_rate_people(extend: bool = True,
         If ``seas_adj`` is given an invalid keyword.
 
     """
+    if seas_adj is not None:
+        warnings.warn("The 'eas_adj' argument will be removed in a "
+                      "future version.", FutureWarning)
+    if extend is False:
+        warnings.warn("The 'extend' argument will be removed in a future "
+                      "version and the function will always extend data.",
+                      FutureWarning)
     if seas_adj not in ["trend", "seas", None]:
         raise ValueError("'seas_adj' can be 'trend', 'seas' or None.")
 
@@ -524,6 +534,9 @@ def labor_real_wages(seas_adj: Union[str, None] = None,
         If ``seas_adj`` is given an invalid keyword.
 
     """
+    if seas_adj is not None:
+        warnings.warn("The 'seas_adj' argument will be removed in a "
+                      "future version.", FutureWarning)
     if seas_adj not in ["trend", "seas", None]:
         raise ValueError("'seas_adj' can be 'trend', 'seas' or None.")
 
