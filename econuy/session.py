@@ -343,11 +343,11 @@ class Session(object):
                                           only_get=self.only_get,
                                           **kwargs)
         elif dataset == "bond_index":
-            output = risk.get_bond_index(update_loc=update_loc,
-                                         revise_rows=self.revise_rows,
-                                         save_loc=save_loc,
-                                         only_get=self.only_get,
-                                         **kwargs)
+            output = risk.get_ubi(update_loc=update_loc,
+                                  revise_rows=self.revise_rows,
+                                  save_loc=save_loc,
+                                  only_get=self.only_get,
+                                  **kwargs)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 

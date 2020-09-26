@@ -18,7 +18,7 @@ from econuy.utils.lstrings import urls
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def get_bond_index(
+def get_ubi(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
