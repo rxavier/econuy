@@ -389,7 +389,7 @@ def test_bond_index():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    risk = session.get(dataset="bond_index").dataset
+    risk = session.get(dataset="ubi").dataset
     assert risk.index[0] == dt.datetime(1999, 1, 1)
     assert len(risk.columns) == 1
     remove_clutter()
