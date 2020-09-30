@@ -6,7 +6,7 @@
 econuy
 ===============================================================
 
-Wrangling Uruguay economic data so you don't have to.
+Wrangling Uruguayan economic data so you don't have to.
 
 .. contents::
    :local:

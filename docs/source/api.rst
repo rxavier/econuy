@@ -58,6 +58,34 @@ Data retrieval functions
    :members:
    :undoc-members:
    :show-inheritance:
+.. automodule:: econuy.retrieval.risk
+   :members:
+   :undoc-members:
+   :show-inheritance:
+.. automodule:: econuy.retrieval.deposits
+   :members:
+   :undoc-members:
+   :show-inheritance:
+.. automodule:: econuy.retrieval.credits
+   :members:
+   :undoc-members:
+   :show-inheritance:
+.. automodule:: econuy.retrieval.rates
+   :members:
+   :undoc-members:
+   :show-inheritance:
+.. automodule:: econuy.retrieval.energy
+   :members:
+   :undoc-members:
+   :show-inheritance:
+.. automodule:: econuy.retrieval.sectors
+   :members:
+   :undoc-members:
+   :show-inheritance:
+.. automodule:: econuy.retrieval.income
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Transformation functions
 ------------------------
@@ -88,6 +116,10 @@ Utility functions
    :undoc-members:
    :show-inheritance:
 .. automodule:: econuy.utils.sqlutil
+   :members:
+   :undoc-members:
+   :show-inheritance:
+.. automodule:: econuy.utils.chromedriver
    :members:
    :undoc-members:
    :show-inheritance:

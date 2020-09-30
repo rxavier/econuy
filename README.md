@@ -7,7 +7,7 @@
   <a href="https://econuy.readthedocs.io/en/latest/?badge=latest"><img src="https://readthedocs.org/projects/econuy/badge/?version=latest"></a>
 
 
-This project simplifies gathering and processing of Uruguay economic statistics. Data is retrieved from (mostly) government sources and can be transformed in several ways (converting to dollars, calculating rolling averages, resampling to other frequencies, etc.).
+This project simplifies gathering and processing of Uruguayan economic statistics. Data is retrieved from (mostly) government sources and can be transformed in several ways (converting to dollars, calculating rolling averages, resampling to other frequencies, etc.).
 
 If [this screenshot](https://i.imgur.com/Ku5OR0y.jpg) gives you anxiety, this package should be of interest.
 
@@ -40,7 +40,7 @@ python setup.py install
 This is the recommended entry point for the package. It allows setting up the common behavior for downloads, and holds the current working dataset.
 
 ```python
-from econuy import Session
+from econuy.session import Session
 
 sess = Session(location="your/directory", revise_rows="nodup", only_get=False, log=1, inplace=False)
 ```
@@ -65,7 +65,7 @@ Available options for the `dataset` argument are "cpi", "fiscal", "nxr_monthly",
 
 If you wanted CPI data:
 ```python
-from econuy import Session
+from econuy.session import Session
 
 sess = Session(location="your/directory")
 df = sess.get(dataset="cpi").dataset
@@ -80,7 +80,7 @@ For example, the following calculates tradable CPI, non-tradable CPI, core CPI, 
 ```python
 from sqlalchemy import create_engine
 
-from econuy import Session
+from econuy.session import Session
 
 eng = create_engine("dialect+driver://user:pwd@host:port/database")
 
@@ -93,7 +93,7 @@ df = sess.get_custom(dataset="cpi_measures")
 These class methods take a `Session()` object with a valid dataset and allow performing preset transformation pipelines. For example:
 
 ```python
-from econuy import Session
+from econuy.session import Session
 
 sess = Session(location="your/directory")
 df = sess.get(dataset="nxr").decompose(flavor="trend", method="x13", fallback="loess")
@@ -142,7 +142,7 @@ Some retrieval functions need Selenium to be configured in order to scrape data.
 
 ### Ghostscript and Tkinter
 
-This project uses [Camelot](https://github.com/camelot-dev/camelot) to extract data from PDF tables, which relies on two dependencies that need to be installed in your system. Instructions for these can be found [here](https://camelot-py.readthedocs.io/en/master/user/install-deps.html)
+This project uses [Camelot](https://github.com/camelot-dev/camelot) to extract data from PDF tables, which relies on two dependencies that need to be installed in your system. Instructions for these can be found [here](https://camelot-py.readthedocs.io/en/master/user/install-deps.html).
 
 ----
 

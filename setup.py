@@ -29,7 +29,7 @@ with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
 setup(
     name="econuy",
     version=__version__,
-    description="Wrangling Uruguay economic data so you don't have to.",
+    description="Wrangling Uruguayan economic data so you don't have to.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Rafael Xavier",
