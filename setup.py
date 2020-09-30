@@ -19,7 +19,8 @@ def reqs_pipfile_lock(pipfile_lock: Union[str, os.PathLike, None] = None,
 
 
 packages = find_packages(".", exclude=["*.test", "*.test.*"])
-pipfile_lock_requirements = reqs_pipfile_lock(exclude=["psycopg2"])
+pipfile_lock_requirements = reqs_pipfile_lock(exclude=["psycopg2",
+                                                       "statsmodels"])
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -47,7 +48,7 @@ setup(
         "Operating System :: OS Independent"
     ],
     keywords=["uruguay", "economy", "economic", "statistics", "data"],
-    install_requires=pipfile_lock_requirements,
+    install_requires=pipfile_lock_requirements + ["statsmodels==0.12.0"],
     extras_require={
         "pgsql": ["psycopg2==2.8.5"]},
     packages=packages,
