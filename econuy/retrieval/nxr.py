@@ -82,7 +82,7 @@ def get_monthly(update_loc: Union[str, PathLike,
         nxr = ops._revise(new_data=nxr, prev_data=previous_data,
                           revise_rows=revise_rows)
 
-    metadata._set(nxr, area="Precios y salarios", currency="UYU/USD",
+    metadata._set(nxr, area="Precios", currency="UYU/USD",
                   inf_adj="No", unit="-", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
 
@@ -185,7 +185,7 @@ def get_daily(update_loc: Union[str, PathLike,
         output.columns = ["Tipo de cambio US$, Cable"]
         output = output.apply(pd.to_numeric, errors="coerce")
 
-        metadata._set(output, area="Precios y salarios", currency="UYU/USD",
+        metadata._set(output, area="Precios", currency="UYU/USD",
                       inf_adj="No", unit="-", seas_adj="NSA",
                       ts_type="-", cumperiods=1)
         output.columns.set_levels(["-"], level=2, inplace=True)

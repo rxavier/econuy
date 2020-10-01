@@ -93,7 +93,7 @@ def get_official(update_loc: Union[str, PathLike, Engine,
         proc = ops._revise(new_data=proc, prev_data=previous_data,
                            revise_rows=revise_rows)
 
-    metadata._set(proc, area="Precios y salarios", currency="UYU/Otro",
+    metadata._set(proc, area="Sector externo", currency="UYU/Otro",
                   inf_adj="No", unit="2017=100", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
 
@@ -215,7 +215,7 @@ def get_custom(update_loc: Union[str, PathLike, Engine,
     output.drop("UY_E_P", axis=1, inplace=True)
     output.rename_axis(None, inplace=True)
 
-    metadata._set(output, area="Precios y salarios", currency="-",
+    metadata._set(output, area="Sector externo", currency="-",
                   inf_adj="No", unit="-", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
     output = transform.base_index(output, start_date="2010-01-01",
