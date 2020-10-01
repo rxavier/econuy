@@ -1058,7 +1058,7 @@ urls = {"call":
                                           "Estimaciones de econuy en base a INE"]}}}
 
 fiscal_sheets = {
-    "Sector Público No Financiero":
+    "Sector Público No Monetario":
         {"Name": "nfps",
          "Colnames": ["Ingresos: SPNF",
                       "Ingresos: Gobierno central",
