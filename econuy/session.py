@@ -205,11 +205,12 @@ class Session(object):
                                       only_get=self.only_get,
                                       **kwargs)
         elif dataset == "naccounts" or dataset == "na":
-            output = economic_activity.national_accounts(update_loc=update_loc,
-                                                         revise_rows=self.revise_rows,
-                                                         save_loc=save_loc,
-                                                         only_get=self.only_get,
-                                                         **kwargs)
+            output = economic_activity.national_accounts(
+                update_loc=update_loc,
+                revise_rows=self.revise_rows,
+                save_loc=save_loc,
+                only_get=self.only_get,
+                **kwargs)
         elif dataset == "labor" or dataset == "labour":
             output = labor.labor_rates(update_loc=update_loc,
                                        revise_rows=self.revise_rows,
@@ -263,11 +264,12 @@ class Session(object):
                                              only_get=self.only_get,
                                              **kwargs)
         elif dataset == "rates":
-            output = financial_sector.interest_rates(update_loc=update_loc,
-                                                     revise_rows=self.revise_rows,
-                                                     save_loc=save_loc,
-                                                     only_get=self.only_get,
-                                                     **kwargs)
+            output = financial_sector.interest_rates(
+                update_loc=update_loc,
+                revise_rows=self.revise_rows,
+                save_loc=save_loc,
+                only_get=self.only_get,
+                **kwargs)
         elif dataset == "taxes":
             output = fiscal_accounts.tax_revenue(update_loc=update_loc,
                                                  revise_rows=self.revise_rows,
@@ -287,11 +289,12 @@ class Session(object):
                                                 only_get=self.only_get,
                                                 **kwargs)
         elif dataset == "electricity":
-            output = economic_activity.electricity(update_loc=update_loc,
-                                                   revise_rows=self.revise_rows,
-                                                   save_loc=save_loc,
-                                                   only_get=self.only_get,
-                                                   **kwargs)
+            output = economic_activity.electricity(
+                update_loc=update_loc,
+                revise_rows=self.revise_rows,
+                save_loc=save_loc,
+                only_get=self.only_get,
+                **kwargs)
         elif dataset == "hours":
             output = labor.hours(update_loc=update_loc,
                                  revise_rows=self.revise_rows,
@@ -341,11 +344,12 @@ class Session(object):
                                                 only_get=self.only_get,
                                                 **kwargs)
         elif dataset == "ubi":
-            output = financial_sector.sovereign_risk(update_loc=update_loc,
-                                                     revise_rows=self.revise_rows,
-                                                     save_loc=save_loc,
-                                                     only_get=self.only_get,
-                                                     **kwargs)
+            output = financial_sector.sovereign_risk(
+                update_loc=update_loc,
+                revise_rows=self.revise_rows,
+                save_loc=save_loc,
+                only_get=self.only_get,
+                **kwargs)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 

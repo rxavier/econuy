@@ -74,7 +74,7 @@ def convert_usd(df: pd.DataFrame,
         inferred_freq = pd.infer_freq(df.index)
 
     nxr_data = prices.nxr_monthly(update_loc=update_loc, save_loc=save_loc,
-                                                   only_get=only_get)
+                                  only_get=only_get)
 
     if df.columns.get_level_values("Tipo")[0] == "Stock":
         metadata._set(nxr_data, ts_type="Stock")
@@ -253,7 +253,7 @@ def convert_gdp(df: pd.DataFrame,
 
     inferred_freq = pd.infer_freq(df.index)
     gdp = economic_activity._lin_gdp(update_loc=update_loc,
-                                                      save_loc=save_loc, only_get=only_get)
+                                     save_loc=save_loc, only_get=only_get)
     cum = df.columns.get_level_values("Acum. períodos")[0]
     if inferred_freq in ["M", "MS"]:
         gdp = resample(gdp, target=inferred_freq,

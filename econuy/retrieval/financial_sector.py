@@ -411,7 +411,7 @@ def sovereign_risk(
     soup = BeautifulSoup(r.content, features="lxml")
     raw_string = soup.find_all(type="hidden")[0]["value"]
     raw_list = raw_string.split("],")
-    raw_list = [re.sub('["\[\]]', "", line) for line in raw_list]
+    raw_list = [re.sub(r'["\[\]]', "", line) for line in raw_list]
     index = [x.split(",")[0] for x in raw_list]
     values = [x.split(",")[1] for x in raw_list]
     current = pd.DataFrame(data=values, index=index, columns=["UBI"])
@@ -500,12 +500,13 @@ def call_rate(
     if driver is None:
         driver = _build()
     driver.get(urls["call"]["dl"]["main"])
-    start = driver.find_element(by="name",
-                                value="ctl00$ContentPlaceHolder1$dateDesde$dateInput")
+    start = driver.find_element(
+        by="name", value="ctl00$ContentPlaceHolder1$dateDesde$dateInput")
     start.clear()
     start.send_keys("01/01/2002")
-    end = driver.find_element(by="name",
-                              value="ctl00$ContentPlaceHolder1$dateHasta$dateInput")
+    end = driver.find_element(
+        by="name",
+        value="ctl00$ContentPlaceHolder1$dateHasta$dateInput")
     end.clear()
     end.send_keys(dt.datetime.now().strftime("%d/%m/%Y"))
     submit = driver.find_element(by="id",
@@ -605,12 +606,12 @@ def bonds(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     dfs = []
     for url in urls["bonds"]["dl"].values():
         driver.get(url)
-        start = driver.find_element(by="name",
-                                    value="ctl00$ContentPlaceHolder1$dateDesde$dateInput")
+        start = driver.find_element(
+            by="name", value="ctl00$ContentPlaceHolder1$dateDesde$dateInput")
         start.clear()
         start.send_keys("01/01/2000")
-        end = driver.find_element(by="name",
-                                  value="ctl00$ContentPlaceHolder1$dateHasta$dateInput")
+        end = driver.find_element(
+            by="name", value="ctl00$ContentPlaceHolder1$dateHasta$dateInput")
         end.clear()
         end.send_keys(dt.datetime.now().strftime("%d/%m/%Y"))
         submit = driver.find_element(by="id",

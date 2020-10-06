@@ -206,12 +206,12 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
         fcast = (gdp.loc[[dt.datetime(last_year - 1, 12, 31)]].
                  multiply(imf_data.iloc[1]).divide(imf_data.iloc[0]))
         fcast = fcast.rename(index={dt.datetime(last_year - 1, 12, 31):
-                                        dt.datetime(last_year, 12, 31)})
+                                    dt.datetime(last_year, 12, 31)})
         next_fcast = (gdp.loc[[dt.datetime(last_year - 1, 12, 31)]].
                       multiply(imf_data.iloc[2]).divide(imf_data.iloc[0]))
         next_fcast = next_fcast.rename(
             index={dt.datetime(last_year - 1, 12, 31):
-                       dt.datetime(last_year + 1, 12, 31)}
+                   dt.datetime(last_year + 1, 12, 31)}
         )
         fcast = fcast.append(next_fcast)
         gdp = gdp.append(fcast)
@@ -358,14 +358,14 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
                                       "Unnamed: 6": "Pond. agrupación",
                                       "Unnamed: 7": "Pond. clase"})
     other_foods = (
-            weights.loc[weights["clase"] == 1549]["Pond. clase"].values[0]
-            * weights.loc[(weights["agrupacion"] == 154) &
-                          (weights["clase"] == 0)][
-                "Pond. agrupación"].values[0]
-            * weights.loc[(weights["division"] == 15) &
+        weights.loc[weights["clase"] == 1549]["Pond. clase"].values[0]
+        * weights.loc[(weights["agrupacion"] == 154) &
+                      (weights["clase"] == 0)][
+            "Pond. agrupación"].values[0]
+        * weights.loc[(weights["division"] == 15) &
                           (weights["agrupacion"] == 0)][
                 "Pond. división"].values[0]
-            / 1000000)
+        / 1000000)
     pulp = (weights.loc[weights["clase"] == 2101]["Pond. clase"].values[0]
             * weights.loc[(weights["division"] == 21) &
                           (weights["agrupacion"] == 0)][

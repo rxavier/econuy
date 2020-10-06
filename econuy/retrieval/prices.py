@@ -380,7 +380,7 @@ def cpi_measures(update_loc: Union[str, PathLike,
         raw = pd.read_excel(xls, sheet_name=sheet, usecols="D:IN",
                             skiprows=9).dropna(how="all")
         proc = raw.loc[:, raw.columns.str.
-                              contains("Indice|Índice")].dropna(how="all")
+                       contains("Indice|Índice")].dropna(how="all")
         sheets.append(proc.T)
     complete_10 = pd.concat(sheets)
     complete_10 = complete_10.iloc[:, 1:]
@@ -388,9 +388,9 @@ def cpi_measures(update_loc: Union[str, PathLike,
     complete_10.index = pd.date_range(start="2010-12-31",
                                       periods=len(complete_10), freq="M")
     diff_8 = complete_10.loc[:,
-             complete_10.columns.get_level_values(
-                 level=1).str.len()
-             == 8].pct_change()
+                             complete_10.columns.get_level_values(
+                                 level=1).str.len()
+                             == 8].pct_change()
     win = pd.DataFrame(winsorize(diff_8, limits=(0.05, 0.05), axis=1))
     win.index = diff_8.index
     win.columns = diff_8.columns.get_level_values(level=1)
@@ -401,32 +401,32 @@ def cpi_measures(update_loc: Union[str, PathLike,
                              skiprows=5).dropna(how="any")
                .set_index(
         "Rubros, Agrupaciones, Subrubros, Familias y Artículos")
-               .T)
+        .T)
     weights_97 = (pd.read_excel(urls["tfm_prices"]["dl"]["1997_weights"],
                                 index_col=0)
                   .drop_duplicates(subset="Descripción", keep="first"))
     weights_97["Weight"] = (weights_97["Rubro"]
                             .fillna(
         weights_97["Agrupación, subrubro, familia"])
-                            .fillna(weights_97["Artículo"])
-                            .drop(columns=["Rubro",
-                                           "Agrupación, subrubro, familia",
-                                           "Artículo"]))
+        .fillna(weights_97["Artículo"])
+        .drop(columns=["Rubro",
+                       "Agrupación, subrubro, familia",
+                       "Artículo"]))
     prod_97 = prod_97.loc[:, list(cpi_details["1997_base"].keys())]
     prod_97.index = pd.date_range(start="1997-03-31",
                                   periods=len(prod_97), freq="M")
     weights_97 = (weights_97[weights_97["Descripción"]
-                  .isin(cpi_details["1997_weights"])]
+                             .isin(cpi_details["1997_weights"])]
                   .set_index("Descripción")
                   .drop(columns=["Rubro", "Agrupación, subrubro, "
                                           "familia", "Artículo"])).div(100)
     weights_97.index = prod_97.columns
     prod_10 = complete_10.loc[:, list(cpi_details["2010_base"].keys())]
     prod_10 = prod_10.loc[:, ~prod_10.columns.get_level_values(level=0)
-        .duplicated()]
+                          .duplicated()]
     prod_10.columns = prod_10.columns.get_level_values(level=0)
     weights_10 = (weights.loc[weights["Item"]
-                  .isin(list(cpi_details["2010_base"].keys()))]
+                              .isin(list(cpi_details["2010_base"].keys()))]
                   .drop_duplicates(subset="Item",
                                    keep="first")).set_index("Item")
     items = []

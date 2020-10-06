@@ -251,20 +251,27 @@ def _get_taxes_from_pdf(excel_data: pd.DataFrame,
                 table = (table.apply(pd.to_numeric, errors="coerce")
                          .dropna(how="any").T)
                 table = table.loc[:,
-                        ["IVA", "IMESI", "IMEBA", "IRAE", "Categoría I",
-                         "Categoría II", "IASS", "IRNR",
-                         "Impuesto de Primaria",
-                         "6) Total Bruto (suma de (1) a (5))"]]
-                table.columns = ['IVA - Valor Agregado',
-                                 'IMESI - Específico Interno',
-                                 'IMEBA - Enajenación de Bienes Agropecuarios',
-                                 'IRAE - Rentas de Actividades Económicas',
-                                 'IRPF Cat I - Renta de las Personas Físicas',
-                                 'IRPF Cat II - Rentas de las Personas Físicas',
-                                 'IASS - Asistencia a la Seguridad Social',
-                                 'IRNR - Rentas de No Residentes',
-                                 'Impuesto de Educación Primaria',
-                                 'Recaudación Total de la DGI']
+                                  ["IVA",
+                                   "IMESI",
+                                   "IMEBA",
+                                   "IRAE",
+                                   "Categoría I",
+                                   "Categoría II",
+                                   "IASS",
+                                   "IRNR",
+                                   "Impuesto de Primaria",
+                                   "6) Total Bruto (suma de (1) a (5))"]]
+                table.columns = [
+                    'IVA - Valor Agregado',
+                    'IMESI - Específico Interno',
+                    'IMEBA - Enajenación de Bienes Agropecuarios',
+                    'IRAE - Rentas de Actividades Económicas',
+                    'IRPF Cat I - Renta de las Personas Físicas',
+                    'IRPF Cat II - Rentas de las Personas Físicas',
+                    'IASS - Asistencia a la Seguridad Social',
+                    'IRNR - Rentas de No Residentes',
+                    'Impuesto de Educación Primaria',
+                    'Recaudación Total de la DGI']
                 data.append(table)
     driver.quit()
     output = pd.concat(data)
@@ -457,7 +464,7 @@ def net_public_debt(update_loc: Union[str, PathLike, Engine,
     deposits = econuy.retrieval.external_sector.reserves(
         update_loc=update_loc, save_loc=save_loc,
         only_get=only_get).loc[:,
-               ["Obligaciones en ME con el sector financiero"]]
+                               ["Obligaciones en ME con el sector financiero"]]
     deposits = (transform.resample(deposits, target="Q-DEC", operation="end")
                 .reindex(gross_debt.index).squeeze())
     output = gross_debt.add(assets).add(deposits, axis=0).dropna()
@@ -612,8 +619,8 @@ def balance_fss(aggregation: str = "gps", fss: bool = True,
     proc["Egresos: Totales GC-BPS aj. FSS"] = (proc["Egresos: Totales GC-BPS"]
                                                - proc["Intereses: FSS"])
     proc["Resultado: Primario SPNF aj. FSS"] = (
-            proc["Resultado: Primario SPNF"]
-            - proc["Ingresos: FSS"])
+        proc["Resultado: Primario SPNF"]
+        - proc["Ingresos: FSS"])
     proc["Resultado: Global SPNF aj. FSS"] = (proc["Resultado: Global SPNF"]
                                               - proc["Ingresos: FSS"]
                                               + proc["Intereses: FSS"])
@@ -623,12 +630,12 @@ def balance_fss(aggregation: str = "gps", fss: bool = True,
                                              - proc["Ingresos: FSS"]
                                              + proc["Intereses: FSS"])
     proc["Resultado: Primario GC-BPS aj. FSS"] = (
-            proc["Resultado: Primario GC-BPS"]
-            - proc["Ingresos: FSS"])
+        proc["Resultado: Primario GC-BPS"]
+        - proc["Ingresos: FSS"])
     proc["Resultado: Global GC-BPS aj. FSS"] = (
-            proc["Resultado: Global GC-BPS"]
-            - proc["Ingresos: FSS"]
-            + proc["Intereses: FSS"])
+        proc["Resultado: Global GC-BPS"]
+        - proc["Ingresos: FSS"]
+        + proc["Intereses: FSS"])
 
     output = proc.loc[:, fiscal_metadata[aggregation][fss]]
     metadata._set(output, area="Sector público",
