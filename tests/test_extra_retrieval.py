@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
 
-from econuy.retrieval import national_accounts
+from econuy.retrieval import economic_activity
 from econuy.session import Session
 from econuy.utils import metadata, sqlutil
 try:
@@ -83,7 +83,7 @@ def test_comm_index():
 
 def test_lin():
     remove_clutter()
-    lin = national_accounts._lin_gdp(update_loc=TEST_DIR, save_loc=TEST_DIR)
+    lin = economic_activity._lin_gdp(update_loc=TEST_DIR, save_loc=TEST_DIR)
     assert isinstance(lin, pd.DataFrame)
     assert (sorted(lin.columns.get_level_values("Moneda"))
             == sorted(["UYU", "USD"]))

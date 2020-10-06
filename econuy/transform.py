@@ -13,7 +13,7 @@ from statsmodels.tsa import x13
 from statsmodels.tsa.x13 import x13_arima_analysis as x13a
 from statsmodels.tsa.seasonal import STL, seasonal_decompose
 
-from econuy.retrieval import cpi, national_accounts, nxr
+from econuy.retrieval import prices, economic_activity
 from econuy.utils import metadata
 
 
@@ -73,8 +73,8 @@ def convert_usd(df: pd.DataFrame,
             df = df.resample("M").mean()
         inferred_freq = pd.infer_freq(df.index)
 
-    nxr_data = nxr.get_monthly(update_loc=update_loc, save_loc=save_loc,
-                               only_get=only_get)
+    nxr_data = prices.nxr_monthly(update_loc=update_loc, save_loc=save_loc,
+                                                   only_get=only_get)
 
     if df.columns.get_level_values("Tipo")[0] == "Stock":
         metadata._set(nxr_data, ts_type="Stock")
@@ -157,8 +157,8 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
             df = df.resample("M").mean()
         inferred_freq = pd.infer_freq(df.index)
 
-    cpi_data = cpi.get(update_loc=update_loc, save_loc=save_loc,
-                       only_get=only_get)
+    cpi_data = prices.cpi(update_loc=update_loc, save_loc=save_loc,
+                          only_get=only_get)
 
     metadata._set(cpi_data, ts_type="Flujo")
     cpi_freq = resample(cpi_data, target=inferred_freq,
@@ -252,8 +252,8 @@ def convert_gdp(df: pd.DataFrame,
         return df
 
     inferred_freq = pd.infer_freq(df.index)
-    gdp = national_accounts._lin_gdp(update_loc=update_loc,
-                                     save_loc=save_loc, only_get=only_get)
+    gdp = economic_activity._lin_gdp(update_loc=update_loc,
+                                                      save_loc=save_loc, only_get=only_get)
     cum = df.columns.get_level_values("Acum. períodos")[0]
     if inferred_freq in ["M", "MS"]:
         gdp = resample(gdp, target=inferred_freq,

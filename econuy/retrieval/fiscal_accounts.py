@@ -1,26 +1,32 @@
+import datetime as dt
 import re
 import warnings
-import datetime as dt
-from tempfile import NamedTemporaryFile
+from datetime import date
 from os import PathLike
-from typing import Union, Dict
+from tempfile import NamedTemporaryFile
+from typing import Union, Dict, Optional
+from urllib.error import HTTPError, URLError
 
+import camelot
 import pandas as pd
 import requests
-import camelot
 from PyPDF2 import pdf as pdf2
 from PyPDF2.utils import PdfReadWarning
 from bs4 import BeautifulSoup
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
-from requests.exceptions import ConnectionError, HTTPError
-from sqlalchemy.engine.base import Connection, Engine
-from selenium.webdriver.remote.webdriver import WebDriver
+from requests.exceptions import ConnectionError
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.remote.webdriver import WebDriver
+from sqlalchemy.engine.base import Connection, Engine
 
+import econuy.retrieval.external_sector
+from econuy import transform
+from econuy.retrieval import prices
 from econuy.utils import ops, metadata
-from econuy.utils.lstrings import urls, fiscal_sheets, taxes_columns
 from econuy.utils.chromedriver import _build
+from econuy.utils.lstrings import urls, fiscal_sheets, taxes_columns, \
+    fiscal_metadata
 
 
 @retry(
@@ -28,12 +34,12 @@ from econuy.utils.chromedriver import _build
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        revise_rows: Union[str, int] = "nodup",
-        save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "fiscal",
-        index_label: str = "index",
-        only_get: bool = False) -> Dict[str, pd.DataFrame]:
+def balance(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
+            revise_rows: Union[str, int] = "nodup",
+            save_loc: Union[str, PathLike, Engine, Connection, None] = None,
+            name: str = "fiscal",
+            index_label: str = "index",
+            only_get: bool = False) -> Dict[str, pd.DataFrame]:
     """Get fiscal data.
 
     Parameters
@@ -123,7 +129,12 @@ def get(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     return output
 
 
-def get_taxes(
+@retry(
+    retry_on_exceptions=(HTTPError, ConnectionError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def tax_revenue(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
@@ -257,5 +268,402 @@ def _get_taxes_from_pdf(excel_data: pd.DataFrame,
                 data.append(table)
     driver.quit()
     output = pd.concat(data)
+
+    return output
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=30,
+)
+def public_debt(update_loc: Union[str, PathLike,
+                                  Engine, Connection, None] = None,
+                revise_rows: Union[str, int] = "nodup",
+                save_loc: Union[str, PathLike,
+                                Engine, Connection, None] = None,
+                name: str = "public_debt",
+                index_label: str = "index",
+                only_get: bool = False) -> Dict[str, pd.DataFrame]:
+    """Get public debt.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'public_debt'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
+
+    Returns
+    -------
+    Quarterly public debt data : pd.DataFrame
+        Global public sector, non-monetary public sector and BCU debts.
+
+    """
+    if only_get is True and update_loc is not None:
+        output = {}
+        for meta in ["gps", "nfps", "cb", "assets"]:
+            data = ops._io(
+                operation="update", data_loc=update_loc,
+                name=f"{name}_{meta}", index_label=index_label
+            )
+            output.update({meta: data})
+        if all(not value.equals(pd.DataFrame()) for value in output.values()):
+            return output
+
+    colnames = ["Total deuda", "Plazo contractual: hasta 1 año",
+                "Plazo contractual: entre 1 y 5 años",
+                "Plazo contractual: más de 5 años",
+                "Plazo residual: hasta 1 año",
+                "Plazo residual: entre 1 y 5 años",
+                "Plazo residual: más de 5 años",
+                "Moneda: pesos", "Moneda: dólares", "Moneda: euros",
+                "Moneda: yenes", "Moneda: DEG", "Moneda: otras",
+                "Residencia: no residentes", "Residencia: residentes"]
+
+    xls = pd.ExcelFile(urls["public_debt"]["dl"]["main"])
+    gps_raw = pd.read_excel(xls, sheet_name="SPG2",
+                            usecols="B:Q", index_col=0, skiprows=10,
+                            nrows=(dt.datetime.now().year - 1999) * 4)
+    gps = gps_raw.dropna(how="any", thresh=2)
+    gps.index = pd.date_range(start="1999-12-31", periods=len(gps),
+                              freq="Q-DEC")
+    gps.columns = colnames
+
+    nfps_raw = pd.read_excel(xls, sheet_name="SPNM bruta",
+                             usecols="B:O", index_col=0,
+                             skiprows=(dt.datetime.now().year - 1999) * 8 + 18)
+    nfps = nfps_raw.dropna(how="any")
+    nfps.index = pd.date_range(start="1999-12-31", periods=len(nfps),
+                               freq="Q-DEC")
+    nfps_extra_raw = pd.read_excel(xls, sheet_name="SPNM bruta",
+                                   usecols="O:P", skiprows=11,
+                                   nrows=(dt.datetime.now().year - 1999) * 4)
+    nfps_extra = nfps_extra_raw.dropna(how="all")
+    nfps_extra.index = nfps.index
+    nfps = pd.concat([nfps, nfps_extra], axis=1)
+    nfps.columns = colnames
+
+    cb_raw = pd.read_excel(xls, sheet_name="BCU bruta",
+                           usecols="B:O", index_col=0,
+                           skiprows=(dt.datetime.now().year - 1999) * 8 + 20)
+    cb = cb_raw.dropna(how="any")
+    cb.index = pd.date_range(start="1999-12-31", periods=len(cb),
+                             freq="Q-DEC")
+    cb_extra_raw = pd.read_excel(xls, sheet_name="BCU bruta",
+                                 usecols="O:P", skiprows=11,
+                                 nrows=(dt.datetime.now().year - 1999) * 4)
+    bcu_extra = cb_extra_raw.dropna(how="all")
+    bcu_extra.index = cb.index
+    cb = pd.concat([cb, bcu_extra], axis=1)
+    cb.columns = colnames
+
+    assets_raw = pd.read_excel(xls, sheet_name="Activos Neta",
+                               usecols="B,C,D,K", index_col=0, skiprows=13,
+                               nrows=(dt.datetime.now().year - 1999) * 4)
+    assets = assets_raw.dropna(how="any")
+    assets.index = pd.date_range(start="1999-12-31", periods=len(assets),
+                                 freq="Q-DEC")
+    assets.columns = ["Total activos", "Sector público no monetario",
+                      "BCU"]
+
+    output = {"gps": gps, "nfps": nfps, "cb": cb, "assets": assets}
+
+    for meta, data in output.items():
+        if update_loc is not None:
+            previous_data = ops._io(
+                operation="update", data_loc=update_loc,
+                name=f"{name}_{meta}", index_label=index_label
+            )
+            data = ops._revise(new_data=data,
+                               prev_data=previous_data,
+                               revise_rows=revise_rows)
+        metadata._set(data, area="Sector público", currency="USD",
+                      inf_adj="No", unit="Millones", seas_adj="NSA",
+                      ts_type="Stock", cumperiods=1)
+
+        if save_loc is not None:
+            ops._io(operation="save", data_loc=save_loc,
+                    data=data, name=f"{name}_{meta}", index_label=index_label)
+
+        output.update({meta: data})
+
+    return output
+
+
+def net_public_debt(update_loc: Union[str, PathLike, Engine,
+                                      Connection, None] = None,
+                    save_loc: Union[str, PathLike, Engine,
+                                    Connection, None] = None,
+                    only_get: bool = True,
+                    name: str = "tfm_pubdebt",
+                    index_label: str = "index") -> pd.DataFrame:
+    """
+    Get net public debt excluding financial deposits at the central bank.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'tfm_pubdebt'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL. Options will be appended to the base name.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default True
+        If True, don't download data, retrieve what is available from
+        ``update_loc`` for the commodity index.
+
+    Returns
+    -------
+    Net public debt excl. financial deposits at the central bank : pd.DataFrame
+
+    """
+    data = public_debt(update_loc=update_loc,
+                       save_loc=save_loc, only_get=only_get)
+    gross_debt = data["gps"].loc[:, ["Total deuda"]]
+    assets = data["assets"].loc[:, ["Total activos"]]
+    gross_debt.columns = ["Deuda neta del sector"
+                          " público global excl. encajes"]
+    assets.columns = gross_debt.columns
+    deposits = econuy.retrieval.external_sector.reserves(
+        update_loc=update_loc, save_loc=save_loc,
+        only_get=only_get).loc[:,
+               ["Obligaciones en ME con el sector financiero"]]
+    deposits = (transform.resample(deposits, target="Q-DEC", operation="end")
+                .reindex(gross_debt.index).squeeze())
+    output = gross_debt.add(assets).add(deposits, axis=0).dropna()
+
+    metadata._set(output, area="Sector público",
+                  currency="USD", inf_adj="No", unit="Millones",
+                  seas_adj="NSA", ts_type="Stock", cumperiods=1)
+
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=output, name=name, index_label=index_label)
+
+    return output
+
+
+def balance_fss(aggregation: str = "gps", fss: bool = True,
+                unit: Optional[str] = None,
+                start_date: Union[str, date, None] = None,
+                end_date: Union[str, date, None] = None,
+                update_loc: Union[str, PathLike, Engine,
+                                  Connection, None] = None,
+                save_loc: Union[str, PathLike, Engine,
+                                Connection, None] = None,
+                only_get: bool = True,
+                name: str = "tfm_fiscal",
+                index_label: str = "index") -> pd.DataFrame:
+    """
+    Get fiscal accounts data.
+
+    Allow choosing government aggregation, whether to exclude the FSS
+    (Fideicomiso  de la Seguridad Social, Social Security Trust Fund), the unit
+    (UYU, real UYU, USD, real USD or percent of GDP), periods to accumuldate
+    for rolling sums and seasonal adjustment.
+
+    Parameters
+    ----------
+    aggregation : {'gps', 'nfps', 'gc'}
+        Government aggregation. Can be ``gps`` (consolidated public sector),
+        ``nfps`` (non-financial public sector) or ``gc`` (central government).
+    fss : bool, default True
+        If ``True``, exclude the `FSS's <https://www.impo.com.uy/bases/decretos
+        /71-2018/25>`_ income from gov't revenues and the FSS's
+        interest revenues from gov't interest payments.
+    unit : {None, 'gdp', 'usd', 'real', 'real_usd'}
+        Unit in which data should be expressed. Possible values are ``real``,
+        ``usd``, ``real_usd`` and ``gdp``. If ``None`` or another string is
+        set, no unit calculations will be performed, rendering the data as is
+        (current UYU).
+    start_date : str, datetime.date or None, default None
+        If ``unit`` is set to ``real`` or ``real_usd``, this parameter and
+        ``end_date`` control how deflation is calculated.
+    end_date :
+        If ``unit`` is set to ``real`` or ``real_usd``, this parameter and
+        ``start_date`` control how deflation is calculated.
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'tfm_fiscal'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL. Options will be appended to the base name.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default True
+        If True, don't download data, retrieve what is available from
+        ``update_loc`` for the commodity index.
+
+    Returns
+    -------
+    Fiscal aggregation : pd.DataFrame
+
+    Raises
+    ------
+    ValueError
+        If ``seas_adj``, ``unit`` or ``aggregation`` are given an invalid
+        keywords.
+
+    """
+    if unit is not None:
+        warnings.warn("The 'unit' argument will be removed in a "
+                      "future version.", FutureWarning)
+    if unit not in ["gdp", "usd", "real", "real_usd", None]:
+        raise ValueError("'unit' can be 'gdp', 'usd', 'real', 'real_usd' or"
+                         " None.")
+    if aggregation not in ["gps", "nfps", "gc"]:
+        raise ValueError("'aggregation' can be 'gps', 'nfps' or 'gc'.")
+
+    if unit is None:
+        unit = "uyu"
+    name = f"{name}_{aggregation}_{unit}"
+    if fss:
+        name = name + "_fssadj"
+
+    data = balance(update_loc=update_loc,
+                   save_loc=save_loc, only_get=only_get)
+    gps = data["gps"]
+    nfps = data["nfps"]
+    gc = data["gc-bps"]
+
+    proc = pd.DataFrame(index=gps.index)
+    proc["Ingresos: SPNF-SPC"] = nfps["Ingresos: SPNF"]
+    proc["Ingresos: GC-BPS"] = gc["Ingresos: GC-BPS"]
+    proc["Egresos: Primarios SPNF-SPC"] = nfps["Egresos: Primarios SPNF"]
+    proc["Egresos: Totales GC-BPS"] = gc["Egresos: GC-BPS"]
+    proc["Egresos: Inversiones SPNF-SPC"] = nfps["Egresos: Inversiones"]
+    proc["Egresos: Inversiones GC-BPS"] = gc["Egresos: Inversión"]
+    proc["Intereses: SPNF"] = nfps["Intereses: Totales"]
+    proc["Intereses: BCU"] = gps["Intereses: BCU"]
+    proc["Intereses: SPC"] = proc["Intereses: SPNF"] + proc["Intereses: BCU"]
+    proc["Intereses: GC-BPS"] = gc["Intereses: Total"]
+    proc["Egresos: Totales SPNF"] = (proc["Egresos: Primarios SPNF-SPC"]
+                                     + proc["Intereses: SPNF"])
+    proc["Egresos: Totales SPC"] = (proc["Egresos: Totales SPNF"]
+                                    + proc["Intereses: BCU"])
+    proc["Egresos: Primarios GC-BPS"] = (proc["Egresos: Totales GC-BPS"]
+                                         - proc["Intereses: GC-BPS"])
+    proc["Resultado: Primario intendencias"] = nfps[
+        "Resultado: Primario intendencias"
+    ]
+    proc["Resultado: Primario BSE"] = nfps["Resultado: Primario BSE"]
+    proc["Resultado: Primario BCU"] = gps["Resultado: Primario BCU"]
+    proc["Resultado: Primario SPNF"] = nfps["Resultado: Primario SPNF"]
+    proc["Resultado: Global SPNF"] = nfps["Resultado: Global SPNF"]
+    proc["Resultado: Primario SPC"] = gps["Resultado: Primario SPC"]
+    proc["Resultado: Global SPC"] = gps["Resultado: Global SPC"]
+    proc["Resultado: Primario GC-BPS"] = (proc["Ingresos: GC-BPS"]
+                                          - proc["Egresos: Primarios GC-BPS"])
+    proc["Resultado: Global GC-BPS"] = gc["Resultado: Global GC-BPS"]
+
+    proc["Ingresos: FSS"] = gc["Ingresos: FSS"]
+    proc["Intereses: FSS"] = gc["Intereses: BPS-FSS"]
+    proc["Ingresos: SPNF-SPC aj. FSS"] = (proc["Ingresos: SPNF-SPC"]
+                                          - proc["Ingresos: FSS"])
+    proc["Ingresos: GC-BPS aj. FSS"] = (proc["Ingresos: GC-BPS"]
+                                        - proc["Ingresos: FSS"])
+    proc["Intereses: SPNF aj. FSS"] = (proc["Intereses: SPNF"]
+                                       - proc["Intereses: FSS"])
+    proc["Intereses: SPC aj. FSS"] = (proc["Intereses: SPC"]
+                                      - proc["Intereses: FSS"])
+    proc["Intereses: GC-BPS aj. FSS"] = (proc["Intereses: GC-BPS"]
+                                         - proc["Intereses: FSS"])
+    proc["Egresos: Totales SPNF aj. FSS"] = (proc["Egresos: Totales SPNF"]
+                                             - proc["Intereses: FSS"])
+    proc["Egresos: Totales SPC aj. FSS"] = (proc["Egresos: Totales SPC"]
+                                            - proc["Intereses: FSS"])
+    proc["Egresos: Totales GC-BPS aj. FSS"] = (proc["Egresos: Totales GC-BPS"]
+                                               - proc["Intereses: FSS"])
+    proc["Resultado: Primario SPNF aj. FSS"] = (
+            proc["Resultado: Primario SPNF"]
+            - proc["Ingresos: FSS"])
+    proc["Resultado: Global SPNF aj. FSS"] = (proc["Resultado: Global SPNF"]
+                                              - proc["Ingresos: FSS"]
+                                              + proc["Intereses: FSS"])
+    proc["Resultado: Primario SPC aj. FSS"] = (proc["Resultado: Primario SPC"]
+                                               - proc["Ingresos: FSS"])
+    proc["Resultado: Global SPC aj. FSS"] = (proc["Resultado: Global SPC"]
+                                             - proc["Ingresos: FSS"]
+                                             + proc["Intereses: FSS"])
+    proc["Resultado: Primario GC-BPS aj. FSS"] = (
+            proc["Resultado: Primario GC-BPS"]
+            - proc["Ingresos: FSS"])
+    proc["Resultado: Global GC-BPS aj. FSS"] = (
+            proc["Resultado: Global GC-BPS"]
+            - proc["Ingresos: FSS"]
+            + proc["Intereses: FSS"])
+
+    output = proc.loc[:, fiscal_metadata[aggregation][fss]]
+    metadata._set(output, area="Sector público",
+                  currency="UYU", inf_adj="No", unit="Millones",
+                  seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+
+    if unit == "gdp":
+        output = transform.rolling(output, periods=12, operation="sum")
+        output = transform.convert_gdp(output, update_loc=update_loc,
+                                       save_loc=save_loc,
+                                       only_get=only_get)
+    elif unit == "usd":
+        output = transform.convert_usd(output, update_loc=update_loc,
+                                       save_loc=save_loc,
+                                       only_get=only_get)
+    elif unit == "real_usd":
+        output = transform.convert_real(output, start_date=start_date,
+                                        end_date=end_date,
+                                        update_loc=update_loc,
+                                        save_loc=save_loc,
+                                        only_get=only_get)
+        xr = prices.nxr_monthly(update_loc=update_loc,
+                                save_loc=save_loc,
+                                only_get=only_get)
+        output = output.divide(xr[start_date:end_date].mean()[1])
+        metadata._set(output, currency="USD")
+    elif unit == "real":
+        output = transform.convert_real(output, start_date=start_date,
+                                        end_date=end_date,
+                                        update_loc=update_loc,
+                                        save_loc=save_loc,
+                                        only_get=only_get)
+
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=output, name=name, index_label=index_label)
 
     return output

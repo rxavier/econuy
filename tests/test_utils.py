@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy import create_engine
 
 from econuy.utils.metadata import _get_sources
-from econuy.retrieval import cpi
+from econuy.retrieval import prices
 from econuy.utils import sqlutil
 try:
     from tests.test_session import remove_clutter
@@ -20,15 +20,15 @@ sqlutil.insert_csvs(con=TEST_CON, directory=TEST_DIR)
 
 def test_revise():
     remove_clutter()
-    prices = cpi.get(save_loc=TEST_DIR)
-    prices_alt = cpi.get(update_loc=TEST_DIR, revise_rows=6)
-    assert prices.round(4).equals(prices_alt.round(4))
-    prices_alt = cpi.get(update_loc=TEST_DIR, revise_rows="nodup")
-    assert prices.round(4).equals(prices_alt.round(4))
-    prices_alt = cpi.get(update_loc=TEST_DIR, revise_rows="auto")
-    assert prices.round(4).equals(prices_alt.round(4))
+    price = prices.cpi(save_loc=TEST_DIR)
+    price_alt = prices.cpi(update_loc=TEST_DIR, revise_rows=6)
+    assert price.round(4).equals(price_alt.round(4))
+    price_alt = prices.cpi(update_loc=TEST_DIR, revise_rows="nodup")
+    assert price.round(4).equals(price_alt.round(4))
+    price_alt = prices.cpi(update_loc=TEST_DIR, revise_rows="auto")
+    assert price.round(4).equals(price_alt.round(4))
     with pytest.raises(ValueError):
-        cpi.get(update_loc=TEST_DIR, revise_rows="wrong")
+        prices.cpi(update_loc=TEST_DIR, revise_rows="wrong")
     remove_clutter()
 
 

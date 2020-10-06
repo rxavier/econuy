@@ -9,7 +9,7 @@ import pytest
 from sqlalchemy import create_engine, inspect
 
 from econuy import transform
-from econuy.retrieval import nxr
+from econuy.retrieval import prices
 from econuy.session import Session
 from econuy.utils import metadata, sqlutil
 from econuy.utils.lstrings import fiscal_metadata
@@ -123,7 +123,7 @@ def test_fiscal():
                                     end_date=end_date).dataset
     compare_real_usd = transform.convert_real(compare, start_date=start_date,
                                               end_date=end_date)
-    xr = nxr.get_monthly(update_loc=None, save_loc=None)
+    xr = prices.nxr_monthly(update_loc=None, save_loc=None)
     compare_real_usd = compare_real_usd.divide(
         xr[start_date:end_date].mean()[1])
     compare_real_usd.columns = fiscal_tfm.columns
