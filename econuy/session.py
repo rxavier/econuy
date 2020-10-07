@@ -797,9 +797,3 @@ class Session(object):
                     index_label=index_label)
 
         self.logger.info(f"Saved dataset to '{self.location}'.")
-
-    def final(self):
-        """Return :attr:`dataset` attribute."""
-        self.logger.info("Retrieved dataset from Session() object.")
-
-        return self.dataset
