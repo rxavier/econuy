@@ -642,14 +642,14 @@ urls = {"call":
                            "indirect": [
                                "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Series-estadisticas-Depositos.aspx"],
                            "provider": ["BCU"]}},
-        "credits":
+        "credit":
             {"dl": {
                 "main": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Creditos.xls"},
                 "source": {"direct": ["https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Creditos.xls"],
                            "indirect": [
                                "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Series-Estadisticas-Creditos.aspx"],
                            "provider": ["BCU"]}},
-        "rates":
+        "interest_rates":
             {"dl": {
                 "main": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/tasas.xls"},
                 "source": {"direct": ["https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/tasas.xls"],
@@ -710,7 +710,7 @@ urls = {"call":
                  "https://comtrade.un.org/"],
                 "provider": [
                  "Estimaciones de econuy en base a INAC, INSEE, Quandl, INALE, Comisión Europea, FMI y Naciones Unidas"]}},
-        "fiscal": {"dl": {
+        "balance": {"dl": {
             "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"},
             "source": {"direct": [],
                        "indirect": [
@@ -873,7 +873,7 @@ urls = {"call":
                        "indirect": [
                            "https://ucu.edu.uy/es/icc"],
                        "provider": ["UCU"]}},
-        "ubi": {"dl": {
+        "sovereign_risk": {"dl": {
             "historical": "https://www4.rafap.com.uy/internet/images/indicadores/UBI_Historico.xls",
             "current": "https://www4.rafap.com.uy/internet/servlet/hextubicd"},
             "source": {"direct": [],
@@ -908,79 +908,79 @@ urls = {"call":
                 "http://www.inflacionverdadera.com/argentina/"],
             "provider": [
                 "Estimaciones de econuy en base a BCU, INE, BCRA, FMI, Ámbito e Inflación Verdadera"]}},
-        "tb_x_prod_val": {"dl": {"main": trade_metadata["x_prod_val"]["url"]},
+        "trade_x_prod_val": {"dl": {"main": trade_metadata["x_prod_val"]["url"]},
                           "source": {
                               "direct": [trade_metadata["x_prod_val"]["url"]],
                               "indirect": [
                                   "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"],
                               "provider": ["BCU"]}},
-        "tb_x_prod_vol": {"dl": {"main": trade_metadata["x_prod_vol"]["url"]},
+        "trade_x_prod_vol": {"dl": {"main": trade_metadata["x_prod_vol"]["url"]},
                           "source": {
                               "direct": [trade_metadata["x_prod_vol"]["url"]],
                               "indirect": [
                                   "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"],
                               "provider": ["BCU"]}},
-        "tb_x_prod_pri": {"dl": {"main": trade_metadata["x_prod_pri"]["url"]},
+        "trade_x_prod_pri": {"dl": {"main": trade_metadata["x_prod_pri"]["url"]},
                           "source": {
                               "direct": [trade_metadata["x_prod_pri"]["url"]],
                               "indirect": [
                                   "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"],
                               "provider": ["BCU"]}},
-        "tb_x_dest_val": {"dl": {"main": trade_metadata["x_dest_val"]["url"]},
+        "trade_x_dest_val": {"dl": {"main": trade_metadata["x_dest_val"]["url"]},
                           "source": {
                               "direct": [trade_metadata["x_dest_val"]["url"]],
                               "indirect": [
                                   "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"],
                               "provider": ["BCU"]}},
-        "tb_x_dest_vol": {"dl": {"main": trade_metadata["x_dest_vol"]["url"]},
+        "trade_x_dest_vol": {"dl": {"main": trade_metadata["x_dest_vol"]["url"]},
                           "source": {
                               "direct": [trade_metadata["x_dest_vol"]["url"]],
                               "indirect": [
                                   "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"],
                               "provider": ["BCU"]}},
-        "tb_x_dest_pri": {"dl": {"main": trade_metadata["x_dest_pri"]["url"]},
+        "trade_x_dest_pri": {"dl": {"main": trade_metadata["x_dest_pri"]["url"]},
                           "source": {
                               "direct": [trade_metadata["x_dest_pri"]["url"]],
                               "indirect": [
                                   "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"],
                               "provider": ["BCU"]}},
-        "tb_m_sect_val": {"dl": {"main": trade_metadata["m_sect_val"]["url"]},
+        "trade_m_sect_val": {"dl": {"main": trade_metadata["m_sect_val"]["url"]},
                           "source": {
                               "direct": [trade_metadata["m_sect_val"]["url"]],
                               "indirect": [
                                   "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"],
                               "provider": ["BCU"]}},
-        "tb_m_sect_vol": {"dl": {"main": trade_metadata["m_sect_vol"]["url"]},
+        "trade_m_sect_vol": {"dl": {"main": trade_metadata["m_sect_vol"]["url"]},
                           "source": {
                               "direct": [trade_metadata["m_sect_vol"]["url"]],
                               "indirect": [
                                   "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"],
                               "provider": ["BCU"]}},
-        "tb_m_sect_pri": {"dl": {"main": trade_metadata["m_sect_pri"]["url"]},
+        "trade_m_sect_pri": {"dl": {"main": trade_metadata["m_sect_pri"]["url"]},
                           "source": {
                               "direct": [trade_metadata["m_sect_pri"]["url"]],
                               "indirect": [
                                   "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"],
                               "provider": ["BCU"]}},
-        "tb_m_orig_val": {"dl": {"main": trade_metadata["m_orig_val"]["url"]},
+        "trade_m_orig_val": {"dl": {"main": trade_metadata["m_orig_val"]["url"]},
                           "source": {
                               "direct": [trade_metadata["m_orig_val"]["url"]],
                               "indirect": [
                                   "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"],
                               "provider": ["BCU"]}},
-        "tb_m_orig_vol": {"dl": {"main": trade_metadata["m_orig_vol"]["url"]},
+        "trade_m_orig_vol": {"dl": {"main": trade_metadata["m_orig_vol"]["url"]},
                           "source": {
                               "direct": [trade_metadata["m_orig_vol"]["url"]],
                               "indirect": [
                                   "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"],
                               "provider": ["BCU"]}},
-        "tb_m_orig_pri": {"dl": {"main": trade_metadata["m_orig_pri"]["url"]},
+        "trade_m_orig_pri": {"dl": {"main": trade_metadata["m_orig_pri"]["url"]},
                           "source": {
                               "direct": [trade_metadata["m_orig_pri"]["url"]],
                               "indirect": [
                                   "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"],
                               "provider": ["BCU"]}},
-        "tfm_prices":
+        "cpi_measures":
             {"dl": {
                 "2010": "http://www.ine.gub.uy/c/document_library/get_file?uuid=668d4f77-74d8-46ba-8360-77bd867996df&groupId=10181",
                 "1997": "http://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
@@ -992,13 +992,13 @@ urls = {"call":
                 "indirect": [
                  "http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
                 "provider": ["Estimaciones de econuy en base a INE"]}},
-        "tfm_fiscal": {"dl": {},
+        "balance_fss": {"dl": {},
                        "source": {"direct": [],
                                   "indirect": [
                                       "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos"],
                                   "provider": [
                                       "Estimaciones de econuy en base a MEF"]}},
-        "tfm_labor": {"dl": {
+        "rates_people": {"dl": {
             "act_5000": "http://www.ine.gub.uy/c/document_library/get_file?uuid=b51d8104-d367-4d0f-828b-189eefc29de2&groupId=10181",
             "emp_5000": "http://www.ine.gub.uy/c/document_library/get_file?uuid=0902797e-e588-4da3-91cd-153c4d1d28a5&groupId=10181",
             "des_5000": "http://www.ine.gub.uy/c/document_library/get_file?uuid=d1434567-3da4-4321-9341-4fb3d8b6a09c&groupId=10181",
@@ -1014,7 +1014,7 @@ urls = {"call":
                 "http://www.ine.gub.uy/estimaciones-y-proyecciones"],
             "provider": [
                 "Estimaciones de econuy en base a INE"]}},
-        "tfm_wages": {"dl": {},
+        "real_wages": {"dl": {},
                       "source": {"direct": [
                           "http://www.ine.gub.uy/c/document_library/get_file?uuid=a76433b7-5fba-40fc-9958-dd913338e989&groupId=10181",
                           "http://www.ine.gub.uy/c/document_library/get_file?uuid=97f07fd8-9410-476e-bf81-e6b1c11467ef&groupId=10181",
@@ -1024,21 +1024,21 @@ urls = {"call":
                           "http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
             "provider": [
                           "Estimaciones de econuy en base a INE"]}},
-        "tfm_tb": {"dl": {},
+        "net_trade": {"dl": {},
                    "source": {"direct": [trade_metadata["x_dest_val"]["url"],
                                          trade_metadata["m_orig_val"]["url"]],
                               "indirect": [
                                   "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"],
                               "provider": [
                                   "Estimaciones de econuy en base a BCU"]}},
-        "tfm_tot": {"dl": {},
+        "terms_of_trade": {"dl": {},
                     "source": {"direct": [trade_metadata["x_dest_pri"]["url"],
                                           trade_metadata["m_orig_pri"]["url"]],
                                "indirect": [
                                    "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"],
                                "provider": [
                                    "Estimaciones de econuy en base a BCU"]}},
-        "tfm_pubdebt": {"dl": {},
+        "net_public_debt": {"dl": {},
                         "source": {"direct": [
                             "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls",
                             "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/MonedayCredito/Activos-de-Reserva/reservas.xls"],
@@ -1046,7 +1046,7 @@ urls = {"call":
                             "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"],
             "provider": [
                             "Estimaciones de econuy en base a BCU"]}},
-        "tfm_industrial": {"dl": {
+        "core_industrial": {"dl": {
             "main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181",
             "weights": "http://www.ine.gub.uy/c/document_library/get_file?uuid=864b4bc2-626d-49ab-82ef-1bcf08360da1&groupId=10181"},
             "source": {"direct": [

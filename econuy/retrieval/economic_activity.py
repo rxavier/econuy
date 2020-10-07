@@ -142,7 +142,7 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
              only_get_na: bool = True):
     """Get nominal GDP data in UYU and USD with forecasts.
 
-    Update nominal GDP data for use in the `convert.convert_gdp()` function.
+    Update nominal GDP data for use in the `transform.convert_gdp()` function.
     Get IMF forecasts for year of last available data point and the next
     year (for example, if the last period available at the BCU website is
     september 2019, fetch forecasts for 2019 and 2020).
@@ -317,7 +317,7 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
                                       Connection, None] = None,
                     save_loc: Union[str, PathLike, Engine,
                                     Connection, None] = None,
-                    name: str = "tfm_industrial",
+                    name: str = "core_industrial",
                     index_label: str = "index",
                     only_get: bool = True) -> pd.DataFrame:
     """
@@ -336,7 +336,7 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'tfm_industrial'
+    name : str, default 'core_industrial'
         Either CSV filename for updating and/or saving, or table name if
         using SQL.
     index_label : str, default 'index'
@@ -352,7 +352,7 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
     """
     data = industrial_production(update_loc=update_loc, save_loc=save_loc,
                                  only_get=only_get)
-    weights = pd.read_excel(urls["tfm_industrial"]["dl"]["weights"],
+    weights = pd.read_excel(urls["core_industrial"]["dl"]["weights"],
                             skiprows=3).dropna(how="all")
     weights = weights.rename(columns={"Unnamed: 5": "Pond. división",
                                       "Unnamed: 6": "Pond. agrupación",
@@ -640,7 +640,11 @@ def diesel(
         name: str = "diesel",
         index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
-    """Get diesel sales by department data.
+    """
+    Get diesel sales by department data.
+
+    This retrieval function requires the unrar binaries to be found in your
+    system.
 
     Parameters
     ----------
@@ -728,7 +732,11 @@ def gasoline(
         name: str = "gasoline",
         index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
-    """Get gasoline sales by department data.
+    """
+    Get gasoline sales by department data.
+
+    This retrieval function requires the unrar binaries to be found in your
+    system.
 
     Parameters
     ----------
@@ -816,7 +824,11 @@ def electricity(
         name: str = "electricity",
         index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
-    """Get electricity sales by sector data.
+    """
+    Get electricity sales by sector data.
+
+    This retrieval function requires the unrar binaries to be found in your
+    system.
 
     Parameters
     ----------

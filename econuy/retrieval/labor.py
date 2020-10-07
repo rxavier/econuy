@@ -26,10 +26,7 @@ def labor_rates(update_loc: Union[str, PathLike,
                 name: str = "labor",
                 index_label: str = "index",
                 only_get: bool = False) -> pd.DataFrame:
-    """Get labor market data.
-
-    Get monthly labor force participation rate, employment rate (employment to
-    working-age population) and unemployment rate.
+    """Get labor market data (LFPR, employment and unemployment).
 
     Parameters
     ----------
@@ -304,7 +301,7 @@ def rates_people(update_loc: Union[str, PathLike, Engine,
                                    Connection, None] = None,
                  save_loc: Union[str, PathLike, Engine,
                                  Connection, None] = None,
-                 name: str = "tfm_labor",
+                 name: str = "rates_people",
                  index_label: str = "index",
                  only_get: bool = True) -> pd.DataFrame:
     """
@@ -323,7 +320,7 @@ def rates_people(update_loc: Union[str, PathLike, Engine,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'tfm_labor'
+    name : str, default 'rates_people'
         Either CSV filename for updating and/or saving, or table name if
         using SQL.
     index_label : str, default 'index'
@@ -336,22 +333,17 @@ def rates_people(update_loc: Union[str, PathLike, Engine,
     -------
     Labor market data : pd.DataFrame
 
-    Raises
-    ------
-    ValueError
-        If ``seas_adj`` is given an invalid keyword.
-
     """
     rates = labor_rates(update_loc=update_loc, only_get=only_get)
     rates = rates.loc[:, ["Tasa de actividad: total", "Tasa de empleo: total",
                           "Tasa de desempleo: total"]]
-    act_5000 = pd.read_excel(urls["tfm_labor"]["dl"]["act_5000"],
+    act_5000 = pd.read_excel(urls["rates_people"]["dl"]["act_5000"],
                              sheet_name="Mensual", index_col=0, skiprows=8,
                              usecols="A:B").dropna(how="any")
-    emp_5000 = pd.read_excel(urls["tfm_labor"]["dl"]["emp_5000"],
+    emp_5000 = pd.read_excel(urls["rates_people"]["dl"]["emp_5000"],
                              sheet_name="Mensual", index_col=0, skiprows=8,
                              usecols="A:B").dropna(how="any")
-    des_5000 = pd.read_excel(urls["tfm_labor"]["dl"]["des_5000"],
+    des_5000 = pd.read_excel(urls["rates_people"]["dl"]["des_5000"],
                              sheet_name="Mensual", index_col=0, skiprows=7,
                              usecols="A:B").dropna(how="any")
     for df in [act_5000, emp_5000, des_5000]:
@@ -364,7 +356,7 @@ def rates_people(update_loc: Union[str, PathLike, Engine,
                                                                  ""),
                              level=0, inplace=True)
 
-    working_age = pd.read_excel(urls["tfm_labor"]["dl"]["population"],
+    working_age = pd.read_excel(urls["rates_people"]["dl"]["population"],
                                 skiprows=7, index_col=0,
                                 nrows=92).dropna(how="all")
     ages = list(range(14, 90)) + ["90 y más"]
@@ -394,7 +386,7 @@ def real_wages(update_loc: Union[str, PathLike, Engine,
                                  Connection, None] = None,
                save_loc: Union[str, PathLike, Engine,
                                Connection, None] = None,
-               name: str = "tfm_wages",
+               name: str = "real_wages",
                index_label: str = "index",
                only_get: bool = True) -> pd.DataFrame:
     """
@@ -412,7 +404,7 @@ def real_wages(update_loc: Union[str, PathLike, Engine,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'tfm_wages'
+    name : str, default 'real_wages'
         Either CSV filename for updating and/or saving, or table name if
         using SQL.
     index_label : str, default 'index'

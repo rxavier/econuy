@@ -1,10 +1,9 @@
 import datetime as dt
 import re
 import warnings
-from datetime import date
 from os import PathLike
 from tempfile import NamedTemporaryFile
-from typing import Union, Dict, Optional
+from typing import Union, Dict
 from urllib.error import HTTPError, URLError
 
 import camelot
@@ -22,7 +21,6 @@ from sqlalchemy.engine.base import Connection, Engine
 
 import econuy.retrieval.external_sector
 from econuy import transform
-from econuy.retrieval import prices
 from econuy.utils import ops, metadata
 from econuy.utils.chromedriver import _build
 from econuy.utils.lstrings import urls, fiscal_sheets, taxes_columns, \
@@ -37,10 +35,10 @@ from econuy.utils.lstrings import urls, fiscal_sheets, taxes_columns, \
 def balance(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
             revise_rows: Union[str, int] = "nodup",
             save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-            name: str = "fiscal",
+            name: str = "balance",
             index_label: str = "index",
             only_get: bool = False) -> Dict[str, pd.DataFrame]:
-    """Get fiscal data.
+    """Get fiscal balance data.
 
     Parameters
     ----------
@@ -60,7 +58,7 @@ def balance(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'fiscal'
+    name : str, default 'balance'
         Either CSV filename for updating and/or saving, or table name if
         using SQL.
     index_label : str, default 'index'
@@ -88,7 +86,7 @@ def balance(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         if all(not value.equals(pd.DataFrame()) for value in output.values()):
             return output
 
-    response = requests.get(urls["fiscal"]["dl"]["main"])
+    response = requests.get(urls["balance"]["dl"]["main"])
     soup = BeautifulSoup(response.content, "html.parser")
     links = soup.find_all(href=re.compile("\\.xlsx$"))
     link = links[0]["href"]
@@ -142,7 +140,11 @@ def tax_revenue(
         index_label: str = "index",
         only_get: bool = False,
         **kwargs) -> pd.DataFrame:
-    """Get tax revenues data.
+    """
+    Get tax revenues data.
+
+    This retrieval function requires that Ghostscript and Tkinter be found in
+    your system.
 
     Parameters
     ----------
@@ -292,7 +294,7 @@ def public_debt(update_loc: Union[str, PathLike,
                 name: str = "public_debt",
                 index_label: str = "index",
                 only_get: bool = False) -> Dict[str, pd.DataFrame]:
-    """Get public debt.
+    """Get public debt data.
 
     Parameters
     ----------
@@ -423,10 +425,10 @@ def net_public_debt(update_loc: Union[str, PathLike, Engine,
                     save_loc: Union[str, PathLike, Engine,
                                     Connection, None] = None,
                     only_get: bool = True,
-                    name: str = "tfm_pubdebt",
+                    name: str = "net_public_debt",
                     index_label: str = "index") -> pd.DataFrame:
     """
-    Get net public debt excluding financial deposits at the central bank.
+    Get net public debt excluding deposits at the central bank.
 
     Parameters
     ----------
@@ -440,7 +442,7 @@ def net_public_debt(update_loc: Union[str, PathLike, Engine,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'tfm_pubdebt'
+    name : str, default 'net_public_debt'
         Either CSV filename for updating and/or saving, or table name if
         using SQL. Options will be appended to the base name.
     index_label : str, default 'index'
@@ -451,7 +453,7 @@ def net_public_debt(update_loc: Union[str, PathLike, Engine,
 
     Returns
     -------
-    Net public debt excl. financial deposits at the central bank : pd.DataFrame
+    Net public debt excl. deposits at the central bank : pd.DataFrame
 
     """
     data = public_debt(update_loc=update_loc,
@@ -480,37 +482,21 @@ def net_public_debt(update_loc: Union[str, PathLike, Engine,
     return output
 
 
-def balance_fss(aggregation: str = "gps", fss: bool = True,
-                start_date: Union[str, date, None] = None,
-                end_date: Union[str, date, None] = None,
-                update_loc: Union[str, PathLike, Engine,
+def balance_fss(update_loc: Union[str, PathLike, Engine,
                                   Connection, None] = None,
                 save_loc: Union[str, PathLike, Engine,
                                 Connection, None] = None,
                 only_get: bool = True,
-                name: str = "tfm_fiscal",
-                index_label: str = "index") -> pd.DataFrame:
+                name: str = "balance_fss",
+                index_label: str = "index") -> Dict[str, pd.DataFrame]:
     """
-    Get fiscal accounts data.
-
-    Allow choosing government aggregation and whether to exclude the FSS
-    (Fideicomiso  de la Seguridad Social, Social Security Trust Fund).
+    Get fiscal balance data for the consolidated publci sector, non-financial
+    public sector and central government, both adjusted and non-adjusted for
+    the `Social Security Fund <https://www.impo.com.uy/bases/decretos/
+    71-2018/25>`_.
 
     Parameters
     ----------
-    aggregation : {'gps', 'nfps', 'gc'}
-        Government aggregation. Can be ``gps`` (consolidated public sector),
-        ``nfps`` (non-financial public sector) or ``gc`` (central government).
-    fss : bool, default True
-        If ``True``, exclude the `FSS's <https://www.impo.com.uy/bases/decretos
-        /71-2018/25>`_ income from gov't revenues and the FSS's
-        interest revenues from gov't interest payments.
-    start_date : str, datetime.date or None, default None
-        If ``unit`` is set to ``real`` or ``real_usd``, this parameter and
-        ``end_date`` control how deflation is calculated.
-    end_date :
-        If ``unit`` is set to ``real`` or ``real_usd``, this parameter and
-        ``start_date`` control how deflation is calculated.
     update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                   default None
         Either Path or path-like string pointing to a directory where to find
@@ -521,7 +507,7 @@ def balance_fss(aggregation: str = "gps", fss: bool = True,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'tfm_fiscal'
+    name : str, default 'balance_fss'
         Either CSV filename for updating and/or saving, or table name if
         using SQL. Options will be appended to the base name.
     index_label : str, default 'index'
@@ -532,22 +518,9 @@ def balance_fss(aggregation: str = "gps", fss: bool = True,
 
     Returns
     -------
-    Fiscal aggregation : pd.DataFrame
-
-    Raises
-    ------
-    ValueError
-        If ``seas_adj``, ``unit`` or ``aggregation`` are given an invalid
-        keywords.
+    Fiscal balances : Dict[str, pd.DataFrame]
 
     """
-    if aggregation not in ["gps", "nfps", "gc"]:
-        raise ValueError("'aggregation' can be 'gps', 'nfps' or 'gc'.")
-
-    name = f"{name}_{aggregation}"
-    if fss:
-        name = name + "_fssadj"
-
     data = balance(update_loc=update_loc,
                    save_loc=save_loc, only_get=only_get)
     gps = data["gps"]
@@ -621,13 +594,20 @@ def balance_fss(aggregation: str = "gps", fss: bool = True,
         - proc["Ingresos: FSS"]
         + proc["Intereses: FSS"])
 
-    output = proc.loc[:, fiscal_metadata[aggregation][fss]]
-    metadata._set(output, area="Sector público",
-                  currency="UYU", inf_adj="No", unit="Millones",
-                  seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+    output = {}
+    for agg, fss in zip(["gps", "nfps", "gc", "gps", "nfps", "gc"],
+                        [True, True, True, False, False, False]):
+        name_aux = f"{name}_{agg}"
+        if fss:
+            name_aux += "_fssadj"
+        aux = proc.loc[:, fiscal_metadata[agg][fss]]
+        metadata._set(aux, area="Sector público",
+                      currency="UYU", inf_adj="No", unit="Millones",
+                      seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+        output.update({name_aux: aux})
 
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+        if save_loc is not None:
+            ops._io(operation="save", data_loc=save_loc,
+                    data=aux, name=name, index_label=index_label)
 
     return output

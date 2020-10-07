@@ -19,20 +19,20 @@ TEST_CON = create_engine("sqlite://").connect()
 sqlutil.insert_csvs(con=TEST_CON, directory=TEST_DIR)
 
 
-def test_changes():
+def test_reserves_changes():
     remove_clutter()
     session = Session(location=TEST_CON)
-    previous_data = pd.read_csv(path.join(TEST_DIR, "reserves_chg.csv"),
+    previous_data = pd.read_csv(path.join(TEST_DIR, "reserves_changes.csv"),
                                 index_col=0, header=list(range(9)),
                                 float_precision="high")
     metadata._set(previous_data)
-    res = session.get(dataset="reserves_chg").dataset
+    res = session.get(dataset="reserves_changes").dataset
     previous_data.index = pd.to_datetime(previous_data.index)
     compare = res.loc[previous_data.index].round(3)
     compare.columns = previous_data.columns
     assert compare.equals(previous_data.round(3))
     session.only_get = True
-    compare = session.get(dataset="reserves_chg").dataset
+    compare = session.get(dataset="reserves_changes").dataset
     assert res.round(3).equals(compare.round(3))
     remove_clutter()
 
@@ -69,7 +69,7 @@ def test_rxr_custom():
 def test_comm_index():
     remove_clutter()
     session = Session(location=TEST_DIR)
-    comm = session.get_custom(dataset="comm_index").dataset
+    comm = session.get_custom(dataset="commodity_index").dataset
     assert isinstance(comm, pd.DataFrame)
     assert comm.index[0] == dt.date(2002, 1, 31)
     assert comm.iloc[0][0] == 100
@@ -111,7 +111,7 @@ def test_nxr_daily():
 def test_nxr_monthly():
     remove_clutter()
     session = Session(location=TEST_DIR)
-    nxr = session.get(dataset="nxr_m").dataset
+    nxr = session.get(dataset="nxr_monthly").dataset
     assert len(nxr.columns) == 2
     assert isinstance(nxr.index[0], pd._libs.tslibs.timestamps.Timestamp)
     remove_clutter()

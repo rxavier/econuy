@@ -119,12 +119,12 @@ def _get_sources(dataset: str,
                  html_urls: bool = True) -> Tuple[List[Optional[str]],
                                                   List[str], List[str]]:
     """Given a dataset name, return source URLs and provider."""
-    if dataset.startswith("tfm"):
-        dataset = "_".join(dataset.split(sep="_")[:2])
-    elif dataset.startswith("fiscal"):
-        dataset = dataset.split(sep="_")[0]
+    if dataset.startswith("balance_fss"):
+        dataset = "balance_fss"
+    elif dataset.startswith("balance"):
+        dataset = "balance"
     elif dataset.startswith("public_debt"):
-        dataset = "_".join(dataset.split(sep="_")[:2])
+        dataset = "public_debt"
 
     direct = urls[dataset]["source"]["direct"]
     indirect = urls[dataset]["source"]["indirect"]

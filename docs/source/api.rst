@@ -10,19 +10,11 @@ Session class
 
 Data retrieval functions
 ------------------------
-.. automodule:: econuy.retrieval.cpi
+.. automodule:: econuy.retrieval.economic_activity
    :members:
    :undoc-members:
    :show-inheritance:
-.. automodule:: econuy.retrieval.nxr
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.national_accounts
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.industrial_production
+.. automodule:: econuy.retrieval.prices
    :members:
    :undoc-members:
    :show-inheritance:
@@ -30,7 +22,7 @@ Data retrieval functions
    :members:
    :undoc-members:
    :show-inheritance:
-.. automodule:: econuy.retrieval.public_debt
+.. automodule:: econuy.retrieval.external_sector
    :members:
    :undoc-members:
    :show-inheritance:
@@ -38,47 +30,7 @@ Data retrieval functions
    :members:
    :undoc-members:
    :show-inheritance:
-.. automodule:: econuy.retrieval.trade
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.rxr
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.commodity_index
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.reserves
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.call
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.risk
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.deposits
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.credits
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.rates
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.energy
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.retrieval.sectors
+.. automodule:: econuy.retrieval.financial_sector
    :members:
    :undoc-members:
    :show-inheritance:
@@ -90,13 +42,6 @@ Data retrieval functions
 Transformation functions
 ------------------------
 .. automodule:: econuy.transform
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Custom data retrieval functions
--------------------------------
-.. automodule:: econuy.custom
    :members:
    :undoc-members:
    :show-inheritance:

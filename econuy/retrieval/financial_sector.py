@@ -28,10 +28,10 @@ def credit(update_loc: Union[str, PathLike,
            revise_rows: Union[str, int] = "nodup",
            save_loc: Union[str, PathLike,
                            Engine, Connection, None] = None,
-           name: str = "credits",
+           name: str = "credit",
            index_label: str = "index",
            only_get: bool = False) -> pd.DataFrame:
-    """Get credit data.
+    """Get bank credit data.
 
     Parameters
     ----------
@@ -51,7 +51,7 @@ def credit(update_loc: Union[str, PathLike,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'credits'
+    name : str, default 'credit'
         Either CSV filename for updating and/or saving, or table name if
         using SQL.
     index_label : str, default 'index'
@@ -71,7 +71,7 @@ def credit(update_loc: Union[str, PathLike,
         if not output.equals(pd.DataFrame()):
             return output
 
-    raw = pd.read_excel(urls["credits"]["dl"]["main"],
+    raw = pd.read_excel(urls["credit"]["dl"]["main"],
                         sheet_name="Total Sist. Banc.",
                         skiprows=10, usecols="A:P,T:AB,AD:AL", index_col=0)
     output = raw.loc[~pd.isna(raw.index)].dropna(how="all", axis=1)
@@ -143,7 +143,7 @@ def deposits(update_loc: Union[str, PathLike,
              name: str = "deposits",
              index_label: str = "index",
              only_get: bool = False) -> pd.DataFrame:
-    """Get deposits data.
+    """Get bank deposits data.
 
     Parameters
     ----------
@@ -236,7 +236,7 @@ def interest_rates(update_loc: Union[str, PathLike,
                    revise_rows: Union[str, int] = "nodup",
                    save_loc: Union[str, PathLike,
                                    Engine, Connection, None] = None,
-                   name: str = "rates",
+                   name: str = "interest_rates",
                    index_label: str = "index",
                    only_get: bool = False) -> pd.DataFrame:
     """Get interest rates data.
@@ -259,7 +259,7 @@ def interest_rates(update_loc: Union[str, PathLike,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'rates'
+    name : str, default 'interest_rates'
         Either CSV filename for updating and/or saving, or table name if
         using SQL.
     index_label : str, default 'index'
@@ -279,7 +279,7 @@ def interest_rates(update_loc: Union[str, PathLike,
         if not output.equals(pd.DataFrame()):
             return output
 
-    xls = pd.ExcelFile(urls["rates"]["dl"]["main"])
+    xls = pd.ExcelFile(urls["interest_rates"]["dl"]["main"])
     sheets = ["Activas $", "Activas UI", "Activas U$S",
               "Pasivas $", "Pasivas UI", "Pasivas U$S"]
     columns = ["B:C,G,K", "B:C,G,K", "B:C,H,L",
@@ -358,10 +358,10 @@ def sovereign_risk(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "ubi",
+        name: str = "sovereign_risk",
         index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
-    """Get Uruguayan Bond Index data.
+    """Get Uruguayan Bond Index (sovereign risk spreads) data.
 
     This function requires a Selenium webdriver. It can be provided in the
     driver parameter, or it will attempt to configure a Chrome webdriver.
@@ -384,7 +384,7 @@ def sovereign_risk(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'ubi'
+    name : str, default 'sovereign_risk'
         Either CSV filename for updating and/or saving, or table name if
         using SQL.
     index_label : str, default 'index'
@@ -404,10 +404,10 @@ def sovereign_risk(
         if not output.equals(pd.DataFrame()):
             return output
 
-    historical = pd.read_excel(urls["ubi"]["dl"]["historical"], usecols="B:C",
-                               skiprows=1, index_col=0,
+    historical = pd.read_excel(urls["sovereign_risk"]["dl"]["historical"],
+                               usecols="B:C", skiprows=1, index_col=0,
                                sheet_name="Valores de Cierre Diarios")
-    r = requests.get(urls["ubi"]["dl"]["current"])
+    r = requests.get(urls["sovereign_risk"]["dl"]["current"])
     soup = BeautifulSoup(r.content, features="lxml")
     raw_string = soup.find_all(type="hidden")[0]["value"]
     raw_list = raw_string.split("],")
@@ -555,8 +555,8 @@ def bonds(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
           index_label: str = "index",
           only_get: bool = False,
           driver: WebDriver = None) -> pd.DataFrame:
-    """Get interest rate yield for US-denominated bonds, inflation-linked bonds
-    and peso bonds.
+    """Get interest rate yield for Uruguayan US-denominated bonds,
+    inflation-linked bonds and peso bonds.
 
     This function requires a Selenium webdriver. It can be provided in the
     driver parameter, or it will attempt to configure a Chrome webdriver.

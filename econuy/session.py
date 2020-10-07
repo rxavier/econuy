@@ -181,7 +181,7 @@ class Session(object):
                 save_loc=save_loc,
                 only_get=self.only_get,
                 **kwargs)
-        elif dataset == "fiscal":
+        elif dataset == "balance":
             output = fiscal_accounts.balance(update_loc=update_loc,
                                              revise_rows=self.revise_rows,
                                              save_loc=save_loc,
@@ -223,6 +223,11 @@ class Session(object):
                                          save_loc=save_loc,
                                          only_get=self.only_get,
                                          **kwargs)
+        elif dataset == "real_wages":
+            output = labor.real_wages(update_loc=update_loc,
+                                      save_loc=save_loc,
+                                      only_get=self.only_get,
+                                      **kwargs)
         elif dataset == "rxr_official" or dataset == "rxr-official":
             output = external_sector.rxr_official(update_loc=update_loc,
                                                   revise_rows=self.revise_rows,
@@ -263,7 +268,7 @@ class Session(object):
                                              save_loc=save_loc,
                                              only_get=self.only_get,
                                              **kwargs)
-        elif dataset == "rates":
+        elif dataset == "interest_rates":
             output = financial_sector.interest_rates(
                 update_loc=update_loc,
                 revise_rows=self.revise_rows,
@@ -343,7 +348,7 @@ class Session(object):
                                                 save_loc=save_loc,
                                                 only_get=self.only_get,
                                                 **kwargs)
-        elif dataset == "ubi":
+        elif dataset == "sovereign_risk":
             output = financial_sector.sovereign_risk(
                 update_loc=update_loc,
                 revise_rows=self.revise_rows,
@@ -416,7 +421,7 @@ class Session(object):
                                                        save_loc=save_loc,
                                                        only_get=self.only_get,
                                                        **kwargs)
-        elif dataset == "fiscal":
+        elif dataset == "balance_fss":
             output = fiscal_accounts.balance_fss(update_loc=update_loc,
                                                  save_loc=save_loc,
                                                  only_get=self.only_get,
@@ -426,16 +431,11 @@ class Session(object):
                                                      save_loc=save_loc,
                                                      only_get=self.only_get,
                                                      **kwargs)
-        elif dataset == "labor" or dataset == "labour":
+        elif dataset == "rates_people":
             output = labor.rates_people(update_loc=update_loc,
                                         save_loc=save_loc,
                                         only_get=self.only_get,
                                         **kwargs)
-        elif dataset == "wages" or dataset == "real_wages":
-            output = labor.real_wages(update_loc=update_loc,
-                                      save_loc=save_loc,
-                                      only_get=self.only_get,
-                                      **kwargs)
         elif dataset == "net_trade":
             output = external_sector.trade_balance(update_loc=update_loc,
                                                    save_loc=save_loc,

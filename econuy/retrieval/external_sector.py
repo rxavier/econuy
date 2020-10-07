@@ -34,9 +34,9 @@ from econuy.utils.lstrings import trade_metadata, urls, reserves_cols
 def trade(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
           revise_rows: Union[str, int] = "nodup",
           save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-          name: str = "tb", index_label: str = "index",
+          name: str = "trade", index_label: str = "index",
           only_get: bool = False) -> Dict[str, pd.DataFrame]:
-    """Get trade balance data.
+    """Get exports and imports of goods data.
 
     Parameters
     ----------
@@ -56,7 +56,7 @@ def trade(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'tb'
+    name : str, default 'trade'
         Either CSV filename for updating and/or saving, or table name if
         using SQL.
     index_label : str, default 'index'
@@ -232,11 +232,11 @@ def trade_balance(update_loc: Union[str, PathLike, Engine,
                                     Connection, None] = None,
                   save_loc: Union[str, PathLike, Engine,
                                   Connection, None] = None,
-                  name: str = "tfm_tb",
+                  name: str = "net_trade",
                   index_label: str = "index",
                   only_get: bool = True) -> pd.DataFrame:
     """
-    Get trade balance values by country/region.
+    Get net trade balance data by country/region.
 
     Parameters
     ----------
@@ -250,7 +250,7 @@ def trade_balance(update_loc: Union[str, PathLike, Engine,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'tfm_tb'
+    name : str, default 'net_trade'
         Either CSV filename for updating and/or saving, or table name if
         using SQL.
     index_label : str, default 'index'
@@ -266,10 +266,10 @@ def trade_balance(update_loc: Union[str, PathLike, Engine,
     """
     data = trade(update_loc=update_loc, save_loc=save_loc,
                  only_get=only_get)
-    exports = data["tb_x_dest_val"].rename(
+    exports = data["trade_x_dest_val"].rename(
         columns={"Total exportaciones": "Total"}
     )
-    imports = data["tb_m_orig_val"].rename(
+    imports = data["trade_m_orig_val"].rename(
         columns={"Total importaciones": "Total"}
     )
     net = exports - imports
@@ -285,7 +285,7 @@ def terms_of_trade(update_loc: Union[str, PathLike, Engine,
                                      Connection, None] = None,
                    save_loc: Union[str, PathLike, Engine,
                                    Connection, None] = None,
-                   name: str = "tfm_tot",
+                   name: str = "terms_of_trade",
                    index_label: str = "index",
                    only_get: bool = True) -> pd.DataFrame:
     """
@@ -303,7 +303,7 @@ def terms_of_trade(update_loc: Union[str, PathLike, Engine,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'tfm_tot'
+    name : str, default 'terms_of_trade'
         Either CSV filename for updating and/or saving, or table name if
         using SQL.
     index_label : str, default 'index'
@@ -319,10 +319,10 @@ def terms_of_trade(update_loc: Union[str, PathLike, Engine,
     """
     data = trade(update_loc=update_loc, save_loc=save_loc,
                  only_get=only_get)
-    exports = data["tb_x_dest_pri"].rename(
+    exports = data["trade_x_dest_pri"].rename(
         columns={"Total exportaciones": "Total"}
     )
-    imports = data["tb_m_orig_pri"].rename(
+    imports = data["trade_m_orig_pri"].rename(
         columns={"Total importaciones": "Total"}
     )
     tot = exports / imports
@@ -673,7 +673,7 @@ def rxr_official(update_loc: Union[str, PathLike, Engine,
                  name: str = "rxr_official",
                  index_label: str = "index",
                  only_get: bool = False) -> pd.DataFrame:
-    """Get official real exchange rates from the BCU website.
+    """Get official (BCU) real exchange rates.
 
     Parameters
     ----------
@@ -757,7 +757,8 @@ def rxr_custom(update_loc: Union[str, PathLike, Engine,
                name: str = "rxr_custom",
                index_label: str = "index",
                only_get: bool = False) -> pd.DataFrame:
-    """Get official real exchange rates from the BCU website.
+    """Get custom real exchange rates vis-à-vis the US, Argentina and Brazil.
+    Include Argentina and Brazil vis-à-vis the US.
 
     Parameters
     ----------
@@ -1021,7 +1022,7 @@ def reserves_changes(update_loc: Union[str, PathLike, Engine,
                                        Connection, None] = None,
                      save_loc: Union[str, PathLike, Engine,
                                      Connection, None] = None,
-                     name: str = "reserves_chg",
+                     name: str = "reserves_changes",
                      index_label: str = "index",
                      only_get: bool = False) -> pd.DataFrame:
     """Get international reserves changes data.

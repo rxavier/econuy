@@ -23,7 +23,7 @@ TEST_CON = create_engine("sqlite://").connect()
 sqlutil.insert_csvs(con=TEST_CON, directory=TEST_DIR)
 
 
-def remove_clutter(avoid: Tuple[str] = ("reserves_chg.csv",
+def remove_clutter(avoid: Tuple[str] = ("reserves_changes.csv",
                                         "commodity_weights.csv",
                                         "nxr_daily.csv")):
     [remove(path.join(TEST_DIR, x)) for x in listdir(TEST_DIR)
@@ -41,7 +41,7 @@ def test_prices_inflation():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    measures = session.get_custom(dataset="price_measures").dataset
+    measures = session.get_custom(dataset="cpi_measures").dataset
     remove_clutter()
     prices = session.get(dataset="cpi").dataset
     prices = prices.loc[prices.index >= "1997-03-31"]
@@ -57,10 +57,9 @@ def test_fiscal():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    fiscal_tfm = session.get_custom(dataset="fiscal", aggregation="nfps",
-                                    fss=True).dataset
+    fiscal_tfm = session.get_custom(dataset="balance_fss").dataset
     remove_clutter()
-    fiscal_ = session.get(dataset="fiscal").dataset
+    fiscal_ = session.get(dataset="balance").dataset
     nfps = fiscal_["nfps"]
     gc = fiscal_["gc-bps"]
     proc = pd.DataFrame(index=nfps.index)
@@ -97,12 +96,12 @@ def test_fiscal():
     metadata._set(compare, area="Sector público",
                   currency="UYU", inf_adj="No", unit="No",
                   seas_adj="NSA", ts_type="Flujo", cumperiods=1)
-    compare.columns = fiscal_tfm.columns
-    assert compare.equals(fiscal_tfm)
+    compare.columns = fiscal_tfm["balance_fss_nfps_fssadj"].columns
+    assert compare.equals(fiscal_tfm["balance_fss_nfps_fssadj"])
     remove_clutter()
-    fiscal_ = session.get(dataset="fiscal").dataset
+    fiscal_ = session.get(dataset="balance").dataset
     session.only_get = True
-    compare = session.get(dataset="fiscal").dataset
+    compare = session.get(dataset="balance").dataset
     for v, v2 in zip(fiscal_.values(), compare.values()):
         assert v.round(4).equals(v2.round(4))
     remove_clutter()
@@ -114,7 +113,7 @@ def test_labor():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    labor_tfm = session.get_custom(dataset="labor").dataset
+    labor_tfm = session.get_custom(dataset="rates_people").dataset
     labor_tfm = labor_tfm.iloc[:, [0, 1, 2]].loc[labor_tfm.index >= "2006-01-01"]
     remove_clutter()
     labor_ = session.get(dataset="labor").dataset.iloc[:, [0, 3, 6]]
@@ -123,7 +122,7 @@ def test_labor():
     compare.columns = labor_tfm.columns
     assert labor_tfm.round(4).equals(compare.round(4))
     remove_clutter()
-    labor_tfm = session.get_custom(dataset="labor").dataset
+    labor_tfm = session.get_custom(dataset="rates_people").dataset
     labor_tfm = labor_tfm.loc[labor_tfm.index >= "2006-01-01"]
     compare = labor_.iloc[:, 0].div(labor_.iloc[:, 1]).round(4)
     compare_2 = labor_tfm.iloc[:, 3].div(labor_tfm.iloc[:, 4]).round(4)
@@ -131,7 +130,7 @@ def test_labor():
     compare = labor_tfm.iloc[:, 3].mul(labor_.iloc[:, 2]).div(100).round(4)
     assert compare.equals(labor_tfm.iloc[:, 5].round(4))
     remove_clutter()
-    labor_ext = session.get_custom(dataset="labor").dataset
+    labor_ext = session.get_custom(dataset="rates_people").dataset
     assert len(labor_ext) > len(labor_tfm)
     remove_clutter()
 
@@ -141,7 +140,7 @@ def test_wages():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    real_wages = session.get_custom(dataset="real_wages").dataset
+    real_wages = session.get(dataset="real_wages").dataset
     nominal_wages = session.get(dataset="wages").dataset
     compare = transform.convert_real(nominal_wages, update_loc=TEST_CON)
     compare = transform.base_index(compare, start_date="2008-07-31")
@@ -154,7 +153,7 @@ def test_naccounts():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    na_ = session.get(dataset="na").dataset
+    na_ = session.get(dataset="naccounts").dataset
     assert isinstance(na_, dict)
     assert len(na_) == 6
     remove_clutter()
@@ -185,7 +184,7 @@ def test_rates():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    rates = session.get(dataset="rates").dataset
+    rates = session.get(dataset="interest_rates").dataset
     assert rates.index[0] == dt.datetime(1998, 1, 31)
     remove_clutter()
 
@@ -313,7 +312,7 @@ def test_bond_index():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    risk = session.get(dataset="ubi").dataset
+    risk = session.get(dataset="sovereign_risk").dataset
     assert risk.index[0] == dt.datetime(1999, 1, 1)
     assert len(risk.columns) == 1
     remove_clutter()
@@ -329,17 +328,17 @@ def test_trade():
     assert len(tb_) == 12
     remove_clutter()
     net = session.get_custom(dataset="net_trade").dataset
-    compare = (tb_["tb_x_dest_val"].
+    compare = (tb_["trade_x_dest_val"].
                rename(columns={"Total exportaciones": "Total"})
-               - tb_["tb_m_orig_val"].
+               - tb_["trade_m_orig_val"].
                rename(columns={"Total importaciones": "Total"}))
     compare.columns = net.columns
     assert net.equals(compare)
     remove_clutter()
-    net = session.get_custom(dataset="tot").dataset
-    compare = (tb_["tb_x_dest_pri"].
+    net = session.get_custom(dataset="terms_of_trade").dataset
+    compare = (tb_["trade_x_dest_pri"].
                rename(columns={"Total exportaciones": "Total"})
-               / tb_["tb_m_orig_pri"].
+               / tb_["trade_m_orig_pri"].
                rename(columns={"Total importaciones": "Total"}))
     compare = compare.loc[:, ["Total"]]
     compare = transform.base_index(compare, start_date="2005-01-01",
@@ -397,7 +396,7 @@ def test_edge():
     session = Session(location="new_dir")
     assert path.isdir("new_dir")
     shutil.rmtree(session.location)
-    Session(location=TEST_DIR).get_custom(dataset="price_measures",
+    Session(location=TEST_DIR).get_custom(dataset="cpi_measures",
                                           update=False, save=False)
     remove_clutter()
 

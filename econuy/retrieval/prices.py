@@ -327,9 +327,11 @@ def cpi_measures(update_loc: Union[str, PathLike,
                  revise_rows: Union[str, int] = "nodup",
                  save_loc: Union[str, PathLike, Engine,
                                  Connection, None] = None,
-                 name: str = "tfm_prices", index_label: str = "index",
+                 name: str = "cpi_measures", index_label: str = "index",
                  only_get: bool = False) -> pd.DataFrame:
-    """Get core CPI, Winsorized CPI, tradabe CPI and non-tradable CPI.
+    """
+    Get core CPI, Winsorized CPI, tradabe CPI, non-tradable CPI and residual
+    CPI.
 
     Parameters
     ----------
@@ -349,7 +351,7 @@ def cpi_measures(update_loc: Union[str, PathLike,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'tfm_prices'
+    name : str, default 'cpi_measures'
         Either CSV filename for updating and/or saving, or table name if
         using SQL.
     index_label : str, default 'index'
@@ -369,7 +371,7 @@ def cpi_measures(update_loc: Union[str, PathLike,
         if not output.equals(pd.DataFrame()):
             return output
 
-    xls = pd.ExcelFile(urls["tfm_prices"]["dl"]["2010"])
+    xls = pd.ExcelFile(urls["cpi_measures"]["dl"]["2010"])
     weights = pd.read_excel(xls, sheet_name=xls.sheet_names[0],
                             usecols="A:C", skiprows=14,
                             index_col=0).dropna(how="any")
@@ -397,12 +399,12 @@ def cpi_measures(update_loc: Union[str, PathLike,
     cpi_win = win.mul(weights_8.loc[:, "Weight"].T)
     cpi_win = cpi_win.sum(axis=1).add(1).cumprod().mul(100)
 
-    prod_97 = (pd.read_excel(urls["tfm_prices"]["dl"]["1997"],
+    prod_97 = (pd.read_excel(urls["cpi_measures"]["dl"]["1997"],
                              skiprows=5).dropna(how="any")
                .set_index(
         "Rubros, Agrupaciones, Subrubros, Familias y Artículos")
         .T)
-    weights_97 = (pd.read_excel(urls["tfm_prices"]["dl"]["1997_weights"],
+    weights_97 = (pd.read_excel(urls["cpi_measures"]["dl"]["1997_weights"],
                                 index_col=0)
                   .drop_duplicates(subset="Descripción", keep="first"))
     weights_97["Weight"] = (weights_97["Rubro"]
