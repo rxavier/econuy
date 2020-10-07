@@ -14,7 +14,7 @@ except ImportError:
     from .test_session import remove_clutter
 
 CUR_DIR = path.abspath(path.dirname(__file__))
-TEST_DIR = path.join(path.dirname(CUR_DIR), "test-data")
+TEST_DIR = path.join(CUR_DIR, "test-data")
 TEST_CON = create_engine("sqlite://").connect()
 sqlutil.insert_csvs(con=TEST_CON, directory=TEST_DIR)
 

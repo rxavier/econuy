@@ -9,7 +9,6 @@ import pytest
 from sqlalchemy import create_engine, inspect
 
 from econuy import transform
-from econuy.retrieval import prices
 from econuy.session import Session
 from econuy.utils import metadata, sqlutil
 from econuy.utils.lstrings import fiscal_metadata
@@ -19,7 +18,7 @@ except ImportError:
     from .test_transform import dummy_df
 
 CUR_DIR = path.abspath(path.dirname(__file__))
-TEST_DIR = path.join(path.dirname(CUR_DIR), "test-data")
+TEST_DIR = path.join(CUR_DIR, "test-data")
 TEST_CON = create_engine("sqlite://").connect()
 sqlutil.insert_csvs(con=TEST_CON, directory=TEST_DIR)
 
@@ -59,7 +58,7 @@ def test_fiscal():
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
     fiscal_tfm = session.get_custom(dataset="fiscal", aggregation="nfps",
-                                    fss=True, unit="gdp").dataset
+                                    fss=True).dataset
     remove_clutter()
     fiscal_ = session.get(dataset="fiscal").dataset
     nfps = fiscal_["nfps"]
@@ -98,42 +97,8 @@ def test_fiscal():
     metadata._set(compare, area="Sector público",
                   currency="UYU", inf_adj="No", unit="No",
                   seas_adj="NSA", ts_type="Flujo", cumperiods=1)
-    compare_gdp = transform.rolling(compare, periods=12, operation="sum")
-    compare_gdp = transform.convert_gdp(compare_gdp)
-    compare_gdp.columns = fiscal_tfm.columns
-    assert compare_gdp.equals(fiscal_tfm)
-    remove_clutter()
-    fiscal_tfm = session.get_custom(dataset="fiscal", aggregation="nfps",
-                                    fss=True, unit="usd").dataset
-    compare_usd = transform.convert_usd(compare)
-    compare_usd.columns = fiscal_tfm.columns
-    assert compare_usd.equals(fiscal_tfm)
-    remove_clutter()
-    fiscal_tfm = session.get_custom(dataset="fiscal", aggregation="nfps",
-                                    fss=True, unit="real").dataset
-    compare_real = transform.convert_real(compare)
-    compare_real.columns = fiscal_tfm.columns
-    assert compare_real.equals(fiscal_tfm)
-    remove_clutter()
-    start_date = "2010-01-31"
-    end_date = "2010-12-31"
-    fiscal_tfm = session.get_custom(dataset="fiscal", aggregation="nfps",
-                                    fss=True, unit="real_usd",
-                                    start_date=start_date,
-                                    end_date=end_date).dataset
-    compare_real_usd = transform.convert_real(compare, start_date=start_date,
-                                              end_date=end_date)
-    xr = prices.nxr_monthly(update_loc=None, save_loc=None)
-    compare_real_usd = compare_real_usd.divide(
-        xr[start_date:end_date].mean()[1])
-    compare_real_usd.columns = fiscal_tfm.columns
-    assert compare_real_usd.equals(fiscal_tfm)
-    remove_clutter()
-    with pytest.raises(ValueError):
-        session.get_custom(dataset="fiscal", aggregation="nfps",
-                           unit="wrong")
-    with pytest.raises(ValueError):
-        session.get_custom(dataset="fiscal", aggregation="wrong")
+    compare.columns = fiscal_tfm.columns
+    assert compare.equals(fiscal_tfm)
     remove_clutter()
     fiscal_ = session.get(dataset="fiscal").dataset
     session.only_get = True
@@ -149,42 +114,26 @@ def test_labor():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    labor_tfm = session.get_custom(dataset="labor", seas_adj="trend",
-                                   extend=False).dataset
-    labor_tfm = labor_tfm.iloc[:, [0, 1, 2]]
+    labor_tfm = session.get_custom(dataset="labor").dataset
+    labor_tfm = labor_tfm.iloc[:, [0, 1, 2]].loc[labor_tfm.index >= "2006-01-01"]
     remove_clutter()
     labor_ = session.get(dataset="labor").dataset.iloc[:, [0, 3, 6]]
     session.only_get = True
     compare = session.get(dataset="labor").dataset.iloc[:, [0, 3, 6]]
-    compare = transform.decompose(compare, flavor="trend")
     compare.columns = labor_tfm.columns
     assert labor_tfm.round(4).equals(compare.round(4))
     remove_clutter()
-    session.only_get = False
-    labor_trend, labor_sa = transform.decompose(labor_, outlier=True,
-                                                trading=True)
-    labor_trend.columns = labor_tfm.columns
-    assert labor_trend.equals(labor_tfm)
-    remove_clutter()
-    labor_tfm = session.get_custom(dataset="labor", seas_adj="seas",
-                                   extend=False).dataset
-    labor_tfm = labor_tfm.iloc[:, [0, 1, 2]]
-    labor_sa.columns = labor_tfm.columns
-    assert labor_sa.equals(labor_tfm)
-    remove_clutter()
-    labor_tfm = session.get_custom(dataset="labor", seas_adj=None,
-                                   extend=False).dataset
+    labor_tfm = session.get_custom(dataset="labor").dataset
+    labor_tfm = labor_tfm.loc[labor_tfm.index >= "2006-01-01"]
     compare = labor_.iloc[:, 0].div(labor_.iloc[:, 1]).round(4)
     compare_2 = labor_tfm.iloc[:, 3].div(labor_tfm.iloc[:, 4]).round(4)
     assert compare.equals(compare_2)
     compare = labor_tfm.iloc[:, 3].mul(labor_.iloc[:, 2]).div(100).round(4)
     assert compare.equals(labor_tfm.iloc[:, 5].round(4))
     remove_clutter()
-    labor_ext = session.get_custom(dataset="labor", extend=True).dataset
+    labor_ext = session.get_custom(dataset="labor").dataset
     assert len(labor_ext) > len(labor_tfm)
     remove_clutter()
-    with pytest.raises(ValueError):
-        session.get_custom(dataset="labor", seas_adj="wrong")
 
 
 def test_wages():
@@ -192,37 +141,12 @@ def test_wages():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    full_wages = session.get_custom(dataset="real_wages",
-                                    seas_adj="trend").dataset
-    wages_tfm = full_wages.iloc[:, [0, 1, 2]]
-    remove_clutter()
-    wages_ = session.get(dataset="wages").dataset
-    session.only_get = True
-    compare = session.get(dataset="wages").dataset
-    assert wages_.round(4).equals(compare.round(4))
-    session.only_get = False
-    remove_clutter()
-    wages_trend, wages_sa = transform.decompose(wages_, outlier=False,
-                                                trading=True)
-    wages_trend = transform.base_index(wages_trend, start_date="2008-07-31")
-    wages_trend.columns = wages_tfm.columns
-    assert wages_trend.equals(wages_tfm)
-    remove_clutter()
-    full_wages = session.get_custom(dataset="wages", seas_adj="seas").dataset
-    wages_tfm = full_wages.iloc[:, [0, 1, 2]]
-    wages_sa = transform.base_index(wages_sa, start_date="2008-07-31")
-    wages_sa.columns = wages_tfm.columns
-    assert wages_sa.equals(wages_tfm)
-    remove_clutter()
-    full_wages = session.get_custom(dataset="wages", seas_adj=None).dataset
-    real_wages = full_wages.iloc[:, [3, 4, 5]]
-    compare = transform.convert_real(wages_)
+    real_wages = session.get_custom(dataset="real_wages").dataset
+    nominal_wages = session.get(dataset="wages").dataset
+    compare = transform.convert_real(nominal_wages, update_loc=TEST_CON)
     compare = transform.base_index(compare, start_date="2008-07-31")
     compare.columns = real_wages.columns
-    assert real_wages.equals(compare)
-    remove_clutter()
-    with pytest.raises(ValueError):
-        session.get_custom(dataset="wages", seas_adj="wrong")
+    assert compare.equals(real_wages)
 
 
 def test_naccounts():

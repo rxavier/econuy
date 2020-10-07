@@ -481,7 +481,6 @@ def net_public_debt(update_loc: Union[str, PathLike, Engine,
 
 
 def balance_fss(aggregation: str = "gps", fss: bool = True,
-                unit: Optional[str] = None,
                 start_date: Union[str, date, None] = None,
                 end_date: Union[str, date, None] = None,
                 update_loc: Union[str, PathLike, Engine,
@@ -494,10 +493,8 @@ def balance_fss(aggregation: str = "gps", fss: bool = True,
     """
     Get fiscal accounts data.
 
-    Allow choosing government aggregation, whether to exclude the FSS
-    (Fideicomiso  de la Seguridad Social, Social Security Trust Fund), the unit
-    (UYU, real UYU, USD, real USD or percent of GDP), periods to accumuldate
-    for rolling sums and seasonal adjustment.
+    Allow choosing government aggregation and whether to exclude the FSS
+    (Fideicomiso  de la Seguridad Social, Social Security Trust Fund).
 
     Parameters
     ----------
@@ -508,11 +505,6 @@ def balance_fss(aggregation: str = "gps", fss: bool = True,
         If ``True``, exclude the `FSS's <https://www.impo.com.uy/bases/decretos
         /71-2018/25>`_ income from gov't revenues and the FSS's
         interest revenues from gov't interest payments.
-    unit : {None, 'gdp', 'usd', 'real', 'real_usd'}
-        Unit in which data should be expressed. Possible values are ``real``,
-        ``usd``, ``real_usd`` and ``gdp``. If ``None`` or another string is
-        set, no unit calculations will be performed, rendering the data as is
-        (current UYU).
     start_date : str, datetime.date or None, default None
         If ``unit`` is set to ``real`` or ``real_usd``, this parameter and
         ``end_date`` control how deflation is calculated.
@@ -549,18 +541,10 @@ def balance_fss(aggregation: str = "gps", fss: bool = True,
         keywords.
 
     """
-    if unit is not None:
-        warnings.warn("The 'unit' argument will be removed in a "
-                      "future version.", FutureWarning)
-    if unit not in ["gdp", "usd", "real", "real_usd", None]:
-        raise ValueError("'unit' can be 'gdp', 'usd', 'real', 'real_usd' or"
-                         " None.")
     if aggregation not in ["gps", "nfps", "gc"]:
         raise ValueError("'aggregation' can be 'gps', 'nfps' or 'gc'.")
 
-    if unit is None:
-        unit = "uyu"
-    name = f"{name}_{aggregation}_{unit}"
+    name = f"{name}_{aggregation}"
     if fss:
         name = name + "_fssadj"
 
@@ -641,33 +625,6 @@ def balance_fss(aggregation: str = "gps", fss: bool = True,
     metadata._set(output, area="Sector público",
                   currency="UYU", inf_adj="No", unit="Millones",
                   seas_adj="NSA", ts_type="Flujo", cumperiods=1)
-
-    if unit == "gdp":
-        output = transform.rolling(output, periods=12, operation="sum")
-        output = transform.convert_gdp(output, update_loc=update_loc,
-                                       save_loc=save_loc,
-                                       only_get=only_get)
-    elif unit == "usd":
-        output = transform.convert_usd(output, update_loc=update_loc,
-                                       save_loc=save_loc,
-                                       only_get=only_get)
-    elif unit == "real_usd":
-        output = transform.convert_real(output, start_date=start_date,
-                                        end_date=end_date,
-                                        update_loc=update_loc,
-                                        save_loc=save_loc,
-                                        only_get=only_get)
-        xr = prices.nxr_monthly(update_loc=update_loc,
-                                save_loc=save_loc,
-                                only_get=only_get)
-        output = output.divide(xr[start_date:end_date].mean()[1])
-        metadata._set(output, currency="USD")
-    elif unit == "real":
-        output = transform.convert_real(output, start_date=start_date,
-                                        end_date=end_date,
-                                        update_loc=update_loc,
-                                        save_loc=save_loc,
-                                        only_get=only_get)
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
