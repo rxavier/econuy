@@ -61,7 +61,7 @@ The `Session()` object is initialized with the `location`, `revise_rows`,  `only
 
 Downloads the basic datasets. These are generally as provided by official sources, except various Pandas transformations are performed to render nice looking dataframes with appropiate column names, time indexes and properly defined values. In select cases, I drop columns that I feel don't add relevant information for the target audience of this package, or that are inconsistent with other datasets.
 
-Available options for the `dataset` argument can be found in [the datasets file](econuy/utils/datasets.py).
+Available options for the `dataset` argument can be found in [the datasets file](econuy/utils/datasets.py). English descriptions for these will be added in the future.
 
 If you wanted CPI data:
 ```python
@@ -142,7 +142,7 @@ Some retrieval functions need Selenium to be configured in order to scrape data.
 
 ### Ghostscript and Tkinter
 
-This project uses [Camelot](https://github.com/camelot-dev/camelot) to extract data from PDF tables, which relies on two dependencies that need to be installed in your system. Instructions for these can be found [here](https://camelot-py.readthedocs.io/en/master/user/install-deps.html).
+This project uses [Camelot](https://github.com/camelot-dev/camelot) to extract data from PDF tables, which relies on these two dependencies. Installation instructions for these can be found [here](https://camelot-py.readthedocs.io/en/master/user/install-deps.html).
 
 ----
 
@@ -159,4 +159,5 @@ This project is heavily based on getting data from online sources that could cha
 * CLI.
 * ~~Website.~~
 * Automating data updates.
-* ~~Visualization.~~ (I have decided that visualization should be up to the end-user. However, the [webapp](https://econ.uy) is available for this purpose)
+* ~~Visualization.~~ (I have decided that visualization should be up to the end-user. However, the [webapp](https://econ.uy) is available for this purpose).
+* Translations for dataset descriptions and metadata.
