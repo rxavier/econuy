@@ -608,6 +608,6 @@ def balance_fss(update_loc: Union[str, PathLike, Engine,
 
         if save_loc is not None:
             ops._io(operation="save", data_loc=save_loc,
-                    data=aux, name=name, index_label=index_label)
+                    data=aux, name=name_aux, index_label=index_label)
 
     return output
