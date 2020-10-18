@@ -19,13 +19,13 @@ A webapp with a limited but interactive version of econuy is available at https:
 
 * PyPI:
 
-```
+```bash
 pip install econuy
 ```
 
 * Git:
 
-```
+```bash
 git clone https://github.com/rxavier/econuy.git
 cd econuy
 python setup.py install
@@ -61,7 +61,7 @@ The `Session()` object is initialized with the `location`, `revise_rows`,  `only
 
 Downloads the basic datasets. These are generally as provided by official sources, except various Pandas transformations are performed to render nice looking dataframes with appropiate column names, time indexes and properly defined values. In select cases, I drop columns that I feel don't add relevant information for the target audience of this package, or that are inconsistent with other datasets.
 
-Available options for the `dataset` argument are "cpi", "fiscal", "nxr_monthly", "nxr_daily", "naccounts", "labor", "rxr_official", "trade", "reserves_chg", "industrial_production" and "call". Most are self explanatory but all are explained in the documentation.
+Available options for the `dataset` argument can be found in [the datasets file](econuy/utils/datasets.py). English descriptions for these will be added in the future.
 
 If you wanted CPI data:
 ```python
@@ -70,11 +70,11 @@ from econuy.session import Session
 sess = Session(location="your/directory")
 df = sess.get(dataset="cpi").dataset
 ```
-Note that the previous code block accessed the `dataset` attribute in order to get a dataframe. Alternatively, one could also call the `final()` method after calling `get()`.
+Note that the previous code block accessed the `dataset` attribute in order to get a dataframe.
 
 #### `get_custom()`
 
-Gives access to predefined data pipelines that output frequently used data not provided officially. These are based on the datasets provided by `get()`, but are transformed to render data that you might find more immediately useful.
+Gives access to predefined data pipelines that output frequently used data not provided officially or require the combination of available official sources. These are based on the datasets provided by `get()`, but are transformed to render data that you might find more immediately useful. As with `get()`, available options for the `dataset` argument can be found in [the datasets file](econuy/utils/datasets.py).
 
 For example, the following calculates tradable CPI, non-tradable CPI, core CPI, residual CPI and Winsorized CPI. Also, it uses a SQL database for data updating and saving.
 ```python
@@ -96,9 +96,9 @@ These class methods take a `Session()` object with a valid dataset and allow per
 from econuy.session import Session
 
 sess = Session(location="your/directory")
-df = sess.get(dataset="nxr").decompose(flavor="trend", method="x13", fallback="loess")
+df = sess.get(dataset="nxr_monthly").decompose(flavor="trend", method="x13", fallback="loess")
 ```
-will return a the Session object, with the dataset attribute holding the trend component of nominal exchange rate.
+will return a the Session object, with the dataset attribute holding the trend component of the monthly nominal exchange rate.
 
 Available transformation methods are 
 * `resample()` - resample data to a different frequency, taking into account whether data is of stock or flow type.
@@ -110,7 +110,7 @@ Available transformation methods are
 
 ## Retrieval functions
 
-If you don't want to go the `Session()` way, you can simply get your data from the functions under `econuy.retrieval`, for example `econuy.retrieval.fiscal_accounts.get()`. While creating a Session object is recommended, this can be easier if you only plan on retrieving a single dataset.
+If you don't want to go the `Session()` way, you can simply get your data from the functions under `econuy.retrieval`, for example `econuy.retrieval.fiscal_accounts.balance()`. While creating a Session object is recommended, this can be easier if you only plan on retrieving a single dataset.
 
 ## Dataframe/CSV headers
 
@@ -142,7 +142,7 @@ Some retrieval functions need Selenium to be configured in order to scrape data.
 
 ### Ghostscript and Tkinter
 
-This project uses [Camelot](https://github.com/camelot-dev/camelot) to extract data from PDF tables, which relies on two dependencies that need to be installed in your system. Instructions for these can be found [here](https://camelot-py.readthedocs.io/en/master/user/install-deps.html).
+This project uses [Camelot](https://github.com/camelot-dev/camelot) to extract data from PDF tables, which relies on these two dependencies. Installation instructions for these can be found [here](https://camelot-py.readthedocs.io/en/master/user/install-deps.html).
 
 ----
 
@@ -159,4 +159,5 @@ This project is heavily based on getting data from online sources that could cha
 * CLI.
 * ~~Website.~~
 * Automating data updates.
-* ~~Visualization.~~ (I have decided that visualization should be up to the end-user. However, the [webapp](https://econ.uy) is available for this purpose)
+* ~~Visualization.~~ (I have decided that visualization should be up to the end-user. However, the [webapp](https://econ.uy) is available for this purpose).
+* Translations for dataset descriptions and metadata.

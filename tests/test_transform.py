@@ -10,7 +10,7 @@ from econuy.session import Session
 from econuy.utils import metadata
 
 CUR_DIR = path.abspath(path.dirname(__file__))
-TEST_DIR = path.join(path.dirname(CUR_DIR), "test-data")
+TEST_DIR = path.join(CUR_DIR, "test-data")
 TEST_CON = create_engine("sqlite://").connect()
 
 
@@ -255,7 +255,7 @@ def test_decompose():
 def test_base_index():
     data = dummy_df(freq="M")
     session = Session(location=TEST_CON, dataset=data)
-    base = session.base_index(start_date="2000-01-31").final()
+    base = session.base_index(start_date="2000-01-31").dataset
     assert np.all(base.loc["2000-01-31"].values == np.array([100] * 3))
     chg = data.pct_change(periods=1).multiply(100)
     session = Session(location=TEST_CON, dataset=data, inplace=True)
@@ -265,7 +265,7 @@ def test_base_index():
     data = dummy_df(freq="Q-DEC")
     session = Session(location=TEST_CON, dataset={
                       "data1": data, "data2": data})
-    base = session.base_index(start_date="2000-03-31").final()
+    base = session.base_index(start_date="2000-03-31").dataset
     assert np.all(
         base["data1"].loc["2000-03-31"].values == np.array([100] * 3))
     chg = data.pct_change(periods=1).multiply(100)
