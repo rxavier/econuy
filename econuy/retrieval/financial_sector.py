@@ -418,6 +418,7 @@ def sovereign_risk(
     current.index = pd.to_datetime(current.index, format="%d/%m/%y")
     output = pd.concat([historical, current])
     output = output.loc[~output.index.duplicated(keep="last")]
+    output.sort_index(inplace=True)
     output = output.apply(pd.to_numeric, errors="coerce")
 
     if update_loc is not None:
