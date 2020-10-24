@@ -1039,7 +1039,7 @@ def reserves_changes(update_loc: Union[str, PathLike, Engine,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'reserves_chg'
+    name : str, default 'reserves_changes'
         Either CSV filename for updating and/or saving, or table name if
         using SQL.
     index_label : str, default 'index'
@@ -1065,7 +1065,7 @@ def reserves_changes(update_loc: Union[str, PathLike, Engine,
     files = [month + str(year) for year in years for month in months]
     first_dates = list(pd.date_range(start="2013-01-01",
                                      periods=len(files), freq="MS"))
-    url = urls["reserves_chg"]["dl"]["main"]
+    url = urls["reserves_changes"]["dl"]["main"]
     links = [f"{url}{file}.xls" for file in files]
     wrong_may14 = f"{url}may2014.xls"
     fixed_may14 = f"{url}mayo2014.xls"
@@ -1108,7 +1108,7 @@ def reserves_changes(update_loc: Union[str, PathLike, Engine,
             print(f"{link} could not be reached.")
             pass
 
-    mar14 = pd.read_excel(urls["reserves_chg"]["dl"]["missing"], index_col=0)
+    mar14 = pd.read_excel(urls["reserves_changes"]["dl"]["missing"], index_col=0)
     mar14.columns = reserves_cols[1:46]
     reserves = pd.concat(reports + [mar14], sort=False).sort_index()
 

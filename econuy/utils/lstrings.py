@@ -880,7 +880,7 @@ urls = {"call":
                        "indirect": [
                            "https://www.rafap.com.uy/mvdcms/Institucional/UBI-uc89"],
                        "provider": ["República AFAP"]}},
-        "reserves_chg": {"dl": {
+        "reserves_changes": {"dl": {
             "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Informe%20Diario%20Pasivos%20Monetarios/infd_",
             "missing": "https://docs.google.com/spreadsheets/d/1tXwv8SaigbBrfBSSCVGBjSs88f3dgTq4nIANPn7vjYI/export?format=xlsx&authuser=0"},
             "source": {"direct": [],
