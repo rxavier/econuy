@@ -342,12 +342,6 @@ class Session(object):
                                                 save_loc=save_loc,
                                                 only_get=self.only_get,
                                                 **kwargs)
-        elif dataset == "containers":
-            output = external_sector.containers(update_loc=update_loc,
-                                                revise_rows=self.revise_rows,
-                                                save_loc=save_loc,
-                                                only_get=self.only_get,
-                                                **kwargs)
         elif dataset == "sovereign_risk":
             output = financial_sector.sovereign_risk(
                 update_loc=update_loc,
