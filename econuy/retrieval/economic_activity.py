@@ -1,6 +1,8 @@
 import datetime as dt
 import re
 import tempfile
+from pathlib import Path
+from io import BytesIO
 from os import PathLike, listdir, path
 from typing import Union, Dict
 from urllib.error import HTTPError, URLError
@@ -14,7 +16,7 @@ from pandas.tseries.offsets import MonthEnd
 from sqlalchemy.engine.base import Engine, Connection
 
 from econuy import transform
-from econuy.utils import ops, metadata
+from econuy.utils import ops, metadata, get_project_root
 from econuy.utils.lstrings import na_metadata, urls
 
 
@@ -281,9 +283,19 @@ def industrial_production(update_loc: Union[str, PathLike,
                          name=name, index_label=index_label)
         if not output.equals(pd.DataFrame()):
             return output
-
-    raw = pd.read_excel(urls["industrial_production"]["dl"]["main"],
-                        skiprows=4, usecols="B:EM")
+    try:
+        raw = pd.read_excel(urls["industrial_production"]["dl"]["main"],
+                            skiprows=4, usecols="B:EM")
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certificate = Path(get_project_root(), "utils", "files",
+                               "ine_certs.pem")
+            r = requests.get(urls["industrial_production"]["dl"]["main"],
+                             verify=certificate)
+            raw = pd.read_excel(BytesIO(r.content),
+                                    skiprows=4, usecols="B:EM")
+        else:
+            raise err
     proc = raw.dropna(how="any", subset=["Mes"]).dropna(thresh=100, axis=1)
     output = proc[~proc["Mes"].str.contains("Prom")].drop("Mes", axis=1)
     output.index = pd.date_range(start="2002-01-31", freq="M",
@@ -352,8 +364,19 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
     """
     data = industrial_production(update_loc=update_loc, save_loc=save_loc,
                                  only_get=only_get)
-    weights = pd.read_excel(urls["core_industrial"]["dl"]["weights"],
-                            skiprows=3).dropna(how="all")
+    try:
+        weights = pd.read_excel(urls["core_industrial"]["dl"]["weights"],
+                                skiprows=3).dropna(how="all")
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certificate = Path(get_project_root(), "utils", "files",
+                               "ine_certs.pem")
+            r = requests.get(urls["core_industrial"]["dl"]["weights"],
+                             verify=certificate)
+            weights = pd.read_excel(BytesIO(r.content),
+                                    skiprows=3).dropna(how="all")
+        else:
+            raise err
     weights = weights.rename(columns={"Unnamed: 5": "Pond. división",
                                       "Unnamed: 6": "Pond. agrupación",
                                       "Unnamed: 7": "Pond. clase"})

@@ -3,9 +3,12 @@ import warnings
 from os import PathLike
 from typing import Union
 from urllib.error import URLError, HTTPError
+from io import BytesIO
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import requests
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from scipy.stats import stats
@@ -13,7 +16,7 @@ from scipy.stats.mstats_basic import winsorize
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
-from econuy.utils import ops, metadata
+from econuy.utils import ops, metadata, get_project_root
 from econuy.utils.lstrings import urls, cpi_details
 
 
@@ -68,8 +71,19 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         if not output.equals(pd.DataFrame()):
             return output
 
-    cpi_raw = pd.read_excel(urls["cpi"]["dl"]["main"],
-                            skiprows=7).dropna(axis=0, thresh=2)
+    try:
+        cpi_raw = pd.read_excel(urls["cpi"]["dl"]["main"],
+                                skiprows=7).dropna(axis=0, thresh=2)
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certificate = Path(get_project_root(), "utils", "files",
+                               "ine_certs.pem")
+            r = requests.get(urls["cpi"]["dl"]["main"],
+                             verify=certificate)
+            cpi_raw = pd.read_excel(BytesIO(r.content),
+                                    skiprows=7).dropna(axis=0, thresh=2)
+        else:
+            raise err
     cpi = (cpi_raw.drop(["Mensual", "Acum.año", "Acum.12 meses"], axis=1).
            dropna(axis=0, how="all").set_index("Mes y año").rename_axis(None))
     cpi.columns = ["Índice de precios al consumo"]
@@ -148,9 +162,19 @@ def nxr_monthly(update_loc: Union[str, PathLike,
                          name=name, index_label=index_label)
         if not output.equals(pd.DataFrame()):
             return output
-
-    nxr_raw = pd.read_excel(urls["nxr_monthly"]["dl"]["main"],
-                            skiprows=4, index_col=0, usecols="A,C,F")
+    try:
+        nxr_raw = pd.read_excel(urls["nxr_monthly"]["dl"]["main"],
+                                skiprows=4, index_col=0, usecols="A,C,F")
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certificate = Path(get_project_root(), "utils", "files",
+                               "ine_certs.pem")
+            r = requests.get(urls["nxr_monthly"]["dl"]["main"],
+                             verify=certificate)
+            nxr_raw = pd.read_excel(BytesIO(r.content),
+                                    skiprows=4, index_col=0, usecols="A,C,F")
+        else:
+            raise err
     nxr = nxr_raw.dropna(how="any", axis=0)
     nxr.columns = ["Tipo de cambio venta, fin de período",
                    "Tipo de cambio venta, promedio"]
@@ -370,8 +394,32 @@ def cpi_measures(update_loc: Union[str, PathLike,
                          name=name, index_label=index_label)
         if not output.equals(pd.DataFrame()):
             return output
-
-    xls = pd.ExcelFile(urls["cpi_measures"]["dl"]["2010"])
+    try:
+        xls = pd.ExcelFile(urls["cpi_measures"]["dl"]["2010"])
+        prod_97 = (pd.read_excel(urls["cpi_measures"]["dl"]["1997"],
+                                 skiprows=5).dropna(how="any")
+                   .set_index(
+            "Rubros, Agrupaciones, Subrubros, Familias y Artículos")
+                   .T)
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certificate = Path(get_project_root(), "utils", "files",
+                               "ine_certs.pem")
+            r = requests.get(urls["cpi_measures"]["dl"]["2010"],
+                             verify=certificate)
+            xls = pd.ExcelFile(BytesIO(r.content))
+            r = requests.get(urls["cpi_measures"]["dl"]["1997"],
+                             verify=certificate)
+            prod_97 = (pd.read_excel(BytesIO(r.content),
+                                     skiprows=5).dropna(how="any")
+                       .set_index(
+                "Rubros, Agrupaciones, Subrubros, Familias y Artículos")
+                       .T)
+        else:
+            raise err
+    weights_97 = (pd.read_excel(urls["cpi_measures"]["dl"]["1997_weights"],
+                                index_col=0)
+                  .drop_duplicates(subset="Descripción", keep="first"))
     weights = pd.read_excel(xls, sheet_name=xls.sheet_names[0],
                             usecols="A:C", skiprows=14,
                             index_col=0).dropna(how="any")
@@ -399,14 +447,6 @@ def cpi_measures(update_loc: Union[str, PathLike,
     cpi_win = win.mul(weights_8.loc[:, "Weight"].T)
     cpi_win = cpi_win.sum(axis=1).add(1).cumprod().mul(100)
 
-    prod_97 = (pd.read_excel(urls["cpi_measures"]["dl"]["1997"],
-                             skiprows=5).dropna(how="any")
-               .set_index(
-        "Rubros, Agrupaciones, Subrubros, Familias y Artículos")
-        .T)
-    weights_97 = (pd.read_excel(urls["cpi_measures"]["dl"]["1997_weights"],
-                                index_col=0)
-                  .drop_duplicates(subset="Descripción", keep="first"))
     weights_97["Weight"] = (weights_97["Rubro"]
                             .fillna(
         weights_97["Agrupación, subrubro, familia"])

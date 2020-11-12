@@ -1,13 +1,16 @@
 from os import PathLike
+from pathlib import Path
+from io import BytesIO
 from typing import Union
 from urllib.error import URLError, HTTPError
 
 import pandas as pd
+import requests
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from sqlalchemy.engine.base import Connection, Engine
 
-from econuy.utils import ops, metadata
+from econuy.utils import ops, metadata, get_project_root
 from econuy.utils.lstrings import urls
 
 
@@ -63,10 +66,21 @@ def income_household(update_loc: Union[str, PathLike,
                          name=name, index_label=index_label)
         if not output.equals(pd.DataFrame()):
             return output
-
-    raw = pd.read_excel(urls["household_income"]["dl"]["main"],
-                        sheet_name="Mensual",
-                        skiprows=5, index_col=0).dropna(how="all")
+    try:
+        raw = pd.read_excel(urls["household_income"]["dl"]["main"],
+                            sheet_name="Mensual",
+                            skiprows=5, index_col=0).dropna(how="all")
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certificate = Path(get_project_root(), "utils", "files",
+                               "ine_certs.pem")
+            r = requests.get(urls["household_income"]["dl"]["main"],
+                             verify=certificate)
+            raw = pd.read_excel(BytesIO(r.content),
+                                sheet_name="Mensual",
+                                skiprows=5, index_col=0).dropna(how="all")
+        else:
+            raise err
     raw.index = pd.to_datetime(raw.index)
     output = raw.loc[~pd.isna(raw.index)]
     output.index = output.index + MonthEnd(0)
@@ -150,10 +164,21 @@ def income_capita(update_loc: Union[str, PathLike,
                          name=name, index_label=index_label)
         if not output.equals(pd.DataFrame()):
             return output
-
-    raw = pd.read_excel(urls["capita_income"]["dl"]["main"],
-                        sheet_name="Mensuall", skiprows=5,
-                        index_col=0).dropna(how="all")
+    try:
+        raw = pd.read_excel(urls["capita_income"]["dl"]["main"],
+                            sheet_name="Mensuall", skiprows=5,
+                            index_col=0).dropna(how="all")
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certificate = Path(get_project_root(), "utils", "files",
+                               "ine_certs.pem")
+            r = requests.get(urls["capita_income"]["dl"]["main"],
+                             verify=certificate)
+            raw = pd.read_excel(BytesIO(r.content),
+                                sheet_name="Mensuall", skiprows=5,
+                                index_col=0).dropna(how="all")
+        else:
+            raise err
     raw.index = pd.to_datetime(raw.index)
     output = raw.loc[~pd.isna(raw.index)]
     output.index = output.index + MonthEnd(0)
