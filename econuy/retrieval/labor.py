@@ -1,15 +1,17 @@
-import warnings
+from pathlib import Path
+from io import BytesIO
 from os import PathLike
 from typing import Union
 from urllib.error import URLError, HTTPError
 
 import pandas as pd
+import requests
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
-from econuy.utils import ops, metadata
+from econuy.utils import ops, metadata, get_project_root
 from econuy.utils.lstrings import urls
 
 
@@ -66,8 +68,19 @@ def labor_rates(update_loc: Union[str, PathLike,
         if not output.equals(pd.DataFrame()):
             return output
 
-    labor_raw = pd.read_excel(urls["labor"]["dl"]["main"],
-                              skiprows=39).dropna(axis=0, thresh=2)
+    try:
+        labor_raw = pd.read_excel(urls["labor"]["dl"]["main"],
+                                  skiprows=39).dropna(axis=0, thresh=2)
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certificate = Path(get_project_root(), "utils", "files",
+                               "ine_certs.pem")
+            r = requests.get(urls["labor"]["dl"]["main"],
+                             verify=certificate)
+            labor_raw = pd.read_excel(BytesIO(r.content),
+                                      skiprows=39).dropna(axis=0, thresh=2)
+        else:
+            raise err
     labor = labor_raw[~labor_raw["Unnamed: 0"].str.contains("-|/|Total",
                                                             regex=True)]
     labor.index = pd.date_range(start="2006-01-01",
@@ -156,12 +169,27 @@ def nominal_wages(update_loc: Union[str, PathLike,
                          name=name, index_label=index_label)
         if not output.equals(pd.DataFrame()):
             return output
+    try:
+        historical = pd.read_excel(urls["wages"]["dl"]["historical"],
+                                   skiprows=8, usecols="A:B")
+        current = pd.read_excel(urls["wages"]["dl"]["current"],
+                                skiprows=8, usecols="A,C:D")
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certificate = Path(get_project_root(), "utils", "files",
+                               "ine_certs.pem")
+            r = requests.get(urls["wages"]["dl"]["historical"],
+                             verify=certificate)
+            historical = pd.read_excel(BytesIO(r.content),
+                                       skiprows=8, usecols="A:B")
+            r = requests.get(urls["wages"]["dl"]["current"],
+                             verify=certificate)
+            current = pd.read_excel(BytesIO(r.content),
+                                    skiprows=8, usecols="A,C:D")
+        else:
+            raise err
 
-    historical = pd.read_excel(urls["wages"]["dl"]["historical"],
-                               skiprows=8, usecols="A:B")
     historical = historical.dropna(how="any").set_index("Unnamed: 0")
-    current = pd.read_excel(urls["wages"]["dl"]["current"],
-                            skiprows=8, usecols="A,C:D")
     current = current.dropna(how="any").set_index("Unnamed: 0")
     wages = pd.concat([historical, current], axis=1)
     wages.index = wages.index + MonthEnd(1)
@@ -242,8 +270,25 @@ def hours(update_loc: Union[str, PathLike,
         if not output.equals(pd.DataFrame()):
             return output
 
-    raw = pd.read_excel(urls["hours"]["dl"]["main"], sheet_name="Mensual",
-                        skiprows=5, index_col=0).dropna(how="all")
+    try:
+        raw = pd.read_excel(urls["hours"]["dl"]["main"], sheet_name="Mensual",
+                            skiprows=5, index_col=0).dropna(how="all")
+        prev_hours = pd.read_excel(urls["hours"]["dl"]["historical"], index_col=0,
+                                   skiprows=8).dropna(how="all").iloc[:, [0]]
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certificate = Path(get_project_root(), "utils", "files",
+                               "ine_certs.pem")
+            r = requests.get(urls["hours"]["dl"]["main"],
+                             verify=certificate)
+            raw = pd.read_excel(BytesIO(r.content), sheet_name="Mensual",
+                                skiprows=5, index_col=0).dropna(how="all")
+            r = requests.get(urls["hours"]["dl"]["historical"],
+                             verify=certificate)
+            prev_hours = pd.read_excel(BytesIO(r.content), index_col=0,
+                                       skiprows=8).dropna(how="all").iloc[:, [0]]
+        else:
+            raise err
     raw.index = pd.to_datetime(raw.index)
     output = raw.loc[~pd.isna(raw.index)]
     output.index = output.index + MonthEnd(0)
@@ -259,8 +304,6 @@ def hours(update_loc: Union[str, PathLike,
                       "Act. de hogares como empleadores",
                       "Agro, forestación, pesca y minería"]
 
-    prev_hours = pd.read_excel(urls["hours"]["dl"]["historical"], index_col=0,
-                               skiprows=8).dropna(how="all").iloc[:, [0]]
     prev_hours = prev_hours.loc[~prev_hours.index.str.contains("-|Total")]
     prev_hours.index = pd.date_range(start="2006-01-31", freq="M",
                                      periods=len(prev_hours))
@@ -337,15 +380,45 @@ def rates_people(update_loc: Union[str, PathLike, Engine,
     rates = labor_rates(update_loc=update_loc, only_get=only_get)
     rates = rates.loc[:, ["Tasa de actividad: total", "Tasa de empleo: total",
                           "Tasa de desempleo: total"]]
-    act_5000 = pd.read_excel(urls["rates_people"]["dl"]["act_5000"],
-                             sheet_name="Mensual", index_col=0, skiprows=8,
-                             usecols="A:B").dropna(how="any")
-    emp_5000 = pd.read_excel(urls["rates_people"]["dl"]["emp_5000"],
-                             sheet_name="Mensual", index_col=0, skiprows=8,
-                             usecols="A:B").dropna(how="any")
-    des_5000 = pd.read_excel(urls["rates_people"]["dl"]["des_5000"],
-                             sheet_name="Mensual", index_col=0, skiprows=7,
-                             usecols="A:B").dropna(how="any")
+    try:
+        act_5000 = pd.read_excel(urls["rates_people"]["dl"]["act_5000"],
+                                 sheet_name="Mensual", index_col=0, skiprows=8,
+                                 usecols="A:B").dropna(how="any")
+        emp_5000 = pd.read_excel(urls["rates_people"]["dl"]["emp_5000"],
+                                 sheet_name="Mensual", index_col=0, skiprows=8,
+                                 usecols="A:B").dropna(how="any")
+        des_5000 = pd.read_excel(urls["rates_people"]["dl"]["des_5000"],
+                                 sheet_name="Mensual", index_col=0, skiprows=7,
+                                 usecols="A:B").dropna(how="any")
+        working_age = pd.read_excel(urls["rates_people"]["dl"]["population"],
+                                    skiprows=7, index_col=0,
+                                    nrows=92).dropna(how="all")
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certificate = Path(get_project_root(), "utils", "files",
+                               "ine_certs.pem")
+            r = requests.get(urls["rates_people"]["dl"]["act_5000"],
+                             verify=certificate)
+            act_5000 = pd.read_excel(BytesIO(r.content), sheet_name="Mensual",
+                                     index_col=0, skiprows=8,
+                                     usecols="A:B").dropna(how="any")
+            r = requests.get(urls["rates_people"]["dl"]["emp_5000"],
+                             verify=certificate)
+            emp_5000 = pd.read_excel(BytesIO(r.content), sheet_name="Mensual",
+                                     index_col=0, skiprows=8,
+                                     usecols="A:B").dropna(how="any")
+            r = requests.get(urls["rates_people"]["dl"]["des_5000"],
+                             verify=certificate)
+            des_5000 = pd.read_excel(BytesIO(r.content), sheet_name="Mensual",
+                                     index_col=0, skiprows=7,
+                                     usecols="A:B").dropna(how="any")
+            r = requests.get(urls["rates_people"]["dl"]["population"],
+                             verify=certificate)
+            working_age = pd.read_excel(BytesIO(r.content),
+                                        skiprows=7, index_col=0,
+                                        nrows=92).dropna(how="all")
+        else:
+            raise err
     for df in [act_5000, emp_5000, des_5000]:
         df.index = df.index + MonthEnd(0)
     rates_5000 = pd.concat([act_5000, emp_5000, des_5000], axis=1)
@@ -356,9 +429,6 @@ def rates_people(update_loc: Union[str, PathLike, Engine,
                                                                  ""),
                              level=0, inplace=True)
 
-    working_age = pd.read_excel(urls["rates_people"]["dl"]["population"],
-                                skiprows=7, index_col=0,
-                                nrows=92).dropna(how="all")
     ages = list(range(14, 90)) + ["90 y más"]
     working_age = working_age.loc[ages].sum()
     working_age.index = pd.date_range(start="1996-06-30", end="2050-06-30",

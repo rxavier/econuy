@@ -23,8 +23,6 @@ original = {"naccounts": "Cuentas nacionales (demanda precios constantes, "
             "trade": "Comercio internacional de bienes (exportaciones e "
                      "importaciones por origen, destino, sector, valor, "
                      "volumen y precio)",
-            "containers": "Movimiento de contenedores en el Puerto de "
-                          "Montevideo",
             "rxr_official": "Tipos de cambio reales BCU",
             "reserves": "Reservas internacionales",
             "reserves_changes": "Cambio en las reservas internacionales del BCU",

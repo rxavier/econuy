@@ -1,10 +1,11 @@
 <img src="https://i.imgur.com/o6cxmaP.jpg" width=400 style="margin-bottom:60px;">
 
-  <a href="https://www.python.org/downloads/release/python-360/"><img src="https://img.shields.io/badge/python-=>3.6-blue.svg"></a>
-  <a href="https://badge.fury.io/py/econuy"><img src="https://badge.fury.io/py/econuy.svg"></a>
-  <a href="https://travis-ci.org/rxavier/econuy"><img src="https://travis-ci.org/rxavier/econuy.svg?branch=master"></a>
-  <a href="https://codecov.io/gh/rxavier/econuy"><img src="https://codecov.io/gh/rxavier/econuy/branch/master/graph/badge.svg"></a>
+  <a href="https://www.python.org/downloads/release/python-360/"><img src="https://img.shields.io/pypi/pyversions/econuy"></a>
+  <a href="https://img.shields.io/pypi/l/econuy"><img src="https://img.shields.io/pypi/l/econuy"></a>
+  <a href="https://pypi.org/project/econuy/"><img src="https://img.shields.io/pypi/v/econuy"></a>
+  <a href="https://travis-ci.com/rxavier/econuy"><img src="https://travis-ci.com/rxavier/econuy.svg?branch=master"></a>
   <a href="https://econuy.readthedocs.io/en/latest/?badge=latest"><img src="https://readthedocs.org/projects/econuy/badge/?version=latest"></a>
+  <a href="https://codecov.io/gh/rxavier/econuy"><img src="https://codecov.io/gh/rxavier/econuy/branch/master/graph/badge.svg"></a>
 
 
 This project simplifies gathering and processing of Uruguayan economic statistics. Data is retrieved from (mostly) government sources and can be transformed in several ways (converting to dollars, calculating rolling averages, resampling to other frequencies, etc.).

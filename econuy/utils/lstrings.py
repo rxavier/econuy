@@ -861,12 +861,6 @@ urls = {"call":
                        "indirect": [
                            "http://www.ciu.com.uy/innovaportal/v/83062/9/innova.front/series-de-ventas-mensuales-por-destino.html"],
                        "provider": ["AFCPU y CIU"]}},
-        "containers": {"dl": {
-            "main": "http://www.anp.com.uy/inicio/institucional/cifras/montevideo/estadisticas/contenedores/contenedores_movilizados/"},
-            "source": {"direct": [],
-                       "indirect": [
-                           "http://www.anp.com.uy/inicio/institucional/cifras/montevideo/estadisticas/contenedores/contenedores_movilizados/"],
-                       "provider": ["ANP"]}},
         "consumer_confidence": {"dl": {
             "main": "https://ucu.edu.uy/sites/default/files/facultad/fce/i_competitividad/serie_icc_-_agosto_20.xlsx"},
             "source": {"direct": ["https://ucu.edu.uy/sites/default/files/facultad/fce/i_competitividad/serie_icc_-_agosto_20.xlsx"],

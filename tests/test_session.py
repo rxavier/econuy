@@ -296,17 +296,6 @@ def test_confidence():
     remove_clutter()
 
 
-def test_containers():
-    remove_clutter()
-    session = Session(location=TEST_CON)
-    assert isinstance(session, Session)
-    assert isinstance(session.dataset, pd.DataFrame)
-    cement = session.get(dataset="containers").dataset
-    assert cement.index[0] == dt.datetime(2007, 1, 31)
-    assert len(cement.columns) == 11
-    remove_clutter()
-
-
 def test_bond_index():
     remove_clutter()
     session = Session(location=TEST_CON)
