@@ -307,6 +307,61 @@ def test_bond_index():
     remove_clutter()
 
 
+def test_global_gdp():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    global_gdp = session.get_custom(dataset="global_gdp").dataset
+    assert global_gdp.index[0] == dt.datetime(1947, 3, 31)
+    assert len(global_gdp.columns) == 4
+    remove_clutter()
+
+
+def test_global_stocks():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    stocks = session.get_custom(dataset="global_stocks").dataset
+    assert stocks.index[0] == dt.datetime(1927, 12, 30)
+    assert len(stocks.columns) == 4
+    remove_clutter()
+
+
+def test_global_policy_rates():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    policy = session.get_custom(dataset="global_policy_rates").dataset
+    assert policy.index[0] == dt.datetime(1946, 1, 1)
+    assert len(policy.columns) == 4
+    remove_clutter()
+
+
+def test_global_long_rates():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    long = session.get_custom(dataset="global_long_rates").dataset
+    assert long.index[0] == dt.datetime(1962, 1, 2)
+    assert len(long.columns) == 8
+    remove_clutter()
+
+
+def test_global_currencies():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    currencies = session.get_custom(dataset="global_currencies").dataset
+    assert currencies.index[0] == dt.datetime(1971, 1, 4)
+    assert len(currencies.columns) == 4
+    remove_clutter()
+
+
 def test_trade():
     remove_clutter()
     session = Session(location=TEST_CON)

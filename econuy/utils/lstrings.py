@@ -1041,15 +1041,59 @@ urls = {"call":
             "provider": [
                             "Estimaciones de econuy en base a BCU"]}},
         "core_industrial": {"dl": {
-            "main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181",
-            "weights": "http://www.ine.gub.uy/c/document_library/get_file?uuid=864b4bc2-626d-49ab-82ef-1bcf08360da1&groupId=10181"},
-            "source": {"direct": [
-                "http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181",
-                "http://www.ine.gub.uy/c/document_library/get_file?uuid=1768051c-5b85-42ea-8340-b8b44ee2948c&groupId=10181"],
+        "main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181",
+        "weights": "http://www.ine.gub.uy/c/document_library/get_file?uuid=864b4bc2-626d-49ab-82ef-1bcf08360da1&groupId=10181"},
+        "source": {"direct": [
+            "http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181",
+            "http://www.ine.gub.uy/c/document_library/get_file?uuid=1768051c-5b85-42ea-8340-b8b44ee2948c&groupId=10181"],
             "indirect": [
                 "http://www.ine.gub.uy/web/guest/industria-manufacturera"],
             "provider": [
-                "Estimaciones de econuy en base a INE"]}}}
+                "Estimaciones de econuy en base a INE"]}},
+        "global_gdp": {"dl": {
+            "fred": "https://api.stlouisfed.org/fred/series/observations?series_id=",
+            "chn_oecd": "https://stats.oecd.org/SDMX-JSON/data/QNA/CHN.B1_GE.GYSA+GPSA.Q/all?startTime=1960-Q1&endTime=",
+            "chn_obs": "https://docs.google.com/spreadsheets/d/1JwHqYSyBCOj9E60X0JCnPIn4WEzfu6rcPN8Xg76AhyU/export?format=xlsx&authuser=0"},
+            "source": {"direct": [],
+                "indirect": ["https://fred.stlouisfed.org/",
+                             "https://stats.oecd.org/Index.aspx",
+                             "https://data.stats.gov.cn/english/easyquery.htm?cn=B01"],
+                "provider": ["FRB St. Louis", "OECD",
+                             "NBS China"]}},
+        "global_stocks": {"dl": {
+            "spy": f"https://query1.finance.yahoo.com/v7/finance/download/%5EGSPC?period1=-1325635200&period2={dt.datetime.now().timestamp().__round__()}&interval=1d&events=history&includeAdjustedClose=true",
+            "n100": f"https://query1.finance.yahoo.com/v7/finance/download/%5EN100?period1=946598400&period2={dt.datetime.now().timestamp().__round__()}&interval=1d&events=history&includeAdjustedClose=true",
+            "sse": f"https://query1.finance.yahoo.com/v7/finance/download/000001.SS?period1=867715200&period2={dt.datetime.now().timestamp().__round__()}&interval=1d&events=history&includeAdjustedClose=true",
+            "nikkei": f"https://query1.finance.yahoo.com/v7/finance/download/%5EN225?period1=-157507200&period2={dt.datetime.now().timestamp().__round__()}&interval=1d&events=history&includeAdjustedClose=true"},
+            "source": {"direct": [],
+                       "indirect": ["https://finance.yahoo.com/quote/%5EGSPC/history/",
+                                    "https://finance.yahoo.com/quote/%5EN100/history/",
+                                    "https://finance.yahoo.com/quote/000001.SS/history/",
+                                    "https://finance.yahoo.com/quote/%5EN225/history/"],
+                       "provider": ["Yahoo Finance"]}},
+        "global_policy_rates": {"dl": {
+            "main": "https://www.bis.org/statistics/full_webstats_cbpol_d_dataflow_csv_row.zip"},
+            "source": {"direct": ["https://www.bis.org/statistics/full_webstats_cbpol_d_dataflow_csv_row.zip"],
+                       "indirect": ["https://www.bis.org/statistics/cbpol.htm"],
+                       "provider": ["BIS"]}},
+        "global_long_rates": {"dl": {
+            "main": "https://www.investing.com/instruments/HistoricalDataAjax",
+            "fred": "https://api.stlouisfed.org/fred/series/observations?series_id="},
+            "source": {"direct": [],
+                       "indirect": ["https://fred.stlouisfed.org/series/DGS10",
+                                    "https://www.investing.com/rates-bonds/government-bond-spreads"],
+                       "provider": ["FRB St. Louis", "Investing.com"]}},
+        "global_currencies": {"dl": {
+            "dollar": f"https://query1.finance.yahoo.com/v7/finance/download/DX-Y.NYB?period1=31795200&period2={dt.datetime.now().timestamp().__round__()}&interval=1d&events=history&includeAdjustedClose=true",
+            "eur": f"https://query1.finance.yahoo.com/v7/finance/download/USDEUR=X?period1=1070150400&period2={dt.datetime.now().timestamp().__round__()}&interval=1d&events=history&includeAdjustedClose=true",
+            "jpy": f"https://query1.finance.yahoo.com/v7/finance/download/USDJPY=X?period1=846547200&period2={dt.datetime.now().timestamp().__round__()}&interval=1d&events=history&includeAdjustedClose=true",
+            "cny": f"https://query1.finance.yahoo.com/v7/finance/download/USDCNY=X?period1=991180800&period2={dt.datetime.now().timestamp().__round__()}&interval=1d&events=history&includeAdjustedClose=true"},
+            "source": {"direct": [],
+                       "indirect": ["https://finance.yahoo.com/quote/DX-Y.NYB?/history/",
+                                    "https://finance.yahoo.com/quote/USDEUR=X/history/",
+                                    "https://finance.yahoo.com/quote/USDJPY=X/history/",
+                                    "https://finance.yahoo.com/quote/USDCNY=X/history/"],
+                       "provider": ["Yahoo Finance"]}}}
 
 fiscal_sheets = {
     "Sector Público No Monetario":
@@ -1480,3 +1524,13 @@ taxes_columns = ['IRAE - Rentas de Actividades Económicas',
                  'IMAGRO - Actividades Agropecuaria',
                  'Impuesto de Educación Primaria',
                  'Recaudación Total de la DGI']
+
+investing_headers = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) "
+                  "AppleWebKit/537.36 (KHTML, like Gecko) "
+                  "Chrome/86.0.4240.111 Safari/537.36",
+    "X-Requested-With": "XMLHttpRequest",
+    "Accept": "text/html",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+}

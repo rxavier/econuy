@@ -9,7 +9,8 @@ from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
 from econuy.retrieval import (prices, fiscal_accounts, economic_activity,
-                              labor, external_sector, financial_sector, income)
+                              labor, external_sector, financial_sector, income,
+                              international)
 from econuy.utils import logutil, ops
 
 
@@ -125,14 +126,7 @@ class Session(object):
 
         Parameters
         ----------
-        dataset : {'cpi', 'nxr_monthly', 'nxr_daily', 'fiscal', \
-                'public_debt', 'naccounts', 'labor', 'wages', 'rxr_official', \
-                'reserves', 'reserves_changes', 'trade', \
-                'industrial_production', 'call', 'deposits', \
-                'credit', 'rates', 'taxes', 'diesel', 'gasoline', \
-                'electricity', 'household_income', 'capita_income', 'hours', \
-                'cattle', 'milk', 'cement', 'consumer_confidence', \
-                'containers', 'bond_index'}
+        dataset : str, see available options in datasets.py
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -367,9 +361,7 @@ class Session(object):
 
         Parameters
         ----------
-        dataset : {'cpi_measures', 'fiscal', 'labor', 'real_wages', \
-                'net_trade', 'tot', 'net_public_debt', 'commodity_index', \
-                'rxr_custom', 'core_industrial', 'bonds'}
+        dataset : str, see available options in datasets.py
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -456,6 +448,36 @@ class Session(object):
                                             save_loc=save_loc,
                                             only_get=self.only_get,
                                             **kwargs)
+        elif dataset == "global_gdp":
+            output = international.gdp(update_loc=update_loc,
+                                       revise_rows=self.revise_rows,
+                                       save_loc=save_loc,
+                                       only_get=self.only_get,
+                                       **kwargs)
+        elif dataset == "global_stocks":
+            output = international.stocks(update_loc=update_loc,
+                                          revise_rows=self.revise_rows,
+                                          save_loc=save_loc,
+                                          only_get=self.only_get,
+                                          **kwargs)
+        elif dataset == "global_policy_rates":
+            output = international.policy_rates(update_loc=update_loc,
+                                                revise_rows=self.revise_rows,
+                                                save_loc=save_loc,
+                                                only_get=self.only_get,
+                                                **kwargs)
+        elif dataset == "global_long_rates":
+            output = international.long_rates(update_loc=update_loc,
+                                              revise_rows=self.revise_rows,
+                                              save_loc=save_loc,
+                                              only_get=self.only_get,
+                                              **kwargs)
+        elif dataset == "global_currencies":
+            output = international.currencies(update_loc=update_loc,
+                                              revise_rows=self.revise_rows,
+                                              save_loc=save_loc,
+                                              only_get=self.only_get,
+                                              **kwargs)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 
