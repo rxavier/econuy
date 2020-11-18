@@ -34,7 +34,4 @@ deploy:
   on:
     tags: true
     branch: master
-  edge:
-    source: 'native-api/dpl'
-    branch: 'pip_fix_upgrade_deps'
   distributions: "sdist bdist_wheel"
