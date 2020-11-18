@@ -52,4 +52,15 @@ custom = {"core_industrial": "Producción industrial total, sin refinería y "
           "commodity_index": "Índice de precios de materias primas",
           "rxr_custom": "Tipos de cambio reales vs. EE.UU., Argentina y "
                         "Brasil",
-          "bonds": "Rendimiento de bonos soberanos en USD, UI y pesos"}
+          "bonds": "Rendimiento de bonos soberanos en USD, UI y pesos",
+          "global_gdp": "PBI real desestacionalizado de Estados Unidos,"
+                        "Unión Europea, Japón y China",
+          "global_stocks": "Índices bursátiles (S&P 500, Euronext 100, Nikkei"
+                           "225 y Shanghai Composite",
+          "global_policy_rates": "Tasas de política monetaria de Estados "
+                                 "Unidos, Eurozona, Japón y China",
+          "global_long_rates": "Tasas de bonos soberanos a 10 años de Estados "
+                               "Unidos, Alemania, Francia, Italia, España, "
+                               "Reino unido, Japón y China",
+          "global_currencies": "Cotización de monedas de Estados Unidos "
+                               "(dollar index), USDUER, USDJPY y USDCNY"}
