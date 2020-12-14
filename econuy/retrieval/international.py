@@ -518,7 +518,7 @@ def currencies(update_loc: Union[str, PathLike, Engine, Connection, None] = None
                   ts_type="-", cumperiods=1)
     metadata._modify_multiindex(output, levels=[3, 5],
                                 new_arrays=[["USD", "EUR", "JPY", "CNY"],
-                                            ["USD/Otros", "USD/EUR", "JPY/USD",
+                                            ["Canasta/USD", "EUR/USD", "JPY/USD",
                                              "CNY/USD"]])
 
     if save_loc is not None:
