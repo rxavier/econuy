@@ -56,11 +56,11 @@ custom = {"core_industrial": "Producción industrial total, sin refinería y "
           "global_gdp": "PBI real desestacionalizado de Estados Unidos,"
                         "Unión Europea, Japón y China",
           "global_stocks": "Índices bursátiles (S&P 500, Euronext 100, Nikkei"
-                           "225 y Shanghai Composite",
+                           "225 y Shanghai Composite)",
           "global_policy_rates": "Tasas de política monetaria de Estados "
                                  "Unidos, Eurozona, Japón y China",
           "global_long_rates": "Tasas de bonos soberanos a 10 años de Estados "
                                "Unidos, Alemania, Francia, Italia, España, "
                                "Reino unido, Japón y China",
-          "global_currencies": "Cotización de monedas de Estados Unidos "
-                               "(dollar index), USDUER, USDJPY y USDCNY"}
+          "global_nxr": "Cotización de monedas de Estados Unidos "
+                               "(dollar index), USDUER, USDJPY y USDCNY",

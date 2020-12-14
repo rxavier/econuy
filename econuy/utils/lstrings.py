@@ -1083,7 +1083,7 @@ urls = {"call":
                        "indirect": ["https://fred.stlouisfed.org/series/DGS10",
                                     "https://www.investing.com/rates-bonds/government-bond-spreads"],
                        "provider": ["FRB St. Louis", "Investing.com"]}},
-        "global_currencies": {"dl": {
+        "global_nxr": {"dl": {
             "dollar": f"https://query1.finance.yahoo.com/v7/finance/download/DX-Y.NYB?period1=31795200&period2={dt.datetime.now().timestamp().__round__()}&interval=1d&events=history&includeAdjustedClose=true",
             "eur": f"https://query1.finance.yahoo.com/v7/finance/download/USDEUR=X?period1=1070150400&period2={dt.datetime.now().timestamp().__round__()}&interval=1d&events=history&includeAdjustedClose=true",
             "jpy": f"https://query1.finance.yahoo.com/v7/finance/download/USDJPY=X?period1=846547200&period2={dt.datetime.now().timestamp().__round__()}&interval=1d&events=history&includeAdjustedClose=true",

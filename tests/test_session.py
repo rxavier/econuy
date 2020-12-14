@@ -351,12 +351,12 @@ def test_global_long_rates():
     remove_clutter()
 
 
-def test_global_currencies():
+def test_global_nxr():
     remove_clutter()
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    currencies = session.get_custom(dataset="global_currencies").dataset
+    currencies = session.get_custom(dataset="global_nxr").dataset
     assert currencies.index[0] == dt.datetime(1971, 1, 4)
     assert len(currencies.columns) == 4
     remove_clutter()
