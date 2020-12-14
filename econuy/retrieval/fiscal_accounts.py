@@ -449,7 +449,7 @@ def net_public_debt(update_loc: Union[str, PathLike, Engine,
         Label for SQL indexes.
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
-        ``update_loc`` for the commodity index.
+        ``update_loc``.
 
     Returns
     -------
@@ -514,7 +514,7 @@ def balance_fss(update_loc: Union[str, PathLike, Engine,
         Label for SQL indexes.
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
-        ``update_loc`` for the commodity index.
+        ``update_loc``.
 
     Returns
     -------
