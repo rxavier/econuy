@@ -473,11 +473,11 @@ class Session(object):
                                               only_get=self.only_get,
                                               **kwargs)
         elif dataset == "global_currencies":
-            output = international.currencies(update_loc=update_loc,
-                                              revise_rows=self.revise_rows,
-                                              save_loc=save_loc,
-                                              only_get=self.only_get,
-                                              **kwargs)
+            output = international.nxr(update_loc=update_loc,
+                                       revise_rows=self.revise_rows,
+                                       save_loc=save_loc,
+                                       only_get=self.only_get,
+                                       **kwargs)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 

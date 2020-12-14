@@ -445,12 +445,12 @@ def long_rates(
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def currencies(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-           revise_rows: Union[str, int] = "nodup",
-           save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-           name: str = "global_currencies",
-           index_label: str = "index",
-           only_get: bool = False) -> pd.DataFrame:
+def nxr(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
+        revise_rows: Union[str, int] = "nodup",
+        save_loc: Union[str, PathLike, Engine, Connection, None] = None,
+        name: str = "global_currencies",
+        index_label: str = "index",
+        only_get: bool = False) -> pd.DataFrame:
     """Get currencies data.
 
     Selected currencies are the US dollar index, USDEUR, USDJPY and USDCNY.
