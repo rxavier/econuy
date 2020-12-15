@@ -11,7 +11,7 @@ __pycache__/
 
 econuy/econuy-data/
 
-econuy/utils/x13as
+econuy/utils/x13as*
 
 econuy.egg-info/
 
