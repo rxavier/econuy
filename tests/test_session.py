@@ -363,6 +363,105 @@ def test_global_nxr():
     remove_clutter()
 
 
+def test_regional_gdp():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    gdp = session.get_custom(dataset="regional_gdp").dataset
+    assert gdp.index[0] == dt.datetime(1993, 3, 31)
+    assert len(gdp.columns) == 2
+    remove_clutter()
+
+
+def test_regional_monthly_gdp():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    gdp = session.get_custom(dataset="regional_monthly_gdp").dataset
+    assert gdp.index[0] == dt.datetime(2003, 1, 31)
+    assert len(gdp.columns) == 2
+    remove_clutter()
+
+
+def test_regional_cpi():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    cpi = session.get_custom(dataset="regional_cpi").dataset
+    assert cpi.index[0] == dt.datetime(1970, 1, 31)
+    assert len(cpi.columns) == 2
+    remove_clutter()
+
+
+def test_regional_embi_spreads():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    spreads = session.get_custom(dataset="regional_embi_spreads").dataset
+    assert spreads.index[0] == dt.datetime(1998, 12, 11)
+    assert len(spreads.columns) == 3
+    remove_clutter()
+
+
+def test_regional_embi_yields():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    yields = session.get_custom(dataset="regional_embi_yields").dataset
+    assert yields.index[0] == dt.datetime(1998, 12, 11)
+    assert len(yields.columns) == 3
+    remove_clutter()
+
+
+def test_regional_nxr():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    nxr = session.get_custom(dataset="regional_nxr").dataset
+    assert nxr.index[0] == dt.datetime(2002, 4, 9)
+    assert len(nxr.columns) == 3
+    remove_clutter()
+
+
+def test_regional_rxr():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    rxr = session.get_custom(dataset="regional_rxr").dataset
+    assert rxr.index[0] == dt.datetime(1970, 1, 31)
+    assert len(rxr.columns) == 2
+    remove_clutter()
+
+
+def test_regional_policy_rates():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    policy = session.get_custom(dataset="regional_policy_rates").dataset
+    assert policy.index[0] == dt.datetime(1986, 6, 4)
+    assert len(policy.columns) == 2
+    remove_clutter()
+
+
+def test_regional_stocks():
+    remove_clutter()
+    session = Session(location=TEST_CON)
+    assert isinstance(session, Session)
+    assert isinstance(session.dataset, pd.DataFrame)
+    stocks = session.get_custom(dataset="regional_stocks").dataset
+    assert stocks.index[0] == dt.datetime(2002, 4, 9)
+    assert len(stocks.columns) == 2
+    remove_clutter()
+
+
 def test_trade():
     remove_clutter()
     session = Session(location=TEST_CON)

@@ -38,6 +38,14 @@ Data retrieval functions
    :members:
    :undoc-members:
    :show-inheritance:
+.. automodule:: econuy.retrieval.international
+   :members:
+   :undoc-members:
+   :show-inheritance:
+.. automodule:: econuy.retrieval.regional
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Transformation functions
 ------------------------

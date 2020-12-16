@@ -10,7 +10,7 @@ from sqlalchemy.engine.base import Connection, Engine
 from econuy import transform
 from econuy.retrieval import (prices, fiscal_accounts, economic_activity,
                               labor, external_sector, financial_sector, income,
-                              international)
+                              international, regional)
 from econuy.utils import logutil, ops
 
 
@@ -478,6 +478,60 @@ class Session(object):
                                        save_loc=save_loc,
                                        only_get=self.only_get,
                                        **kwargs)
+        elif dataset == "regional_gdp":
+            output = regional.gdp(update_loc=update_loc,
+                                  revise_rows=self.revise_rows,
+                                  save_loc=save_loc,
+                                  only_get=self.only_get,
+                                  **kwargs)
+        elif dataset == "regional_monthly_gdp":
+            output = regional.monthly_gdp(update_loc=update_loc,
+                                          revise_rows=self.revise_rows,
+                                          save_loc=save_loc,
+                                          only_get=self.only_get,
+                                          **kwargs)
+        elif dataset == "regional_cpi":
+            output = regional.cpi(update_loc=update_loc,
+                                  revise_rows=self.revise_rows,
+                                  save_loc=save_loc,
+                                  only_get=self.only_get,
+                                  **kwargs)
+        elif dataset == "regional_nxr":
+            output = regional.nxr(update_loc=update_loc,
+                                  revise_rows=self.revise_rows,
+                                  save_loc=save_loc,
+                                  only_get=self.only_get,
+                                  **kwargs)
+        elif dataset == "regional_embi_spreads":
+            output = regional.embi_spreads(update_loc=update_loc,
+                                           revise_rows=self.revise_rows,
+                                           save_loc=save_loc,
+                                           only_get=self.only_get,
+                                           **kwargs)
+        elif dataset == "regional_embi_yields":
+            output = regional.embi_yields(update_loc=update_loc,
+                                          revise_rows=self.revise_rows,
+                                          save_loc=save_loc,
+                                          only_get=self.only_get,
+                                          **kwargs)
+        elif dataset == "regional_policy_rates":
+            output = regional.policy_rates(update_loc=update_loc,
+                                           revise_rows=self.revise_rows,
+                                           save_loc=save_loc,
+                                           only_get=self.only_get,
+                                           **kwargs)
+        elif dataset == "regional_stocks":
+            output = regional.stocks(update_loc=update_loc,
+                                     revise_rows=self.revise_rows,
+                                     save_loc=save_loc,
+                                     only_get=self.only_get,
+                                     **kwargs)
+        elif dataset == "regional_rxr":
+            output = regional.rxr(update_loc=update_loc,
+                                  revise_rows=self.revise_rows,
+                                  save_loc=save_loc,
+                                  only_get=self.only_get,
+                                  **kwargs)
         else:
             raise ValueError("Invalid keyword for 'dataset' parameter.")
 
