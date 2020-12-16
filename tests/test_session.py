@@ -1,3 +1,4 @@
+import logging
 import shutil
 import datetime as dt
 from os import listdir, remove, path
@@ -473,23 +474,25 @@ def test_save():
 def test_logging(caplog):
     remove_clutter()
     caplog.clear()
-    Session(location=TEST_DIR, log="test")
-    assert path.isfile(path.join(TEST_DIR, "test.log"))
-    remove_clutter()
+    s = Session(location=TEST_DIR, log="test")
+    test_path = path.join(TEST_DIR, "test.log")
+    assert path.isfile(test_path)
+    logging.shutdown()
     caplog.clear()
-    Session(location=TEST_DIR, log=2)
-    assert path.isfile(path.join(TEST_DIR, "info.log"))
-    remove_clutter()
+    s = Session(location=TEST_DIR, log=2)
+    info_path = path.join(TEST_DIR, "info.log")
+    assert path.isfile(info_path)
+    logging.shutdown()
     caplog.clear()
     with pytest.raises(ValueError):
         Session(location=TEST_DIR, log=5)
-    remove_clutter()
     caplog.clear()
+    remove_clutter()
     Session(location=TEST_DIR, log=1)
     assert "Logging method: console" in caplog.text
     assert "Logging method: console and file" not in caplog.text
     assert not path.isfile(path.join(TEST_DIR, "info.log"))
     caplog.clear()
-    remove_clutter()
     Session(location=TEST_DIR, log=0)
     assert caplog.text == ""
+    logging.shutdown()
