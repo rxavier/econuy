@@ -21,7 +21,7 @@ from requests import exceptions
 from sqlalchemy.engine.base import Engine, Connection
 
 from econuy import transform
-from econuy.retrieval import prices
+from econuy.retrieval import prices, regional
 from econuy.utils import ops, metadata
 from econuy.utils.lstrings import trade_metadata, urls, reserves_cols
 
@@ -664,7 +664,6 @@ def rxr_custom(update_loc: Union[str, PathLike, Engine,
                index_label: str = "index",
                only_get: bool = False) -> pd.DataFrame:
     """Get custom real exchange rates vis-à-vis the US, Argentina and Brazil.
-    Include Argentina and Brazil vis-à-vis the US.
 
     Parameters
     ----------
@@ -705,67 +704,31 @@ def rxr_custom(update_loc: Union[str, PathLike, Engine,
         if not output.equals(pd.DataFrame()):
             return output
 
-    url_ = "http://dataservices.imf.org/REST/SDMX_JSON.svc/CompactData/IFS/M."
-    url_extra = ".?startPeriod=1970&endPeriod="
-    raw = []
-    for country in ["US", "BR", "AR"]:
-        for indicator in ["PCPI_IX", "ENDA_XDC_USD_RATE"]:
-            base_url = (f"{url_}{country}.{indicator}{url_extra}"
-                        f"{dt.datetime.now().year}")
-            r_json = requests.get(base_url).json()
-            data = r_json["CompactData"]["DataSet"]["Series"]["Obs"]
-            try:
-                data = pd.DataFrame(data)
-                data.set_index("@TIME_PERIOD", drop=True, inplace=True)
-            except ValueError:
-                data = pd.DataFrame(np.nan,
-                                    index=pd.date_range(start="1970-01-01",
-                                                        end=dt.datetime.now(),
-                                                        freq="M"),
-                                    columns=[f"{country}.{indicator}"])
-            if "@OBS_STATUS" in data.columns:
-                data.drop("@OBS_STATUS", inplace=True, axis=1)
-            data.index = (pd.to_datetime(data.index, format="%Y-%m")
-                          + MonthEnd(1))
-            data.columns = [f"{country}.{indicator}"]
-            raw.append(data)
-    raw = pd.concat(raw, axis=1, sort=True).apply(pd.to_numeric)
-
-    ar_black_xr, ar_cpi = _missing_ar()
-    proc = raw.copy()
-    proc["AR.PCPI_IX"] = ar_cpi
-    ar_black_xr = pd.concat([ar_black_xr, proc["AR.ENDA_XDC_USD_RATE"]],
-                            axis=1)
-    ar_black_xr[0] = np.where(pd.isna(ar_black_xr[0]),
-                              ar_black_xr["AR.ENDA_XDC_USD_RATE"],
-                              ar_black_xr[0])
-    proc["AR.ENDA_XDC_USD_RATE_black"] = ar_black_xr.iloc[:, 0]
-    proc["AR_E_A"] = proc.iloc[:, [5, 6]].mean(axis=1)
+    ifs = regional._ifs(update_loc=update_loc, save_loc=save_loc,
+                        only_get=only_get)
 
     uy_cpi = prices.cpi(update_loc=update_loc, save_loc=save_loc,
                         only_get=True)
     uy_e = prices.nxr_monthly(update_loc=update_loc, save_loc=save_loc,
                               only_get=True).iloc[:, [1]]
-    proc = pd.concat([proc, uy_cpi, uy_e], axis=1)
+    proc = pd.concat([ifs, uy_cpi, uy_e], axis=1)
     proc = proc.interpolate(method="linear", limit_area="inside")
-    proc = proc.dropna(how="any")
-    proc.columns = ["US_P", "US_E", "BR_P", "BR_E", "AR_P", "AR_E",
-                    "AR_E_B", "AR_E_A", "UY_P", "UY_E"]
+    proc = proc.dropna(how="all")
+    proc.columns = ["AR_E_O", "AR_E_U", "BR_E", "AR_P", "BR_P", "US_P",
+                    "UY_P", "UY_E"]
 
     output = pd.DataFrame()
     output["UY_E_P"] = proc["UY_E"] / proc["UY_P"]
-    output["Tipo de cambio real: Uruguay-Argentina"] = output["UY_E_P"] / proc[
-        "AR_E_A"] * proc["AR_P"]
-    output["Tipo de cambio real: Uruguay-Brasil"] = output["UY_E_P"] / proc[
+    output["Uruguay-Argentina oficial"] = output["UY_E_P"] / proc[
+        "AR_E_O"] * proc["AR_P"]
+    output["Uruguay-Argentina informal"] = output["UY_E_P"] / proc[
+        "AR_E_U"] * proc["AR_P"]
+    output["Uruguay-Brasil"] = output["UY_E_P"] / proc[
         "BR_E"] * proc["BR_P"]
-    output["Tipo de cambio real: Uruguay-EE.UU."] = output["UY_E_P"] * proc[
+    output["Uruguay-EE.UU."] = output["UY_E_P"] * proc[
         "US_P"]
-    output["Tipo de cambio real: Argentina-EE.UU."] = proc["BR_E"] * proc[
-        "US_P"] / proc["BR_P"]
-    output["Tipo de cambio real: Brasil-EE.UU."] = proc["AR_E"] * proc[
-        "US_P"] / proc["AR_P"]
     output.drop("UY_E_P", axis=1, inplace=True)
-    output.rename_axis(None, inplace=True)
+    output = output.loc[output.index >= "1979-12-01"]
 
     metadata._set(output, area="Sector externo", currency="-",
                   inf_adj="No", unit="-", seas_adj="NSA",
@@ -773,8 +736,8 @@ def rxr_custom(update_loc: Union[str, PathLike, Engine,
     output = transform.base_index(output, start_date="2010-01-01",
                                   end_date="2010-12-31", base=100)
     metadata._modify_multiindex(output, levels=[3],
-                                new_arrays=[["UYU/ARS", "UYU/BRL", "UYU/USD",
-                                             "ARS/USD", "BRL/USD"]])
+                                new_arrays=[["UYU/ARS", "UYU/ARS",
+                                             "UYU/BRL", "UYU/USD"]])
 
     if update_loc is not None:
         previous_data = ops._io(operation="update",
@@ -789,49 +752,6 @@ def rxr_custom(update_loc: Union[str, PathLike, Engine,
                 data=output, name=name, index_label=index_label)
 
     return output
-
-
-@retry(
-    retry_on_exceptions=(exceptions.HTTPError, exceptions.ConnectionError,
-                         error.HTTPError, error.URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
-def _missing_ar():
-    """Get Argentina's non-official exchange rate and CPI."""
-    black_r = requests.get(urls["rxr_custom"]["dl"]["ar_black"]).json()
-    black_xr = pd.DataFrame(black_r)
-    black_xr.set_index(0, drop=True, inplace=True)
-    black_xr.drop("Fecha", inplace=True)
-    black_xr = black_xr.replace(",", ".", regex=True).apply(pd.to_numeric)
-    black_xr.index = pd.to_datetime(black_xr.index, format="%d-%m-%Y")
-    black_xr = black_xr.mean(axis=1).to_frame().sort_index()
-    black_xr = black_xr.resample("M").mean()
-
-    cpi_r = requests.get(urls["rxr_custom"]["dl"]["ar_cpi"],
-                         params=urls["rxr_custom"]["dl"]["ar_cpi_payload"])
-    cpi_ar = pd.read_html(cpi_r.content)[0]
-    cpi_ar.set_index("Fecha", drop=True, inplace=True)
-    cpi_ar.index = pd.to_datetime(cpi_ar.index, format="%d/%m/%Y")
-    cpi_ar.columns = ["nivel"]
-    cpi_ar = cpi_ar.divide(10)
-
-    ps_url = urls["rxr_custom"]["dl"]["inf_black"]
-    cpi_ps = pd.read_excel(ps_url)
-    cpi_ps.set_index("date", drop=True, inplace=True)
-    cpi_ps.index = cpi_ps.index + MonthEnd(1)
-    cpi_ps = cpi_ps.loc[(cpi_ps.index >= "2006-12-31") &
-                        (cpi_ps.index <= "2016-12-01"), "index"]
-    cpi_ps = cpi_ps.to_frame().pct_change(periods=1).multiply(100)
-    cpi_ps.columns = ["nivel"]
-
-    cpi_all = (cpi_ar.append(cpi_ps).reset_index().
-               drop_duplicates(subset="index", keep="last").
-               set_index("index", drop=True).sort_index())
-
-    cpi_all = cpi_all.divide(100).add(1).cumprod()
-
-    return black_xr, cpi_all
 
 
 @retry(
