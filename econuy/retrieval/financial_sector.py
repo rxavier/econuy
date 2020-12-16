@@ -363,9 +363,6 @@ def sovereign_risk(
         only_get: bool = False) -> pd.DataFrame:
     """Get Uruguayan Bond Index (sovereign risk spreads) data.
 
-    This function requires a Selenium webdriver. It can be provided in the
-    driver parameter, or it will attempt to configure a Chrome webdriver.
-
     Parameters
     ----------
     update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \

@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 from io import BytesIO
 from os import PathLike
 from typing import Union
@@ -311,11 +311,6 @@ def hours(update_loc: Union[str, PathLike,
     prev_hours.columns = ["Total"]
     output = prev_hours.append(output, sort=False)
 
-    missing = pd.read_excel(urls["hours"]["dl"]["missing"],
-                            index_col=0, header=0).iloc[:, [9]]
-    missing.columns = ["Total"]
-    output = output.append(missing, sort=False)
-
     if update_loc is not None:
         previous_data = ops._io(operation="update",
                                 data_loc=update_loc,
@@ -370,7 +365,7 @@ def rates_people(update_loc: Union[str, PathLike, Engine,
         Label for SQL indexes.
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
-        ``update_loc`` for the commodity index.
+        ``update_loc``.
 
     Returns
     -------
@@ -481,7 +476,7 @@ def real_wages(update_loc: Union[str, PathLike, Engine,
         Label for SQL indexes.
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
-        ``update_loc`` for the commodity index.
+        ``update_loc``.
 
     Returns
     -------

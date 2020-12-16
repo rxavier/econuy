@@ -55,10 +55,10 @@ def test_rxr_custom():
     tcr = session.get_custom(dataset="rxr_custom").dataset
     assert isinstance(tcr, pd.DataFrame)
     assert tcr.index[0] == dt.date(1979, 12, 31)
-    assert len(tcr.columns) == 5
+    assert len(tcr.columns) == 4
     avs = tcr.loc[(tcr.index >= "2010-01-01") &
                   (tcr.index <= "2010-12-31")].mean().values.round(1)
-    arr = np.array([100] * 5, dtype="float64")
+    arr = np.array([100] * 4, dtype="float64")
     assert np.all(avs == arr)
     session.only_get = True
     compare = session.get_custom(dataset="rxr_custom").dataset

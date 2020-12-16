@@ -445,12 +445,12 @@ def long_rates(
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def currencies(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-           revise_rows: Union[str, int] = "nodup",
-           save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-           name: str = "global_currencies",
-           index_label: str = "index",
-           only_get: bool = False) -> pd.DataFrame:
+def nxr(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
+        revise_rows: Union[str, int] = "nodup",
+        save_loc: Union[str, PathLike, Engine, Connection, None] = None,
+        name: str = "global_nxr",
+        index_label: str = "index",
+        only_get: bool = False) -> pd.DataFrame:
     """Get currencies data.
 
     Selected currencies are the US dollar index, USDEUR, USDJPY and USDCNY.
@@ -473,7 +473,7 @@ def currencies(update_loc: Union[str, PathLike, Engine, Connection, None] = None
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'global_currencies'
+    name : str, default 'global_nxr'
         Either CSV filename for updating and/or saving, or table name if
         using SQL.
     index_label : str, default 'index'
@@ -495,7 +495,7 @@ def currencies(update_loc: Union[str, PathLike, Engine, Connection, None] = None
 
     output = []
     for series in ["dollar", "eur", "jpy", "cny"]:
-        aux = pd.read_csv(urls["global_currencies"]["dl"][series],
+        aux = pd.read_csv(urls["global_nxr"]["dl"][series],
                           index_col=0, usecols=[0, 4], parse_dates=True)
         aux.columns = [series]
         if series == "dollar":
@@ -518,7 +518,7 @@ def currencies(update_loc: Union[str, PathLike, Engine, Connection, None] = None
                   ts_type="-", cumperiods=1)
     metadata._modify_multiindex(output, levels=[3, 5],
                                 new_arrays=[["USD", "EUR", "JPY", "CNY"],
-                                            ["USD/Otros", "USD/EUR", "JPY/USD",
+                                            ["Canasta/USD", "EUR/USD", "JPY/USD",
                                              "CNY/USD"]])
 
     if save_loc is not None:

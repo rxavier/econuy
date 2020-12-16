@@ -1,3 +1,4 @@
+import sys
 import datetime as dt
 import re
 import warnings
@@ -238,8 +239,13 @@ def _get_taxes_from_pdf(excel_data: pd.DataFrame,
                              text=re.compile("recaudación"))
         dates = pd.date_range(start=dt.datetime(year, 1, 1), freq="M",
                               periods=len(pdfs))
+        if sys.platform == "win32":
+            delete = False
+        else:
+            delete = True
         for pdf, date in zip(pdfs, dates):
-            with NamedTemporaryFile(suffix=".pdf") as f:
+            with NamedTemporaryFile(suffix=".pdf", delete=delete) as f:
+                print(pdf.contents)
                 r = requests.get(f"https://www.dgi.gub.uy/wdgi/{pdf['href']}")
                 f.write(r.content)
                 with warnings.catch_warnings():
@@ -449,7 +455,7 @@ def net_public_debt(update_loc: Union[str, PathLike, Engine,
         Label for SQL indexes.
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
-        ``update_loc`` for the commodity index.
+        ``update_loc``.
 
     Returns
     -------
@@ -514,7 +520,7 @@ def balance_fss(update_loc: Union[str, PathLike, Engine,
         Label for SQL indexes.
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
-        ``update_loc`` for the commodity index.
+        ``update_loc``.
 
     Returns
     -------

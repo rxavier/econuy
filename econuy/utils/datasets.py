@@ -56,11 +56,28 @@ custom = {"core_industrial": "Producción industrial total, sin refinería y "
           "global_gdp": "PBI real desestacionalizado de Estados Unidos,"
                         "Unión Europea, Japón y China",
           "global_stocks": "Índices bursátiles (S&P 500, Euronext 100, Nikkei"
-                           "225 y Shanghai Composite",
+                           "225 y Shanghai Composite)",
           "global_policy_rates": "Tasas de política monetaria de Estados "
                                  "Unidos, Eurozona, Japón y China",
           "global_long_rates": "Tasas de bonos soberanos a 10 años de Estados "
                                "Unidos, Alemania, Francia, Italia, España, "
                                "Reino unido, Japón y China",
-          "global_currencies": "Cotización de monedas de Estados Unidos "
-                               "(dollar index), USDUER, USDJPY y USDCNY"}
+          "global_nxr": "Cotización de monedas de Estados Unidos "
+                               "(dollar index), USDUER, USDJPY y USDCNY",
+          "regional_gdp": "PBI real desestacionalizado de Argentina y Brasil",
+          "regional_monthly_gdp": "PBI mensual real desestacionalizado de "
+                                  "Argentina y Brasil",
+          "regional_cpi": "Índice de precios al consumo de Argentina y Brasil",
+          "regional_embi_spreads": "EMBI spread de Argentina, Brasil y "
+                                   "EMBI Global",
+          "regional_embi_yields": "EMBI yield de Argentina, Brasil y "
+                                   "EMBI Global",
+          "regional_nxr": "Tipo de cambio de Argentina (oficial y "
+                          "paralelo) y Brasil",
+          "regional_policy_rates": "Tasas de política monetaria de Argentina "
+                                   "y Brasil",
+          "regional_stocks": "Índices bursátiles (MERVAL y BOVESPA) "
+                             "en dólares",
+          "regional_rxr": "Tipo de cambio real de Argentina y Brasil "
+                          "vis-à-vis EE.UU."
+          }
