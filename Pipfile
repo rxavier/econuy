@@ -18,8 +18,8 @@ m2r = "*"
 recommonmark = "*"
 
 [packages]
-pandas = "~=0.25.0"
-xlrd = "~=1.2.0"
+pandas = "==1.1.5"
+openpyxl = "==3.0.5"
 matplotlib = "==3.1.1"
 statsmodels = "==0.11.0"
 requests = "==2.22.0"
@@ -38,6 +38,7 @@ python-dotenv = "==0.14.0"
 camelot-py = {extras = ["cv"], version = "==0.8.2"}
 pypdf2 = "==1.26.0"
 patool = "==1.12"
+xlrd = "==2.0.1"
 
 [requires]
 python_version = "3.7"

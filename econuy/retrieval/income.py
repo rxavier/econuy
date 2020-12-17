@@ -68,7 +68,7 @@ def income_household(update_loc: Union[str, PathLike,
             return output
     try:
         raw = pd.read_excel(urls["household_income"]["dl"]["main"],
-                            sheet_name="Mensual",
+                            sheet_name="Mensual", engine="openpyxl",
                             skiprows=5, index_col=0).dropna(how="all")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
@@ -89,7 +89,7 @@ def income_household(update_loc: Union[str, PathLike,
                       "Interior: localidades pequeñas y rural"]
 
     missing = pd.read_excel(urls["household_income"]["dl"]["missing"],
-                            index_col=0, header=0).iloc[:, 10:13]
+                            index_col=0, header=0, engine="openpyxl").iloc[:, 10:13]
     missing.columns = output.columns[:3]
     output = output.append(missing, sort=False)
 
@@ -167,7 +167,7 @@ def income_capita(update_loc: Union[str, PathLike,
     try:
         raw = pd.read_excel(urls["capita_income"]["dl"]["main"],
                             sheet_name="Mensuall", skiprows=5,
-                            index_col=0).dropna(how="all")
+                            index_col=0, engine="openpyxl").dropna(how="all")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
@@ -187,7 +187,7 @@ def income_capita(update_loc: Union[str, PathLike,
                       "Interior: localidades pequeñas y rural"]
 
     missing = pd.read_excel(urls["capita_income"]["dl"]["missing"],
-                            index_col=0, header=0).iloc[:, 13:16]
+                            index_col=0, header=0, engine="openpyxl").iloc[:, 13:16]
     missing.columns = output.columns[:3]
     output = output.append(missing, sort=False)
 
@@ -263,7 +263,8 @@ def consumer_confidence(
             return output
 
     raw = pd.read_excel(urls["consumer_confidence"]["dl"]["main"],
-                        skiprows=3, usecols="B:F", index_col=0)
+                        skiprows=3, usecols="B:F", index_col=0,
+                        engine="openpyxl")
     output = raw.loc[~pd.isna(raw.index)]
     output.index = output.index + MonthEnd(0)
     output.columns = ["Subíndice: Situación Económica Personal",

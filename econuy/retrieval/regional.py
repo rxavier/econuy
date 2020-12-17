@@ -90,7 +90,8 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     driver.quit()
     url = soup.find_all(href=re.compile("desest"))[0]["href"]
     full_url = f"https://www.indec.gob.ar{url}"
-    arg = pd.read_excel(full_url, skiprows=3, usecols="D").dropna(how="all")
+    arg = pd.read_excel(full_url, skiprows=3,
+                        usecols="D").dropna(how="all")
     arg.index = pd.date_range(start="2004-03-31", freq="Q-DEC",
                               periods=len(arg))
     arg_old = pd.read_excel(urls["regional_gdp"]["dl"]["arg_old"], skiprows=7,
@@ -375,7 +376,7 @@ def embi_spreads(
 
     global_ = pd.read_excel(urls["regional_embi_spreads"]["dl"]["global"],
                             usecols="A:B", skiprows=1, index_col=0,
-                            parse_dates=True)
+                            parse_dates=True, engine="openpyxl")
     global_ = global_.loc[~pd.isna(global_.index)].mul(100)
     region = []
     for cnt in ["argentina", "brasil"]:
