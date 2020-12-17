@@ -90,8 +90,7 @@ def trade(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         sheets = []
         for sheet in xls.sheet_names:
             raw = (pd.read_excel(xls, sheet_name=sheet,
-                                 usecols=meta["cols"],
-                                 index_col=0,
+                                 usecols=meta["cols"], index_col=0,
                                  skiprows=7).dropna(thresh=5).T)
             raw.index = (pd.to_datetime(raw.index, errors="coerce")
                          + MonthEnd(0))
@@ -387,7 +386,8 @@ def commodity_prices(
             return output
 
     url = urls["commodity_index"]["dl"]
-    raw_beef = (pd.read_excel(url["beef"], header=4, index_col=0)
+    raw_beef = (pd.read_excel(url["beef"], header=4,
+                              index_col=0, engine="openpyxl")
                 .dropna(how="all"))
     raw_beef.columns = raw_beef.columns.str.strip()
     proc_beef = raw_beef["Ing. Prom./Ton."].to_frame()
@@ -427,8 +427,7 @@ def commodity_prices(
     links = milk_soup.find_all(href=re.compile("Oceanía|Oceania"))
     xls = links[0]["href"]
     raw_milk = pd.read_excel(requests.utils.quote(xls).replace("%3A", ":"),
-                             skiprows=14,
-                             nrows=dt.datetime.now().year - 2006)
+                             skiprows=14, nrows=dt.datetime.now().year - 2006)
     raw_milk.dropna(how="all", axis=1, inplace=True)
     raw_milk.drop(["Promedio ", "Variación"], axis=1, inplace=True)
     raw_milk.columns = ["Año/Mes"] + list(range(1, 13))
@@ -455,7 +454,8 @@ def commodity_prices(
     prev_milk.columns, proc_milk.columns = ["Price"], ["Price"]
     milk = prev_milk.append(proc_milk)
 
-    raw_imf = pd.read_excel(url["imf"])
+    raw_imf = (pd.read_excel(url["imf"], engine="openpyxl")
+               .dropna(how="all", axis=1).dropna(how="all", axis=0))
     raw_imf.columns = raw_imf.iloc[0, :]
     proc_imf = raw_imf.iloc[3:, 1:]
     proc_imf.index = pd.date_range(start="1980-01-31",
@@ -624,7 +624,8 @@ def rxr_official(update_loc: Union[str, PathLike, Engine,
     soup = BeautifulSoup(r.content, "html.parser")
     links = soup.find_all(href=re.compile("eese[A-z0-9]+\\.xls$"))
     xls = "https://www.bcu.gub.uy" + links[0]["href"]
-    raw = pd.read_excel(xls, skiprows=8, usecols="B:N", index_col=0)
+    raw = pd.read_excel(xls, skiprows=8, usecols="B:N",
+                        index_col=0)
     proc = raw.dropna(how="any")
     proc.columns = ["Global", "Extrarregional", "Regional",
                     "Argentina", "Brasil", "EE.UU.", "México", "Alemania",
@@ -934,7 +935,8 @@ def reserves_changes(update_loc: Union[str, PathLike, Engine,
             print(f"{link} could not be reached.")
             pass
 
-    mar14 = pd.read_excel(urls["reserves_changes"]["dl"]["missing"], index_col=0)
+    mar14 = pd.read_excel(urls["reserves_changes"]["dl"]["missing"],
+                          index_col=0, engine="openpyxl")
     mar14.columns = reserves_cols[1:46]
     reserves = pd.concat(reports + [mar14], sort=False).sort_index()
 

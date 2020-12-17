@@ -89,7 +89,8 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         chn_datasets.append(df)
     chn_qoq = chn_datasets[0]
     chn_yoy = chn_datasets[1]
-    chn_obs = pd.read_excel(urls["global_gdp"]["dl"]["chn_obs"], index_col=0)
+    chn_obs = pd.read_excel(urls["global_gdp"]["dl"]["chn_obs"], index_col=0,
+                            engine="openpyxl").dropna(how="all", axis=1).dropna(how="all", axis=0)
     chn_obs = chn_obs.loc[(chn_obs.index > "2011-01-01")
                           & (chn_obs.index < "2016-01-01")]
     chn_yoy["volume"] = chn_obs

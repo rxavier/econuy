@@ -90,7 +90,8 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     driver.quit()
     url = soup.find_all(href=re.compile("desest"))[0]["href"]
     full_url = f"https://www.indec.gob.ar{url}"
-    arg = pd.read_excel(full_url, skiprows=3, usecols="D").dropna(how="all")
+    arg = pd.read_excel(full_url, skiprows=3,
+                        usecols="D").dropna(how="all")
     arg.index = pd.date_range(start="2004-03-31", freq="Q-DEC",
                               periods=len(arg))
     arg_old = pd.read_excel(urls["regional_gdp"]["dl"]["arg_old"], skiprows=7,
@@ -283,9 +284,9 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     arg_unoff = pd.read_excel(urls["regional_cpi"]["dl"]["ar_unofficial"])
     arg_unoff.set_index("date", drop=True, inplace=True)
     arg_unoff.index = arg_unoff.index + MonthEnd(0)
-    arg_unoff = arg_unoff.loc[(arg_unoff.index >= "2006-12-31") &
+    arg_unoff = arg_unoff.loc[(arg_unoff.index >= "2006-12-01") &
                               (arg_unoff.index <= "2016-12-01"), "index"]
-    arg_unoff = arg_unoff.to_frame().pct_change(periods=1).multiply(100)
+    arg_unoff = arg_unoff.to_frame().pct_change(periods=1).multiply(100).dropna()
     arg_unoff.columns = ["nivel"]
     arg = (arg.append(arg_unoff).reset_index().
            drop_duplicates(subset="index", keep="last").
@@ -375,7 +376,7 @@ def embi_spreads(
 
     global_ = pd.read_excel(urls["regional_embi_spreads"]["dl"]["global"],
                             usecols="A:B", skiprows=1, index_col=0,
-                            parse_dates=True)
+                            parse_dates=True, engine="openpyxl")
     global_ = global_.loc[~pd.isna(global_.index)].mul(100)
     region = []
     for cnt in ["argentina", "brasil"]:

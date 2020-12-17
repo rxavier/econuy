@@ -208,12 +208,12 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
         fcast = (gdp.loc[[dt.datetime(last_year - 1, 12, 31)]].
                  multiply(imf_data.iloc[1]).divide(imf_data.iloc[0]))
         fcast = fcast.rename(index={dt.datetime(last_year - 1, 12, 31):
-                                    dt.datetime(last_year, 12, 31)})
+                                        dt.datetime(last_year, 12, 31)})
         next_fcast = (gdp.loc[[dt.datetime(last_year - 1, 12, 31)]].
                       multiply(imf_data.iloc[2]).divide(imf_data.iloc[0]))
         next_fcast = next_fcast.rename(
             index={dt.datetime(last_year - 1, 12, 31):
-                   dt.datetime(last_year + 1, 12, 31)}
+                       dt.datetime(last_year + 1, 12, 31)}
         )
         fcast = fcast.append(next_fcast)
         gdp = gdp.append(fcast)
@@ -285,7 +285,7 @@ def industrial_production(update_loc: Union[str, PathLike,
             return output
     try:
         raw = pd.read_excel(urls["industrial_production"]["dl"]["main"],
-                            skiprows=4, usecols="B:EM")
+                            skiprows=4, usecols="B:EM", engine="openpyxl")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
@@ -293,7 +293,7 @@ def industrial_production(update_loc: Union[str, PathLike,
             r = requests.get(urls["industrial_production"]["dl"]["main"],
                              verify=certificate)
             raw = pd.read_excel(BytesIO(r.content),
-                                    skiprows=4, usecols="B:EM")
+                                skiprows=4, usecols="B:EM")
         else:
             raise err
     proc = raw.dropna(how="any", subset=["Mes"]).dropna(thresh=100, axis=1)
@@ -366,7 +366,7 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
                                  only_get=only_get)
     try:
         weights = pd.read_excel(urls["core_industrial"]["dl"]["weights"],
-                                skiprows=3).dropna(how="all")
+                                skiprows=3, engine="openpyxl").dropna(how="all")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
@@ -381,14 +381,14 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
                                       "Unnamed: 6": "Pond. agrupación",
                                       "Unnamed: 7": "Pond. clase"})
     other_foods = (
-        weights.loc[weights["clase"] == 1549]["Pond. clase"].values[0]
-        * weights.loc[(weights["agrupacion"] == 154) &
-                      (weights["clase"] == 0)][
-            "Pond. agrupación"].values[0]
-        * weights.loc[(weights["division"] == 15) &
+            weights.loc[weights["clase"] == 1549]["Pond. clase"].values[0]
+            * weights.loc[(weights["agrupacion"] == 154) &
+                          (weights["clase"] == 0)][
+                "Pond. agrupación"].values[0]
+            * weights.loc[(weights["division"] == 15) &
                           (weights["agrupacion"] == 0)][
                 "Pond. división"].values[0]
-        / 1000000)
+            / 1000000)
     pulp = (weights.loc[weights["clase"] == 2101]["Pond. clase"].values[0]
             * weights.loc[(weights["division"] == 21) &
                           (weights["agrupacion"] == 0)][
@@ -472,7 +472,8 @@ def cattle(
     with open(temp, "wb") as f:
         r = requests.get(urls["cattle"]["dl"]["main"])
         f.write(r.content)
-    output = pd.read_excel(temp, skiprows=8, usecols="A,C:H", index_col=0)
+    output = pd.read_excel(temp, skiprows=8, usecols="A,C:H", index_col=0,
+                           engine="openpyxl")
 
     if update_loc is not None:
         previous_data = ops._io(
@@ -628,7 +629,8 @@ def cement(
             return output
 
     output = pd.read_excel(urls["cement"]["dl"]["main"], skiprows=2,
-                           usecols="B:E", index_col=0, skipfooter=1)
+                           usecols="B:E", index_col=0, skipfooter=1,
+                           engine="openpyxl")
     output.index = output.index + MonthEnd(0)
     output.columns = ["Exportaciones", "Mercado interno", "Total"]
 

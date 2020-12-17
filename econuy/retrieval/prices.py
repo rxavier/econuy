@@ -72,7 +72,7 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
             return output
 
     try:
-        cpi_raw = pd.read_excel(urls["cpi"]["dl"]["main"],
+        cpi_raw = pd.read_excel(urls["cpi"]["dl"]["main"], engine="openpyxl",
                                 skiprows=7).dropna(axis=0, thresh=2)
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
@@ -163,7 +163,7 @@ def nxr_monthly(update_loc: Union[str, PathLike,
         if not output.equals(pd.DataFrame()):
             return output
     try:
-        nxr_raw = pd.read_excel(urls["nxr_monthly"]["dl"]["main"],
+        nxr_raw = pd.read_excel(urls["nxr_monthly"]["dl"]["main"], engine="openpyxl",
                                 skiprows=4, index_col=0, usecols="A,C,F")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
@@ -269,7 +269,7 @@ def nxr_daily(update_loc: Union[str, PathLike,
             dates = f"%22FechaDesde%22:%22{from_}%22,%22FechaHasta%22:%22{to_}"
             url = f"{base_url}{dates}%22,%22Grupo%22:%222%22}}" + "}"
             try:
-                data.append(pd.read_excel(url))
+                data.append(pd.read_excel(url, engine="openpyxl"))
                 start_date = dt.datetime.strptime(to_, '%d/%m/%Y')
             except TypeError:
                 pass
@@ -278,7 +278,7 @@ def nxr_daily(update_loc: Union[str, PathLike,
     dates = f"%22FechaDesde%22:%22{from_}%22,%22FechaHasta%22:%22{to_}"
     url = f"{base_url}{dates}%22,%22Grupo%22:%222%22}}" + "}"
     try:
-        data.append(pd.read_excel(url))
+        data.append(pd.read_excel(url, engine="openpyxl"))
     except TypeError:
         pass
     try:
@@ -397,7 +397,7 @@ def cpi_measures(update_loc: Union[str, PathLike,
     try:
         xls = pd.ExcelFile(urls["cpi_measures"]["dl"]["2010"])
         prod_97 = (pd.read_excel(urls["cpi_measures"]["dl"]["1997"],
-                                 skiprows=5).dropna(how="any")
+                                 skiprows=5, engine="openpyxl").dropna(how="any")
                    .set_index(
             "Rubros, Agrupaciones, Subrubros, Familias y Artículos")
                    .T)
@@ -418,7 +418,7 @@ def cpi_measures(update_loc: Union[str, PathLike,
         else:
             raise err
     weights_97 = (pd.read_excel(urls["cpi_measures"]["dl"]["1997_weights"],
-                                index_col=0)
+                                index_col=0, engine="openpyxl")
                   .drop_duplicates(subset="Descripción", keep="first"))
     weights = pd.read_excel(xls, sheet_name=xls.sheet_names[0],
                             usecols="A:C", skiprows=14,
