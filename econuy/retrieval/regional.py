@@ -284,9 +284,9 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     arg_unoff = pd.read_excel(urls["regional_cpi"]["dl"]["ar_unofficial"])
     arg_unoff.set_index("date", drop=True, inplace=True)
     arg_unoff.index = arg_unoff.index + MonthEnd(0)
-    arg_unoff = arg_unoff.loc[(arg_unoff.index >= "2006-12-31") &
+    arg_unoff = arg_unoff.loc[(arg_unoff.index >= "2006-12-01") &
                               (arg_unoff.index <= "2016-12-01"), "index"]
-    arg_unoff = arg_unoff.to_frame().pct_change(periods=1).multiply(100)
+    arg_unoff = arg_unoff.to_frame().pct_change(periods=1).multiply(100).dropna()
     arg_unoff.columns = ["nivel"]
     arg = (arg.append(arg_unoff).reset_index().
            drop_duplicates(subset="index", keep="last").
