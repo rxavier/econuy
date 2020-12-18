@@ -1,1 +1,2 @@
 include Pipfile.lock
+include econuy/utils/files/ine_certs.pem
