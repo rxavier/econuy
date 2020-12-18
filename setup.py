@@ -52,5 +52,7 @@ setup(
     extras_require={
         "pgsql": ["psycopg2==2.8.5"]},
     packages=packages,
+    package_data={"econuy": ["econuy/utils/files/ine_certs.pem"]},
+    include_package_data=True,
     python_requires=">=3.6"
 )
