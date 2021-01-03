@@ -130,7 +130,8 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
                                    Connection, None] = None,
                  save_loc: Union[str, PathLike, Engine,
                                  Connection, None] = None,
-                 only_get: bool = True) -> pd.DataFrame:
+                 only_get: bool = True,
+                 errors: str = "raise") -> pd.DataFrame:
     """
     Convert dataframe to real prices.
 
@@ -167,16 +168,51 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
         ``update_loc``.
+    errors : {'raise', 'coerce', 'ignore'}
+        What to do when a column in the input dataframe is not expressed in
+        nominal Uruguayan pesos. 'raise' will raise a ValueError, 'coerce'
+        will force the entire column into ´np.nan´ and 'ignore' will leave
+        the input column as is.
 
     Returns
     -------
     Input dataframe measured at constant prices : pd.DataFrame
 
     """
-    if "Const" in df.columns.get_level_values("Inf. adj.")[0]:
-        warnings.warn("Input dataframe already in real terms. No "
-                      "transformations made", UserWarning)
-        return df
+    if errors not in ["raise", "coerce", "ignore"]:
+        raise ValueError("'errors' must be one of 'raise', 'coerce' or 'ignore'.")
+    if "Inf. adj." not in df.columns.names:
+        raise ValueError("Input dataframe's multiindex requires the 'Inf. adj.' level.")
+
+    cpi_data = prices.cpi(update_loc=update_loc, save_loc=save_loc,
+                          only_get=only_get)
+
+    columns = []
+    for column_name in df.columns:
+        df_column = df[[column_name]]
+        if (("Const" in df_column.columns.get_level_values("Inf. adj."))
+                or (df_column.columns.get_level_values("Moneda") != "UYU")):
+            if errors == "coerce":
+                columns.append(pd.DataFrame(data=np.nan, index=df.index,
+                                            columns=df_column.columns))
+            if errors == "raise":
+                raise ValueError(f"Column '{column_name[0]}' not in nominal Uruguayan pesos.")
+            elif errors == "ignore":
+                columns.append(df_column)
+        else:
+            converted = _convert_real(df=df_column, start_date=start_date,
+                                      end_date=end_date, cpi=cpi_data)
+            columns.append(converted)
+    output = pd.concat(columns, axis=1)
+
+    return output
+
+
+def _convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
+                  end_date: Union[str, date, None] = None,
+                  cpi: Optional[pd.DataFrame] = None) -> pd.DataFrame:
+    if cpi is None:
+        cpi = prices.cpi()
 
     inferred_freq = pd.infer_freq(df.index)
     if inferred_freq in ["D", "B", "C", "W", None]:
@@ -186,31 +222,24 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
             df = df.resample("M").mean()
         inferred_freq = pd.infer_freq(df.index)
 
-    cpi_data = prices.cpi(update_loc=update_loc, save_loc=save_loc,
-                          only_get=only_get)
-
-    metadata._set(cpi_data, ts_type="Flujo")
-    cpi_freq = resample(cpi_data, target=inferred_freq,
+    metadata._set(cpi, ts_type="Flujo")
+    cpi_freq = resample(cpi, target=inferred_freq,
                         operation="average").iloc[:, [0]]
     cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
     cpi_to_use = rolling(cpi_freq, periods=cum_periods,
                          operation="average").squeeze()
 
     if start_date is None:
-        converted_df = df.apply(lambda x:
-                                x / cpi_to_use)
+        converted_df = df.div(cpi_to_use, axis=0)
         col_text = "Const."
     elif end_date is None:
         month = df.iloc[df.index.get_loc(start_date, method="nearest")].name
-        converted_df = df.apply(
-            lambda x: x / cpi_to_use
-            * cpi_to_use.loc[month])
+        converted_df = df.div(cpi_to_use, axis=0) * cpi_to_use.loc[month]
         m_start = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m")
         col_text = f"Const. {m_start}"
     else:
-        converted_df = df.apply(
-            lambda x: x / cpi_to_use * cpi_to_use[start_date:end_date].mean()
-        )
+        converted_df = df.div(cpi_to_use, axis=0) * cpi_to_use[start_date:
+                                                               end_date].mean()
         m_start = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m")
         m_end = datetime.strptime(end_date, "%Y-%m-%d").strftime("%Y-%m")
         if m_start == m_end:
