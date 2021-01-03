@@ -283,12 +283,12 @@ def test_base_index():
 
 
 def test_convert():
-    data = dummy_df(freq="M", ts_type="Stock")
+    data = dummy_df(freq="M", ts_type="Stock", currency="UYU")
     session = Session(location=TEST_CON, dataset=data)
     usd = session.convert(flavor="usd").dataset
     usd.columns = data.columns
     assert np.all(abs(usd) <= abs(data))
-    data = dummy_df(freq="M", ts_type="Flujo")
+    data = dummy_df(freq="M", ts_type="Flujo", currency="UYU")
     session = Session(location=TEST_CON, dataset={
                       "data1": data, "data2": data})
     usd = session.convert(flavor="usd").dataset["data1"]
@@ -330,7 +330,7 @@ def test_convert():
         session = Session(location=TEST_CON,
                           dataset=data)
         session.convert(flavor="gdp")
-    data_d = dummy_df(freq="D", periods=600, ts_type="Flujo")
+    data_d = dummy_df(freq="D", periods=600, ts_type="Flujo", currency="UYU")
     session = Session(location=TEST_CON, dataset=data_d)
     real = session.convert(flavor="real", start_date="2000-01-31")
     pcgdp = session.convert(flavor="pcgdp")
@@ -340,14 +340,13 @@ def test_convert():
     real = session.convert(flavor="real", start_date="2000-01-31",
                            end_date="2000-12-31")
     pcgdp = session.convert(flavor="pcgdp")
-    usd = session.convert(flavor="usd")
+    with pytest.raises(ValueError):
+        usd = session.convert(flavor="usd")
     real_2 = session.convert(flavor="real", start_date="2000-01-31",
                              end_date="2000-12-31")
     assert real.dataset.equals(real_2.dataset)
     pcgdp_2 = session.convert(flavor="pcgdp")
     assert pcgdp.dataset.equals(pcgdp_2.dataset)
-    usd_2 = session.convert(flavor="usd")
-    assert usd.dataset.equals(usd_2.dataset)
     data_m = dummy_df(freq="M", ts_type="Flujo")
     session = Session(location=TEST_CON, dataset=data_m)
     pcgdp = session.convert(flavor="pcgdp")

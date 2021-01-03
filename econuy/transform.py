@@ -22,7 +22,7 @@ def convert_usd(df: pd.DataFrame,
                                   Connection, None] = None,
                 save_loc: Union[str, PathLike, Engine,
                                 Connection, None] = None,
-                only_get: bool = True) -> pd.DataFrame:
+                only_get: bool = True, errors: str = "raise") -> pd.DataFrame:
     """
     Convert dataframe from UYU to USD.
 
@@ -54,16 +54,48 @@ def convert_usd(df: pd.DataFrame,
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
         ``update_loc``.
+    errors : {'raise', 'coerce', 'ignore'}
+        What to do when a column in the input dataframe is not expressed in
+        Uruguayan pesos. 'raise' will raise a ValueError, 'coerce' will force
+        the entire column into ´np.nan´ and 'ignore' will leave the input
+        column as is.
 
     Returns
     -------
     Input dataframe measured in US dollars : pd.DataFrame
 
     """
-    if df.columns.get_level_values("Moneda")[0] == "USD":
-        warnings.warn("Input dataframe already in dollars. No transformations"
-                      " made", UserWarning)
-        return df
+    if errors not in ["raise", "coerce", "ignore"]:
+        raise ValueError("'errors' must be one of 'raise', 'coerce' or 'ignore'.")
+    if "Moneda" not in df.columns.names:
+        raise ValueError("Input dataframe's multiindex requires the 'Moneda' level.")
+
+    nxr_data = prices.nxr_monthly(update_loc=update_loc, save_loc=save_loc,
+                                  only_get=only_get)
+
+    columns = []
+    for column_name in df.columns:
+        df_column = df[[column_name]]
+        if df_column.columns.get_level_values("Moneda") != "UYU":
+            if errors == "coerce":
+                columns.append(pd.DataFrame(data=np.nan, index=df.index,
+                                            columns=df_column.columns))
+            if errors == "raise":
+                raise ValueError(f"Column '{column_name[0]}' not in Uruguayan pesos.")
+            elif errors == "ignore":
+                columns.append(df_column)
+        else:
+            converted = _convert_usd(df=df_column, nxr=nxr_data)
+            columns.append(converted)
+    output = pd.concat(columns, axis=1)
+
+    return output
+
+
+def _convert_usd(df: pd.DataFrame,
+                 nxr: Optional[pd.DataFrame] = None) -> pd.DataFrame:
+    if nxr is None:
+        nxr = prices.nxr_monthly()
 
     inferred_freq = pd.infer_freq(df.index)
     if inferred_freq in ["D", "B", "C", "W", None]:
@@ -73,23 +105,20 @@ def convert_usd(df: pd.DataFrame,
             df = df.resample("M").mean()
         inferred_freq = pd.infer_freq(df.index)
 
-    nxr_data = prices.nxr_monthly(update_loc=update_loc, save_loc=save_loc,
-                                  only_get=only_get)
-
     if df.columns.get_level_values("Tipo")[0] == "Stock":
-        metadata._set(nxr_data, ts_type="Stock")
-        nxr_freq = resample(nxr_data, target=inferred_freq,
+        metadata._set(nxr, ts_type="Stock")
+        nxr_freq = resample(nxr, target=inferred_freq,
                             operation="average").iloc[:, [1]]
     else:
-        metadata._set(nxr_data, ts_type="Flujo")
-        nxr_freq = resample(nxr_data, target=inferred_freq,
+        metadata._set(nxr, ts_type="Flujo")
+        nxr_freq = resample(nxr, target=inferred_freq,
                             operation="average").iloc[:, [0]]
         cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
         nxr_freq = rolling(nxr_freq, periods=cum_periods,
                            operation="average")
 
-    nxr_to_use = nxr_freq[nxr_freq.index.isin(df.index)].iloc[:, 0]
-    converted_df = df.apply(lambda x: x / nxr_to_use)
+    nxr_to_use = nxr_freq.reindex(df.index).iloc[:, 0]
+    converted_df = df.div(nxr_to_use, axis=0)
     metadata._set(converted_df, currency="USD")
 
     return converted_df
