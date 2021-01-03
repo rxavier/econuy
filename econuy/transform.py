@@ -258,7 +258,8 @@ def convert_gdp(df: pd.DataFrame,
                                   Connection, None] = None,
                 save_loc: Union[str, PathLike, Engine,
                                 Connection, None] = None,
-                only_get: bool = True) -> pd.DataFrame:
+                only_get: bool = True,
+                errors: str = "raise") -> pd.DataFrame:
     """
     Calculate dataframe as percentage of GDP.
 
@@ -270,7 +271,7 @@ def convert_gdp(df: pd.DataFrame,
     be performed to complete missing data.
 
     If input dataframe's "Acum." level is not 12 for monthly frequency or 4
-    for quarterly frequency, internally calculate rolling input dataframe.
+    for quarterly frequency, calculate rolling input dataframe.
 
     If input dataframe's frequency is higher than monthly (daily, business,
     etc.), resample to monthly frequency.
@@ -292,26 +293,51 @@ def convert_gdp(df: pd.DataFrame,
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
         ``update_loc``.
+    errors : {'raise', 'coerce', 'ignore'}
+        What to do when a column in the input dataframe does not refer to
+        Uruguayan data or is already in % of GDP. 'raise' will raise a
+        ValueError, 'coerce' will force the entire column into ´np.nan´ and
+        'ignore' will leave the input column as is.
 
     Returns
     -------
     Input dataframe as a percentage of GDP : pd.DataFrame
 
-    Raises
-    ------
-    ValueError
-        If frequency of input dataframe not any of 'D', 'C', 'W', 'B', 'M',
-        'MS', 'Q', 'Q-DEC', 'A' or 'A-DEC'.
-
     """
-    if df.columns.get_level_values("Unidad")[0] == "% PBI":
-        warnings.warn("Input dataframe already in percent of GDP. No "
-                      "transformations made", UserWarning)
-        return df
+    if errors not in ["raise", "coerce", "ignore"]:
+        raise ValueError("'errors' must be one of 'raise', 'coerce' or 'ignore'.")
+    if any(x not in df.columns.names for x in ["Área", "Unidad"]):
+        raise ValueError("Input dataframe's multiindex requires the 'Área' and 'Unidad' levels.")
+
+    gdp_data = economic_activity._lin_gdp(update_loc=update_loc,
+                                          save_loc=save_loc, only_get=only_get)
+
+    columns = []
+    for column_name in df.columns:
+        df_column = df[[column_name]]
+        if (any(x in df_column.columns.get_level_values("Área") for x in ["Regional", "Global"])
+                or (df_column.columns.get_level_values("Unidad") == "% PBI")):
+            if errors == "coerce":
+                columns.append(pd.DataFrame(data=np.nan, index=df.index,
+                                            columns=df_column.columns))
+            if errors == "raise":
+                raise ValueError(f"Column '{column_name[0]}' does not refer to Uruguayan data or is already expressed in % GDP.")
+            elif errors == "ignore":
+                columns.append(df_column)
+        else:
+            converted = _convert_gdp(df=df_column, gdp=gdp_data)
+            columns.append(converted)
+    output = pd.concat(columns, axis=1)
+
+    return output
+
+
+def _convert_gdp(df: pd.DataFrame,
+                 gdp: Optional[pd.DataFrame] = None) -> pd.DataFrame:
+    if gdp is None:
+        gdp = economic_activity._lin_gdp()
 
     inferred_freq = pd.infer_freq(df.index)
-    gdp = economic_activity._lin_gdp(update_loc=update_loc,
-                                     save_loc=save_loc, only_get=only_get)
     cum = df.columns.get_level_values("Acum. períodos")[0]
     if inferred_freq in ["M", "MS"]:
         gdp = resample(gdp, target=inferred_freq,
@@ -342,8 +368,8 @@ def convert_gdp(df: pd.DataFrame,
     else:
         gdp = gdp.iloc[:, 0].to_frame()
 
-    gdp_to_use = gdp[gdp.index.isin(df.index)].iloc[:, 0]
-    converted_df = df.apply(lambda x: x / gdp_to_use).multiply(100)
+    gdp_to_use = gdp.reindex(df.index).iloc[:, 0]
+    converted_df = df.div(gdp_to_use, axis=0).multiply(100)
 
     metadata._set(converted_df, unit="% PBI")
 
