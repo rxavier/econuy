@@ -66,9 +66,11 @@ def convert_usd(df: pd.DataFrame,
 
     """
     if errors not in ["raise", "coerce", "ignore"]:
-        raise ValueError("'errors' must be one of 'raise', 'coerce' or 'ignore'.")
+        raise ValueError("'errors' must be one of 'raise', "
+                         "'coerce' or 'ignore'.")
     if "Moneda" not in df.columns.names:
-        raise ValueError("Input dataframe's multiindex requires the 'Moneda' level.")
+        raise ValueError("Input dataframe's multiindex requires the "
+                         "'Moneda' level.")
 
     nxr_data = prices.nxr_monthly(update_loc=update_loc, save_loc=save_loc,
                                   only_get=only_get)
@@ -81,7 +83,8 @@ def convert_usd(df: pd.DataFrame,
                 columns.append(pd.DataFrame(data=np.nan, index=df.index,
                                             columns=df_column.columns))
             if errors == "raise":
-                raise ValueError(f"Column '{column_name[0]}' not in Uruguayan pesos.")
+                raise ValueError(f"Column '{column_name[0]}' not in "
+                                 f"Uruguayan pesos.")
             elif errors == "ignore":
                 columns.append(df_column)
         else:
@@ -180,9 +183,11 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
 
     """
     if errors not in ["raise", "coerce", "ignore"]:
-        raise ValueError("'errors' must be one of 'raise', 'coerce' or 'ignore'.")
+        raise ValueError("'errors' must be one of 'raise', "
+                         "'coerce' or 'ignore'.")
     if "Inf. adj." not in df.columns.names:
-        raise ValueError("Input dataframe's multiindex requires the 'Inf. adj.' level.")
+        raise ValueError("Input dataframe's multiindex requires the "
+                         "'Inf. adj.' level.")
 
     cpi_data = prices.cpi(update_loc=update_loc, save_loc=save_loc,
                           only_get=only_get)
@@ -196,7 +201,8 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
                 columns.append(pd.DataFrame(data=np.nan, index=df.index,
                                             columns=df_column.columns))
             if errors == "raise":
-                raise ValueError(f"Column '{column_name[0]}' not in nominal Uruguayan pesos.")
+                raise ValueError(f"Column '{column_name[0]}' not in nominal "
+                                 f"Uruguayan pesos.")
             elif errors == "ignore":
                 columns.append(df_column)
         else:
@@ -305,9 +311,11 @@ def convert_gdp(df: pd.DataFrame,
 
     """
     if errors not in ["raise", "coerce", "ignore"]:
-        raise ValueError("'errors' must be one of 'raise', 'coerce' or 'ignore'.")
+        raise ValueError("'errors' must be one of 'raise', 'coerce' or "
+                         "'ignore'.")
     if any(x not in df.columns.names for x in ["Área", "Unidad"]):
-        raise ValueError("Input dataframe's multiindex requires the 'Área' and 'Unidad' levels.")
+        raise ValueError("Input dataframe's multiindex requires the 'Área' "
+                         "and 'Unidad' levels.")
 
     gdp_data = economic_activity._lin_gdp(update_loc=update_loc,
                                           save_loc=save_loc, only_get=only_get)
@@ -315,13 +323,16 @@ def convert_gdp(df: pd.DataFrame,
     columns = []
     for column_name in df.columns:
         df_column = df[[column_name]]
-        if (any(x in df_column.columns.get_level_values("Área") for x in ["Regional", "Global"])
+        if (any(x in df_column.columns.get_level_values("Área")
+                for x in ["Regional", "Global"])
                 or (df_column.columns.get_level_values("Unidad") == "% PBI")):
             if errors == "coerce":
                 columns.append(pd.DataFrame(data=np.nan, index=df.index,
                                             columns=df_column.columns))
             if errors == "raise":
-                raise ValueError(f"Column '{column_name[0]}' does not refer to Uruguayan data or is already expressed in % GDP.")
+                raise ValueError(f"Column '{column_name[0]}' does not refer "
+                                 f"to Uruguayan data or is already expressed "
+                                 f"in % GDP.")
             elif errors == "ignore":
                 columns.append(df_column)
         else:
