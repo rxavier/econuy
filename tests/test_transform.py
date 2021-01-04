@@ -121,7 +121,7 @@ def test_rolling():
                                                        min_periods=12).sum())
     with pytest.warns(UserWarning):
         data_wrong = dummy_df(freq="M", ts_type="Stock")
-        transform.rolling(data_wrong, periods=4, operation="average")
+        transform.rolling(data_wrong, periods=4, operation="mean")
 
 
 def test_resample():
@@ -134,7 +134,7 @@ def test_resample():
     data_q2 = dummy_df(freq="Q", ts_type="Flujo")
     data_dict = {"data_q1": data_q1, "data_q2": data_q2}
     session = Session(location=TEST_CON, dataset=data_dict, inplace=True)
-    trf_inter = session.resample(target="A-DEC", operation="average").dataset
+    trf_inter = session.resample(target="A-DEC", operation="mean").dataset
     trf_inter["data_q1"].columns = trf_inter[
         "data_q2"].columns = data_q1.columns
     assert trf_inter["data_q1"].equals(data_q1.resample("A-DEC").mean())
@@ -144,7 +144,7 @@ def test_resample():
     trf_none.columns = data_m.columns
     assert trf_none.equals(data_m.resample("M").interpolate("linear"))
     data_m = dummy_df(freq="Q-DEC")
-    trf_none = transform.resample(data_m, target="A-DEC", operation="end")
+    trf_none = transform.resample(data_m, target="A-DEC", operation="last")
     trf_none.columns = data_m.columns
     assert trf_none.equals(data_m.asfreq(freq="A-DEC"))
     data_m = dummy_df(freq="Q-DEC")
@@ -154,7 +154,7 @@ def test_resample():
     assert trf_none.equals(data_m.resample("M").interpolate("linear"))
     data_m = dummy_df(freq="Q-DEC")
     data_m.columns.set_levels(["-"], level=2, inplace=True)
-    trf_none = transform.resample(data_m, target="A-DEC", operation="end")
+    trf_none = transform.resample(data_m, target="A-DEC", operation="last")
     trf_none.columns = data_m.columns
     assert trf_none.equals(data_m.asfreq(freq="A-DEC"))
     with pytest.raises(ValueError):

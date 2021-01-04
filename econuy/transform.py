@@ -111,14 +111,14 @@ def _convert_usd(df: pd.DataFrame,
     if df.columns.get_level_values("Tipo")[0] == "Stock":
         metadata._set(nxr, ts_type="Stock")
         nxr_freq = resample(nxr, target=inferred_freq,
-                            operation="average").iloc[:, [1]]
+                            operation="mean").iloc[:, [1]]
     else:
         metadata._set(nxr, ts_type="Flujo")
         nxr_freq = resample(nxr, target=inferred_freq,
-                            operation="average").iloc[:, [0]]
+                            operation="mean").iloc[:, [0]]
         cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
         nxr_freq = rolling(nxr_freq, periods=cum_periods,
-                           operation="average")
+                           operation="mean")
 
     nxr_to_use = nxr_freq.reindex(df.index).iloc[:, 0]
     converted_df = df.div(nxr_to_use, axis=0)
@@ -230,10 +230,10 @@ def _convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
 
     metadata._set(cpi, ts_type="Flujo")
     cpi_freq = resample(cpi, target=inferred_freq,
-                        operation="average").iloc[:, [0]]
+                        operation="mean").iloc[:, [0]]
     cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
     cpi_to_use = rolling(cpi_freq, periods=cum_periods,
-                         operation="average").squeeze()
+                         operation="mean").squeeze()
 
     if start_date is None:
         converted_df = df.div(cpi_to_use, axis=0)
@@ -357,12 +357,12 @@ def _convert_gdp(df: pd.DataFrame,
             converter = int(12 / cum)
             df = rolling(df, periods=converter, operation="sum")
     elif inferred_freq in ["Q", "Q-DEC"]:
-        gdp = gdp.resample(inferred_freq, convention="end").asfreq()
+        gdp = gdp.resample(inferred_freq, convention="last").asfreq()
         if cum != 4 and df.columns.get_level_values("Tipo")[0] == "Flujo":
             converter = int(4 / cum)
             df = rolling(df, periods=converter, operation="sum")
     elif inferred_freq in ["A", "A-DEC"]:
-        gdp = gdp.resample(inferred_freq, convention="end").asfreq()
+        gdp = gdp.resample(inferred_freq, convention="last").asfreq()
     elif inferred_freq in ["D", "B", "C", "W", None]:
         if df.columns.get_level_values("Tipo")[0] == "Flujo":
             df = df.resample("M").sum()
@@ -405,7 +405,7 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
         Target frequency to resample to. See
         `Pandas offset aliases <https://pandas.pydata.org/pandas-docs/stable/
         user_guide/timeseries.html#offset-aliases>`_
-    operation : {'sum', 'average', 'upsample', 'end'}
+    operation : {'sum', 'mean', 'last', 'upsample'}
         Operation to use for resampling.
     interpolation : str, default 'linear'
         Method to use when missing data are produced as a result of resampling.
@@ -429,6 +429,25 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
         set to flow.
 
     """
+    if operation not in ["sum", "mean", "upsample", "last"]:
+        raise ValueError("Invalid 'operation' option.")
+    if "Acum. períodos" not in df.columns.names:
+        raise ValueError("Input dataframe's multiindex requires the "
+                         "'Acum. períodos' level.")
+
+    columns = []
+    for column_name in df.columns:
+        df_column = df[[column_name]]
+        converted = _resample(df=df_column, target=target, operation=operation,
+                              interpolation=interpolation)
+        columns.append(converted)
+    output = pd.concat(columns, axis=1)
+
+    return output
+
+
+def _resample(df: pd.DataFrame, target: str, operation: str = "sum",
+              interpolation: str = "linear") -> pd.DataFrame:
     pd_frequencies = {"A": 1,
                       "A-DEC": 1,
                       "Q": 4,
@@ -443,16 +462,13 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
 
     if operation == "sum":
         resampled_df = df.resample(target).sum()
-    elif operation == "average":
+    elif operation == "mean":
         resampled_df = df.resample(target).mean()
-    elif operation == "end":
+    elif operation == "last":
         resampled_df = df.resample(target).last()
-    elif operation == "upsample":
+    else:
         resampled_df = df.resample(target).last()
         resampled_df = resampled_df.interpolate(method=interpolation)
-    else:
-        raise ValueError("Only 'sum', 'average', 'end' and 'upsample' "
-                         "are accepted operations")
 
     cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
     if cum_periods != 1:
@@ -462,7 +478,7 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
         metadata._set(resampled_df,
                       cumperiods=int(cum_periods * cum_adj))
 
-    if operation in ["sum", "average", "end"]:
+    if operation in ["sum", "mean", "last"]:
         infer_base = pd.infer_freq(df.index)
         try:
             base_freq = pd_frequencies[infer_base]
@@ -497,7 +513,7 @@ def rolling(df: pd.DataFrame, periods: Optional[int] = None,
         Input dataframe.
     periods : int, default None
         How many periods the window should cover.
-    operation : {'sum', 'average'}
+    operation : {'sum', 'mean'}
         Operation used to calculate rolling windows.
 
     Returns
@@ -526,7 +542,7 @@ def rolling(df: pd.DataFrame, periods: Optional[int] = None,
     window_operation = {
         "sum": lambda x: x.rolling(window=periods,
                                    min_periods=periods).sum(),
-        "average": lambda x: x.rolling(window=periods,
+        "mean": lambda x: x.rolling(window=periods,
                                        min_periods=periods).mean()
     }
 

@@ -907,7 +907,7 @@ def _ifs(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     xr = nxr(update_loc=update_loc, save_loc=save_loc,
              only_get=only_get)
-    xr = resample(xr, target="M", operation="average")
+    xr = resample(xr, target="M", operation="mean")
     xr.columns = xr.columns.get_level_values(0)
     prices = cpi(update_loc=update_loc, save_loc=save_loc,
                  only_get=only_get)

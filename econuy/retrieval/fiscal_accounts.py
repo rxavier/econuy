@@ -472,7 +472,7 @@ def net_public_debt(update_loc: Union[str, PathLike, Engine,
         update_loc=update_loc, save_loc=save_loc,
         only_get=only_get).loc[:,
                                ["Obligaciones en ME con el sector financiero"]]
-    deposits = (transform.resample(deposits, target="Q-DEC", operation="end")
+    deposits = (transform.resample(deposits, target="Q-DEC", operation="last")
                 .reindex(gross_debt.index).squeeze())
     output = gross_debt.add(assets).add(deposits, axis=0).dropna()
 
