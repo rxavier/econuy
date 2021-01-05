@@ -699,12 +699,13 @@ def _new_open_and_read(fname):
 x13._open_and_read = _new_open_and_read
 
 
-def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
+def decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
               force_x13: bool = False, fallback: str = "loess",
               outlier: bool = True, trading: bool = True,
               x13_binary: Union[str, PathLike, None] = "search",
               search_parents: int = 1, ignore_warnings: bool = True,
-              **kwargs) -> Optional[Tuple[pd.DataFrame, pd.DataFrame]]:
+              **kwargs) -> Union[Tuple[pd.DataFrame, pd.DataFrame],
+                                 pd.DataFrame]:
     """
     Apply seasonal decomposition.
 
@@ -719,7 +720,7 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
     ----------
     df : pd.DataFrame
         Input dataframe.
-    flavor : {'both', 'seas', 'trend'}
+    component : {'both', 'seas', 'trend'}
         Return both seasonally adjusted and trend dataframes or choose between
         them.
     method : {'x13', 'loess', 'ma'}
@@ -742,7 +743,7 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
         Whether to automatically detect outliers in X13 ARIMA.
     x13_binary: str, os.PathLike or None, default 'search'
         Location of the X13 binary. If ``search`` is used, will attempt to find
-        the binary in the project structure. If ``None``, Statsmodels will
+        the binary in the project structure. If ``None``, statsmodels will
         handle it.
     search_parents: int, default 1
         If ``x13_binary=search``, this parameter controls how many parent
@@ -755,14 +756,19 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
 
     Returns
     -------
-    Decomposed dataframes : Tuple[pd.DataFrame, pd.DataFrame] or None
+    Decomposed dataframes : Tuple[pd.DataFrame, pd.DataFrame] or pd.DataFrame
         Tuple containing the trend component and the seasonally adjusted
-        series.
+        series, or Pandas dataframe containing the chosen component.
 
     Raises
     ------
     ValueError
-        If the path provided for the X13 binary does not point to a file.
+        If the `method` parameter does not have a valid argument.
+    ValueError
+        If the `fallback` parameter does not have a valid argument.
+    ValueError
+        If the path provided for the X13 binary does not point to a file and
+        `method='x13'`.
 
     """
     if method not in ["x13", "loess", "ma"]:
@@ -823,7 +829,7 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
                                       UserWarning)
                         return decompose(df=df, method=method,
                                          outlier=False,
-                                         flavor=flavor, fallback=fallback,
+                                         component=component, fallback=fallback,
                                          force_x13=force_x13,
                                          x13_binary=x13_binary,
                                          search_parents=search_parents,
@@ -835,7 +841,7 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
                                           UserWarning)
                             return decompose(df=df, method=method,
                                              outlier=False, trading=False,
-                                             flavor=flavor,
+                                             component=component,
                                              fallback=fallback,
                                              force_x13=force_x13,
                                              x13_binary=x13_binary,
@@ -857,7 +863,7 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
                                       "Trying with trading=False...",
                                       UserWarning)
                         return decompose(df=df, method=method,
-                                         trading=False, flavor=flavor,
+                                         trading=False, component=component,
                                          fallback=fallback,
                                          force_x13=force_x13,
                                          x13_binary=x13_binary,
@@ -907,11 +913,11 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
     metadata._set(trends, seas_adj="Tendencia")
     metadata._set(seas_adjs, seas_adj="SA")
     output = pd.DataFrame()
-    if flavor == "both":
+    if component == "both":
         output = (trends, seas_adjs)
-    elif flavor == "seas":
+    elif component == "seas":
         output = seas_adjs
-    elif flavor == "trend":
+    elif component == "trend":
         output = trends
 
     return output

@@ -99,7 +99,7 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
             chn_yoy.iloc[row, 1] = (chn_yoy.iloc[row + 4, 1]
                                     / (1 + chn_yoy.iloc[row + 4, 0] / 100))
     chn_sa = decompose(chn_yoy[["volume"]].loc[chn_yoy.index < "2016-01-01"],
-                       flavor="seas", method="x13")
+                       component="seas", method="x13")
     chn_sa = pd.concat([chn_sa, chn_qoq], axis=1)
     for row in range(len(chn_sa)):
         if not pd.isna(chn_sa.iloc[row, 1]):

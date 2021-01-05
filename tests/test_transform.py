@@ -180,7 +180,7 @@ def test_decompose():
     noise = np.random.normal(0, 1, 100)
     df["Real"] = df["Real"] + noise
     session = Session(location=TEST_CON, dataset=df[["Real"]])
-    trend, seas = session.decompose(flavor="both", trading=True,
+    trend, seas = session.decompose(component="both", trading=True,
                                     outlier=True, fallback="loess",
                                     ignore_warnings=False).dataset
     trend.columns, seas.columns = ["Trend"], ["Seas"]
@@ -189,7 +189,7 @@ def test_decompose():
     assert std["Real"] >= std["Seas"]
     assert std["Real"] >= std["Trend"]
     session = Session(location=TEST_CON, dataset=df[["Real"]], inplace=True)
-    trend, seas = session.decompose(flavor="both", trading=False,
+    trend, seas = session.decompose(component="both", trading=False,
                                     outlier=True, fallback="loess").dataset
     trend.columns, seas.columns = ["Trend"], ["Seas"]
     out = pd.concat([df, trend, seas], axis=1)
@@ -197,7 +197,7 @@ def test_decompose():
     assert std["Real"] >= std["Seas"]
     assert std["Real"] >= std["Trend"]
     session = Session(location=TEST_CON, dataset=df[["Real"]])
-    trend, seas = session.decompose(flavor="both", trading=False,
+    trend, seas = session.decompose(component="both", trading=False,
                                     outlier=False, fallback="ma",
                                     ignore_warnings=False).dataset
     trend.columns, seas.columns = ["Trend"], ["Seas"]
@@ -206,7 +206,7 @@ def test_decompose():
     assert std["Real"] >= std["Seas"]
     assert std["Real"] >= std["Trend"]
     session = Session(location=TEST_CON, dataset=df[["Real"]])
-    trend, seas = session.decompose(flavor="both", trading=True,
+    trend, seas = session.decompose(component="both", trading=True,
                                     outlier=False, fallback="ma").dataset
     trend.columns, seas.columns = ["Trend"], ["Seas"]
     out = pd.concat([df, trend, seas], axis=1)
@@ -214,9 +214,9 @@ def test_decompose():
     assert std["Real"] >= std["Seas"]
     assert std["Real"] >= std["Trend"]
     session = Session(location=TEST_CON, dataset=df[["Real"]])
-    trend = session.decompose(flavor="trend", trading=True,
+    trend = session.decompose(component="trend", trading=True,
                               outlier=False, force_x13=True).dataset
-    seas = session.decompose(flavor="seas", trading=True,
+    seas = session.decompose(component="seas", trading=True,
                              outlier=False, force_x13=True,
                              ignore_warnings=False).dataset
     trend.columns, seas.columns = ["Trend"], ["Seas"]
@@ -226,7 +226,7 @@ def test_decompose():
     assert std["Real"] >= std["Trend"]
     session = Session(location=TEST_CON, dataset={"data1": df[["Real"]],
                                                   "data2": df[["Real"]]})
-    trend, seas = session.decompose(flavor="both", trading=True,
+    trend, seas = session.decompose(component="both", trading=True,
                                     outlier=False).dataset["data1"]
     trend.columns, seas.columns = ["Trend"], ["Seas"]
     out = pd.concat([df, trend, seas], axis=1)
@@ -235,20 +235,20 @@ def test_decompose():
     assert std["Real"] >= std["Trend"]
     with pytest.raises(ValueError):
         session = Session(location=TEST_CON, dataset=df[["Real"]])
-        session.decompose(flavor="both", trading=True,
+        session.decompose(component="both", trading=True,
                           outlier=False, x13_binary="wrong")
     session = Session(location=TEST_CON, dataset=df[["Real"]])
-    trend = session.decompose(flavor="trend", method="loess").dataset
-    seas = session.decompose(flavor="seas", method="ma").dataset
+    trend = session.decompose(component="trend", method="loess").dataset
+    seas = session.decompose(component="seas", method="ma").dataset
     trend.columns, seas.columns = ["Trend"], ["Seas"]
     out = pd.concat([df, trend, seas], axis=1)
     std = out.std()
     assert std["Real"] >= std["Seas"]
     assert std["Real"] >= std["Trend"]
     with pytest.raises(ValueError):
-        trend = session.decompose(flavor="trend", method="wrong").dataset
+        trend = session.decompose(component="trend", method="wrong").dataset
     with pytest.raises(ValueError):
-        trend = session.decompose(flavor="trend", method="x13",
+        trend = session.decompose(component="trend", method="x13",
                                   fallback="wrong").dataset
 
 

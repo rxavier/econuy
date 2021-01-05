@@ -606,7 +606,7 @@ class Session(object):
                            logger=self.logger,
                            inplace=self.inplace)
 
-    def decompose(self, flavor: str = "both", method: str = "x13",
+    def decompose(self, component: str = "both", method: str = "x13",
                   force_x13: bool = False, fallback: str = "loess",
                   trading: bool = True, outlier: bool = True,
                   x13_binary: Union[str, PathLike] = "search",
@@ -617,7 +617,7 @@ class Session(object):
 
         Parameters
         ----------
-        flavor : {'both', 'seas', 'trend'}
+        component : {'both', 'seas', 'trend'}
             Return both seasonally adjusted and trend dataframes or choose
             between them.
         method : {'x13', 'loess', 'ma'}
@@ -665,7 +665,7 @@ class Session(object):
             output = {}
             for key, value in self.dataset.items():
                 table = transform.decompose(value,
-                                            flavor=flavor,
+                                            component=component,
                                             method=method,
                                             force_x13=force_x13,
                                             fallback=fallback,
@@ -678,7 +678,7 @@ class Session(object):
                 output.update({key: table})
         else:
             output = transform.decompose(self.dataset,
-                                         flavor=flavor,
+                                         component=component,
                                          method=method,
                                          force_x13=force_x13,
                                          fallback=fallback,
@@ -689,7 +689,7 @@ class Session(object):
                                          ignore_warnings=ignore_warnings,
                                          **kwargs)
         self.logger.info(f"Applied 'decompose' transformation with "
-                         f"'{method}' method and '{flavor}' flavor.")
+                         f"'{method}' method and '{component}' flavor.")
         if self.inplace is True:
             self.dataset = output
             return self
