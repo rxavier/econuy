@@ -623,46 +623,15 @@ class Session(object):
         """
         Apply seasonal decomposition.
 
-        Parameters
-        ----------
-        component : {'both', 'seas', 'trend'}
-            Return both seasonally adjusted and trend dataframes or choose
-            between them.
-        method : {'x13', 'loess', 'ma'}
-            Decomposition method. ``X13`` refers to X13 ARIMA from the US
-            Census, ``loess`` refers to Loess decomposition and ``ma`` refers
-            to moving average decomposition, in all cases as implemented by
-            `statsmodels <https://www.statsmodels.org/dev/tsa.html>`_.
-        force_x13 : bool, default False
-            Whether to try different ``outlier`` and ``trading`` parameters
-            in statsmodels' `x13 arima analysis <https://www.statsmodels.org/
-            dev/ generated/statsmodels.tsa.x13.x13_arima_analysis.html>`_ for
-            each series that fails. If ``False``, jump to the ``fallback``
-            method for the whole dataframe at the first error.
-        fallback : {'loess', 'ma'}
-            Decomposition method to fall back to if ``method="x13"`` fails and
-            ``force_x13=False``.
-        trading : bool, default True
-            Whether to automatically detect trading days in X13 ARIMA.
-        outlier : bool, default True
-            Whether to automatically detect outliers in X13 ARIMA.
-        x13_binary: str, os.PathLike or None, default 'search'
-            Location of the X13 binary. If ``search`` is used, will attempt to
-            find the binary in the project structure. If ``None``, statsmodels
-            will handle it.
-        search_parents: int, default 1
-            If ``x13_binary=search``, this parameter controls how many parent
-            directories to go up before recursively searching for the binary.
-        ignore_warnings : bool, default True
-            Whether to suppress X13Warnings from statsmodels.
-        kwargs
-            Keyword arguments passed to statsmodels' ``x13_arima_analysis``,
-            ``STL`` and ``seasonal_decompose``.
-
         Raises
         ------
         ValueError
-            If an invalid string is given to the ``flavor`` argument.
+            If the ``method`` parameter does not have a valid argument.
+        ValueError
+            If the ``fallback`` parameter does not have a valid argument.
+        ValueError
+            If the path provided for the X13 binary does not point to a file
+            and ``method='x13'``.
 
         See Also
         --------
