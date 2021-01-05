@@ -408,46 +408,48 @@ def _convert_gdp(df: pd.DataFrame,
     return converted_df
 
 
-def resample(df: pd.DataFrame, rule: str, operation: str = "sum",
+def resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
+             operation: str = "sum",
              interpolation: str = "linear") -> pd.DataFrame:
     """
     Wrapper for the `resample method <https://pandas.pydata.org/pandas-docs
-    stable/reference/api/pandas.DataFrame.resample.html>`_ in Pandas.
+    stable/reference/api/pandas.DataFrame.resample.html>`_ in Pandas that
+    integrates with econuy dataframes' metadata.
 
     Trim partial bins, i.e. do not calculate the resampled
-    period if it is not complete (unless the input dataframe has no defined
-    frequency, in which case no trimming is done).
+    period if it is not complete, unless the input dataframe has no defined
+    frequency, in which case no trimming is done.
 
     Parameters
     ----------
-    df : Pandas dataframe
+    df : pd.DataFrame
         Input dataframe.
-    rule : str
+    rule : pd.DateOffset, pd.Timedelta or str
         Target frequency to resample to. See
         `Pandas offset aliases <https://pandas.pydata.org/pandas-docs/stable/
         user_guide/timeseries.html#offset-aliases>`_
     operation : {'sum', 'mean', 'last', 'upsample'}
         Operation to use for resampling.
     interpolation : str, default 'linear'
-        Method to use when missing data are produced as a result of resampling.
-        See `Pandas interpolation method <https://pandas.pydata.org/pandas-docs
+        Method to use when missing data are produced as a result of
+        resampling, for example when upsampling to a higher frequency. See
+        `Pandas interpolation methods <https://pandas.pydata.org/pandas-docs
         /stable/reference/api/pandas.Series.interpolate.html>`_
 
     Returns
     -------
-    Input dataframe at the frequency defined in ``target`` : pd.DataFrame
+    Input dataframe at the frequency defined in ``rule`` : pd.DataFrame
 
     Raises
     ------
     ValueError
-        If ``operation`` is not one of available options and if the input
-        dataframe does not have a ``Type`` level in its column multiindex.
+        If ``operation`` is not one of available options.
 
     Warns
     -----
     UserWarning
-        If input dataframe has ``-`` as type in its metadata, warn and
-        set to flow.
+        If input frequencies cannot be assigned a numeric value, preventing
+        incomplete bin trimming.
 
     """
     if operation not in ["sum", "mean", "upsample", "last"]:
@@ -470,7 +472,8 @@ def resample(df: pd.DataFrame, rule: str, operation: str = "sum",
         return pd.concat(columns, axis=1)
 
 
-def _resample(df: pd.DataFrame, target: str, operation: str = "sum",
+def _resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
+              operation: str = "sum",
               interpolation: str = "linear") -> pd.DataFrame:
     pd_frequencies = {"A": 1,
                       "A-DEC": 1,
@@ -485,13 +488,13 @@ def _resample(df: pd.DataFrame, target: str, operation: str = "sum",
                       "D": 365}
 
     if operation == "sum":
-        resampled_df = df.resample(target).sum()
+        resampled_df = df.resample(rule).sum()
     elif operation == "mean":
-        resampled_df = df.resample(target).mean()
+        resampled_df = df.resample(rule).mean()
     elif operation == "last":
-        resampled_df = df.resample(target).last()
+        resampled_df = df.resample(rule).last()
     else:
-        resampled_df = df.resample(target).last()
+        resampled_df = df.resample(rule).last()
         resampled_df = resampled_df.interpolate(method=interpolation)
 
     cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
@@ -506,10 +509,10 @@ def _resample(df: pd.DataFrame, target: str, operation: str = "sum",
         infer_base = pd.infer_freq(df.index)
         try:
             base_freq = pd_frequencies[infer_base]
-            target_freq = pd_frequencies[target]
+            target_freq = pd_frequencies[rule]
             if target_freq < base_freq:
                 count = int(base_freq / target_freq)
-                proc = df.resample(target).count()
+                proc = df.resample(rule).count()
                 proc = proc.loc[proc.iloc[:, 0] >= count]
                 resampled_df = resampled_df.reindex(proc.index)
         except KeyError:
