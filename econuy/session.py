@@ -803,12 +803,12 @@ class Session(object):
         if isinstance(self.dataset, dict):
             output = {}
             for key, value in self.dataset.items():
-                table = transform.base_index(value, start_date=start_date,
-                                             end_date=end_date, base=base)
+                table = transform.rebase(value, start_date=start_date,
+                                         end_date=end_date, base=base)
                 output.update({key: table})
         else:
-            output = transform.base_index(self.dataset, start_date=start_date,
-                                          end_date=end_date, base=base)
+            output = transform.rebase(self.dataset, start_date=start_date,
+                                      end_date=end_date, base=base)
         self.logger.info("Applied 'base_index' transformation.")
         if self.inplace is True:
             self.dataset = output

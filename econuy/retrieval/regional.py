@@ -19,7 +19,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from sqlalchemy.engine.base import Engine, Connection
 
 from econuy.retrieval.international import long_rates
-from econuy.transform import base_index, resample
+from econuy.transform import rebase, resample
 from econuy.utils import metadata, ops
 from econuy.utils.chromedriver import _build
 from econuy.utils.lstrings import urls, investing_headers
@@ -201,7 +201,7 @@ def monthly_gdp(
 
     output = pd.concat([arg, bra], axis=1)
     output.columns = ["Argentina", "Brasil"]
-    output = base_index(output, start_date="2010-01-01", end_date="2010-12-31")
+    output = rebase(output, start_date="2010-01-01", end_date="2010-12-31")
 
     if update_loc is not None:
         previous_data = ops._io(operation="update", data_loc=update_loc,
@@ -301,7 +301,7 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     output = pd.concat([arg, bra], axis=1)
     output.columns = ["Argentina", "Brasil"]
-    output = base_index(output, start_date="2010-10-01", end_date="2010-10-31")
+    output = rebase(output, start_date="2010-10-01", end_date="2010-10-31")
 
     if update_loc is not None:
         previous_data = ops._io(operation="update", data_loc=update_loc,
@@ -768,7 +768,7 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     output = arg.join(bra, how="left").interpolate(method="linear",
                                                    limit_area="inside")
-    output = base_index(output, start_date="2019-01-02").dropna(how="all")
+    output = rebase(output, start_date="2019-01-02").dropna(how="all")
 
     if update_loc is not None:
         previous_data = ops._io(operation="update",
@@ -846,8 +846,8 @@ def rxr(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     output["Argentina"] = (proc["Argentina - oficial"] * proc["US.PCPI_IX"]
                            / proc["ARG CPI"])
     output["Brasil"] = proc["Brasil"] * proc["US.PCPI_IX"] / proc["BRA CPI"]
-    output = base_index(output, start_date="2019-01-01",
-                        end_date="2019-01-31").dropna(how="all")
+    output = rebase(output, start_date="2019-01-01",
+                    end_date="2019-01-31").dropna(how="all")
 
     if update_loc is not None:
         previous_data = ops._io(operation="update",

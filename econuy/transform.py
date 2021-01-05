@@ -619,18 +619,18 @@ def _rolling(df: pd.DataFrame, window: Optional[int] = None,
     return rolling_df
 
 
-def base_index(df: pd.DataFrame, start_date: Union[str, date],
-               end_date: Union[str, date, None] = None,
-               base: float = 100) -> pd.DataFrame:
+def rebase(df: pd.DataFrame, start_date: Union[str, datetime],
+           end_date: Union[str, datetime, None] = None,
+           base: float = 100.0) -> pd.DataFrame:
     """Rebase all dataframe columns to a date or range of dates.
 
     Parameters
     ----------
     df : pd.DataFrame
         Input dataframe.
-    start_date : string or datetime.date
+    start_date : string or datetime.datetime
         Date to which series will be rebased.
-    end_date : string or datetime.date, default None
+    end_date : string or datetime.datetime, default None
         If specified, series will be rebased to the average between
         ``start_date`` and ``end_date``.
     base : float, default 100

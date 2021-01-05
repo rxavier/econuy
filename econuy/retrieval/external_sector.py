@@ -233,8 +233,8 @@ def terms_of_trade(update_loc: Union[str, PathLike, Engine,
     tot = exports / imports
     tot = tot.loc[:, ["Total"]]
     tot.rename(columns={"Total": "Términos de intercambio"}, inplace=True)
-    tot = transform.base_index(tot, start_date="2005-01-01",
-                               end_date="2005-12-31")
+    tot = transform.rebase(tot, start_date="2005-01-01",
+                           end_date="2005-12-31")
     metadata._set(tot, ts_type="-")
 
     if save_loc is not None:
@@ -734,8 +734,8 @@ def rxr_custom(update_loc: Union[str, PathLike, Engine,
     metadata._set(output, area="Sector externo", currency="-",
                   inf_adj="No", unit="-", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
-    output = transform.base_index(output, start_date="2010-01-01",
-                                  end_date="2010-12-31", base=100)
+    output = transform.rebase(output, start_date="2010-01-01",
+                              end_date="2010-12-31", base=100)
     metadata._modify_multiindex(output, levels=[3],
                                 new_arrays=[["UYU/ARS", "UYU/ARS",
                                              "UYU/BRL", "UYU/USD"]])

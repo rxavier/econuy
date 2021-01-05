@@ -16,7 +16,7 @@ from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from sqlalchemy.engine.base import Engine, Connection
 
-from econuy.transform import decompose, base_index
+from econuy.transform import decompose, rebase
 from econuy.utils import metadata, ops, get_project_root
 from econuy.utils.lstrings import urls, investing_headers
 
@@ -212,7 +212,7 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                                                   limit_area="inside")
     output.columns = ["S&P 500", "Euronext 100", "Nikkei 225",
                       "Shanghai Stock Exchange Composite"]
-    output = base_index(output, start_date="2019-01-02")
+    output = rebase(output, start_date="2019-01-02")
 
     if update_loc is not None:
         previous_data = ops._io(operation="update",

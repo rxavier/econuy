@@ -492,7 +492,7 @@ def real_wages(update_loc: Union[str, PathLike, Engine,
     output = transform.convert_real(wages, update_loc=update_loc,
                                     only_get=only_get)
 
-    output = transform.base_index(output, start_date="2008-07-31")
+    output = transform.rebase(output, start_date="2008-07-31")
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,

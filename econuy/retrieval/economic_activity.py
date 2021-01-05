@@ -406,8 +406,8 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
     core = pd.concat([core], keys=["Núcleo industrial"],
                      names=["Indicador"], axis=1)
     output = pd.concat([output, core], axis=1)
-    output = transform.base_index(output, start_date="2006-01-01",
-                                  end_date="2006-12-31")
+    output = transform.rebase(output, start_date="2006-01-01",
+                              end_date="2006-12-31")
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
