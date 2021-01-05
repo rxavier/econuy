@@ -56,9 +56,9 @@ def convert_usd(df: pd.DataFrame,
         ``update_loc``.
     errors : {'raise', 'coerce', 'ignore'}
         What to do when a column in the input dataframe is not expressed in
-        Uruguayan pesos. 'raise' will raise a ValueError, 'coerce' will force
-        the entire column into ´np.nan´ and 'ignore' will leave the input
-        column as is.
+        Uruguayan pesos. ``raise`` will raise a ValueError, ``coerce`` will
+        force the entire column into ``np.nan`` and ``ignore`` will leave the
+        input column as is.
 
     Returns
     -------
@@ -179,8 +179,8 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
         ``update_loc``.
     errors : {'raise', 'coerce', 'ignore'}
         What to do when a column in the input dataframe is not expressed in
-        nominal Uruguayan pesos. 'raise' will raise a ValueError, 'coerce'
-        will force the entire column into ´np.nan´ and 'ignore' will leave
+        nominal Uruguayan pesos. ``raise`` will raise a ValueError, ``coerce``
+        will force the entire column into ``np.nan`` and ``ignore`` will leave
         the input column as is.
 
     Returns
@@ -316,9 +316,9 @@ def convert_gdp(df: pd.DataFrame,
         ``update_loc``.
     errors : {'raise', 'coerce', 'ignore'}
         What to do when a column in the input dataframe does not refer to
-        Uruguayan data or is already in % of GDP. 'raise' will raise a
-        ValueError, 'coerce' will force the entire column into ´np.nan´ and
-        'ignore' will leave the input column as is.
+        Uruguayan data or is already in % of GDP. ``raise`` will raise a
+        ValueError, ``coerce`` will force the entire column into ``np.nan`` and
+        ``ignore`` will leave the input column as is.
 
     Returns
     -------
