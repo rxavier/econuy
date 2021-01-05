@@ -121,20 +121,20 @@ def test_rolling():
                                                        min_periods=12).sum())
     with pytest.warns(UserWarning):
         data_wrong = dummy_df(freq="M", ts_type="Stock")
-        transform.rolling(data_wrong, periods=4, operation="mean")
+        transform.rolling(data_wrong, window=4, operation="mean")
 
 
 def test_resample():
     data_m = dummy_df(freq="M", periods=204, ts_type="Flujo", cumperiods=2)
     session = Session(location=TEST_CON, dataset=data_m)
-    trf_none = session.resample(target="Q-DEC", operation="sum").dataset
+    trf_none = session.resample(rule="Q-DEC", operation="sum").dataset
     trf_none.columns = data_m.columns
     assert trf_none.equals(data_m.resample("Q-DEC").sum())
     data_q1 = dummy_df(freq="Q", ts_type="Flujo")
     data_q2 = dummy_df(freq="Q", ts_type="Flujo")
     data_dict = {"data_q1": data_q1, "data_q2": data_q2}
     session = Session(location=TEST_CON, dataset=data_dict, inplace=True)
-    trf_inter = session.resample(target="A-DEC", operation="mean").dataset
+    trf_inter = session.resample(rule="A-DEC", operation="mean").dataset
     trf_inter["data_q1"].columns = trf_inter[
         "data_q2"].columns = data_q1.columns
     assert trf_inter["data_q1"].equals(data_q1.resample("A-DEC").mean())

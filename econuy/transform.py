@@ -123,7 +123,7 @@ def _convert_usd(df: pd.DataFrame,
         nxr_freq = resample(nxr, rule=inferred_freq,
                             operation="mean").iloc[:, [0]]
         cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
-        nxr_freq = rolling(nxr_freq, periods=cum_periods,
+        nxr_freq = rolling(nxr_freq, window=cum_periods,
                            operation="mean")
 
     nxr_to_use = nxr_freq.reindex(df.index).iloc[:, 0]
@@ -247,7 +247,7 @@ def _convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     cpi_freq = resample(cpi, rule=inferred_freq,
                         operation="mean").iloc[:, [0]]
     cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
-    cpi_to_use = rolling(cpi_freq, periods=cum_periods,
+    cpi_to_use = rolling(cpi_freq, window=cum_periods,
                          operation="mean").squeeze()
 
     if start_date is None:
@@ -376,12 +376,12 @@ def _convert_gdp(df: pd.DataFrame,
                        operation="upsample", interpolation="linear")
         if cum != 12 and df.columns.get_level_values("Tipo")[0] == "Flujo":
             converter = int(12 / cum)
-            df = rolling(df, periods=converter, operation="sum")
+            df = rolling(df, window=converter, operation="sum")
     elif inferred_freq in ["Q", "Q-DEC"]:
         gdp = gdp.resample(inferred_freq, convention="last").asfreq()
         if cum != 4 and df.columns.get_level_values("Tipo")[0] == "Flujo":
             converter = int(4 / cum)
-            df = rolling(df, periods=converter, operation="sum")
+            df = rolling(df, window=converter, operation="sum")
     elif inferred_freq in ["A", "A-DEC"]:
         gdp = gdp.resample(inferred_freq, convention="last").asfreq()
     elif inferred_freq in ["D", "B", "C", "W", None]:
@@ -444,6 +444,8 @@ def resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
     ------
     ValueError
         If ``operation`` is not one of available options.
+    ValueError
+        If the input dataframe's columns do not have the appropiate levels.
 
     Warns
     -----
@@ -525,20 +527,22 @@ def _resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
     return resampled_df
 
 
-def rolling(df: pd.DataFrame, periods: Optional[int] = None,
+def rolling(df: pd.DataFrame, window: Optional[int] = None,
             operation: str = "sum") -> pd.DataFrame:
     """
     Wrapper for the `rolling method <https://pandas.pydata.org/pandas-docs/
-    stable/reference/api/pandas.DataFrame.rolling.html>`_ in Pandas.
+    stable/reference/api/pandas.DataFrame.rolling.html>`_ in Pandas that
+    integrates with econuy dataframes' metadata.
 
     If ``periods`` is ``None``, try to infer the frequency and set ``periods``
-    according to the following logic: ``{'A': 1, 'Q-DEC': 4, 'M': 12}``.
+    according to the following logic: ``{'A': 1, 'Q-DEC': 4, 'M': 12}``, that
+    is, each period will be calculated as the sum or mean of the last year.
 
     Parameters
     ----------
     df : pd.DataFrame
         Input dataframe.
-    periods : int, default None
+    window : int, default None
         How many periods the window should cover.
     operation : {'sum', 'mean'}
         Operation used to calculate rolling windows.
@@ -547,12 +551,41 @@ def rolling(df: pd.DataFrame, periods: Optional[int] = None,
     -------
     Input dataframe with rolling windows : pd.DataFrame
 
+    Raises
+    ------
+    ValueError
+        If ``operation`` is not one of available options.
+    ValueError
+        If the input dataframe's columns do not have the appropiate levels.
+
     Warns
     -----
     UserWarning
-        If the input dataframe is a stock time series.
+        If the input dataframe is a stock time series, for which rolling
+        operations are not recommended.
 
     """
+    if operation not in ["sum", "mean"]:
+        raise ValueError("Invalid 'operation' option.")
+    if "Tipo" not in df.columns.names:
+        raise ValueError("Input dataframe's multiindex requires the "
+                         "'Tipo' level.")
+
+    all_metadata = df.columns.droplevel("Indicador")
+    if all(x == all_metadata[0] for x in all_metadata):
+        return _rolling(df=df, window=window, operation=operation)
+    else:
+        columns = []
+        for column_name in df.columns:
+            df_column = df[[column_name]]
+            converted = _rolling(df=df_column, window=window,
+                                 operation=operation)
+            columns.append(converted)
+        return pd.concat(columns, axis=1)
+
+
+def _rolling(df: pd.DataFrame, window: Optional[int] = None,
+             operation: str = "sum") -> pd.DataFrame:
     pd_frequencies = {"A": 1,
                       "A-DEC": 1,
                       "Q": 4,
@@ -566,24 +599,22 @@ def rolling(df: pd.DataFrame, periods: Optional[int] = None,
                       "B": 260,
                       "D": 365}
 
-    window_operation = {
-        "sum": lambda x: x.rolling(window=periods,
-                                   min_periods=periods).sum(),
-        "mean": lambda x: x.rolling(window=periods,
-                                    min_periods=periods).mean()
-    }
+    window_operation = {"sum": lambda x: x.rolling(window=window,
+                                                   min_periods=window).sum(),
+                        "mean": lambda x: x.rolling(window=window,
+                                                    min_periods=window).mean()}
 
     if df.columns.get_level_values("Tipo")[0] == "Stock":
-        warnings.warn("Rolling operations shouldn't be "
+        warnings.warn("Rolling operations should not be "
                       "calculated on stock variables", UserWarning)
 
-    if periods is None:
+    if window is None:
         inferred_freq = pd.infer_freq(df.index)
-        periods = pd_frequencies[inferred_freq]
+        window = pd_frequencies[inferred_freq]
 
     rolling_df = df.apply(window_operation[operation])
 
-    metadata._set(rolling_df, cumperiods=periods)
+    metadata._set(rolling_df, cumperiods=window)
 
     return rolling_df
 

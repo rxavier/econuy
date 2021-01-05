@@ -540,7 +540,8 @@ class Session(object):
 
         return self
 
-    def resample(self, target: str, operation: str = "sum",
+    def resample(self, rule: Union[pd.DateOffset, pd.Timedelta, str],
+                 operation: str = "sum",
                  interpolation: str = "linear"):
         """
         Resample to target frequencies.
@@ -553,15 +554,15 @@ class Session(object):
         if isinstance(self.dataset, dict):
             output = {}
             for key, value in self.dataset.items():
-                table = transform.resample(value, rule=target,
+                table = transform.resample(value, rule=rule,
                                            operation=operation,
                                            interpolation=interpolation)
                 output.update({key: table})
         else:
-            output = transform.resample(self.dataset, rule=target,
+            output = transform.resample(self.dataset, rule=rule,
                                         operation=operation,
                                         interpolation=interpolation)
-        self.logger.info(f"Applied 'resample' transformation with '{target}' "
+        self.logger.info(f"Applied 'resample' transformation with '{rule}' "
                          f"and '{operation}' operation.")
         if self.inplace is True:
             self.dataset = output
@@ -820,7 +821,7 @@ class Session(object):
                            logger=self.logger,
                            inplace=self.inplace)
 
-    def rolling(self, periods: Optional[int] = None,
+    def rolling(self, window: Optional[int] = None,
                 operation: str = "sum"):
         """
         Calculate rolling averages or sums.
@@ -833,14 +834,14 @@ class Session(object):
         if isinstance(self.dataset, dict):
             output = {}
             for key, value in self.dataset.items():
-                table = transform.rolling(value, periods=periods,
+                table = transform.rolling(value, window=window,
                                           operation=operation)
                 output.update({key: table})
         else:
-            output = transform.rolling(self.dataset, periods=periods,
+            output = transform.rolling(self.dataset, window=window,
                                        operation=operation)
         self.logger.info(f"Applied 'rolling' transformation with "
-                         f"{periods} periods and '{operation}' operation.")
+                         f"{window} periods and '{operation}' operation.")
         if self.inplace is True:
             self.dataset = output
             return self

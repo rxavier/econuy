@@ -187,7 +187,7 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
 
     data_uyu = national_accounts(update_loc=update_loc, only_get=only_get_na)[
         "gdp_cur_nsa"]
-    data_uyu = transform.rolling(data_uyu, periods=4, operation="sum")
+    data_uyu = transform.rolling(data_uyu, window=4, operation="sum")
     data_usd = transform.convert_usd(data_uyu,
                                      update_loc=update_loc,
                                      only_get=only_get)
