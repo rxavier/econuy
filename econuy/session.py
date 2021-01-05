@@ -553,12 +553,12 @@ class Session(object):
         if isinstance(self.dataset, dict):
             output = {}
             for key, value in self.dataset.items():
-                table = transform.resample(value, target=target,
+                table = transform.resample(value, rule=target,
                                            operation=operation,
                                            interpolation=interpolation)
                 output.update({key: table})
         else:
-            output = transform.resample(self.dataset, target=target,
+            output = transform.resample(self.dataset, rule=target,
                                         operation=operation,
                                         interpolation=interpolation)
         self.logger.info(f"Applied 'resample' transformation with '{target}' "

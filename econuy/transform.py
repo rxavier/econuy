@@ -116,11 +116,11 @@ def _convert_usd(df: pd.DataFrame,
 
     if df.columns.get_level_values("Tipo")[0] == "Stock":
         metadata._set(nxr, ts_type="Stock")
-        nxr_freq = resample(nxr, target=inferred_freq,
+        nxr_freq = resample(nxr, rule=inferred_freq,
                             operation="mean").iloc[:, [1]]
     else:
         metadata._set(nxr, ts_type="Flujo")
-        nxr_freq = resample(nxr, target=inferred_freq,
+        nxr_freq = resample(nxr, rule=inferred_freq,
                             operation="mean").iloc[:, [0]]
         cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
         nxr_freq = rolling(nxr_freq, periods=cum_periods,
@@ -244,7 +244,7 @@ def _convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
         inferred_freq = pd.infer_freq(df.index)
 
     metadata._set(cpi, ts_type="Flujo")
-    cpi_freq = resample(cpi, target=inferred_freq,
+    cpi_freq = resample(cpi, rule=inferred_freq,
                         operation="mean").iloc[:, [0]]
     cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
     cpi_to_use = rolling(cpi_freq, periods=cum_periods,
@@ -372,7 +372,7 @@ def _convert_gdp(df: pd.DataFrame,
     inferred_freq = pd.infer_freq(df.index)
     cum = df.columns.get_level_values("Acum. períodos")[0]
     if inferred_freq in ["M", "MS"]:
-        gdp = resample(gdp, target=inferred_freq,
+        gdp = resample(gdp, rule=inferred_freq,
                        operation="upsample", interpolation="linear")
         if cum != 12 and df.columns.get_level_values("Tipo")[0] == "Flujo":
             converter = int(12 / cum)
@@ -389,7 +389,7 @@ def _convert_gdp(df: pd.DataFrame,
             df = df.resample("M").sum()
         else:
             df = df.resample("M").mean()
-        gdp = resample(gdp, target="M",
+        gdp = resample(gdp, rule="M",
                        operation="upsample", interpolation="linear")
     else:
         raise ValueError("Frequency of input dataframe not any of 'D', 'C', "
@@ -408,7 +408,7 @@ def _convert_gdp(df: pd.DataFrame,
     return converted_df
 
 
-def resample(df: pd.DataFrame, target: str, operation: str = "sum",
+def resample(df: pd.DataFrame, rule: str, operation: str = "sum",
              interpolation: str = "linear") -> pd.DataFrame:
     """
     Wrapper for the `resample method <https://pandas.pydata.org/pandas-docs
@@ -422,7 +422,7 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
     ----------
     df : Pandas dataframe
         Input dataframe.
-    target : str
+    rule : str
         Target frequency to resample to. See
         `Pandas offset aliases <https://pandas.pydata.org/pandas-docs/stable/
         user_guide/timeseries.html#offset-aliases>`_
@@ -459,7 +459,7 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
     columns = []
     for column_name in df.columns:
         df_column = df[[column_name]]
-        converted = _resample(df=df_column, target=target, operation=operation,
+        converted = _resample(df=df_column, target=rule, operation=operation,
                               interpolation=interpolation)
         columns.append(converted)
     output = pd.concat(columns, axis=1)
@@ -564,7 +564,7 @@ def rolling(df: pd.DataFrame, periods: Optional[int] = None,
         "sum": lambda x: x.rolling(window=periods,
                                    min_periods=periods).sum(),
         "mean": lambda x: x.rolling(window=periods,
-                                       min_periods=periods).mean()
+                                    min_periods=periods).mean()
     }
 
     if df.columns.get_level_values("Tipo")[0] == "Stock":
@@ -609,7 +609,7 @@ def base_index(df: pd.DataFrame, start_date: Union[str, date],
         month = df.iloc[df.index.get_loc(start_date, method="nearest")].name
         indexed = df.apply(
             lambda x: x
-            / x.loc[month] * base)
+                      / x.loc[month] * base)
         m_start = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m")
         metadata._set(indexed, unit=f"{m_start}={base}")
 
@@ -909,9 +909,9 @@ def chg_diff(df: pd.DataFrame, operation: str = "chg",
     inferred_freq = pd.infer_freq(df.index)
 
     type_change = {"last":
-                   {"chg": [lambda x: x.pct_change(periods=1),
-                            "% variación"],
-                    "diff": [lambda x: x.diff(periods=1), "Cambio"]},
+                       {"chg": [lambda x: x.pct_change(periods=1),
+                                "% variación"],
+                        "diff": [lambda x: x.diff(periods=1), "Cambio"]},
                    "inter":
                        {"chg": [lambda x: x.pct_change(periods=last_year),
                                 "% variación interanual"],

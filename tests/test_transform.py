@@ -140,26 +140,26 @@ def test_resample():
     assert trf_inter["data_q1"].equals(data_q1.resample("A-DEC").mean())
     assert trf_inter["data_q2"].equals(data_q2.resample("A-DEC").mean())
     data_m = dummy_df(freq="Q-DEC")
-    trf_none = transform.resample(data_m, target="M", operation="upsample")
+    trf_none = transform.resample(data_m, rule="M", operation="upsample")
     trf_none.columns = data_m.columns
     assert trf_none.equals(data_m.resample("M").interpolate("linear"))
     data_m = dummy_df(freq="Q-DEC")
-    trf_none = transform.resample(data_m, target="A-DEC", operation="last")
+    trf_none = transform.resample(data_m, rule="A-DEC", operation="last")
     trf_none.columns = data_m.columns
     assert trf_none.equals(data_m.asfreq(freq="A-DEC"))
     data_m = dummy_df(freq="Q-DEC")
     data_m.columns.set_levels(["-"], level=2, inplace=True)
-    trf_none = transform.resample(data_m, target="M", operation="upsample")
+    trf_none = transform.resample(data_m, rule="M", operation="upsample")
     trf_none.columns = data_m.columns
     assert trf_none.equals(data_m.resample("M").interpolate("linear"))
     data_m = dummy_df(freq="Q-DEC")
     data_m.columns.set_levels(["-"], level=2, inplace=True)
-    trf_none = transform.resample(data_m, target="A-DEC", operation="last")
+    trf_none = transform.resample(data_m, rule="A-DEC", operation="last")
     trf_none.columns = data_m.columns
     assert trf_none.equals(data_m.asfreq(freq="A-DEC"))
     with pytest.raises(ValueError):
         data_m = dummy_df(freq="M", periods=204, ts_type="Flujo")
-        transform.resample(data_m, target="Q-DEC", operation="wrong")
+        transform.resample(data_m, rule="Q-DEC", operation="wrong")
 
 
 def test_decompose():
