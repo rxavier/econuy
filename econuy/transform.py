@@ -64,6 +64,13 @@ def convert_usd(df: pd.DataFrame,
     -------
     Input dataframe measured in US dollars : pd.DataFrame
 
+    Raises
+    ------
+    ValueError
+        If the ``errors`` parameter does not have a valid argument.
+    ValueError
+        If the input dataframe's columns do not have the appropiate levels.
+
     """
     if errors not in ["raise", "coerce", "ignore"]:
         raise ValueError("'errors' must be one of 'raise', "
@@ -180,6 +187,13 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     Returns
     -------
     Input dataframe measured at constant prices : pd.DataFrame
+
+    Raises
+    ------
+    ValueError
+        If the ``errors`` parameter does not have a valid argument.
+    ValueError
+        If the input dataframe's columns do not have the appropiate levels.
 
     """
     if errors not in ["raise", "coerce", "ignore"]:
@@ -308,6 +322,13 @@ def convert_gdp(df: pd.DataFrame,
     Returns
     -------
     Input dataframe as a percentage of GDP : pd.DataFrame
+
+    Raises
+    ------
+    ValueError
+        If the ``errors`` parameter does not have a valid argument.
+    ValueError
+        If the input dataframe's columns do not have the appropiate levels.
 
     """
     if errors not in ["raise", "coerce", "ignore"]:
