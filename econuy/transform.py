@@ -327,7 +327,7 @@ def convert_gdp(df: pd.DataFrame,
     Raises
     ------
     ValueError
-        If the ``errors`` parameter does not have a valid argument.
+        If the ``method`` parameter does not have a valid argument.
     ValueError
         If the input dataframe's columns do not have the appropiate levels.
 
@@ -763,12 +763,12 @@ def decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
     Raises
     ------
     ValueError
-        If the `method` parameter does not have a valid argument.
+        If the ``method`` parameter does not have a valid argument.
     ValueError
-        If the `fallback` parameter does not have a valid argument.
+        If the ``fallback`` parameter does not have a valid argument.
     ValueError
         If the path provided for the X13 binary does not point to a file and
-        `method='x13'`.
+        ``method='x13'``.
 
     """
     if method not in ["x13", "loess", "ma"]:
