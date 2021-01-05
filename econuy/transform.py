@@ -79,27 +79,26 @@ def convert_usd(df: pd.DataFrame,
         raise ValueError("Input dataframe's multiindex requires the "
                          "'Moneda' level.")
 
-    nxr_data = prices.nxr_monthly(update_loc=update_loc, save_loc=save_loc,
-                                  only_get=only_get)
-
-    columns = []
-    for column_name in df.columns:
-        df_column = df[[column_name]]
-        if df_column.columns.get_level_values("Moneda") != "UYU":
-            if errors == "coerce":
-                columns.append(pd.DataFrame(data=np.nan, index=df.index,
-                                            columns=df_column.columns))
-            if errors == "raise":
-                raise ValueError(f"Column '{column_name[0]}' not in "
-                                 f"Uruguayan pesos.")
-            elif errors == "ignore":
-                columns.append(df_column)
+    checks = [x == "UYU" for x in df.columns.get_level_values("Moneda")]
+    if any(checks):
+        nxr_data = prices.nxr_monthly(update_loc=update_loc, save_loc=save_loc,
+                                      only_get=only_get)
+        all_metadata = df.columns.droplevel("Indicador")
+        if all(x == all_metadata[0] for x in all_metadata):
+            return _convert_usd(df=df, nxr=nxr_data)
         else:
-            converted = _convert_usd(df=df_column, nxr=nxr_data)
-            columns.append(converted)
-    output = pd.concat(columns, axis=1)
-
-    return output
+            columns = []
+            for column_name, check in zip(df.columns, checks):
+                df_column = df[[column_name]]
+                if check is False:
+                    columns.append(error_handler(df=df_column, errors=errors,
+                                                 msg=column_name[0]))
+                else:
+                    converted = _convert_usd(df=df_column, nxr=nxr_data)
+                    columns.append(converted)
+            return pd.concat(columns, axis=1)
+    else:
+        return error_handler(df=df, errors=errors)
 
 
 def _convert_usd(df: pd.DataFrame,
@@ -203,29 +202,31 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
         raise ValueError("Input dataframe's multiindex requires the "
                          "'Inf. adj.' level.")
 
-    cpi_data = prices.cpi(update_loc=update_loc, save_loc=save_loc,
-                          only_get=only_get)
-
-    columns = []
-    for column_name in df.columns:
-        df_column = df[[column_name]]
-        if (("Const" in df_column.columns.get_level_values("Inf. adj."))
-                or (df_column.columns.get_level_values("Moneda") != "UYU")):
-            if errors == "coerce":
-                columns.append(pd.DataFrame(data=np.nan, index=df.index,
-                                            columns=df_column.columns))
-            if errors == "raise":
-                raise ValueError(f"Column '{column_name[0]}' not in nominal "
-                                 f"Uruguayan pesos.")
-            elif errors == "ignore":
-                columns.append(df_column)
+    checks = [x == "UYU" and "Const." not in y
+              for x, y in zip(df.columns.get_level_values("Moneda"),
+                              df.columns.get_level_values("Inf. adj."))]
+    if any(checks):
+        cpi_data = prices.cpi(update_loc=update_loc, save_loc=save_loc,
+                              only_get=only_get)
+        all_metadata = df.columns.droplevel("Indicador")
+        if all(x == all_metadata[0] for x in all_metadata):
+            return _convert_real(df=df, start_date=start_date,
+                                 end_date=end_date, cpi=cpi_data)
         else:
-            converted = _convert_real(df=df_column, start_date=start_date,
-                                      end_date=end_date, cpi=cpi_data)
-            columns.append(converted)
-    output = pd.concat(columns, axis=1)
-
-    return output
+            columns = []
+            for column_name, check in zip(df.columns, checks):
+                df_column = df[[column_name]]
+                if check is False:
+                    columns.append(error_handler(df=df_column, errors=errors,
+                                                 msg=column_name[0]))
+                else:
+                    converted = _convert_real(df=df_column,
+                                              start_date=start_date,
+                                              end_date=end_date, cpi=cpi_data)
+                    columns.append(converted)
+            return pd.concat(columns, axis=1)
+    else:
+        return error_handler(df=df, errors=errors)
 
 
 def _convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
@@ -338,30 +339,29 @@ def convert_gdp(df: pd.DataFrame,
         raise ValueError("Input dataframe's multiindex requires the 'Área' "
                          "and 'Unidad' levels.")
 
-    gdp_data = economic_activity._lin_gdp(update_loc=update_loc,
-                                          save_loc=save_loc, only_get=only_get)
-
-    columns = []
-    for column_name in df.columns:
-        df_column = df[[column_name]]
-        if (any(x in df_column.columns.get_level_values("Área")
-                for x in ["Regional", "Global"])
-                or (df_column.columns.get_level_values("Unidad") == "% PBI")):
-            if errors == "coerce":
-                columns.append(pd.DataFrame(data=np.nan, index=df.index,
-                                            columns=df_column.columns))
-            if errors == "raise":
-                raise ValueError(f"Column '{column_name[0]}' does not refer "
-                                 f"to Uruguayan data or is already expressed "
-                                 f"in % GDP.")
-            elif errors == "ignore":
-                columns.append(df_column)
+    checks = [x not in ["Regional", "Global"] and "%PBI" not in y
+              for x, y in zip(df.columns.get_level_values("Área"),
+                              df.columns.get_level_values("Unidad"))]
+    if any(checks):
+        gdp_data = economic_activity._lin_gdp(update_loc=update_loc,
+                                              save_loc=save_loc,
+                                              only_get=only_get)
+        all_metadata = df.columns.droplevel("Indicador")
+        if all(x == all_metadata[0] for x in all_metadata):
+            return _convert_gdp(df=df, gdp=gdp_data)
         else:
-            converted = _convert_gdp(df=df_column, gdp=gdp_data)
-            columns.append(converted)
-    output = pd.concat(columns, axis=1)
-
-    return output
+            columns = []
+            for column_name, check in zip(df.columns, checks):
+                df_column = df[[column_name]]
+                if check is False:
+                    columns.append(error_handler(df=df_column, errors=errors,
+                                                 msg=column_name[0]))
+                else:
+                    converted = _convert_gdp(df=df_column, gdp=gdp_data)
+                    columns.append(converted)
+            return pd.concat(columns, axis=1)
+    else:
+        return error_handler(df=df, errors=errors)
 
 
 def _convert_gdp(df: pd.DataFrame,
@@ -952,3 +952,17 @@ def chg_diff(df: pd.DataFrame, operation: str = "chg",
         output = output.multiply(100)
 
     return output
+
+
+def error_handler(df: pd.DataFrame, errors: str, msg: str = None) -> pd.DataFrame:
+    if errors == "coerce":
+        return pd.DataFrame(data=np.nan, index=df.index, columns=df.columns)
+    elif errors == "ignore":
+        return df
+    elif errors == "raise":
+        if msg is None:
+            msg = ""
+        else:
+            msg = f" ({msg})"
+        raise ValueError(f"Input dataframe does not have "
+                         f"matching metadata{msg}.")
