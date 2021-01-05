@@ -456,15 +456,18 @@ def resample(df: pd.DataFrame, rule: str, operation: str = "sum",
         raise ValueError("Input dataframe's multiindex requires the "
                          "'Acum. períodos' level.")
 
-    columns = []
-    for column_name in df.columns:
-        df_column = df[[column_name]]
-        converted = _resample(df=df_column, target=rule, operation=operation,
-                              interpolation=interpolation)
-        columns.append(converted)
-    output = pd.concat(columns, axis=1)
-
-    return output
+    all_metadata = df.columns.droplevel("Indicador")
+    if all(x == all_metadata[0] for x in all_metadata):
+        return _resample(df=df, rule=rule, operation=operation,
+                         interpolation=interpolation)
+    else:
+        columns = []
+        for column_name in df.columns:
+            df_column = df[[column_name]]
+            converted = _resample(df=df_column, rule=rule, operation=operation,
+                                  interpolation=interpolation)
+            columns.append(converted)
+        return pd.concat(columns, axis=1)
 
 
 def _resample(df: pd.DataFrame, target: str, operation: str = "sum",
