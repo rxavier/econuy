@@ -642,18 +642,44 @@ def rebase(df: pd.DataFrame, start_date: Union[str, datetime],
     Input dataframe with a base period index : pd.DataFrame
 
     """
+    all_metadata = df.columns.droplevel("Indicador")
+    if all(x == all_metadata[0] for x in all_metadata):
+        return _rebase(df=df, end_date=end_date,
+                       start_date=start_date, base=base)
+    else:
+        columns = []
+        for column_name in df.columns:
+            df_column = df[[column_name]]
+            converted = _rebase(df=df_column, end_date=end_date,
+                                start_date=start_date, base=base)
+            columns.append(converted)
+        return pd.concat(columns, axis=1)
+
+
+def _rebase(df: pd.DataFrame, start_date: Union[str, datetime],
+            end_date: Union[str, datetime, None] = None,
+            base: float = 100.0) -> pd.DataFrame:
     if end_date is None:
-        month = df.iloc[df.index.get_loc(start_date, method="nearest")].name
-        indexed = df.apply(
-            lambda x: x
-                      / x.loc[month] * base)
-        m_start = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m")
+        start_date = df.iloc[df.index.get_loc(start_date,
+                                              method="nearest")].name
+        indexed = df.apply(lambda x: x / x.loc[start_date] * base)
+        if isinstance(start_date, str):
+            start_date = datetime.strptime(start_date, "%Y-%m-%d")
+        if base.is_integer():
+            base = int(base)
+        m_start = start_date.strftime("%Y-%m")
         metadata._set(indexed, unit=f"{m_start}={base}")
 
     else:
         indexed = df.apply(lambda x: x / x[start_date:end_date].mean() * base)
-        m_start = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m")
-        m_end = datetime.strptime(end_date, "%Y-%m-%d").strftime("%Y-%m")
+        if isinstance(start_date, str):
+            start_date = datetime.strptime(start_date, "%Y-%m-%d")
+        if isinstance(end_date, str):
+            end_date = datetime.strptime(end_date, "%Y-%m-%d")
+        m_start = start_date.strftime("%Y-%m")
+        m_end = end_date.strftime("%Y-%m")
+        if base.is_integer():
+            base = int(base)
         if m_start == m_end:
             metadata._set(indexed, unit=f"{m_start}={base}")
         else:
