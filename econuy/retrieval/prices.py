@@ -84,7 +84,7 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                                     skiprows=7).dropna(axis=0, thresh=2)
         else:
             raise err
-    cpi = (cpi_raw.drop(["Mensual", "Acum.año", "Acum.12 meses"], axis=1).
+    cpi = (cpi_raw.drop(["Mensual", "Acum. año", "Acum.12 meses"], axis=1).
            dropna(axis=0, how="all").set_index("Mes y año").rename_axis(None))
     cpi.columns = ["Índice de precios al consumo"]
     cpi.index = cpi.index + MonthEnd(1)
