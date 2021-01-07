@@ -365,9 +365,10 @@ def public_debt(update_loc: Union[str, PathLike,
     gps.columns = colnames
 
     nfps_raw = pd.read_excel(xls, sheet_name="SPNM bruta",
-                             usecols="B:O", index_col=0,
-                             skiprows=(dt.datetime.now().year - 1999) * 8 + 18)
-    nfps = nfps_raw.dropna(how="any")
+                             usecols="B:O", index_col=0)
+    loc = nfps_raw.index.get_loc("9. Deuda Bruta del Sector Público no "
+                                 "monetario por plazo y  moneda.")
+    nfps = nfps_raw.iloc[loc + 5:, :].dropna(how="any")
     nfps.index = pd.date_range(start="1999-12-31", periods=len(nfps),
                                freq="Q-DEC")
     nfps_extra_raw = pd.read_excel(xls, sheet_name="SPNM bruta",
