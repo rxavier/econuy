@@ -3,7 +3,7 @@ import warnings
 from datetime import date, datetime
 from os import PathLike, getcwd, path
 from pathlib import Path
-from typing import Union, Optional, Tuple
+from typing import Union, Optional, Tuple, Dict
 
 import numpy as np
 import pandas as pd
@@ -704,7 +704,8 @@ def decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
               outlier: bool = True, trading: bool = True,
               x13_binary: Union[str, PathLike, None] = "search",
               search_parents: int = 1, ignore_warnings: bool = True,
-              **kwargs) -> Union[Tuple[pd.DataFrame, pd.DataFrame],
+              errors: str = "raise",
+              **kwargs) -> Union[Dict[str, pd.DataFrame],
                                  pd.DataFrame]:
     """
     Apply seasonal decomposition.
@@ -750,14 +751,19 @@ def decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
         directories to go up before recursively searching for the binary.
     ignore_warnings : bool, default True
         Whether to suppress X13Warnings from statsmodels.
+    errors : {'raise', 'coerce', 'ignore'}
+        What to do when a column in the input dataframe is already seasonally
+        adjusted. ``raise`` will raise a ValueError, ``coerce`` will force the
+        entire column into ``np.nan`` and ``ignore`` will leave the input
+        column as is.
     kwargs
         Keyword arguments passed to statsmodels' ``x13_arima_analysis``,
         ``STL`` and ``seasonal_decompose``.
 
     Returns
     -------
-    Decomposed dataframes : Tuple[pd.DataFrame, pd.DataFrame] or pd.DataFrame
-        Tuple containing the trend component and the seasonally adjusted
+    Decomposed dataframes : Dict[str, pd.DataFrame] or pd.DataFrame
+        Dictionary containing the trend component and the seasonally adjusted
         series, or Pandas dataframe containing the chosen component.
 
     Raises
@@ -765,21 +771,27 @@ def decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
     ValueError
         If the ``method`` parameter does not have a valid argument.
     ValueError
+        If the ``component`` parameter does not have a valid argument.
+    ValueError
         If the ``fallback`` parameter does not have a valid argument.
     ValueError
+        If the ``errors`` parameter does not have a valid argument.
+    FileNotFoundError
         If the path provided for the X13 binary does not point to a file and
         ``method='x13'``.
 
     """
+    if errors not in ["raise", "coerce", "ignore"]:
+        raise ValueError("method can only be 'x13', 'loess' or 'ma'.")
     if method not in ["x13", "loess", "ma"]:
         raise ValueError("method can only be 'x13', 'loess' or 'ma'.")
     if fallback not in ["loess", "ma"]:
         raise ValueError("method can only be 'loess' or 'ma'.")
-
-    df_proc = df.copy()
-    old_columns = df_proc.columns
-    df_proc.columns = df_proc.columns.get_level_values(level=0)
-    df_proc.index = pd.to_datetime(df_proc.index, errors="coerce")
+    if component not in ["trend", "seas", "both"]:
+        raise ValueError("component can only be 'trend', 'seas' or 'both'.")
+    if "Seas. Adj." not in df.columns.names:
+        raise ValueError("Input dataframe's multiindex requires the "
+                         "'Seas. Adj.' level.")
 
     binary_path = None
     if method == "x13":
@@ -797,11 +809,57 @@ def decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
             binary_path = None
         if isinstance(binary_path, str) and path.isfile(
                 binary_path) is False:
-            raise ValueError(
+            raise FileNotFoundError(
                 "X13 binary missing. Please refer to the README "
                 "for instructions on where to get binaries for "
                 "Windows and Unix, and how to compile it for "
                 "macOS.")
+
+    checks = [x not in ["Tendencia", "SA"]
+              for x in df.columns.get_level_values("Seas. Adj.")]
+    passing = df.loc[:, checks]
+    not_passing = df.loc[:, [not x for x in checks]]
+    if any(checks):
+        passing_output = _decompose(passing, component=component,
+                                    method=method, force_x13=force_x13,
+                                    fallback=fallback, outlier=outlier,
+                                    trading=trading, x13_binary=binary_path,
+                                    ignore_warnings=ignore_warnings,
+                                    errors=errors, **kwargs)
+        if not_passing.shape[1] != 0:
+            not_passing_output = error_handler(df=not_passing, errors=errors)
+        else:
+            not_passing_output = not_passing
+        if isinstance(passing_output, pd.DataFrame):
+            output = pd.concat([passing_output, not_passing_output], axis=1)
+            output = output[df.columns.get_level_values(0)]
+            return output
+        elif isinstance(passing_output, Dict):
+            output = {}
+            for name, data in passing_output.items():
+                aux = pd.concat([data, not_passing_output], axis=1)
+                output[name] = aux[df.columns.get_level_values(0)]
+            return output
+    else:
+        return error_handler(df=df, errors=errors)
+
+
+def _decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
+               force_x13: bool = False, fallback: str = "loess",
+               outlier: bool = True, trading: bool = True,
+               x13_binary: Union[str, PathLike, None] = None,
+               ignore_warnings: bool = True, errors: str = "raise",
+               **kwargs) -> Union[Tuple[pd.DataFrame, pd.DataFrame],
+                                  pd.DataFrame]:
+    if method not in ["x13", "loess", "ma"]:
+        raise ValueError("method can only be 'x13', 'loess' or 'ma'.")
+    if fallback not in ["loess", "ma"]:
+        raise ValueError("method can only be 'loess' or 'ma'.")
+
+    df_proc = df.copy()
+    old_columns = df_proc.columns
+    df_proc.columns = df_proc.columns.get_level_values(level=0)
+    df_proc.index = pd.to_datetime(df_proc.index, errors="coerce")
 
     if method == "x13":
         try:
@@ -813,7 +871,7 @@ def decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
                 warnings.filterwarnings(action=action, category=X13Warning)
                 results = df_proc.apply(
                     lambda x: x13a(x.dropna(), outlier=outlier,
-                                   trading=trading, x12path=binary_path,
+                                   trading=trading, x12path=x13_binary,
                                    prefer_x13=True, **kwargs)
                 )
             trends = results.apply(lambda x: x.trend.reindex(df_proc.index)).T
@@ -829,10 +887,10 @@ def decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
                                       UserWarning)
                         return decompose(df=df, method=method,
                                          outlier=False,
-                                         component=component, fallback=fallback,
+                                         component=component,
+                                         fallback=fallback,
                                          force_x13=force_x13,
                                          x13_binary=x13_binary,
-                                         search_parents=search_parents,
                                          **kwargs)
                     except X13Error:
                         try:
@@ -845,16 +903,12 @@ def decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
                                              fallback=fallback,
                                              force_x13=force_x13,
                                              x13_binary=x13_binary,
-                                             search_parents=search_parents,
                                              **kwargs)
                         except X13Error:
                             warnings.warn("No combination of parameters "
                                           "successful. Filling with NaN.",
                                           UserWarning)
-                            trends = pd.DataFrame(
-                                data=np.full(df_proc.shape, np.nan),
-                                index=df_proc.index, columns=df_proc.columns
-                            )
+                            trends = error_handler(df=df_proc, errors=errors)
                             seas_adjs = trends.copy()
 
                 elif trading is True:
@@ -867,16 +921,12 @@ def decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
                                          fallback=fallback,
                                          force_x13=force_x13,
                                          x13_binary=x13_binary,
-                                         search_parents=search_parents,
                                          **kwargs)
                     except X13Error:
                         warnings.warn("No combination of parameters "
                                       "successful. Filling with NaN.",
                                       UserWarning)
-                        trends = pd.DataFrame(
-                            data=np.full(df_proc.shape, np.nan),
-                            index=df_proc.index, columns=df_proc.columns
-                        )
+                        trends = error_handler(df=df_proc, errors=errors)
                         seas_adjs = trends.copy()
 
             else:
@@ -914,7 +964,7 @@ def decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
     metadata._set(seas_adjs, seas_adj="SA")
     output = pd.DataFrame()
     if component == "both":
-        output = (trends, seas_adjs)
+        output = {"trend": trends, "seas": seas_adjs}
     elif component == "seas":
         output = seas_adjs
     elif component == "trend":
