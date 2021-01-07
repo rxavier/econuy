@@ -582,7 +582,7 @@ class Session(object):
                            inplace=self.inplace,
                            errors=self.errors)
 
-    def chg_diff(self, operation: str = "chg", period_op: str = "last"):
+    def chg_diff(self, operation: str = "chg", period: str = "last"):
         """
         Calculate pct change or difference.
 
@@ -595,13 +595,13 @@ class Session(object):
             output = {}
             for key, value in self.dataset.items():
                 table = transform.chg_diff(value, operation=operation,
-                                           period_op=period_op)
+                                           period=period)
                 output.update({key: table})
         else:
             output = transform.chg_diff(self.dataset, operation=operation,
-                                        period_op=period_op)
+                                        period=period)
         self.logger.info(f"Applied 'chg_diff' transformation with "
-                         f"'{operation}' operation and '{period_op}' period.")
+                         f"'{operation}' operation and '{period}' period.")
         if self.inplace is True:
             self.dataset = output
             return self

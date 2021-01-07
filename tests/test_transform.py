@@ -32,25 +32,25 @@ def dummy_df(freq, periods=200, area="Test", currency="Test",
 def test_diff():
     data_m = dummy_df(freq="M")
     session = Session(location=TEST_CON, dataset=data_m)
-    trf_last = session.chg_diff(operation="diff", period_op="last").dataset
+    trf_last = session.chg_diff(operation="diff", period="last").dataset
     trf_last.columns = data_m.columns
     assert trf_last.equals(data_m.diff(periods=1))
     data_q1 = dummy_df(freq="Q-DEC")
     data_q2 = dummy_df(freq="Q-DEC")
     data_dict = {"data_q1": data_q1, "data_q2": data_q2}
     session = Session(location=TEST_CON, dataset=data_dict, inplace=True)
-    trf_inter = session.chg_diff(operation="diff", period_op="inter").dataset
+    trf_inter = session.chg_diff(operation="diff", period="inter").dataset
     trf_inter["data_q1"].columns = trf_inter[
         "data_q2"].columns = data_q1.columns
     assert trf_inter["data_q1"].equals(data_q1.diff(periods=4))
     assert trf_inter["data_q2"].equals(data_q2.diff(periods=4))
     data_a = dummy_df(freq="A", ts_type="Flow")
-    trf_annual = transform.chg_diff(data_a, operation="diff", period_op="last")
+    trf_annual = transform.chg_diff(data_a, operation="diff", period="last")
     trf_annual.columns = data_a.columns
     assert trf_annual.equals(data_a.diff(periods=1))
     data_q_annual = dummy_df(freq="Q-DEC", ts_type="Flujo")
     trf_q_annual = transform.chg_diff(data_q_annual, operation="diff",
-                                      period_op="annual")
+                                      period="annual")
     trf_q_annual.columns = data_q_annual.columns
     assert trf_q_annual.equals(data_q_annual.
                                rolling(window=4, min_periods=4).
@@ -58,7 +58,7 @@ def test_diff():
                                diff(periods=4))
     data_q_annual = dummy_df(freq="Q-DEC", ts_type="Stock")
     trf_q_annual = transform.chg_diff(data_q_annual, operation="diff",
-                                      period_op="annual")
+                                      period="annual")
     trf_q_annual.columns = data_q_annual.columns
     assert trf_q_annual.equals(data_q_annual.diff(periods=4))
     with pytest.raises(ValueError):
@@ -69,19 +69,19 @@ def test_diff():
 def test_chg():
     data_m = dummy_df(freq="M")
     session = Session(location=TEST_CON, dataset=data_m, inplace=True)
-    trf_last = session.chg_diff(operation="chg", period_op="last").dataset
+    trf_last = session.chg_diff(operation="chg", period="last").dataset
     trf_last.columns = data_m.columns
     assert trf_last.equals(data_m.pct_change(periods=1).multiply(100))
     data_m = dummy_df(freq="M")
     session = Session(location=TEST_CON, dataset=data_m, inplace=True)
-    trf_last = session.chg_diff(operation="chg", period_op="last").dataset
+    trf_last = session.chg_diff(operation="chg", period="last").dataset
     trf_last.columns = data_m.columns
     assert trf_last.equals(data_m.pct_change(periods=1).multiply(100))
     data_q1 = dummy_df(freq="Q-DEC")
     data_q2 = dummy_df(freq="Q-DEC")
     data_dict = {"data_q1": data_q1, "data_q2": data_q2}
     session = Session(location=TEST_CON, dataset=data_dict)
-    trf_inter = session.chg_diff(operation="chg", period_op="inter").dataset
+    trf_inter = session.chg_diff(operation="chg", period="inter").dataset
     trf_inter["data_q1"].columns = trf_inter[
         "data_q2"].columns = data_q1.columns
     assert trf_inter["data_q1"].equals(data_q1.pct_change(periods=4).
@@ -89,12 +89,12 @@ def test_chg():
     assert trf_inter["data_q2"].equals(data_q2.pct_change(periods=4).
                                        multiply(100))
     data_a = dummy_df(freq="A", ts_type="Flow")
-    trf_annual = transform.chg_diff(data_a, operation="chg", period_op="last")
+    trf_annual = transform.chg_diff(data_a, operation="chg", period="last")
     trf_annual.columns = data_a.columns
     assert trf_annual.equals(data_a.pct_change(periods=1).multiply(100))
     data_q_annual = dummy_df(freq="Q-DEC", ts_type="Flujo")
     trf_q_annual = transform.chg_diff(data_q_annual, operation="chg",
-                                      period_op="annual")
+                                      period="annual")
     trf_q_annual.columns = data_q_annual.columns
     assert trf_q_annual.equals(data_q_annual.
                                rolling(window=4, min_periods=4).
@@ -259,7 +259,7 @@ def test_base_index():
     assert np.all(base.loc["2000-01-31"].values == np.array([100] * 3))
     chg = data.pct_change(periods=1).multiply(100)
     session = Session(location=TEST_CON, dataset=data, inplace=True)
-    comp = session.chg_diff(operation="chg", period_op="last").dataset
+    comp = session.chg_diff(operation="chg", period="last").dataset
     chg.columns = comp.columns
     assert chg.equals(comp)
     data = dummy_df(freq="Q-DEC")
@@ -271,7 +271,7 @@ def test_base_index():
     chg = data.pct_change(periods=1).multiply(100)
     session = Session(location=TEST_CON, dataset={
                       "data1": data, "data2": data})
-    comp = session.chg_diff(operation="chg", period_op="last").dataset["data1"]
+    comp = session.chg_diff(operation="chg", period="last").dataset["data1"]
     chg.columns = comp.columns
     assert chg.equals(comp)
     data = dummy_df(freq="M")

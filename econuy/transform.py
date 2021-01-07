@@ -989,7 +989,7 @@ def _rsearch(dir_file: Union[str, PathLike], search_term: str, n: int = 2):
 
 
 def chg_diff(df: pd.DataFrame, operation: str = "chg",
-             period_op: str = "last") -> pd.DataFrame:
+             period: str = "last") -> pd.DataFrame:
     """
     Wrapper for the `pct_change <https://pandas.pydata.org/pandas-docs/stable/
     reference/api/pandas.DataFrame.pct_change.html>`_ and `diff <https://pandas
@@ -1008,11 +1008,11 @@ def chg_diff(df: pd.DataFrame, operation: str = "chg",
         Input dataframe.
     operation : {'chg', 'diff'}
         ``chg`` for percent change or ``diff`` for differences.
-    period_op : {'last', 'inter', 'annual'}
+    period : {'last', 'inter', 'annual'}
         Period with which to calculate change or difference. ``last`` for
         previous period (last month for monthly data), ``inter`` for same
         period last year, ``annual`` for same period last year but taking
-        annual averages/sums.
+        annual sums.
 
     Returns
     -------
@@ -1023,8 +1023,37 @@ def chg_diff(df: pd.DataFrame, operation: str = "chg",
     ValueError
         If the dataframe is not of frequency ``M`` (month), ``Q`` or
         ``Q-DEC`` (quarter), or ``A`` or ``A-DEC`` (year).
+    ValueError
+        If the ``operation`` parameter does not have a valid argument.
+    ValueError
+        If the ``period`` parameter does not have a valid argument.
+    ValueError
+        If the input dataframe's columns do not have the appropiate levels.
 
     """
+    if operation not in ["chg", "diff"]:
+        raise ValueError("Invalid 'operation' option.")
+    if period not in ["last", "inter", "annual"]:
+        raise ValueError("Invalid 'period' option.")
+    if "Tipo" not in df.columns.names:
+        raise ValueError("Input dataframe's multiindex requires the "
+                         "'Tipo' level.")
+
+    all_metadata = df.columns.droplevel("Indicador")
+    if all(x == all_metadata[0] for x in all_metadata):
+        return _chg_diff(df=df, operation=operation, period=period)
+    else:
+        columns = []
+        for column_name in df.columns:
+            df_column = df[[column_name]]
+            converted = _chg_diff(df=df_column, operation=operation,
+                                  period=period)
+            columns.append(converted)
+        return pd.concat(columns, axis=1)
+
+
+def _chg_diff(df: pd.DataFrame, operation: str = "chg",
+              period: str = "last") -> pd.DataFrame:
     inferred_freq = pd.infer_freq(df.index)
 
     type_change = {"last":
@@ -1052,20 +1081,20 @@ def chg_diff(df: pd.DataFrame, operation: str = "chg",
         raise ValueError("The dataframe needs to have a frequency of M "
                          "(month end), Q (quarter end) or A (year end)")
 
-    if period_op == "annual":
+    if period == "annual":
 
         if df.columns.get_level_values("Tipo")[0] == "Stock":
-            output = df.apply(type_change[period_op][operation][0])
+            output = df.apply(type_change[period][operation][0])
         else:
             output = rolling(df, operation="sum")
             output = output.apply(
-                type_change[period_op][operation][0])
+                type_change[period][operation][0])
 
-        metadata._set(output, unit=type_change[period_op][operation][1])
+        metadata._set(output, unit=type_change[period][operation][1])
 
     else:
-        output = df.apply(type_change[period_op][operation][0])
-        metadata._set(output, unit=type_change[period_op][operation][1])
+        output = df.apply(type_change[period][operation][0])
+        metadata._set(output, unit=type_change[period][operation][1])
 
     if operation == "chg":
         output = output.multiply(100)
