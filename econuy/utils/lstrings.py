@@ -882,8 +882,8 @@ urls = {"call":
                 "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Informe-Diario-Pasivos-Monetarios.aspx"],
             "provider": ["BCU"]}},
         "rxr_official": {"dl": {
-            "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Cambio-Real-Efectivo.aspx"},
-            "source": {"direct": [],
+            "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Indice_Cambio_Real/TCRE.xls"},
+            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Indice_Cambio_Real/TCRE.xls"],
                        "indirect": [
                 "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Cambio-Real-Efectivo.aspx"],
             "provider": ["BCU"]}},

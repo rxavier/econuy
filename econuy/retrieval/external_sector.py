@@ -620,12 +620,8 @@ def rxr_official(update_loc: Union[str, PathLike, Engine,
         if not output.equals(pd.DataFrame()):
             return output
 
-    r = requests.get(urls["rxr_official"]["dl"]["main"])
-    soup = BeautifulSoup(r.content, "html.parser")
-    links = soup.find_all(href=re.compile("eese[A-z0-9]+\\.xls$"))
-    xls = "https://www.bcu.gub.uy" + links[0]["href"]
-    raw = pd.read_excel(xls, skiprows=8, usecols="B:N",
-                        index_col=0)
+    raw = pd.read_excel(urls["rxr_official"]["dl"]["main"], skiprows=8,
+                        usecols="B:N", index_col=0)
     proc = raw.dropna(how="any")
     proc.columns = ["Global", "Extrarregional", "Regional",
                     "Argentina", "Brasil", "EE.UU.", "México", "Alemania",
