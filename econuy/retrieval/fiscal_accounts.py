@@ -139,8 +139,7 @@ def tax_revenue(
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
         name: str = "taxes",
         index_label: str = "index",
-        only_get: bool = False,
-        **kwargs) -> pd.DataFrame:
+        only_get: bool = False) -> pd.DataFrame:
     """
     Get tax revenues data.
 
@@ -192,7 +191,7 @@ def tax_revenue(
     output.index = output.index + MonthEnd(0)
     output.columns = taxes_columns
     output = output.div(1000000)
-    latest = _get_taxes_from_pdf(output, **kwargs)
+    latest = _get_taxes_from_pdf(output)
     output = pd.concat([output, latest], sort=False)
     output = output.loc[~output.index.duplicated(keep="first")]
 
@@ -216,8 +215,7 @@ def tax_revenue(
     return output
 
 
-def _get_taxes_from_pdf(excel_data: pd.DataFrame,
-                        driver: WebDriver = None) -> pd.DataFrame:
+def _get_taxes_from_pdf(excel_data: pd.DataFrame) -> pd.DataFrame:
     extra_url = ",O,es,0,"
     last_month = excel_data.index[-1].month
     last_year = excel_data.index[-1].year
@@ -225,27 +223,24 @@ def _get_taxes_from_pdf(excel_data: pd.DataFrame,
         reports_year = [last_year + 1]
     else:
         reports_year = [last_year, last_year + 1]
-    if driver is None:
-        driver = _build()
     data = []
     for year in reports_year:
         url = f"{urls['taxes']['dl']['report']}{year}{extra_url}"
-        try:
-            driver.get(url)
-        except WebDriverException:
+        r = requests.get(url)
+        pdf_urls = re.findall("afiledownload\?2,4,1851,O,S,0,[0-9]+"
+                              "%[0-9A-z]{3}%[0-9A-z]{3}%3B108,", r.text)
+        pdf_urls = list(dict.fromkeys(pdf_urls))
+        if len(pdf_urls) == 0:
             continue
-        soup = BeautifulSoup(driver.page_source, "html.parser")
-        pdfs = soup.find_all("a", class_=re.compile("TitleStyle"),
-                             text=re.compile("recaudación"))
         dates = pd.date_range(start=dt.datetime(year, 1, 1), freq="M",
-                              periods=len(pdfs))
+                              periods=len(pdf_urls))
         if sys.platform == "win32":
             delete = False
         else:
             delete = True
-        for pdf, date in zip(pdfs, dates):
+        for pdf, date in zip(pdf_urls, dates):
             with NamedTemporaryFile(suffix=".pdf", delete=delete) as f:
-                r = requests.get(f"https://www.dgi.gub.uy/wdgi/{pdf['href']}")
+                r = requests.get(f"https://www.dgi.gub.uy/wdgi/{pdf}")
                 f.write(r.content)
                 with warnings.catch_warnings():
                     warnings.filterwarnings("ignore", category=PdfReadWarning)
@@ -280,7 +275,6 @@ def _get_taxes_from_pdf(excel_data: pd.DataFrame,
                     'Impuesto de Educación Primaria',
                     'Recaudación Total de la DGI']
                 data.append(table)
-    driver.quit()
     output = pd.concat(data)
 
     return output
