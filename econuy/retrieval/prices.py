@@ -5,6 +5,7 @@ from typing import Union
 from urllib.error import URLError, HTTPError
 from io import BytesIO
 from pathlib import Path
+from zipfile import BadZipFile
 
 import numpy as np
 import pandas as pd
@@ -280,7 +281,7 @@ def nxr_daily(update_loc: Union[str, PathLike,
     url = f"{base_url}{dates}%22,%22Grupo%22:%222%22}}" + "}"
     try:
         data.append(pd.read_excel(url, engine="openpyxl"))
-    except TypeError:
+    except (TypeError, BadZipFile):
         pass
     try:
         output = pd.concat(data, axis=0)
