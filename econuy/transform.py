@@ -91,8 +91,10 @@ def convert_usd(df: pd.DataFrame,
             for column_name, check in zip(df.columns, checks):
                 df_column = df[[column_name]]
                 if check is False:
+                    msg = (f"{column_name[0]} does not have the " 
+                           f"appropiate metadata.")
                     columns.append(error_handler(df=df_column, errors=errors,
-                                                 msg=column_name[0]))
+                                                 msg=msg))
                 else:
                     converted = _convert_usd(df=df_column, nxr=nxr_data)
                     columns.append(converted)
@@ -217,8 +219,10 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
             for column_name, check in zip(df.columns, checks):
                 df_column = df[[column_name]]
                 if check is False:
+                    msg = (f"{column_name[0]} does not have the " 
+                           f"appropiate metadata.")
                     columns.append(error_handler(df=df_column, errors=errors,
-                                                 msg=column_name[0]))
+                                                 msg=msg))
                 else:
                     converted = _convert_real(df=df_column,
                                               start_date=start_date,
@@ -354,8 +358,10 @@ def convert_gdp(df: pd.DataFrame,
             for column_name, check in zip(df.columns, checks):
                 df_column = df[[column_name]]
                 if check is False:
+                    msg = (f"{column_name[0]} does not have the " 
+                           f"appropiate metadata.")
                     columns.append(error_handler(df=df_column, errors=errors,
-                                                 msg=column_name[0]))
+                                                 msg=msg))
                 else:
                     converted = _convert_gdp(df=df_column, gdp=gdp_data)
                     columns.append(converted)
@@ -1102,7 +1108,8 @@ def _chg_diff(df: pd.DataFrame, operation: str = "chg",
     return output
 
 
-def error_handler(df: pd.DataFrame, errors: str, msg: str = None) -> pd.DataFrame:
+def error_handler(df: pd.DataFrame, errors: str,
+                  msg: str = None) -> pd.DataFrame:
     if errors == "coerce":
         return pd.DataFrame(data=np.nan, index=df.index, columns=df.columns)
     elif errors == "ignore":
@@ -1110,7 +1117,4 @@ def error_handler(df: pd.DataFrame, errors: str, msg: str = None) -> pd.DataFram
     elif errors == "raise":
         if msg is None:
             msg = ""
-        else:
-            msg = f" ({msg})"
-        raise ValueError(f"Input dataframe does not have "
-                         f"matching metadata{msg}.")
+        raise ValueError(msg)
