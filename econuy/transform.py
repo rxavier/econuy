@@ -1,6 +1,6 @@
 import platform
 import warnings
-from datetime import date, datetime
+from datetime import datetime
 from os import PathLike, getcwd, path
 from pathlib import Path
 from typing import Union, Optional, Tuple, Dict
@@ -140,8 +140,9 @@ def _convert_usd(df: pd.DataFrame,
     return converted_df
 
 
-def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
-                 end_date: Union[str, date, None] = None,
+def convert_real(df: pd.DataFrame,
+                 start_date: Union[str, datetime, None] = None,
+                 end_date: Union[str, datetime, None] = None,
                  update_loc: Union[str, PathLike, Engine,
                                    Connection, None] = None,
                  save_loc: Union[str, PathLike, Engine,
@@ -243,8 +244,9 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
         return error_handler(df=df, errors=errors)
 
 
-def _convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
-                  end_date: Union[str, date, None] = None,
+def _convert_real(df: pd.DataFrame,
+                  start_date: Union[str, datetime, None] = None,
+                  end_date: Union[str, datetime, None] = None,
                   cpi: Optional[pd.DataFrame] = None) -> pd.DataFrame:
     if cpi is None:
         cpi = prices.cpi()

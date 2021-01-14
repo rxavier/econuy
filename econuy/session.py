@@ -685,7 +685,9 @@ class Session(object):
 
     def convert(self, flavor: str, update: bool = True,
                 save: bool = True, only_get: bool = True,
-                errors: str = None, **kwargs):
+                errors: str = None,
+                start_date: Union[str, datetime, None] = None,
+                end_date: Union[str, datetime, None] = None):
         """
         Convert to other units.
 
@@ -734,7 +736,8 @@ class Session(object):
                                                    save_loc=save_loc,
                                                    only_get=only_get,
                                                    errors=errors,
-                                                   **kwargs)
+                                                   start_date=start_date,
+                                                   end_date=end_date)
                 elif flavor == "pcgdp" or flavor == "gdp":
                     table = transform.convert_gdp(value,
                                                   update_loc=update_loc,
@@ -759,7 +762,8 @@ class Session(object):
                                                 save_loc=save_loc,
                                                 only_get=only_get,
                                                 errors=errors,
-                                                **kwargs)
+                                                start_date=start_date,
+                                                end_date=end_date)
             elif flavor == "pcgdp" or flavor == "gdp":
                 output = transform.convert_gdp(self.dataset,
                                                update_loc=update_loc,
