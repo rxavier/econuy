@@ -81,6 +81,11 @@ def convert_usd(df: pd.DataFrame,
 
     checks = [x == "UYU" for x in df.columns.get_level_values("Moneda")]
     if any(checks):
+        if not all(checks) and errors == "raise":
+            error_df = df.loc[:, [not check for check in checks]]
+            msg = (f"{error_df.columns[0][0]} does not have the "
+                   f"appropiate metadata.")
+            return error_handler(df=df, errors=errors, msg=msg)
         nxr_data = prices.nxr_monthly(update_loc=update_loc, save_loc=save_loc,
                                       only_get=only_get)
         all_metadata = df.columns.droplevel("Indicador")
@@ -208,6 +213,11 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
               for x, y in zip(df.columns.get_level_values("Moneda"),
                               df.columns.get_level_values("Inf. adj."))]
     if any(checks):
+        if not all(checks) and errors == "raise":
+            error_df = df.loc[:, [not check for check in checks]]
+            msg = (f"{error_df.columns[0][0]} does not have the "
+                   f"appropiate metadata.")
+            return error_handler(df=df, errors=errors, msg=msg)
         cpi_data = prices.cpi(update_loc=update_loc, save_loc=save_loc,
                               only_get=only_get)
         all_metadata = df.columns.droplevel("Indicador")
@@ -347,6 +357,11 @@ def convert_gdp(df: pd.DataFrame,
               for x, y in zip(df.columns.get_level_values("Área"),
                               df.columns.get_level_values("Unidad"))]
     if any(checks):
+        if not all(checks) and errors == "raise":
+            error_df = df.loc[:, [not check for check in checks]]
+            msg = (f"{error_df.columns[0][0]} does not have the "
+                   f"appropiate metadata.")
+            return error_handler(df=df, errors=errors, msg=msg)
         gdp_data = economic_activity._lin_gdp(update_loc=update_loc,
                                               save_loc=save_loc,
                                               only_get=only_get)
@@ -826,6 +841,11 @@ def decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
     passing = df.loc[:, checks]
     not_passing = df.loc[:, [not x for x in checks]]
     if any(checks):
+        if not all(checks) and errors == "raise":
+            error_df = df.loc[:, [not check for check in checks]]
+            msg = (f"{error_df.columns[0][0]} does not have the "
+                   f"appropiate metadata.")
+            return error_handler(df=df, errors=errors, msg=msg)
         passing_output = _decompose(passing, component=component,
                                     method=method, force_x13=force_x13,
                                     fallback=fallback, outlier=outlier,
