@@ -5,6 +5,7 @@ from typing import Union
 from urllib.error import URLError, HTTPError
 from io import BytesIO
 from pathlib import Path
+from zipfile import BadZipFile
 
 import numpy as np
 import pandas as pd
@@ -72,21 +73,22 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
             return output
 
     try:
-        cpi_raw = pd.read_excel(urls["cpi"]["dl"]["main"], engine="openpyxl",
-                                skiprows=7).dropna(axis=0, thresh=2)
+        cpi = pd.read_excel(urls["cpi"]["dl"]["main"], engine="openpyxl",
+                            skiprows=7, usecols="A:B",
+                            index_col=0).dropna()
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
                                "ine_certs.pem")
             r = requests.get(urls["cpi"]["dl"]["main"],
                              verify=certificate)
-            cpi_raw = pd.read_excel(BytesIO(r.content),
-                                    skiprows=7).dropna(axis=0, thresh=2)
+            cpi = pd.read_excel(BytesIO(r.content),
+                                skiprows=7, usecols="A:B",
+                                index_col=0).dropna()
         else:
             raise err
-    cpi = (cpi_raw.drop(["Mensual", "Acum.año", "Acum.12 meses"], axis=1).
-           dropna(axis=0, how="all").set_index("Mes y año").rename_axis(None))
     cpi.columns = ["Índice de precios al consumo"]
+    cpi.rename_axis(None, inplace=True)
     cpi.index = cpi.index + MonthEnd(1)
 
     if update_loc is not None:
@@ -279,7 +281,7 @@ def nxr_daily(update_loc: Union[str, PathLike,
     url = f"{base_url}{dates}%22,%22Grupo%22:%222%22}}" + "}"
     try:
         data.append(pd.read_excel(url, engine="openpyxl"))
-    except TypeError:
+    except (TypeError, BadZipFile):
         pass
     try:
         output = pd.concat(data, axis=0)
@@ -395,7 +397,8 @@ def cpi_measures(update_loc: Union[str, PathLike,
         if not output.equals(pd.DataFrame()):
             return output
     try:
-        xls = pd.ExcelFile(urls["cpi_measures"]["dl"]["2010"])
+        xls_10_14 = pd.ExcelFile(urls["cpi_measures"]["dl"]["2010-14"])
+        xls_15 = pd.ExcelFile(urls["cpi_measures"]["dl"]["2015-"])
         prod_97 = (pd.read_excel(urls["cpi_measures"]["dl"]["1997"],
                                  skiprows=5, engine="openpyxl").dropna(how="any")
                    .set_index(
@@ -405,9 +408,12 @@ def cpi_measures(update_loc: Union[str, PathLike,
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
                                "ine_certs.pem")
-            r = requests.get(urls["cpi_measures"]["dl"]["2010"],
+            r = requests.get(urls["cpi_measures"]["dl"]["2010-14"],
                              verify=certificate)
-            xls = pd.ExcelFile(BytesIO(r.content))
+            xls_10_14 = pd.ExcelFile(BytesIO(r.content))
+            r = requests.get(urls["cpi_measures"]["dl"]["2015-"],
+                             verify=certificate)
+            xls_15 = pd.ExcelFile(BytesIO(r.content))
             r = requests.get(urls["cpi_measures"]["dl"]["1997"],
                              verify=certificate)
             prod_97 = (pd.read_excel(BytesIO(r.content),
@@ -420,27 +426,29 @@ def cpi_measures(update_loc: Union[str, PathLike,
     weights_97 = (pd.read_excel(urls["cpi_measures"]["dl"]["1997_weights"],
                                 index_col=0, engine="openpyxl")
                   .drop_duplicates(subset="Descripción", keep="first"))
-    weights = pd.read_excel(xls, sheet_name=xls.sheet_names[0],
-                            usecols="A:C", skiprows=14,
+    weights = pd.read_excel(xls_10_14, sheet_name=xls_10_14.sheet_names[0],
+                            usecols="A:C", skiprows=13,
                             index_col=0).dropna(how="any")
     weights.columns = ["Item", "Weight"]
     weights_8 = weights.loc[weights.index.str.len() == 8]
+
     sheets = []
-    for sheet in xls.sheet_names:
-        raw = pd.read_excel(xls, sheet_name=sheet, usecols="D:IN",
-                            skiprows=9).dropna(how="all")
-        proc = raw.loc[:, raw.columns.str.
-                       contains("Indice|Índice")].dropna(how="all")
-        sheets.append(proc.T)
+    for excel_file in [xls_10_14, xls_15]:
+        for sheet in excel_file.sheet_names:
+            raw = pd.read_excel(excel_file, sheet_name=sheet, usecols="D:IN",
+                                skiprows=8).dropna(how="all")
+            proc = raw.loc[:, raw.columns.str.
+                                  contains("Indice|Índice")].dropna(how="all")
+            sheets.append(proc.T)
     complete_10 = pd.concat(sheets)
     complete_10 = complete_10.iloc[:, 1:]
     complete_10.columns = [weights["Item"], weights.index]
     complete_10.index = pd.date_range(start="2010-12-31",
                                       periods=len(complete_10), freq="M")
     diff_8 = complete_10.loc[:,
-                             complete_10.columns.get_level_values(
-                                 level=1).str.len()
-                             == 8].pct_change()
+             complete_10.columns.get_level_values(
+                 level=1).str.len()
+             == 8].pct_change()
     win = pd.DataFrame(winsorize(diff_8, limits=(0.05, 0.05), axis=1))
     win.index = diff_8.index
     win.columns = diff_8.columns.get_level_values(level=1)
@@ -450,25 +458,25 @@ def cpi_measures(update_loc: Union[str, PathLike,
     weights_97["Weight"] = (weights_97["Rubro"]
                             .fillna(
         weights_97["Agrupación, subrubro, familia"])
-        .fillna(weights_97["Artículo"])
-        .drop(columns=["Rubro",
-                       "Agrupación, subrubro, familia",
-                       "Artículo"]))
+                            .fillna(weights_97["Artículo"])
+                            .drop(columns=["Rubro",
+                                           "Agrupación, subrubro, familia",
+                                           "Artículo"]))
     prod_97 = prod_97.loc[:, list(cpi_details["1997_base"].keys())]
     prod_97.index = pd.date_range(start="1997-03-31",
                                   periods=len(prod_97), freq="M")
     weights_97 = (weights_97[weights_97["Descripción"]
-                             .isin(cpi_details["1997_weights"])]
+                  .isin(cpi_details["1997_weights"])]
                   .set_index("Descripción")
                   .drop(columns=["Rubro", "Agrupación, subrubro, "
                                           "familia", "Artículo"])).div(100)
     weights_97.index = prod_97.columns
     prod_10 = complete_10.loc[:, list(cpi_details["2010_base"].keys())]
     prod_10 = prod_10.loc[:, ~prod_10.columns.get_level_values(level=0)
-                          .duplicated()]
+        .duplicated()]
     prod_10.columns = prod_10.columns.get_level_values(level=0)
     weights_10 = (weights.loc[weights["Item"]
-                              .isin(list(cpi_details["2010_base"].keys()))]
+                  .isin(list(cpi_details["2010_base"].keys()))]
                   .drop_duplicates(subset="Item",
                                    keep="first")).set_index("Item")
     items = []
