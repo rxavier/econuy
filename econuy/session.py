@@ -122,6 +122,15 @@ class Session(object):
                          f"Dataset: {dataset_message}\n"
                          f"Logging method: {log_method}")
 
+    def _parse_location(self, process: bool):
+        if process is True:
+            if isinstance(self.location, (str, PathLike)):
+                return Path(self.location)
+            else:
+                return self.location
+        else:
+            return None
+
     def get(self,
             dataset: str,
             update: bool = True,
@@ -153,20 +162,8 @@ class Session(object):
             If an invalid string is given to the ``dataset`` argument.
 
         """
-        if update is True:
-            if isinstance(self.location, (str, PathLike)):
-                update_loc = Path(self.location)
-            else:
-                update_loc = self.location
-        else:
-            update_loc = None
-        if save is True:
-            if isinstance(self.location, (str, PathLike)):
-                save_loc = Path(self.location)
-            else:
-                save_loc = self.location
-        else:
-            save_loc = None
+        update_loc = self._parse_location(process=update)
+        save_loc = self._parse_location(process=save)
 
         if dataset == "cpi" or dataset == "prices":
             output = prices.cpi(update_loc=update_loc,
@@ -387,20 +384,8 @@ class Session(object):
             If an invalid string is given to the ``dataset`` argument.
 
         """
-        if update is True:
-            if isinstance(self.location, (str, PathLike)):
-                update_loc = Path(self.location)
-            else:
-                update_loc = self.location
-        else:
-            update_loc = None
-        if save is True:
-            if isinstance(self.location, (str, PathLike)):
-                save_loc = Path(self.location)
-            else:
-                save_loc = self.location
-        else:
-            save_loc = None
+        update_loc = self._parse_location(process=update)
+        save_loc = self._parse_location(process=save)
 
         if dataset == "cpi_measures" or dataset == "price_measures":
             output = prices.cpi_measures(update_loc=update_loc,
@@ -706,20 +691,8 @@ class Session(object):
         if errors is None:
             errors = self.errors
 
-        if update is True:
-            if isinstance(self.location, (str, PathLike)):
-                update_loc = Path(self.location)
-            else:
-                update_loc = self.location
-        else:
-            update_loc = None
-        if save is True:
-            if isinstance(self.location, (str, PathLike)):
-                save_loc = Path(self.location)
-            else:
-                save_loc = self.location
-        else:
-            save_loc = None
+        update_loc = self._parse_location(process=update)
+        save_loc = self._parse_location(process=save)
 
         if isinstance(self.dataset, dict):
             output = {}
