@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from os import PathLike, path, makedirs
 from pathlib import Path
-from typing import Union, Optional
+from typing import Union, Optional, Callable
 
 import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
@@ -130,6 +130,16 @@ class Session(object):
                 return self.location
         else:
             return None
+
+    def _apply_transformation(self, transformation: Callable, **kwargs):
+        if isinstance(self.dataset, dict):
+            output = {}
+            for name, data in self.dataset.items():
+                transformed = transformation(data, **kwargs)
+                output.update({name: transformed})
+            return output
+        else:
+            return transformation(self.dataset, **kwargs)
 
     def get(self,
             dataset: str,
@@ -542,17 +552,9 @@ class Session(object):
         :func:`~econuy.transform.resample`
 
         """
-        if isinstance(self.dataset, dict):
-            output = {}
-            for key, value in self.dataset.items():
-                table = transform.resample(value, rule=rule,
-                                           operation=operation,
-                                           interpolation=interpolation)
-                output.update({key: table})
-        else:
-            output = transform.resample(self.dataset, rule=rule,
-                                        operation=operation,
-                                        interpolation=interpolation)
+        output = self._apply_transformation(transform.resample, rule=rule,
+                                            operation=operation,
+                                            interpolation=interpolation)
         self.logger.info(f"Applied 'resample' transformation with '{rule}' "
                          f"and '{operation}' operation.")
         if self.inplace is True:
@@ -576,15 +578,8 @@ class Session(object):
         :func:`~econuy.transform.chg_diff`
 
         """
-        if isinstance(self.dataset, dict):
-            output = {}
-            for key, value in self.dataset.items():
-                table = transform.chg_diff(value, operation=operation,
-                                           period=period)
-                output.update({key: table})
-        else:
-            output = transform.chg_diff(self.dataset, operation=operation,
-                                        period=period)
+        output = self._apply_transformation(transform.chg_diff,
+                                            operation=operation, period=period)
         self.logger.info(f"Applied 'chg_diff' transformation with "
                          f"'{operation}' operation and '{period}' period.")
         if self.inplace is True:
@@ -625,10 +620,8 @@ class Session(object):
         """
         if errors is None:
             errors = self.errors
-        if isinstance(self.dataset, dict):
-            output = {}
-            for key, value in self.dataset.items():
-                table = transform.decompose(value,
+
+        output = self._apply_transformation(transform.decompose,
                                             component=component,
                                             method=method,
                                             force_x13=force_x13,
@@ -640,20 +633,6 @@ class Session(object):
                                             ignore_warnings=ignore_warnings,
                                             errors=errors,
                                             **kwargs)
-                output.update({key: table})
-        else:
-            output = transform.decompose(self.dataset,
-                                         component=component,
-                                         method=method,
-                                         force_x13=force_x13,
-                                         fallback=fallback,
-                                         trading=trading,
-                                         outlier=outlier,
-                                         x13_binary=x13_binary,
-                                         search_parents=search_parents,
-                                         ignore_warnings=ignore_warnings,
-                                         errors=errors,
-                                         **kwargs)
         self.logger.info(f"Applied 'decompose' transformation with "
                          f"'{method}' method and '{component}' component.")
         if self.inplace is True:
@@ -688,64 +667,37 @@ class Session(object):
         :func:`~econuy.transform.convert_gdp`
 
         """
+        if flavor not in ["usd", "real", "gdp", "pcgdp"]:
+            raise ValueError("'flavor' can be one of 'usd', 'real', "
+                             "or 'gdp'.")
+
         if errors is None:
             errors = self.errors
 
         update_loc = self._parse_location(process=update)
         save_loc = self._parse_location(process=save)
 
-        if isinstance(self.dataset, dict):
-            output = {}
-            for key, value in self.dataset.items():
-                if flavor == "usd":
-                    table = transform.convert_usd(value,
-                                                  update_loc=update_loc,
-                                                  save_loc=save_loc,
-                                                  only_get=only_get,
-                                                  errors=errors)
-                elif flavor == "real":
-                    table = transform.convert_real(value,
-                                                   update_loc=update_loc,
-                                                   save_loc=save_loc,
-                                                   only_get=only_get,
-                                                   errors=errors,
-                                                   start_date=start_date,
-                                                   end_date=end_date)
-                elif flavor == "pcgdp" or flavor == "gdp":
-                    table = transform.convert_gdp(value,
-                                                  update_loc=update_loc,
-                                                  save_loc=save_loc,
-                                                  only_get=only_get,
-                                                  errors=errors)
-                else:
-                    raise ValueError("'flavor' can be one of 'usd', 'real', "
-                                     "or 'gdp'.")
-
-                output.update({key: table})
-        else:
-            if flavor == "usd":
-                output = transform.convert_usd(self.dataset,
-                                               update_loc=update_loc,
-                                               save_loc=save_loc,
-                                               only_get=only_get,
-                                               errors=errors)
-            elif flavor == "real":
-                output = transform.convert_real(self.dataset,
+        if flavor == "usd":
+            output = self._apply_transformation(transform.convert_usd,
+                                                update_loc=update_loc,
+                                                save_loc=save_loc,
+                                                only_get=only_get,
+                                                errors=errors)
+        elif flavor == "real":
+            output = self._apply_transformation(transform.convert_real,
                                                 update_loc=update_loc,
                                                 save_loc=save_loc,
                                                 only_get=only_get,
                                                 errors=errors,
                                                 start_date=start_date,
                                                 end_date=end_date)
-            elif flavor == "pcgdp" or flavor == "gdp":
-                output = transform.convert_gdp(self.dataset,
-                                               update_loc=update_loc,
-                                               save_loc=save_loc,
-                                               only_get=only_get,
-                                               errors=errors)
-            else:
-                raise ValueError("'flavor' can be one of 'usd', 'real', "
-                                 "or 'gdp'.")
+        else:
+            output = self._apply_transformation(transform.convert_gdp,
+                                                update_loc=update_loc,
+                                                save_loc=save_loc,
+                                                only_get=only_get,
+                                                errors=errors)
+
         self.logger.info(f"Applied 'convert' transformation "
                          f"with '{flavor}' flavor.")
         if self.inplace is True:
@@ -771,15 +723,9 @@ class Session(object):
         :func:`~econuy.transform.rebase`
 
         """
-        if isinstance(self.dataset, dict):
-            output = {}
-            for key, value in self.dataset.items():
-                table = transform.rebase(value, start_date=start_date,
-                                         end_date=end_date, base=base)
-                output.update({key: table})
-        else:
-            output = transform.rebase(self.dataset, start_date=start_date,
-                                      end_date=end_date, base=base)
+        output = self._apply_transformation(transform.rebase,
+                                            start_date=start_date,
+                                            end_date=end_date, base=base)
         self.logger.info("Applied 'rebase' transformation.")
         if self.inplace is True:
             self.dataset = output
@@ -803,15 +749,9 @@ class Session(object):
         :func:`~econuy.transform.rolling`
 
         """
-        if isinstance(self.dataset, dict):
-            output = {}
-            for key, value in self.dataset.items():
-                table = transform.rolling(value, window=window,
-                                          operation=operation)
-                output.update({key: table})
-        else:
-            output = transform.rolling(self.dataset, window=window,
-                                       operation=operation)
+        output = self._apply_transformation(transform.rolling,
+                                            window=window,
+                                            operation=operation)
         self.logger.info(f"Applied 'rolling' transformation with "
                          f"{window} periods and '{operation}' operation.")
         if self.inplace is True:
