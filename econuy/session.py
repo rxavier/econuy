@@ -122,7 +122,7 @@ class Session(object):
                          f"Dataset: {dataset_message}\n"
                          f"Logging method: {log_method}")
 
-    def _parse_location(self, process: bool):
+    def __parse_location(self, process: bool):
         if process is True:
             if isinstance(self.location, (str, PathLike)):
                 return Path(self.location)
@@ -131,7 +131,7 @@ class Session(object):
         else:
             return None
 
-    def _apply_transformation(self, transformation: Callable, **kwargs):
+    def __apply_transformation(self, transformation: Callable, **kwargs):
         if isinstance(self.dataset, dict):
             output = {}
             for name, data in self.dataset.items():
@@ -172,8 +172,8 @@ class Session(object):
             If an invalid string is given to the ``dataset`` argument.
 
         """
-        update_loc = self._parse_location(process=update)
-        save_loc = self._parse_location(process=save)
+        update_loc = self.__parse_location(process=update)
+        save_loc = self.__parse_location(process=save)
 
         if dataset == "cpi" or dataset == "prices":
             output = prices.cpi(update_loc=update_loc,
@@ -394,8 +394,8 @@ class Session(object):
             If an invalid string is given to the ``dataset`` argument.
 
         """
-        update_loc = self._parse_location(process=update)
-        save_loc = self._parse_location(process=save)
+        update_loc = self.__parse_location(process=update)
+        save_loc = self.__parse_location(process=save)
 
         if dataset == "cpi_measures" or dataset == "price_measures":
             output = prices.cpi_measures(update_loc=update_loc,
@@ -552,9 +552,9 @@ class Session(object):
         :func:`~econuy.transform.resample`
 
         """
-        output = self._apply_transformation(transform.resample, rule=rule,
-                                            operation=operation,
-                                            interpolation=interpolation)
+        output = self.__apply_transformation(transform.resample, rule=rule,
+                                             operation=operation,
+                                             interpolation=interpolation)
         self.logger.info(f"Applied 'resample' transformation with '{rule}' "
                          f"and '{operation}' operation.")
         if self.inplace is True:
@@ -578,8 +578,8 @@ class Session(object):
         :func:`~econuy.transform.chg_diff`
 
         """
-        output = self._apply_transformation(transform.chg_diff,
-                                            operation=operation, period=period)
+        output = self.__apply_transformation(transform.chg_diff,
+                                             operation=operation, period=period)
         self.logger.info(f"Applied 'chg_diff' transformation with "
                          f"'{operation}' operation and '{period}' period.")
         if self.inplace is True:
@@ -621,18 +621,18 @@ class Session(object):
         if errors is None:
             errors = self.errors
 
-        output = self._apply_transformation(transform.decompose,
-                                            component=component,
-                                            method=method,
-                                            force_x13=force_x13,
-                                            fallback=fallback,
-                                            trading=trading,
-                                            outlier=outlier,
-                                            x13_binary=x13_binary,
-                                            search_parents=search_parents,
-                                            ignore_warnings=ignore_warnings,
-                                            errors=errors,
-                                            **kwargs)
+        output = self.__apply_transformation(transform.decompose,
+                                             component=component,
+                                             method=method,
+                                             force_x13=force_x13,
+                                             fallback=fallback,
+                                             trading=trading,
+                                             outlier=outlier,
+                                             x13_binary=x13_binary,
+                                             search_parents=search_parents,
+                                             ignore_warnings=ignore_warnings,
+                                             errors=errors,
+                                             **kwargs)
         self.logger.info(f"Applied 'decompose' transformation with "
                          f"'{method}' method and '{component}' component.")
         if self.inplace is True:
@@ -674,29 +674,29 @@ class Session(object):
         if errors is None:
             errors = self.errors
 
-        update_loc = self._parse_location(process=update)
-        save_loc = self._parse_location(process=save)
+        update_loc = self.__parse_location(process=update)
+        save_loc = self.__parse_location(process=save)
 
         if flavor == "usd":
-            output = self._apply_transformation(transform.convert_usd,
-                                                update_loc=update_loc,
-                                                save_loc=save_loc,
-                                                only_get=only_get,
-                                                errors=errors)
+            output = self.__apply_transformation(transform.convert_usd,
+                                                 update_loc=update_loc,
+                                                 save_loc=save_loc,
+                                                 only_get=only_get,
+                                                 errors=errors)
         elif flavor == "real":
-            output = self._apply_transformation(transform.convert_real,
-                                                update_loc=update_loc,
-                                                save_loc=save_loc,
-                                                only_get=only_get,
-                                                errors=errors,
-                                                start_date=start_date,
-                                                end_date=end_date)
+            output = self.__apply_transformation(transform.convert_real,
+                                                 update_loc=update_loc,
+                                                 save_loc=save_loc,
+                                                 only_get=only_get,
+                                                 errors=errors,
+                                                 start_date=start_date,
+                                                 end_date=end_date)
         else:
-            output = self._apply_transformation(transform.convert_gdp,
-                                                update_loc=update_loc,
-                                                save_loc=save_loc,
-                                                only_get=only_get,
-                                                errors=errors)
+            output = self.__apply_transformation(transform.convert_gdp,
+                                                 update_loc=update_loc,
+                                                 save_loc=save_loc,
+                                                 only_get=only_get,
+                                                 errors=errors)
 
         self.logger.info(f"Applied 'convert' transformation "
                          f"with '{flavor}' flavor.")
@@ -723,9 +723,9 @@ class Session(object):
         :func:`~econuy.transform.rebase`
 
         """
-        output = self._apply_transformation(transform.rebase,
-                                            start_date=start_date,
-                                            end_date=end_date, base=base)
+        output = self.__apply_transformation(transform.rebase,
+                                             start_date=start_date,
+                                             end_date=end_date, base=base)
         self.logger.info("Applied 'rebase' transformation.")
         if self.inplace is True:
             self.dataset = output
@@ -749,9 +749,9 @@ class Session(object):
         :func:`~econuy.transform.rolling`
 
         """
-        output = self._apply_transformation(transform.rolling,
-                                            window=window,
-                                            operation=operation)
+        output = self.__apply_transformation(transform.rolling,
+                                             window=window,
+                                             operation=operation)
         self.logger.info(f"Applied 'rolling' transformation with "
                          f"{window} periods and '{operation}' operation.")
         if self.inplace is True:
