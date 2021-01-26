@@ -92,6 +92,7 @@ def income_household(update_loc: Union[str, PathLike,
                             index_col=0, header=0, engine="openpyxl").iloc[:, 10:13]
     missing.columns = output.columns[:3]
     output = output.append(missing, sort=False)
+    output = output.apply(pd.to_numeric, errors="coerce")
 
     if update_loc is not None:
         previous_data = ops._io(operation="update",

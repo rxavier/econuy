@@ -713,7 +713,7 @@ def diesel(
     with open(temp_rar, "wb") as f:
         r = requests.get(urls["diesel"]["dl"]["main"])
         soup = BeautifulSoup(r.content, features="lxml")
-        rar_url = soup.find_all(href=re.compile("venta[%20a-z]+oil"))[0]
+        rar_url = soup.find_all(href=re.compile("gas%20oil"))[0]
         f.write(requests.get(rar_url["href"]).content)
     with tempfile.TemporaryDirectory() as temp_dir:
         patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
@@ -805,7 +805,7 @@ def gasoline(
     with open(temp_rar, "wb") as f:
         r = requests.get(urls["gasoline"]["dl"]["main"])
         soup = BeautifulSoup(r.content, features="lxml")
-        rar_url = soup.find_all(href=re.compile("venta[%20a-z]+gasolina"))[0]
+        rar_url = soup.find_all(href=re.compile("gasolina"))[0]
         f.write(requests.get(rar_url["href"]).content)
     with tempfile.TemporaryDirectory() as temp_dir:
         patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
@@ -897,7 +897,7 @@ def electricity(
     with open(temp_rar, "wb") as f:
         r = requests.get(urls["electricity"]["dl"]["main"])
         soup = BeautifulSoup(r.content, features="lxml")
-        rar_url = soup.find_all(href=re.compile("facturaci[%A-z0-9]+sector"))[
+        rar_url = soup.find_all(href=re.compile("Facturaci[%A-z0-9]+sector"))[
             0]
         f.write(requests.get(rar_url["href"]).content)
     with tempfile.TemporaryDirectory() as temp_dir:
