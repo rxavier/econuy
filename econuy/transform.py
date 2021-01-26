@@ -13,6 +13,7 @@ from statsmodels.tsa import x13
 from statsmodels.tsa.x13 import x13_arima_analysis as x13a
 from statsmodels.tsa.seasonal import STL, seasonal_decompose
 
+from econuy.base import EconuyDF
 from econuy.retrieval import prices, economic_activity
 from econuy.utils import metadata
 
@@ -431,7 +432,7 @@ def _convert_gdp(df: pd.DataFrame,
     return converted_df
 
 
-def resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
+def resample(df: EconuyDF, rule: Union[pd.DateOffset, pd.Timedelta, str],
              operation: str = "sum",
              interpolation: str = "linear") -> pd.DataFrame:
     """
@@ -445,7 +446,7 @@ def resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
 
     Parameters
     ----------
-    df : pd.DataFrame
+    df : EconuyDF
         Input dataframe.
     rule : pd.DateOffset, pd.Timedelta or str
         Target frequency to resample to. See
@@ -461,7 +462,7 @@ def resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
 
     Returns
     -------
-    Input dataframe at the frequency defined in ``rule`` : pd.DataFrame
+    Input dataframe at the frequency defined in ``rule`` : EconuyDF
 
     Raises
     ------
@@ -479,12 +480,11 @@ def resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
     """
     if operation not in ["sum", "mean", "upsample", "last"]:
         raise ValueError("Invalid 'operation' option.")
-    if "Acum. períodos" not in df.columns.names:
+    if all(x is None for x in df.metadata.cum):
         raise ValueError("Input dataframe's multiindex requires the "
                          "'Acum. períodos' level.")
 
-    all_metadata = df.columns.droplevel("Indicador")
-    if all(x == all_metadata[0] for x in all_metadata):
+    if df.metadata.all_equal is True:
         return _resample(df=df, rule=rule, operation=operation,
                          interpolation=interpolation)
     else:
@@ -497,7 +497,7 @@ def resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
         return pd.concat(columns, axis=1)
 
 
-def _resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
+def _resample(df: EconuyDF, rule: Union[pd.DateOffset, pd.Timedelta, str],
               operation: str = "sum",
               interpolation: str = "linear") -> pd.DataFrame:
     pd_frequencies = {"A": 1,
@@ -522,13 +522,13 @@ def _resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
         resampled_df = df.resample(rule).last()
         resampled_df = resampled_df.interpolate(method=interpolation)
 
-    cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
+    cum_periods = int(df.metadata.cum[0])
     if cum_periods != 1:
         input_notna = df.iloc[:, 0].count()
         output_notna = resampled_df.iloc[:, 0].count()
         cum_adj = round(output_notna / input_notna)
-        metadata._set(resampled_df,
-                      cumperiods=int(cum_periods * cum_adj))
+        resampled_df.modify_metadata(cum=int(cum_periods * cum_adj), 
+                                     inplace=True)
 
     if operation in ["sum", "mean", "last"]:
         infer_base = pd.infer_freq(df.index)
@@ -544,8 +544,9 @@ def _resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
             warnings.warn("No bin trimming performed because frequencies "
                           "could not be assigned a numeric value", UserWarning)
 
-    metadata._set(resampled_df)
     resampled_df = resampled_df.dropna(how="all")
+    resampled_df.modify_metadata(freq=pd.infer_freq(resampled_df.index),
+                                 inplace=True)
 
     return resampled_df
 
