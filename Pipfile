@@ -16,6 +16,7 @@ flake8 = "*"
 autopep8 = "*"
 m2r = "*"
 recommonmark = "*"
+jupyter = "*"
 
 [packages]
 pandas = "==1.1.5"

@@ -402,12 +402,12 @@ def _convert_gdp(df: pd.DataFrame,
             converter = int(12 / cum)
             df = rolling(df, window=converter, operation="sum")
     elif inferred_freq in ["Q", "Q-DEC"]:
-        gdp = gdp.resample(inferred_freq, convention="last").asfreq()
+        gdp = gdp.resample(inferred_freq, convention="end").asfreq()
         if cum != 4 and df.columns.get_level_values("Tipo")[0] == "Flujo":
             converter = int(4 / cum)
             df = rolling(df, window=converter, operation="sum")
     elif inferred_freq in ["A", "A-DEC"]:
-        gdp = gdp.resample(inferred_freq, convention="last").asfreq()
+        gdp = gdp.resample(inferred_freq, convention="end").asfreq()
     elif inferred_freq in ["D", "B", "C", "W", None]:
         if df.columns.get_level_values("Tipo")[0] == "Flujo":
             df = df.resample("M").sum()
@@ -538,8 +538,8 @@ def _resample(df: EconuyDF, rule: Union[pd.DateOffset, pd.Timedelta, str],
             if target_freq < base_freq:
                 count = int(base_freq / target_freq)
                 proc = df.resample(rule).count()
-                proc = proc.loc[proc.iloc[:, 0] >= count]
-                resampled_df = resampled_df.reindex(proc.index)
+                antimask = np.where(proc >= count, False, True)
+                resampled_df = resampled_df.mask(antimask, np.nan)
         except KeyError:
             warnings.warn("No bin trimming performed because frequencies "
                           "could not be assigned a numeric value", UserWarning)
@@ -702,8 +702,9 @@ def _rebase(df: pd.DataFrame, start_date: Union[str, datetime],
             end_date = datetime.strptime(end_date, "%Y-%m-%d")
         m_start = start_date.strftime("%Y-%m")
         m_end = end_date.strftime("%Y-%m")
-        if base.is_integer():
-            base = int(base)
+        if not isinstance(base, int):
+            if base.is_integer():
+                base = int(base)
         if m_start == m_end:
             metadata._set(indexed, unit=f"{m_start}={base}")
         else:
