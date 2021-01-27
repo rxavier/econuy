@@ -512,14 +512,18 @@ def cpi_measures(update_loc: Union[str, PathLike,
     cpi_re = cpi(update_loc=update_loc, save_loc=save_loc, only_get=True)
     cpi_re = cpi_re.loc[cpi_re.index >= "1997-03-31"]
     output = pd.concat([cpi_re] + output + [cpi_win], axis=1)
-    output = transform.base_index(output, start_date="2010-12-01",
-                                  end_date="2010-12-31")
     output.columns = ["Índice de precios al consumo: total",
                       "Índice de precios al consumo: transables",
                       "Índice de precios al consumo: no transables",
                       "Índice de precios al consumo: subyacente",
                       "Índice de precios al consumo: residual",
                       "Índice de precios al consumo: Winsorized 0.05"]
+    output = output.apply(pd.to_numeric, errors="coerce")
+    metadata._set(output, area="Precios y salarios", currency="-",
+                  inf_adj="No", unit="2010-12=100", seas_adj="NSA",
+                  ts_type="-", cumperiods=1)
+    output = transform.rebase(output, start_date="2010-12-01",
+                              end_date="2010-12-31")
 
     if update_loc is not None:
         previous_data = ops._io(
@@ -528,11 +532,6 @@ def cpi_measures(update_loc: Union[str, PathLike,
         )
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
-
-    output = output.apply(pd.to_numeric, errors="coerce")
-    metadata._set(output, area="Precios y salarios", currency="-",
-                  inf_adj="No", unit="2010-12=100", seas_adj="NSA",
-                  ts_type="-", cumperiods=1)
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,

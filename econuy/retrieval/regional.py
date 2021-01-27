@@ -19,7 +19,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from sqlalchemy.engine.base import Engine, Connection
 
 from econuy.retrieval.international import long_rates
-from econuy.transform import base_index, resample
+from econuy.transform import rebase, resample
 from econuy.utils import metadata, ops
 from econuy.utils.chromedriver import _build
 from econuy.utils.lstrings import urls, investing_headers
@@ -201,19 +201,18 @@ def monthly_gdp(
 
     output = pd.concat([arg, bra], axis=1)
     output.columns = ["Argentina", "Brasil"]
-    output = base_index(output, start_date="2010-01-01", end_date="2010-12-31")
+    metadata._set(output, area="Regional", currency="-",
+                  inf_adj="Const.", seas_adj="SA",
+                  ts_type="Flujo", cumperiods=1)
+    metadata._modify_multiindex(output, levels=[3],
+                                new_arrays=[["ARS", "BRL"]])
+    output = rebase(output, start_date="2010-01-01", end_date="2010-12-31")
 
     if update_loc is not None:
         previous_data = ops._io(operation="update", data_loc=update_loc,
                                 name=name, index_label=index_label)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
-
-    metadata._set(output, area="Regional", currency="-",
-                  inf_adj="Const.", seas_adj="SA",
-                  ts_type="Flujo", cumperiods=1)
-    metadata._modify_multiindex(output, levels=[3],
-                                new_arrays=[["ARS", "BRL"]])
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
@@ -301,19 +300,18 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     output = pd.concat([arg, bra], axis=1)
     output.columns = ["Argentina", "Brasil"]
-    output = base_index(output, start_date="2010-10-01", end_date="2010-10-31")
+    metadata._set(output, area="Regional", currency="-",
+                  inf_adj="No", seas_adj="NSA",
+                  ts_type="-", cumperiods=1)
+    metadata._modify_multiindex(output, levels=[3],
+                                new_arrays=[["ARS", "BRL"]])
+    output = rebase(output, start_date="2010-10-01", end_date="2010-10-31")
 
     if update_loc is not None:
         previous_data = ops._io(operation="update", data_loc=update_loc,
                                 name=name, index_label=index_label)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
-
-    metadata._set(output, area="Regional", currency="-",
-                  inf_adj="No", seas_adj="NSA",
-                  ts_type="-", cumperiods=1)
-    metadata._modify_multiindex(output, levels=[3],
-                                new_arrays=[["ARS", "BRL"]])
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
@@ -768,7 +766,10 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     output = arg.join(bra, how="left").interpolate(method="linear",
                                                    limit_area="inside")
-    output = base_index(output, start_date="2019-01-02").dropna(how="all")
+    metadata._set(output, area="Regional", currency="USD",
+                  inf_adj="No", seas_adj="NSA",
+                  ts_type="-", cumperiods=1)
+    output = rebase(output, start_date="2019-01-02").dropna(how="all")
 
     if update_loc is not None:
         previous_data = ops._io(operation="update",
@@ -777,10 +778,6 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                                 index_label=index_label)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
-
-    metadata._set(output, area="Regional", currency="USD",
-                  inf_adj="No", seas_adj="NSA",
-                  ts_type="-", cumperiods=1)
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
@@ -846,8 +843,13 @@ def rxr(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     output["Argentina"] = (proc["Argentina - oficial"] * proc["US.PCPI_IX"]
                            / proc["ARG CPI"])
     output["Brasil"] = proc["Brasil"] * proc["US.PCPI_IX"] / proc["BRA CPI"]
-    output = base_index(output, start_date="2019-01-01",
-                        end_date="2019-01-31").dropna(how="all")
+    metadata._set(output, area="Regional", currency="-",
+                  inf_adj="-", seas_adj="NSA",
+                  ts_type="-", cumperiods=1)
+    metadata._modify_multiindex(output, levels=[3],
+                                new_arrays=[["ARS/USD", "BRL/USD"]])
+    output = rebase(output, start_date="2019-01-01",
+                    end_date="2019-01-31").dropna(how="all")
 
     if update_loc is not None:
         previous_data = ops._io(operation="update",
@@ -856,12 +858,6 @@ def rxr(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                                 index_label=index_label)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
-
-    metadata._set(output, area="Regional", currency="-",
-                  inf_adj="-", seas_adj="NSA",
-                  ts_type="-", cumperiods=1)
-    metadata._modify_multiindex(output, levels=[3],
-                                new_arrays=[["ARS/USD", "BRL/USD"]])
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
@@ -907,7 +903,7 @@ def _ifs(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     xr = nxr(update_loc=update_loc, save_loc=save_loc,
              only_get=only_get)
-    xr = resample(xr, target="M", operation="average")
+    xr = resample(xr, rule="M", operation="mean")
     xr.columns = xr.columns.get_level_values(0)
     prices = cpi(update_loc=update_loc, save_loc=save_loc,
                  only_get=only_get)

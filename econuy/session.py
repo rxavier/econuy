@@ -1,8 +1,8 @@
 import logging
-from datetime import date
+from datetime import datetime
 from os import PathLike, path, makedirs
 from pathlib import Path
-from typing import Union, Optional
+from typing import Union, Optional, Callable
 
 import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
@@ -46,6 +46,10 @@ class Session(object):
     inplace : bool, default False
         If True, transformation methods will modify the :attr:`dataset`
         inplace and return the input :class:`Session` instance.
+    errors : {'raise', 'coerce', 'ignore'}
+        How to handle errors that arise from transformations. ``raise`` will
+        raise a ValueError, ``coerce`` will force the data into ``np.nan`` and
+        ``ignore`` will leave the input data as is.
 
     """
 
@@ -57,7 +61,8 @@ class Session(object):
                  dataset: Union[dict, pd.DataFrame] = pd.DataFrame(),
                  log: Union[int, str] = 1,
                  logger: Optional[logging.Logger] = None,
-                 inplace: bool = False):
+                 inplace: bool = False,
+                 errors: str = "raise"):
         self.location = location
         self.revise_rows = revise_rows
         self.only_get = only_get
@@ -65,6 +70,7 @@ class Session(object):
         self.log = log
         self.logger = logger
         self.inplace = inplace
+        self.errors = errors
 
         if isinstance(location, (str, PathLike)):
             if not path.exists(self.location):
@@ -116,6 +122,25 @@ class Session(object):
                          f"Dataset: {dataset_message}\n"
                          f"Logging method: {log_method}")
 
+    def __parse_location(self, process: bool):
+        if process is True:
+            if isinstance(self.location, (str, PathLike)):
+                return Path(self.location)
+            else:
+                return self.location
+        else:
+            return None
+
+    def __apply_transformation(self, transformation: Callable, **kwargs):
+        if isinstance(self.dataset, dict):
+            output = {}
+            for name, data in self.dataset.items():
+                transformed = transformation(data, **kwargs)
+                output.update({name: transformed})
+            return output
+        else:
+            return transformation(self.dataset, **kwargs)
+
     def get(self,
             dataset: str,
             update: bool = True,
@@ -147,20 +172,8 @@ class Session(object):
             If an invalid string is given to the ``dataset`` argument.
 
         """
-        if update is True:
-            if isinstance(self.location, (str, PathLike)):
-                update_loc = Path(self.location)
-            else:
-                update_loc = self.location
-        else:
-            update_loc = None
-        if save is True:
-            if isinstance(self.location, (str, PathLike)):
-                save_loc = Path(self.location)
-            else:
-                save_loc = self.location
-        else:
-            save_loc = None
+        update_loc = self.__parse_location(process=update)
+        save_loc = self.__parse_location(process=save)
 
         if dataset == "cpi" or dataset == "prices":
             output = prices.cpi(update_loc=update_loc,
@@ -381,20 +394,8 @@ class Session(object):
             If an invalid string is given to the ``dataset`` argument.
 
         """
-        if update is True:
-            if isinstance(self.location, (str, PathLike)):
-                update_loc = Path(self.location)
-            else:
-                update_loc = self.location
-        else:
-            update_loc = None
-        if save is True:
-            if isinstance(self.location, (str, PathLike)):
-                save_loc = Path(self.location)
-            else:
-                save_loc = self.location
-        else:
-            save_loc = None
+        update_loc = self.__parse_location(process=update)
+        save_loc = self.__parse_location(process=save)
 
         if dataset == "cpi_measures" or dataset == "price_measures":
             output = prices.cpi_measures(update_loc=update_loc,
@@ -540,7 +541,8 @@ class Session(object):
 
         return self
 
-    def resample(self, target: str, operation: str = "sum",
+    def resample(self, rule: Union[pd.DateOffset, pd.Timedelta, str],
+                 operation: str = "sum",
                  interpolation: str = "linear"):
         """
         Resample to target frequencies.
@@ -550,18 +552,10 @@ class Session(object):
         :func:`~econuy.transform.resample`
 
         """
-        if isinstance(self.dataset, dict):
-            output = {}
-            for key, value in self.dataset.items():
-                table = transform.resample(value, target=target,
-                                           operation=operation,
-                                           interpolation=interpolation)
-                output.update({key: table})
-        else:
-            output = transform.resample(self.dataset, target=target,
-                                        operation=operation,
-                                        interpolation=interpolation)
-        self.logger.info(f"Applied 'resample' transformation with '{target}' "
+        output = self.__apply_transformation(transform.resample, rule=rule,
+                                             operation=operation,
+                                             interpolation=interpolation)
+        self.logger.info(f"Applied 'resample' transformation with '{rule}' "
                          f"and '{operation}' operation.")
         if self.inplace is True:
             self.dataset = output
@@ -572,9 +566,10 @@ class Session(object):
                            only_get=self.only_get,
                            dataset=output,
                            logger=self.logger,
-                           inplace=self.inplace)
+                           inplace=self.inplace,
+                           errors=self.errors)
 
-    def chg_diff(self, operation: str = "chg", period_op: str = "last"):
+    def chg_diff(self, operation: str = "chg", period: str = "last"):
         """
         Calculate pct change or difference.
 
@@ -583,17 +578,10 @@ class Session(object):
         :func:`~econuy.transform.chg_diff`
 
         """
-        if isinstance(self.dataset, dict):
-            output = {}
-            for key, value in self.dataset.items():
-                table = transform.chg_diff(value, operation=operation,
-                                           period_op=period_op)
-                output.update({key: table})
-        else:
-            output = transform.chg_diff(self.dataset, operation=operation,
-                                        period_op=period_op)
+        output = self.__apply_transformation(transform.chg_diff,
+                                             operation=operation, period=period)
         self.logger.info(f"Applied 'chg_diff' transformation with "
-                         f"'{operation}' operation and '{period_op}' period.")
+                         f"'{operation}' operation and '{period}' period.")
         if self.inplace is True:
             self.dataset = output
             return self
@@ -603,92 +591,50 @@ class Session(object):
                            only_get=self.only_get,
                            dataset=output,
                            logger=self.logger,
-                           inplace=self.inplace)
+                           inplace=self.inplace,
+                           errors=self.errors)
 
-    def decompose(self, flavor: str = "both", method: str = "x13",
+    def decompose(self, component: str = "both", method: str = "x13",
                   force_x13: bool = False, fallback: str = "loess",
                   trading: bool = True, outlier: bool = True,
                   x13_binary: Union[str, PathLike] = "search",
                   search_parents: int = 1, ignore_warnings: bool = True,
-                  **kwargs):
+                  errors: str = None, **kwargs):
         """
         Apply seasonal decomposition.
-
-        Parameters
-        ----------
-        flavor : {'both', 'seas', 'trend'}
-            Return both seasonally adjusted and trend dataframes or choose
-            between them.
-        method : {'x13', 'loess', 'ma'}
-            Decomposition method. ``X13`` refers to X13 ARIMA from the US
-            Census, ``loess`` refers to Loess decomposition and ``ma`` refers
-            to moving average decomposition, in all cases as implemented by
-            `statsmodels <https://www.statsmodels.org/dev/tsa.html>`_.
-        force_x13 : bool, default False
-            Whether to try different ``outlier`` and ``trading`` parameters
-            in statsmodels' `x13 arima analysis <https://www.statsmodels.org/
-            dev/ generated/statsmodels.tsa.x13.x13_arima_analysis.html>`_ for
-            each series that fails. If ``False``, jump to the ``fallback``
-            method for the whole dataframe at the first error.
-        fallback : {'loess', 'ma'}
-            Decomposition method to fall back to if ``method="x13"`` fails and
-            ``force_x13=False``.
-        trading : bool, default True
-            Whether to automatically detect trading days in X13 ARIMA.
-        outlier : bool, default True
-            Whether to automatically detect outliers in X13 ARIMA.
-        x13_binary: str, os.PathLike or None, default 'search'
-            Location of the X13 binary. If ``search`` is used, will attempt to
-            find the binary in the project structure. If ``None``, statsmodels
-            will handle it.
-        search_parents: int, default 1
-            If ``x13_binary=search``, this parameter controls how many parent
-            directories to go up before recursively searching for the binary.
-        ignore_warnings : bool, default True
-            Whether to suppress X13Warnings from statsmodels.
-        kwargs
-            Keyword arguments passed to statsmodels' ``x13_arima_analysis``,
-            ``STL`` and ``seasonal_decompose``.
 
         Raises
         ------
         ValueError
-            If an invalid string is given to the ``flavor`` argument.
+            If the ``method`` parameter does not have a valid argument.
+        ValueError
+            If the ``fallback`` parameter does not have a valid argument.
+        ValueError
+            If the path provided for the X13 binary does not point to a file
+            and ``method='x13'``.
 
         See Also
         --------
         :func:`~econuy.transform.decompose`
 
         """
-        if isinstance(self.dataset, dict):
-            output = {}
-            for key, value in self.dataset.items():
-                table = transform.decompose(value,
-                                            flavor=flavor,
-                                            method=method,
-                                            force_x13=force_x13,
-                                            fallback=fallback,
-                                            trading=trading,
-                                            outlier=outlier,
-                                            x13_binary=x13_binary,
-                                            search_parents=search_parents,
-                                            ignore_warnings=ignore_warnings,
-                                            **kwargs)
-                output.update({key: table})
-        else:
-            output = transform.decompose(self.dataset,
-                                         flavor=flavor,
-                                         method=method,
-                                         force_x13=force_x13,
-                                         fallback=fallback,
-                                         trading=trading,
-                                         outlier=outlier,
-                                         x13_binary=x13_binary,
-                                         search_parents=search_parents,
-                                         ignore_warnings=ignore_warnings,
-                                         **kwargs)
+        if errors is None:
+            errors = self.errors
+
+        output = self.__apply_transformation(transform.decompose,
+                                             component=component,
+                                             method=method,
+                                             force_x13=force_x13,
+                                             fallback=fallback,
+                                             trading=trading,
+                                             outlier=outlier,
+                                             x13_binary=x13_binary,
+                                             search_parents=search_parents,
+                                             ignore_warnings=ignore_warnings,
+                                             errors=errors,
+                                             **kwargs)
         self.logger.info(f"Applied 'decompose' transformation with "
-                         f"'{method}' method and '{flavor}' flavor.")
+                         f"'{method}' method and '{component}' component.")
         if self.inplace is True:
             self.dataset = output
             return self
@@ -698,10 +644,14 @@ class Session(object):
                            only_get=self.only_get,
                            dataset=output,
                            logger=self.logger,
-                           inplace=self.inplace)
+                           inplace=self.inplace,
+                           errors=self.errors)
 
     def convert(self, flavor: str, update: bool = True,
-                save: bool = True, only_get: bool = True, **kwargs):
+                save: bool = True, only_get: bool = True,
+                errors: str = None,
+                start_date: Union[str, datetime, None] = None,
+                end_date: Union[str, datetime, None] = None):
         """
         Convert to other units.
 
@@ -717,65 +667,37 @@ class Session(object):
         :func:`~econuy.transform.convert_gdp`
 
         """
-        if update is True:
-            if isinstance(self.location, (str, PathLike)):
-                update_loc = Path(self.location)
-            else:
-                update_loc = self.location
-        else:
-            update_loc = None
-        if save is True:
-            if isinstance(self.location, (str, PathLike)):
-                save_loc = Path(self.location)
-            else:
-                save_loc = self.location
-        else:
-            save_loc = None
+        if flavor not in ["usd", "real", "gdp", "pcgdp"]:
+            raise ValueError("'flavor' can be one of 'usd', 'real', "
+                             "or 'gdp'.")
 
-        if isinstance(self.dataset, dict):
-            output = {}
-            for key, value in self.dataset.items():
-                if flavor == "usd":
-                    table = transform.convert_usd(value,
-                                                  update_loc=update_loc,
-                                                  save_loc=save_loc,
-                                                  only_get=only_get)
-                elif flavor == "real":
-                    table = transform.convert_real(value,
-                                                   update_loc=update_loc,
-                                                   save_loc=save_loc,
-                                                   only_get=only_get,
-                                                   **kwargs)
-                elif flavor == "pcgdp" or flavor == "gdp":
-                    table = transform.convert_gdp(value,
-                                                  update_loc=update_loc,
-                                                  save_loc=save_loc,
-                                                  only_get=only_get)
-                else:
-                    raise ValueError("'flavor' can be one of 'usd', 'real', "
-                                     "or 'pcgdp'.")
+        if errors is None:
+            errors = self.errors
 
-                output.update({key: table})
+        update_loc = self.__parse_location(process=update)
+        save_loc = self.__parse_location(process=save)
+
+        if flavor == "usd":
+            output = self.__apply_transformation(transform.convert_usd,
+                                                 update_loc=update_loc,
+                                                 save_loc=save_loc,
+                                                 only_get=only_get,
+                                                 errors=errors)
+        elif flavor == "real":
+            output = self.__apply_transformation(transform.convert_real,
+                                                 update_loc=update_loc,
+                                                 save_loc=save_loc,
+                                                 only_get=only_get,
+                                                 errors=errors,
+                                                 start_date=start_date,
+                                                 end_date=end_date)
         else:
-            if flavor == "usd":
-                output = transform.convert_usd(self.dataset,
-                                               update_loc=update_loc,
-                                               save_loc=save_loc,
-                                               only_get=only_get)
-            elif flavor == "real":
-                output = transform.convert_real(self.dataset,
-                                                update_loc=update_loc,
-                                                save_loc=save_loc,
-                                                only_get=only_get,
-                                                **kwargs)
-            elif flavor == "pcgdp" or flavor == "gdp":
-                output = transform.convert_gdp(self.dataset,
-                                               update_loc=update_loc,
-                                               save_loc=save_loc,
-                                               only_get=only_get)
-            else:
-                raise ValueError("'flavor' can be one of 'usd', 'real', "
-                                 "or 'pcgdp'.")
+            output = self.__apply_transformation(transform.convert_gdp,
+                                                 update_loc=update_loc,
+                                                 save_loc=save_loc,
+                                                 only_get=only_get,
+                                                 errors=errors)
+
         self.logger.info(f"Applied 'convert' transformation "
                          f"with '{flavor}' flavor.")
         if self.inplace is True:
@@ -787,28 +709,24 @@ class Session(object):
                            only_get=self.only_get,
                            dataset=output,
                            logger=self.logger,
-                           inplace=self.inplace)
+                           inplace=self.inplace,
+                           errors=self.errors)
 
-    def base_index(self, start_date: Union[str, date],
-                   end_date: Union[str, date, None] = None, base: float = 100):
+    def rebase(self, start_date: Union[str, datetime],
+               end_date: Union[str, datetime, None] = None,
+               base: float = 100.0):
         """
         Scale to a period or range of periods.
 
         See Also
         --------
-        :func:`~econuy.transform.base_index`
+        :func:`~econuy.transform.rebase`
 
         """
-        if isinstance(self.dataset, dict):
-            output = {}
-            for key, value in self.dataset.items():
-                table = transform.base_index(value, start_date=start_date,
+        output = self.__apply_transformation(transform.rebase,
+                                             start_date=start_date,
                                              end_date=end_date, base=base)
-                output.update({key: table})
-        else:
-            output = transform.base_index(self.dataset, start_date=start_date,
-                                          end_date=end_date, base=base)
-        self.logger.info("Applied 'base_index' transformation.")
+        self.logger.info("Applied 'rebase' transformation.")
         if self.inplace is True:
             self.dataset = output
             return self
@@ -818,9 +736,10 @@ class Session(object):
                            only_get=self.only_get,
                            dataset=output,
                            logger=self.logger,
-                           inplace=self.inplace)
+                           inplace=self.inplace,
+                           errors=self.errors)
 
-    def rolling(self, periods: Optional[int] = None,
+    def rolling(self, window: Optional[int] = None,
                 operation: str = "sum"):
         """
         Calculate rolling averages or sums.
@@ -830,17 +749,11 @@ class Session(object):
         :func:`~econuy.transform.rolling`
 
         """
-        if isinstance(self.dataset, dict):
-            output = {}
-            for key, value in self.dataset.items():
-                table = transform.rolling(value, periods=periods,
-                                          operation=operation)
-                output.update({key: table})
-        else:
-            output = transform.rolling(self.dataset, periods=periods,
-                                       operation=operation)
+        output = self.__apply_transformation(transform.rolling,
+                                             window=window,
+                                             operation=operation)
         self.logger.info(f"Applied 'rolling' transformation with "
-                         f"{periods} periods and '{operation}' operation.")
+                         f"{window} periods and '{operation}' operation.")
         if self.inplace is True:
             self.dataset = output
             return self
@@ -850,7 +763,8 @@ class Session(object):
                            only_get=self.only_get,
                            dataset=output,
                            logger=self.logger,
-                           inplace=self.inplace)
+                           inplace=self.inplace,
+                           errors=self.errors)
 
     def save(self, name: str, index_label: str = "index"):
         """Save :attr:`dataset` attribute to a CSV or SQL."""

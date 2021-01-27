@@ -16,7 +16,7 @@ from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from sqlalchemy.engine.base import Engine, Connection
 
-from econuy.transform import decompose, base_index
+from econuy.transform import decompose, rebase
 from econuy.utils import metadata, ops, get_project_root
 from econuy.utils.lstrings import urls, investing_headers
 
@@ -98,8 +98,10 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         if pd.isna(chn_yoy.iloc[row, 1]):
             chn_yoy.iloc[row, 1] = (chn_yoy.iloc[row + 4, 1]
                                     / (1 + chn_yoy.iloc[row + 4, 0] / 100))
+    chn_yoy = chn_yoy[["volume"]].loc[chn_yoy.index < "2016-01-01"]
+    metadata._set(chn_yoy)
     chn_sa = decompose(chn_yoy[["volume"]].loc[chn_yoy.index < "2016-01-01"],
-                       flavor="seas", method="x13")
+                       component="seas", method="x13")
     chn_sa = pd.concat([chn_sa, chn_qoq], axis=1)
     for row in range(len(chn_sa)):
         if not pd.isna(chn_sa.iloc[row, 1]):
@@ -212,7 +214,12 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                                                   limit_area="inside")
     output.columns = ["S&P 500", "Euronext 100", "Nikkei 225",
                       "Shanghai Stock Exchange Composite"]
-    output = base_index(output, start_date="2019-01-02")
+    metadata._set(output, area="Global", currency="USD",
+                  inf_adj="No", seas_adj="NSA",
+                  ts_type="-", cumperiods=1)
+    metadata._modify_multiindex(output, levels=[3],
+                                new_arrays=[["USD", "EUR", "JPY", "CNY"]])
+    output = rebase(output, start_date="2019-01-02")
 
     if update_loc is not None:
         previous_data = ops._io(operation="update",
@@ -221,12 +228,6 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                                 index_label=index_label)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
-
-    metadata._set(output, area="Global", currency="USD",
-                  inf_adj="No", seas_adj="NSA",
-                  ts_type="-", cumperiods=1)
-    metadata._modify_multiindex(output, levels=[3],
-                                new_arrays=[["USD", "EUR", "JPY", "CNY"]])
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,

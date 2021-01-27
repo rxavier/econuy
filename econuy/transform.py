@@ -1,9 +1,9 @@
 import platform
 import warnings
-from datetime import date, datetime
+from datetime import datetime
 from os import PathLike, getcwd, path
 from pathlib import Path
-from typing import Union, Optional, Tuple
+from typing import Union, Optional, Tuple, Dict
 
 import numpy as np
 import pandas as pd
@@ -22,7 +22,7 @@ def convert_usd(df: pd.DataFrame,
                                   Connection, None] = None,
                 save_loc: Union[str, PathLike, Engine,
                                 Connection, None] = None,
-                only_get: bool = True) -> pd.DataFrame:
+                only_get: bool = True, errors: str = "raise") -> pd.DataFrame:
     """
     Convert dataframe from UYU to USD.
 
@@ -54,16 +54,64 @@ def convert_usd(df: pd.DataFrame,
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
         ``update_loc``.
+    errors : {'raise', 'coerce', 'ignore'}
+        What to do when a column in the input dataframe is not expressed in
+        Uruguayan pesos. ``raise`` will raise a ValueError, ``coerce`` will
+        force the entire column into ``np.nan`` and ``ignore`` will leave the
+        input column as is.
 
     Returns
     -------
     Input dataframe measured in US dollars : pd.DataFrame
 
+    Raises
+    ------
+    ValueError
+        If the ``errors`` parameter does not have a valid argument.
+    ValueError
+        If the input dataframe's columns do not have the appropiate levels.
+
     """
-    if df.columns.get_level_values("Moneda")[0] == "USD":
-        warnings.warn("Input dataframe already in dollars. No transformations"
-                      " made", UserWarning)
-        return df
+    if errors not in ["raise", "coerce", "ignore"]:
+        raise ValueError("'errors' must be one of 'raise', "
+                         "'coerce' or 'ignore'.")
+    if "Moneda" not in df.columns.names:
+        raise ValueError("Input dataframe's multiindex requires the "
+                         "'Moneda' level.")
+
+    checks = [x == "UYU" for x in df.columns.get_level_values("Moneda")]
+    if any(checks):
+        if not all(checks) and errors == "raise":
+            error_df = df.loc[:, [not check for check in checks]]
+            msg = (f"{error_df.columns[0][0]} does not have the "
+                   f"appropiate metadata.")
+            return error_handler(df=df, errors=errors, msg=msg)
+        nxr_data = prices.nxr_monthly(update_loc=update_loc, save_loc=save_loc,
+                                      only_get=only_get)
+        all_metadata = df.columns.droplevel("Indicador")
+        if all(x == all_metadata[0] for x in all_metadata):
+            return _convert_usd(df=df, nxr=nxr_data)
+        else:
+            columns = []
+            for column_name, check in zip(df.columns, checks):
+                df_column = df[[column_name]]
+                if check is False:
+                    msg = (f"{column_name[0]} does not have the " 
+                           f"appropiate metadata.")
+                    columns.append(error_handler(df=df_column, errors=errors,
+                                                 msg=msg))
+                else:
+                    converted = _convert_usd(df=df_column, nxr=nxr_data)
+                    columns.append(converted)
+            return pd.concat(columns, axis=1)
+    else:
+        return error_handler(df=df, errors=errors)
+
+
+def _convert_usd(df: pd.DataFrame,
+                 nxr: Optional[pd.DataFrame] = None) -> pd.DataFrame:
+    if nxr is None:
+        nxr = prices.nxr_monthly()
 
     inferred_freq = pd.infer_freq(df.index)
     if inferred_freq in ["D", "B", "C", "W", None]:
@@ -73,35 +121,34 @@ def convert_usd(df: pd.DataFrame,
             df = df.resample("M").mean()
         inferred_freq = pd.infer_freq(df.index)
 
-    nxr_data = prices.nxr_monthly(update_loc=update_loc, save_loc=save_loc,
-                                  only_get=only_get)
-
     if df.columns.get_level_values("Tipo")[0] == "Stock":
-        metadata._set(nxr_data, ts_type="Stock")
-        nxr_freq = resample(nxr_data, target=inferred_freq,
-                            operation="average").iloc[:, [1]]
+        metadata._set(nxr, ts_type="Stock")
+        nxr_freq = resample(nxr, rule=inferred_freq,
+                            operation="mean").iloc[:, [1]]
     else:
-        metadata._set(nxr_data, ts_type="Flujo")
-        nxr_freq = resample(nxr_data, target=inferred_freq,
-                            operation="average").iloc[:, [0]]
+        metadata._set(nxr, ts_type="Flujo")
+        nxr_freq = resample(nxr, rule=inferred_freq,
+                            operation="mean").iloc[:, [0]]
         cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
-        nxr_freq = rolling(nxr_freq, periods=cum_periods,
-                           operation="average")
+        nxr_freq = rolling(nxr_freq, window=cum_periods,
+                           operation="mean")
 
-    nxr_to_use = nxr_freq[nxr_freq.index.isin(df.index)].iloc[:, 0]
-    converted_df = df.apply(lambda x: x / nxr_to_use)
+    nxr_to_use = nxr_freq.reindex(df.index).iloc[:, 0]
+    converted_df = df.div(nxr_to_use, axis=0)
     metadata._set(converted_df, currency="USD")
 
     return converted_df
 
 
-def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
-                 end_date: Union[str, date, None] = None,
+def convert_real(df: pd.DataFrame,
+                 start_date: Union[str, datetime, None] = None,
+                 end_date: Union[str, datetime, None] = None,
                  update_loc: Union[str, PathLike, Engine,
                                    Connection, None] = None,
                  save_loc: Union[str, PathLike, Engine,
                                  Connection, None] = None,
-                 only_get: bool = True) -> pd.DataFrame:
+                 only_get: bool = True,
+                 errors: str = "raise") -> pd.DataFrame:
     """
     Convert dataframe to real prices.
 
@@ -138,16 +185,71 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
         ``update_loc``.
+    errors : {'raise', 'coerce', 'ignore'}
+        What to do when a column in the input dataframe is not expressed in
+        nominal Uruguayan pesos. ``raise`` will raise a ValueError, ``coerce``
+        will force the entire column into ``np.nan`` and ``ignore`` will leave
+        the input column as is.
 
     Returns
     -------
     Input dataframe measured at constant prices : pd.DataFrame
 
+    Raises
+    ------
+    ValueError
+        If the ``errors`` parameter does not have a valid argument.
+    ValueError
+        If the input dataframe's columns do not have the appropiate levels.
+
     """
-    if "Const" in df.columns.get_level_values("Inf. adj.")[0]:
-        warnings.warn("Input dataframe already in real terms. No "
-                      "transformations made", UserWarning)
-        return df
+    if errors not in ["raise", "coerce", "ignore"]:
+        raise ValueError("'errors' must be one of 'raise', "
+                         "'coerce' or 'ignore'.")
+    if "Inf. adj." not in df.columns.names:
+        raise ValueError("Input dataframe's multiindex requires the "
+                         "'Inf. adj.' level.")
+
+    checks = [x == "UYU" and "Const." not in y
+              for x, y in zip(df.columns.get_level_values("Moneda"),
+                              df.columns.get_level_values("Inf. adj."))]
+    if any(checks):
+        if not all(checks) and errors == "raise":
+            error_df = df.loc[:, [not check for check in checks]]
+            msg = (f"{error_df.columns[0][0]} does not have the "
+                   f"appropiate metadata.")
+            return error_handler(df=df, errors=errors, msg=msg)
+        cpi_data = prices.cpi(update_loc=update_loc, save_loc=save_loc,
+                              only_get=only_get)
+        all_metadata = df.columns.droplevel("Indicador")
+        if all(x == all_metadata[0] for x in all_metadata):
+            return _convert_real(df=df, start_date=start_date,
+                                 end_date=end_date, cpi=cpi_data)
+        else:
+            columns = []
+            for column_name, check in zip(df.columns, checks):
+                df_column = df[[column_name]]
+                if check is False:
+                    msg = (f"{column_name[0]} does not have the " 
+                           f"appropiate metadata.")
+                    columns.append(error_handler(df=df_column, errors=errors,
+                                                 msg=msg))
+                else:
+                    converted = _convert_real(df=df_column,
+                                              start_date=start_date,
+                                              end_date=end_date, cpi=cpi_data)
+                    columns.append(converted)
+            return pd.concat(columns, axis=1)
+    else:
+        return error_handler(df=df, errors=errors)
+
+
+def _convert_real(df: pd.DataFrame,
+                  start_date: Union[str, datetime, None] = None,
+                  end_date: Union[str, datetime, None] = None,
+                  cpi: Optional[pd.DataFrame] = None) -> pd.DataFrame:
+    if cpi is None:
+        cpi = prices.cpi()
 
     inferred_freq = pd.infer_freq(df.index)
     if inferred_freq in ["D", "B", "C", "W", None]:
@@ -157,31 +259,24 @@ def convert_real(df: pd.DataFrame, start_date: Union[str, date, None] = None,
             df = df.resample("M").mean()
         inferred_freq = pd.infer_freq(df.index)
 
-    cpi_data = prices.cpi(update_loc=update_loc, save_loc=save_loc,
-                          only_get=only_get)
-
-    metadata._set(cpi_data, ts_type="Flujo")
-    cpi_freq = resample(cpi_data, target=inferred_freq,
-                        operation="average").iloc[:, [0]]
+    metadata._set(cpi, ts_type="Flujo")
+    cpi_freq = resample(cpi, rule=inferred_freq,
+                        operation="mean").iloc[:, [0]]
     cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
-    cpi_to_use = rolling(cpi_freq, periods=cum_periods,
-                         operation="average").squeeze()
+    cpi_to_use = rolling(cpi_freq, window=cum_periods,
+                         operation="mean").squeeze()
 
     if start_date is None:
-        converted_df = df.apply(lambda x:
-                                x / cpi_to_use)
+        converted_df = df.div(cpi_to_use, axis=0)
         col_text = "Const."
     elif end_date is None:
         month = df.iloc[df.index.get_loc(start_date, method="nearest")].name
-        converted_df = df.apply(
-            lambda x: x / cpi_to_use
-            * cpi_to_use.loc[month])
+        converted_df = df.div(cpi_to_use, axis=0) * cpi_to_use.loc[month]
         m_start = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m")
         col_text = f"Const. {m_start}"
     else:
-        converted_df = df.apply(
-            lambda x: x / cpi_to_use * cpi_to_use[start_date:end_date].mean()
-        )
+        converted_df = df.div(cpi_to_use, axis=0) * cpi_to_use[start_date:
+                                                               end_date].mean()
         m_start = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m")
         m_end = datetime.strptime(end_date, "%Y-%m-%d").strftime("%Y-%m")
         if m_start == m_end:
@@ -200,7 +295,8 @@ def convert_gdp(df: pd.DataFrame,
                                   Connection, None] = None,
                 save_loc: Union[str, PathLike, Engine,
                                 Connection, None] = None,
-                only_get: bool = True) -> pd.DataFrame:
+                only_get: bool = True,
+                errors: str = "raise") -> pd.DataFrame:
     """
     Calculate dataframe as percentage of GDP.
 
@@ -212,7 +308,7 @@ def convert_gdp(df: pd.DataFrame,
     be performed to complete missing data.
 
     If input dataframe's "Acum." level is not 12 for monthly frequency or 4
-    for quarterly frequency, internally calculate rolling input dataframe.
+    for quarterly frequency, calculate rolling input dataframe.
 
     If input dataframe's frequency is higher than monthly (daily, business,
     etc.), resample to monthly frequency.
@@ -234,6 +330,11 @@ def convert_gdp(df: pd.DataFrame,
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
         ``update_loc``.
+    errors : {'raise', 'coerce', 'ignore'}
+        What to do when a column in the input dataframe does not refer to
+        Uruguayan data or is already in % of GDP. ``raise`` will raise a
+        ValueError, ``coerce`` will force the entire column into ``np.nan`` and
+        ``ignore`` will leave the input column as is.
 
     Returns
     -------
@@ -242,30 +343,68 @@ def convert_gdp(df: pd.DataFrame,
     Raises
     ------
     ValueError
-        If frequency of input dataframe not any of 'D', 'C', 'W', 'B', 'M',
-        'MS', 'Q', 'Q-DEC', 'A' or 'A-DEC'.
+        If the ``method`` parameter does not have a valid argument.
+    ValueError
+        If the input dataframe's columns do not have the appropiate levels.
 
     """
-    if df.columns.get_level_values("Unidad")[0] == "% PBI":
-        warnings.warn("Input dataframe already in percent of GDP. No "
-                      "transformations made", UserWarning)
-        return df
+    if errors not in ["raise", "coerce", "ignore"]:
+        raise ValueError("'errors' must be one of 'raise', 'coerce' or "
+                         "'ignore'.")
+    if any(x not in df.columns.names for x in ["Área", "Unidad"]):
+        raise ValueError("Input dataframe's multiindex requires the 'Área' "
+                         "and 'Unidad' levels.")
+
+    checks = [x not in ["Regional", "Global"] and "%PBI" not in y
+              for x, y in zip(df.columns.get_level_values("Área"),
+                              df.columns.get_level_values("Unidad"))]
+    if any(checks):
+        if not all(checks) and errors == "raise":
+            error_df = df.loc[:, [not check for check in checks]]
+            msg = (f"{error_df.columns[0][0]} does not have the "
+                   f"appropiate metadata.")
+            return error_handler(df=df, errors=errors, msg=msg)
+        gdp_data = economic_activity._lin_gdp(update_loc=update_loc,
+                                              save_loc=save_loc,
+                                              only_get=only_get)
+        all_metadata = df.columns.droplevel("Indicador")
+        if all(x == all_metadata[0] for x in all_metadata):
+            return _convert_gdp(df=df, gdp=gdp_data)
+        else:
+            columns = []
+            for column_name, check in zip(df.columns, checks):
+                df_column = df[[column_name]]
+                if check is False:
+                    msg = (f"{column_name[0]} does not have the " 
+                           f"appropiate metadata.")
+                    columns.append(error_handler(df=df_column, errors=errors,
+                                                 msg=msg))
+                else:
+                    converted = _convert_gdp(df=df_column, gdp=gdp_data)
+                    columns.append(converted)
+            return pd.concat(columns, axis=1)
+    else:
+        return error_handler(df=df, errors=errors)
+
+
+def _convert_gdp(df: pd.DataFrame,
+                 gdp: Optional[pd.DataFrame] = None) -> pd.DataFrame:
+    if gdp is None:
+        gdp = economic_activity._lin_gdp()
 
     inferred_freq = pd.infer_freq(df.index)
-    gdp = economic_activity._lin_gdp(update_loc=update_loc,
-                                     save_loc=save_loc, only_get=only_get)
     cum = df.columns.get_level_values("Acum. períodos")[0]
     if inferred_freq in ["M", "MS"]:
-        gdp = resample(gdp, target=inferred_freq,
+        gdp = resample(gdp, rule=inferred_freq,
                        operation="upsample", interpolation="linear")
         if cum != 12 and df.columns.get_level_values("Tipo")[0] == "Flujo":
             converter = int(12 / cum)
-            df = rolling(df, periods=converter, operation="sum")
+            df = rolling(df, window=converter, operation="sum")
     elif inferred_freq in ["Q", "Q-DEC"]:
         gdp = gdp.resample(inferred_freq, convention="end").asfreq()
         if cum != 4 and df.columns.get_level_values("Tipo")[0] == "Flujo":
             converter = int(4 / cum)
-            df = rolling(df, periods=converter, operation="sum")
+            df = rolling(df, window=converter, operation="sum")
     elif inferred_freq in ["A", "A-DEC"]:
         gdp = gdp.resample(inferred_freq, convention="end").asfreq()
     elif inferred_freq in ["D", "B", "C", "W", None]:
@@ -273,7 +412,7 @@ def convert_gdp(df: pd.DataFrame,
             df = df.resample("M").sum()
         else:
             df = df.resample("M").mean()
-        gdp = resample(gdp, target="M",
+        gdp = resample(gdp, rule="M",
                        operation="upsample", interpolation="linear")
     else:
         raise ValueError("Frequency of input dataframe not any of 'D', 'C', "
@@ -284,56 +423,83 @@ def convert_gdp(df: pd.DataFrame,
     else:
         gdp = gdp.iloc[:, 0].to_frame()
 
-    gdp_to_use = gdp[gdp.index.isin(df.index)].iloc[:, 0]
-    converted_df = df.apply(lambda x: x / gdp_to_use).multiply(100)
+    gdp_to_use = gdp.reindex(df.index).iloc[:, 0]
+    converted_df = df.div(gdp_to_use, axis=0).multiply(100)
 
     metadata._set(converted_df, unit="% PBI")
 
     return converted_df
 
 
-def resample(df: pd.DataFrame, target: str, operation: str = "sum",
+def resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
+             operation: str = "sum",
              interpolation: str = "linear") -> pd.DataFrame:
     """
     Wrapper for the `resample method <https://pandas.pydata.org/pandas-docs
-    stable/reference/api/pandas.DataFrame.resample.html>`_ in Pandas.
+    stable/reference/api/pandas.DataFrame.resample.html>`_ in Pandas that
+    integrates with econuy dataframes' metadata.
 
     Trim partial bins, i.e. do not calculate the resampled
-    period if it is not complete (unless the input dataframe has no defined
-    frequency, in which case no trimming is done).
+    period if it is not complete, unless the input dataframe has no defined
+    frequency, in which case no trimming is done.
 
     Parameters
     ----------
-    df : Pandas dataframe
+    df : pd.DataFrame
         Input dataframe.
-    target : str
+    rule : pd.DateOffset, pd.Timedelta or str
         Target frequency to resample to. See
         `Pandas offset aliases <https://pandas.pydata.org/pandas-docs/stable/
         user_guide/timeseries.html#offset-aliases>`_
-    operation : {'sum', 'average', 'upsample', 'end'}
+    operation : {'sum', 'mean', 'last', 'upsample'}
         Operation to use for resampling.
     interpolation : str, default 'linear'
-        Method to use when missing data are produced as a result of resampling.
-        See `Pandas interpolation method <https://pandas.pydata.org/pandas-docs
+        Method to use when missing data are produced as a result of
+        resampling, for example when upsampling to a higher frequency. See
+        `Pandas interpolation methods <https://pandas.pydata.org/pandas-docs
         /stable/reference/api/pandas.Series.interpolate.html>`_
 
     Returns
     -------
-    Input dataframe at the frequency defined in ``target`` : pd.DataFrame
+    Input dataframe at the frequency defined in ``rule`` : pd.DataFrame
 
     Raises
     ------
     ValueError
-        If ``operation`` is not one of available options and if the input
-        dataframe does not have a ``Type`` level in its column multiindex.
+        If ``operation`` is not one of available options.
+    ValueError
+        If the input dataframe's columns do not have the appropiate levels.
 
     Warns
     -----
     UserWarning
-        If input dataframe has ``-`` as type in its metadata, warn and
-        set to flow.
+        If input frequencies cannot be assigned a numeric value, preventing
+        incomplete bin trimming.
 
     """
+    if operation not in ["sum", "mean", "upsample", "last"]:
+        raise ValueError("Invalid 'operation' option.")
+    if "Acum. períodos" not in df.columns.names:
+        raise ValueError("Input dataframe's multiindex requires the "
+                         "'Acum. períodos' level.")
+
+    all_metadata = df.columns.droplevel("Indicador")
+    if all(x == all_metadata[0] for x in all_metadata):
+        return _resample(df=df, rule=rule, operation=operation,
+                         interpolation=interpolation)
+    else:
+        columns = []
+        for column_name in df.columns:
+            df_column = df[[column_name]]
+            converted = _resample(df=df_column, rule=rule, operation=operation,
+                                  interpolation=interpolation)
+            columns.append(converted)
+        return pd.concat(columns, axis=1)
+
+
+def _resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
+              operation: str = "sum",
+              interpolation: str = "linear") -> pd.DataFrame:
     pd_frequencies = {"A": 1,
                       "A-DEC": 1,
                       "Q": 4,
@@ -347,17 +513,14 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
                       "D": 365}
 
     if operation == "sum":
-        resampled_df = df.resample(target).sum()
-    elif operation == "average":
-        resampled_df = df.resample(target).mean()
-    elif operation == "end":
-        resampled_df = df.resample(target).last()
-    elif operation == "upsample":
-        resampled_df = df.resample(target).last()
-        resampled_df = resampled_df.interpolate(method=interpolation)
+        resampled_df = df.resample(rule).sum()
+    elif operation == "mean":
+        resampled_df = df.resample(rule).mean()
+    elif operation == "last":
+        resampled_df = df.resample(rule).last()
     else:
-        raise ValueError("Only 'sum', 'average', 'end' and 'upsample' "
-                         "are accepted operations")
+        resampled_df = df.resample(rule).last()
+        resampled_df = resampled_df.interpolate(method=interpolation)
 
     cum_periods = int(df.columns.get_level_values("Acum. períodos")[0])
     if cum_periods != 1:
@@ -367,14 +530,14 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
         metadata._set(resampled_df,
                       cumperiods=int(cum_periods * cum_adj))
 
-    if operation in ["sum", "average", "end"]:
+    if operation in ["sum", "mean", "last"]:
         infer_base = pd.infer_freq(df.index)
         try:
             base_freq = pd_frequencies[infer_base]
-            target_freq = pd_frequencies[target]
+            target_freq = pd_frequencies[rule]
             if target_freq < base_freq:
                 count = int(base_freq / target_freq)
-                proc = df.resample(target).count()
+                proc = df.resample(rule).count()
                 proc = proc.loc[proc.iloc[:, 0] >= count]
                 resampled_df = resampled_df.reindex(proc.index)
         except KeyError:
@@ -387,34 +550,65 @@ def resample(df: pd.DataFrame, target: str, operation: str = "sum",
     return resampled_df
 
 
-def rolling(df: pd.DataFrame, periods: Optional[int] = None,
+def rolling(df: pd.DataFrame, window: Optional[int] = None,
             operation: str = "sum") -> pd.DataFrame:
     """
     Wrapper for the `rolling method <https://pandas.pydata.org/pandas-docs/
-    stable/reference/api/pandas.DataFrame.rolling.html>`_ in Pandas.
+    stable/reference/api/pandas.DataFrame.rolling.html>`_ in Pandas that
+    integrates with econuy dataframes' metadata.
 
     If ``periods`` is ``None``, try to infer the frequency and set ``periods``
-    according to the following logic: ``{'A': 1, 'Q-DEC': 4, 'M': 12}``.
+    according to the following logic: ``{'A': 1, 'Q-DEC': 4, 'M': 12}``, that
+    is, each period will be calculated as the sum or mean of the last year.
 
     Parameters
     ----------
     df : pd.DataFrame
         Input dataframe.
-    periods : int, default None
+    window : int, default None
         How many periods the window should cover.
-    operation : {'sum', 'average'}
+    operation : {'sum', 'mean'}
         Operation used to calculate rolling windows.
 
     Returns
     -------
     Input dataframe with rolling windows : pd.DataFrame
 
+    Raises
+    ------
+    ValueError
+        If ``operation`` is not one of available options.
+    ValueError
+        If the input dataframe's columns do not have the appropiate levels.
+
     Warns
     -----
     UserWarning
-        If the input dataframe is a stock time series.
+        If the input dataframe is a stock time series, for which rolling
+        operations are not recommended.
 
     """
+    if operation not in ["sum", "mean"]:
+        raise ValueError("Invalid 'operation' option.")
+    if "Tipo" not in df.columns.names:
+        raise ValueError("Input dataframe's multiindex requires the "
+                         "'Tipo' level.")
+
+    all_metadata = df.columns.droplevel("Indicador")
+    if all(x == all_metadata[0] for x in all_metadata):
+        return _rolling(df=df, window=window, operation=operation)
+    else:
+        columns = []
+        for column_name in df.columns:
+            df_column = df[[column_name]]
+            converted = _rolling(df=df_column, window=window,
+                                 operation=operation)
+            columns.append(converted)
+        return pd.concat(columns, axis=1)
+
+
+def _rolling(df: pd.DataFrame, window: Optional[int] = None,
+             operation: str = "sum") -> pd.DataFrame:
     pd_frequencies = {"A": 1,
                       "A-DEC": 1,
                       "Q": 4,
@@ -428,40 +622,38 @@ def rolling(df: pd.DataFrame, periods: Optional[int] = None,
                       "B": 260,
                       "D": 365}
 
-    window_operation = {
-        "sum": lambda x: x.rolling(window=periods,
-                                   min_periods=periods).sum(),
-        "average": lambda x: x.rolling(window=periods,
-                                       min_periods=periods).mean()
-    }
+    window_operation = {"sum": lambda x: x.rolling(window=window,
+                                                   min_periods=window).sum(),
+                        "mean": lambda x: x.rolling(window=window,
+                                                    min_periods=window).mean()}
 
     if df.columns.get_level_values("Tipo")[0] == "Stock":
-        warnings.warn("Rolling operations shouldn't be "
+        warnings.warn("Rolling operations should not be "
                       "calculated on stock variables", UserWarning)
 
-    if periods is None:
+    if window is None:
         inferred_freq = pd.infer_freq(df.index)
-        periods = pd_frequencies[inferred_freq]
+        window = pd_frequencies[inferred_freq]
 
     rolling_df = df.apply(window_operation[operation])
 
-    metadata._set(rolling_df, cumperiods=periods)
+    metadata._set(rolling_df, cumperiods=window)
 
     return rolling_df
 
 
-def base_index(df: pd.DataFrame, start_date: Union[str, date],
-               end_date: Union[str, date, None] = None,
-               base: float = 100) -> pd.DataFrame:
+def rebase(df: pd.DataFrame, start_date: Union[str, datetime],
+           end_date: Union[str, datetime, None] = None,
+           base: float = 100.0) -> pd.DataFrame:
     """Rebase all dataframe columns to a date or range of dates.
 
     Parameters
     ----------
     df : pd.DataFrame
         Input dataframe.
-    start_date : string or datetime.date
+    start_date : string or datetime.datetime
         Date to which series will be rebased.
-    end_date : string or datetime.date, default None
+    end_date : string or datetime.datetime, default None
         If specified, series will be rebased to the average between
         ``start_date`` and ``end_date``.
     base : float, default 100
@@ -473,18 +665,45 @@ def base_index(df: pd.DataFrame, start_date: Union[str, date],
     Input dataframe with a base period index : pd.DataFrame
 
     """
+    all_metadata = df.columns.droplevel("Indicador")
+    if all(x == all_metadata[0] for x in all_metadata):
+        return _rebase(df=df, end_date=end_date,
+                       start_date=start_date, base=base)
+    else:
+        columns = []
+        for column_name in df.columns:
+            df_column = df[[column_name]]
+            converted = _rebase(df=df_column, end_date=end_date,
+                                start_date=start_date, base=base)
+            columns.append(converted)
+        return pd.concat(columns, axis=1)
+
+
+def _rebase(df: pd.DataFrame, start_date: Union[str, datetime],
+            end_date: Union[str, datetime, None] = None,
+            base: float = 100.0) -> pd.DataFrame:
     if end_date is None:
-        month = df.iloc[df.index.get_loc(start_date, method="nearest")].name
-        indexed = df.apply(
-            lambda x: x
-            / x.loc[month] * base)
-        m_start = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m")
+        start_date = df.iloc[df.index.get_loc(start_date,
+                                              method="nearest")].name
+        indexed = df.apply(lambda x: x / x.loc[start_date] * base)
+        if isinstance(start_date, str):
+            start_date = datetime.strptime(start_date, "%Y-%m-%d")
+        if base.is_integer():
+            base = int(base)
+        m_start = start_date.strftime("%Y-%m")
         metadata._set(indexed, unit=f"{m_start}={base}")
 
     else:
         indexed = df.apply(lambda x: x / x[start_date:end_date].mean() * base)
-        m_start = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m")
-        m_end = datetime.strptime(end_date, "%Y-%m-%d").strftime("%Y-%m")
+        if isinstance(start_date, str):
+            start_date = datetime.strptime(start_date, "%Y-%m-%d")
+        if isinstance(end_date, str):
+            end_date = datetime.strptime(end_date, "%Y-%m-%d")
+        m_start = start_date.strftime("%Y-%m")
+        m_end = end_date.strftime("%Y-%m")
+        if not isinstance(base, int):
+            if base.is_integer():
+                base = int(base)
         if m_start == m_end:
             metadata._set(indexed, unit=f"{m_start}={base}")
         else:
@@ -504,12 +723,14 @@ def _new_open_and_read(fname):
 x13._open_and_read = _new_open_and_read
 
 
-def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
+def decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
               force_x13: bool = False, fallback: str = "loess",
               outlier: bool = True, trading: bool = True,
               x13_binary: Union[str, PathLike, None] = "search",
               search_parents: int = 1, ignore_warnings: bool = True,
-              **kwargs) -> Optional[Tuple[pd.DataFrame, pd.DataFrame]]:
+              errors: str = "raise",
+              **kwargs) -> Union[Dict[str, pd.DataFrame],
+                                 pd.DataFrame]:
     """
     Apply seasonal decomposition.
 
@@ -524,7 +745,7 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
     ----------
     df : pd.DataFrame
         Input dataframe.
-    flavor : {'both', 'seas', 'trend'}
+    component : {'both', 'seas', 'trend'}
         Return both seasonally adjusted and trend dataframes or choose between
         them.
     method : {'x13', 'loess', 'ma'}
@@ -547,38 +768,54 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
         Whether to automatically detect outliers in X13 ARIMA.
     x13_binary: str, os.PathLike or None, default 'search'
         Location of the X13 binary. If ``search`` is used, will attempt to find
-        the binary in the project structure. If ``None``, Statsmodels will
+        the binary in the project structure. If ``None``, statsmodels will
         handle it.
     search_parents: int, default 1
         If ``x13_binary=search``, this parameter controls how many parent
         directories to go up before recursively searching for the binary.
     ignore_warnings : bool, default True
         Whether to suppress X13Warnings from statsmodels.
+    errors : {'raise', 'coerce', 'ignore'}
+        What to do when a column in the input dataframe is already seasonally
+        adjusted. ``raise`` will raise a ValueError, ``coerce`` will force the
+        entire column into ``np.nan`` and ``ignore`` will leave the input
+        column as is.
     kwargs
         Keyword arguments passed to statsmodels' ``x13_arima_analysis``,
         ``STL`` and ``seasonal_decompose``.
 
     Returns
     -------
-    Decomposed dataframes : Tuple[pd.DataFrame, pd.DataFrame] or None
-        Tuple containing the trend component and the seasonally adjusted
-        series.
+    Decomposed dataframes : Dict[str, pd.DataFrame] or pd.DataFrame
+        Dictionary containing the trend component and the seasonally adjusted
+        series, or Pandas dataframe containing the chosen component.
 
     Raises
     ------
     ValueError
-        If the path provided for the X13 binary does not point to a file.
+        If the ``method`` parameter does not have a valid argument.
+    ValueError
+        If the ``component`` parameter does not have a valid argument.
+    ValueError
+        If the ``fallback`` parameter does not have a valid argument.
+    ValueError
+        If the ``errors`` parameter does not have a valid argument.
+    FileNotFoundError
+        If the path provided for the X13 binary does not point to a file and
+        ``method='x13'``.
 
     """
+    if errors not in ["raise", "coerce", "ignore"]:
+        raise ValueError("method can only be 'x13', 'loess' or 'ma'.")
     if method not in ["x13", "loess", "ma"]:
         raise ValueError("method can only be 'x13', 'loess' or 'ma'.")
     if fallback not in ["loess", "ma"]:
         raise ValueError("method can only be 'loess' or 'ma'.")
-
-    df_proc = df.copy()
-    old_columns = df_proc.columns
-    df_proc.columns = df_proc.columns.get_level_values(level=0)
-    df_proc.index = pd.to_datetime(df_proc.index, errors="coerce")
+    if component not in ["trend", "seas", "both"]:
+        raise ValueError("component can only be 'trend', 'seas' or 'both'.")
+    if "Seas. Adj." not in df.columns.names:
+        raise ValueError("Input dataframe's multiindex requires the "
+                         "'Seas. Adj.' level.")
 
     binary_path = None
     if method == "x13":
@@ -596,11 +833,62 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
             binary_path = None
         if isinstance(binary_path, str) and path.isfile(
                 binary_path) is False:
-            raise ValueError(
+            raise FileNotFoundError(
                 "X13 binary missing. Please refer to the README "
                 "for instructions on where to get binaries for "
                 "Windows and Unix, and how to compile it for "
                 "macOS.")
+
+    checks = [x not in ["Tendencia", "SA"]
+              for x in df.columns.get_level_values("Seas. Adj.")]
+    passing = df.loc[:, checks]
+    not_passing = df.loc[:, [not x for x in checks]]
+    if any(checks):
+        if not all(checks) and errors == "raise":
+            error_df = df.loc[:, [not check for check in checks]]
+            msg = (f"{error_df.columns[0][0]} does not have the "
+                   f"appropiate metadata.")
+            return error_handler(df=df, errors=errors, msg=msg)
+        passing_output = _decompose(passing, component=component,
+                                    method=method, force_x13=force_x13,
+                                    fallback=fallback, outlier=outlier,
+                                    trading=trading, x13_binary=binary_path,
+                                    ignore_warnings=ignore_warnings,
+                                    errors=errors, **kwargs)
+        if not_passing.shape[1] != 0:
+            not_passing_output = error_handler(df=not_passing, errors=errors)
+        else:
+            not_passing_output = not_passing
+        if isinstance(passing_output, pd.DataFrame):
+            output = pd.concat([passing_output, not_passing_output], axis=1)
+            output = output[df.columns.get_level_values(0)]
+            return output
+        elif isinstance(passing_output, Dict):
+            output = {}
+            for name, data in passing_output.items():
+                aux = pd.concat([data, not_passing_output], axis=1)
+                output[name] = aux[df.columns.get_level_values(0)]
+            return output
+    else:
+        return error_handler(df=df, errors=errors)
+
+
+def _decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
+               force_x13: bool = False, fallback: str = "loess",
+               outlier: bool = True, trading: bool = True,
+               x13_binary: Union[str, PathLike, None] = None,
+               ignore_warnings: bool = True, errors: str = "raise",
+               **kwargs) -> Union[Tuple[pd.DataFrame, pd.DataFrame],
+                                  pd.DataFrame]:
+    if method not in ["x13", "loess", "ma"]:
+        raise ValueError("method can only be 'x13', 'loess' or 'ma'.")
+    if fallback not in ["loess", "ma"]:
+        raise ValueError("method can only be 'loess' or 'ma'.")
+
+    df_proc = df.copy()
+    old_columns = df_proc.columns
+    df_proc.columns = df_proc.columns.get_level_values(level=0)
+    df_proc.index = pd.to_datetime(df_proc.index, errors="coerce")
 
     if method == "x13":
         try:
@@ -612,7 +900,7 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
                 warnings.filterwarnings(action=action, category=X13Warning)
                 results = df_proc.apply(
                     lambda x: x13a(x.dropna(), outlier=outlier,
-                                   trading=trading, x12path=binary_path,
+                                   trading=trading, x12path=x13_binary,
                                    prefer_x13=True, **kwargs)
                 )
             trends = results.apply(lambda x: x.trend.reindex(df_proc.index)).T
@@ -628,10 +916,10 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
                                       UserWarning)
                         return decompose(df=df, method=method,
                                          outlier=False,
-                                         flavor=flavor, fallback=fallback,
+                                         component=component,
+                                         fallback=fallback,
                                          force_x13=force_x13,
                                          x13_binary=x13_binary,
-                                         search_parents=search_parents,
                                          **kwargs)
                     except X13Error:
                         try:
@@ -640,20 +928,16 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
                                           UserWarning)
                             return decompose(df=df, method=method,
                                              outlier=False, trading=False,
-                                             flavor=flavor,
+                                             component=component,
                                              fallback=fallback,
                                              force_x13=force_x13,
                                              x13_binary=x13_binary,
-                                             search_parents=search_parents,
                                              **kwargs)
                         except X13Error:
                             warnings.warn("No combination of parameters "
                                           "successful. Filling with NaN.",
                                           UserWarning)
-                            trends = pd.DataFrame(
-                                data=np.full(df_proc.shape, np.nan),
-                                index=df_proc.index, columns=df_proc.columns
-                            )
+                            trends = error_handler(df=df_proc, errors=errors)
                             seas_adjs = trends.copy()
 
                 elif trading is True:
@@ -662,20 +946,16 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
                                       "Trying with trading=False...",
                                       UserWarning)
                         return decompose(df=df, method=method,
-                                         trading=False, flavor=flavor,
+                                         trading=False, component=component,
                                          fallback=fallback,
                                          force_x13=force_x13,
                                          x13_binary=x13_binary,
-                                         search_parents=search_parents,
                                          **kwargs)
                     except X13Error:
                         warnings.warn("No combination of parameters "
                                       "successful. Filling with NaN.",
                                       UserWarning)
-                        trends = pd.DataFrame(
-                            data=np.full(df_proc.shape, np.nan),
-                            index=df_proc.index, columns=df_proc.columns
-                        )
+                        trends = error_handler(df=df_proc, errors=errors)
                         seas_adjs = trends.copy()
 
             else:
@@ -712,11 +992,11 @@ def decompose(df: pd.DataFrame, flavor: str = "both", method: str = "x13",
     metadata._set(trends, seas_adj="Tendencia")
     metadata._set(seas_adjs, seas_adj="SA")
     output = pd.DataFrame()
-    if flavor == "both":
-        output = (trends, seas_adjs)
-    elif flavor == "seas":
+    if component == "both":
+        output = {"trend": trends, "seas": seas_adjs}
+    elif component == "seas":
         output = seas_adjs
-    elif flavor == "trend":
+    elif component == "trend":
         output = trends
 
     return output
@@ -738,7 +1018,7 @@ def _rsearch(dir_file: Union[str, PathLike], search_term: str, n: int = 2):
 
 
 def chg_diff(df: pd.DataFrame, operation: str = "chg",
-             period_op: str = "last") -> pd.DataFrame:
+             period: str = "last") -> pd.DataFrame:
     """
     Wrapper for the `pct_change <https://pandas.pydata.org/pandas-docs/stable/
     reference/api/pandas.DataFrame.pct_change.html>`_ and `diff <https://pandas
@@ -757,11 +1037,11 @@ def chg_diff(df: pd.DataFrame, operation: str = "chg",
         Input dataframe.
     operation : {'chg', 'diff'}
         ``chg`` for percent change or ``diff`` for differences.
-    period_op : {'last', 'inter', 'annual'}
+    period : {'last', 'inter', 'annual'}
         Period with which to calculate change or difference. ``last`` for
         previous period (last month for monthly data), ``inter`` for same
         period last year, ``annual`` for same period last year but taking
-        annual averages/sums.
+        annual sums.
 
     Returns
     -------
@@ -772,14 +1052,43 @@ def chg_diff(df: pd.DataFrame, operation: str = "chg",
     ValueError
         If the dataframe is not of frequency ``M`` (month), ``Q`` or
         ``Q-DEC`` (quarter), or ``A`` or ``A-DEC`` (year).
+    ValueError
+        If the ``operation`` parameter does not have a valid argument.
+    ValueError
+        If the ``period`` parameter does not have a valid argument.
+    ValueError
+        If the input dataframe's columns do not have the appropiate levels.
 
     """
+    if operation not in ["chg", "diff"]:
+        raise ValueError("Invalid 'operation' option.")
+    if period not in ["last", "inter", "annual"]:
+        raise ValueError("Invalid 'period' option.")
+    if "Tipo" not in df.columns.names:
+        raise ValueError("Input dataframe's multiindex requires the "
+                         "'Tipo' level.")
+
+    all_metadata = df.columns.droplevel("Indicador")
+    if all(x == all_metadata[0] for x in all_metadata):
+        return _chg_diff(df=df, operation=operation, period=period)
+    else:
+        columns = []
+        for column_name in df.columns:
+            df_column = df[[column_name]]
+            converted = _chg_diff(df=df_column, operation=operation,
+                                  period=period)
+            columns.append(converted)
+        return pd.concat(columns, axis=1)
+
+
+def _chg_diff(df: pd.DataFrame, operation: str = "chg",
+              period: str = "last") -> pd.DataFrame:
     inferred_freq = pd.infer_freq(df.index)
 
     type_change = {"last":
-                   {"chg": [lambda x: x.pct_change(periods=1),
-                            "% variación"],
-                    "diff": [lambda x: x.diff(periods=1), "Cambio"]},
+                       {"chg": [lambda x: x.pct_change(periods=1),
+                                "% variación"],
+                        "diff": [lambda x: x.diff(periods=1), "Cambio"]},
                    "inter":
                        {"chg": [lambda x: x.pct_change(periods=last_year),
                                 "% variación interanual"],
@@ -801,22 +1110,34 @@ def chg_diff(df: pd.DataFrame, operation: str = "chg",
         raise ValueError("The dataframe needs to have a frequency of M "
                          "(month end), Q (quarter end) or A (year end)")
 
-    if period_op == "annual":
+    if period == "annual":
 
         if df.columns.get_level_values("Tipo")[0] == "Stock":
-            output = df.apply(type_change[period_op][operation][0])
+            output = df.apply(type_change[period][operation][0])
         else:
             output = rolling(df, operation="sum")
             output = output.apply(
-                type_change[period_op][operation][0])
+                type_change[period][operation][0])
 
-        metadata._set(output, unit=type_change[period_op][operation][1])
+        metadata._set(output, unit=type_change[period][operation][1])
 
     else:
-        output = df.apply(type_change[period_op][operation][0])
-        metadata._set(output, unit=type_change[period_op][operation][1])
+        output = df.apply(type_change[period][operation][0])
+        metadata._set(output, unit=type_change[period][operation][1])
 
     if operation == "chg":
         output = output.multiply(100)
 
     return output
+
+
+def error_handler(df: pd.DataFrame, errors: str,
+                  msg: str = None) -> pd.DataFrame:
+    if errors == "coerce":
+        return pd.DataFrame(data=np.nan, index=df.index, columns=df.columns)
+    elif errors == "ignore":
+        return df
+    elif errors == "raise":
+        if msg is None:
+            msg = ""
+        raise ValueError(msg)

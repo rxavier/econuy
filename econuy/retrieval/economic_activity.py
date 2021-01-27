@@ -187,7 +187,7 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
 
     data_uyu = national_accounts(update_loc=update_loc, only_get=only_get_na)[
         "gdp_cur_nsa"]
-    data_uyu = transform.rolling(data_uyu, periods=4, operation="sum")
+    data_uyu = transform.rolling(data_uyu, window=4, operation="sum")
     data_usd = transform.convert_usd(data_uyu,
                                      update_loc=update_loc,
                                      only_get=only_get)
@@ -406,8 +406,8 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
     core = pd.concat([core], keys=["Núcleo industrial"],
                      names=["Indicador"], axis=1)
     output = pd.concat([output, core], axis=1)
-    output = transform.base_index(output, start_date="2006-01-01",
-                                  end_date="2006-12-31")
+    output = transform.rebase(output, start_date="2006-01-01",
+                              end_date="2006-12-31")
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
