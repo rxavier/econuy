@@ -179,40 +179,53 @@ def test_decompose():
                       multiply(np.random.uniform(1.04, 1.06)))
     noise = np.random.normal(0, 1, 100)
     df["Real"] = df["Real"] + noise
+    metadata._set(df, seas_adj="NSA")
     session = Session(location=TEST_CON, dataset=df[["Real"]])
-    trend, seas = session.decompose(component="both", trading=True,
-                                    outlier=True, fallback="loess",
-                                    ignore_warnings=False).dataset
+    decomp = session.decompose(component="both", trading=True,
+                               outlier=True, fallback="loess",
+                               ignore_warnings=False).dataset
+    trend, seas = decomp["trend"], decomp["seas"]
     trend.columns, seas.columns = ["Trend"], ["Seas"]
     out = pd.concat([df, trend, seas], axis=1)
+    out.columns = ["Exponential", "Real", "Trend", "Seas"]
+    metadata._set(out, seas_adj="NSA")
     std = out.std()
-    assert std["Real"] >= std["Seas"]
-    assert std["Real"] >= std["Trend"]
+    assert std["Real"].values >= std["Seas"].values
+    assert std["Real"].values >= std["Trend"].values
     session = Session(location=TEST_CON, dataset=df[["Real"]], inplace=True)
-    trend, seas = session.decompose(component="both", trading=False,
+    decomp = session.decompose(component="both", trading=False,
                                     outlier=True, fallback="loess").dataset
+    trend, seas = decomp["trend"], decomp["seas"]
     trend.columns, seas.columns = ["Trend"], ["Seas"]
     out = pd.concat([df, trend, seas], axis=1)
+    out.columns = ["Exponential", "Real", "Trend", "Seas"]
+    metadata._set(out, seas_adj="NSA")
     std = out.std()
-    assert std["Real"] >= std["Seas"]
-    assert std["Real"] >= std["Trend"]
+    assert std["Real"].values >= std["Seas"].values
+    assert std["Real"].values >= std["Trend"].values
     session = Session(location=TEST_CON, dataset=df[["Real"]])
-    trend, seas = session.decompose(component="both", trading=False,
+    decomp = session.decompose(component="both", trading=False,
                                     outlier=False, fallback="ma",
                                     ignore_warnings=False).dataset
+    trend, seas = decomp["trend"], decomp["seas"]
     trend.columns, seas.columns = ["Trend"], ["Seas"]
     out = pd.concat([df, trend, seas], axis=1)
+    out.columns = ["Exponential", "Real", "Trend", "Seas"]
+    metadata._set(out, seas_adj="NSA")
     std = out.std()
-    assert std["Real"] >= std["Seas"]
-    assert std["Real"] >= std["Trend"]
+    assert std["Real"].values >= std["Seas"].values
+    assert std["Real"].values >= std["Trend"].values
     session = Session(location=TEST_CON, dataset=df[["Real"]])
-    trend, seas = session.decompose(component="both", trading=True,
-                                    outlier=False, fallback="ma").dataset
+    decomp = session.decompose(component="both", trading=True,
+                               outlier=False, fallback="ma").dataset
+    trend, seas = decomp["trend"], decomp["seas"]
     trend.columns, seas.columns = ["Trend"], ["Seas"]
     out = pd.concat([df, trend, seas], axis=1)
+    out.columns = ["Exponential", "Real", "Trend", "Seas"]
+    metadata._set(out, seas_adj="NSA")
     std = out.std()
-    assert std["Real"] >= std["Seas"]
-    assert std["Real"] >= std["Trend"]
+    assert std["Real"].values >= std["Seas"].values
+    assert std["Real"].values >= std["Trend"].values
     session = Session(location=TEST_CON, dataset=df[["Real"]])
     trend = session.decompose(component="trend", trading=True,
                               outlier=False, force_x13=True).dataset
@@ -221,19 +234,24 @@ def test_decompose():
                              ignore_warnings=False).dataset
     trend.columns, seas.columns = ["Trend"], ["Seas"]
     out = pd.concat([df, trend, seas], axis=1)
+    out.columns = ["Exponential", "Real", "Trend", "Seas"]
+    metadata._set(out, seas_adj="NSA")
     std = out.std()
-    assert std["Real"] >= std["Seas"]
-    assert std["Real"] >= std["Trend"]
+    assert std["Real"].values >= std["Seas"].values
+    assert std["Real"].values >= std["Trend"].values
     session = Session(location=TEST_CON, dataset={"data1": df[["Real"]],
                                                   "data2": df[["Real"]]})
-    trend, seas = session.decompose(component="both", trading=True,
-                                    outlier=False).dataset["data1"]
+    decomp = session.decompose(component="both", trading=True,
+                               outlier=False).dataset["data1"]
+    trend, seas = decomp["trend"], decomp["seas"]
     trend.columns, seas.columns = ["Trend"], ["Seas"]
     out = pd.concat([df, trend, seas], axis=1)
+    out.columns = ["Exponential", "Real", "Trend", "Seas"]
+    metadata._set(out, seas_adj="NSA")
     std = out.std()
-    assert std["Real"] >= std["Seas"]
-    assert std["Real"] >= std["Trend"]
-    with pytest.raises(ValueError):
+    assert std["Real"].values >= std["Seas"].values
+    assert std["Real"].values >= std["Trend"].values
+    with pytest.raises(FileNotFoundError):
         session = Session(location=TEST_CON, dataset=df[["Real"]])
         session.decompose(component="both", trading=True,
                           outlier=False, x13_binary="wrong")
@@ -242,9 +260,11 @@ def test_decompose():
     seas = session.decompose(component="seas", method="ma").dataset
     trend.columns, seas.columns = ["Trend"], ["Seas"]
     out = pd.concat([df, trend, seas], axis=1)
+    out.columns = ["Exponential", "Real", "Trend", "Seas"]
+    metadata._set(out, seas_adj="NSA")
     std = out.std()
-    assert std["Real"] >= std["Seas"]
-    assert std["Real"] >= std["Trend"]
+    assert std["Real"].values >= std["Seas"].values
+    assert std["Real"].values >= std["Trend"].values
     with pytest.raises(ValueError):
         trend = session.decompose(component="trend", method="wrong").dataset
     with pytest.raises(ValueError):
@@ -252,10 +272,10 @@ def test_decompose():
                                   fallback="wrong").dataset
 
 
-def test_base_index():
+def test_rebase():
     data = dummy_df(freq="M")
     session = Session(location=TEST_CON, dataset=data)
-    base = session.base_index(start_date="2000-01-31").dataset
+    base = session.rebase(start_date="2000-01-31").dataset
     assert np.all(base.loc["2000-01-31"].values == np.array([100] * 3))
     chg = data.pct_change(periods=1).multiply(100)
     session = Session(location=TEST_CON, dataset=data, inplace=True)
@@ -265,7 +285,7 @@ def test_base_index():
     data = dummy_df(freq="Q-DEC")
     session = Session(location=TEST_CON, dataset={
                       "data1": data, "data2": data})
-    base = session.base_index(start_date="2000-03-31").dataset
+    base = session.rebase(start_date="2000-03-31").dataset
     assert np.all(
         base["data1"].loc["2000-03-31"].values == np.array([100] * 3))
     chg = data.pct_change(periods=1).multiply(100)
@@ -276,8 +296,8 @@ def test_base_index():
     assert chg.equals(comp)
     data = dummy_df(freq="M")
     session = Session(location=TEST_CON, dataset=data)
-    base = session.base_index(start_date="2000-01-31",
-                              end_date="2000-12-31").dataset
+    base = session.rebase(start_date="2000-01-31",
+                          end_date="2000-12-31").dataset
     assert np.all(base["2000-01-31":"2000-12-31"].mean().round(4).values ==
                   np.array([100] * 3, dtype="float64"))
 
@@ -294,12 +314,12 @@ def test_convert():
     usd = session.convert(flavor="usd").dataset["data1"]
     usd.columns = data.columns
     assert np.all(abs(usd) <= abs(data))
-    data = dummy_df(freq="M")
+    data = dummy_df(freq="M", currency="UYU", inf_adj="current")
     session = Session(location=TEST_CON, dataset=data)
     real = session.convert(flavor="real", start_date="2000-01-31").dataset
     real.columns = data.columns
     assert np.all(abs(real.iloc[1:]) <= abs(data.iloc[1:]))
-    data = dummy_df(freq="M")
+    data = dummy_df(freq="M", currency="UYU", inf_adj="current")
     session = Session(location=TEST_CON, dataset={
                       "data1": data, "data2": data})
     real = session.convert(flavor="real").dataset["data1"]
@@ -335,18 +355,6 @@ def test_convert():
     real = session.convert(flavor="real", start_date="2000-01-31")
     pcgdp = session.convert(flavor="pcgdp")
     usd = session.convert(flavor="usd")
-    data_d = dummy_df(freq="D", periods=600, ts_type="Stock", currency="USD")
-    session = Session(location=TEST_CON, dataset=data_d)
-    real = session.convert(flavor="real", start_date="2000-01-31",
-                           end_date="2000-12-31")
-    pcgdp = session.convert(flavor="pcgdp")
-    with pytest.raises(ValueError):
-        usd = session.convert(flavor="usd")
-    real_2 = session.convert(flavor="real", start_date="2000-01-31",
-                             end_date="2000-12-31")
-    assert real.dataset.equals(real_2.dataset)
-    pcgdp_2 = session.convert(flavor="pcgdp")
-    assert pcgdp.dataset.equals(pcgdp_2.dataset)
     data_m = dummy_df(freq="M", ts_type="Flujo")
     session = Session(location=TEST_CON, dataset=data_m)
     pcgdp = session.convert(flavor="pcgdp")

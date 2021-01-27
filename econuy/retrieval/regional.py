@@ -201,6 +201,11 @@ def monthly_gdp(
 
     output = pd.concat([arg, bra], axis=1)
     output.columns = ["Argentina", "Brasil"]
+    metadata._set(output, area="Regional", currency="-",
+                  inf_adj="Const.", seas_adj="SA",
+                  ts_type="Flujo", cumperiods=1)
+    metadata._modify_multiindex(output, levels=[3],
+                                new_arrays=[["ARS", "BRL"]])
     output = rebase(output, start_date="2010-01-01", end_date="2010-12-31")
 
     if update_loc is not None:
@@ -208,12 +213,6 @@ def monthly_gdp(
                                 name=name, index_label=index_label)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
-
-    metadata._set(output, area="Regional", currency="-",
-                  inf_adj="Const.", seas_adj="SA",
-                  ts_type="Flujo", cumperiods=1)
-    metadata._modify_multiindex(output, levels=[3],
-                                new_arrays=[["ARS", "BRL"]])
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
@@ -301,6 +300,11 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     output = pd.concat([arg, bra], axis=1)
     output.columns = ["Argentina", "Brasil"]
+    metadata._set(output, area="Regional", currency="-",
+                  inf_adj="No", seas_adj="NSA",
+                  ts_type="-", cumperiods=1)
+    metadata._modify_multiindex(output, levels=[3],
+                                new_arrays=[["ARS", "BRL"]])
     output = rebase(output, start_date="2010-10-01", end_date="2010-10-31")
 
     if update_loc is not None:
@@ -308,12 +312,6 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                                 name=name, index_label=index_label)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
-
-    metadata._set(output, area="Regional", currency="-",
-                  inf_adj="No", seas_adj="NSA",
-                  ts_type="-", cumperiods=1)
-    metadata._modify_multiindex(output, levels=[3],
-                                new_arrays=[["ARS", "BRL"]])
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
@@ -768,6 +766,9 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     output = arg.join(bra, how="left").interpolate(method="linear",
                                                    limit_area="inside")
+    metadata._set(output, area="Regional", currency="USD",
+                  inf_adj="No", seas_adj="NSA",
+                  ts_type="-", cumperiods=1)
     output = rebase(output, start_date="2019-01-02").dropna(how="all")
 
     if update_loc is not None:
@@ -777,10 +778,6 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                                 index_label=index_label)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
-
-    metadata._set(output, area="Regional", currency="USD",
-                  inf_adj="No", seas_adj="NSA",
-                  ts_type="-", cumperiods=1)
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
@@ -846,6 +843,11 @@ def rxr(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     output["Argentina"] = (proc["Argentina - oficial"] * proc["US.PCPI_IX"]
                            / proc["ARG CPI"])
     output["Brasil"] = proc["Brasil"] * proc["US.PCPI_IX"] / proc["BRA CPI"]
+    metadata._set(output, area="Regional", currency="-",
+                  inf_adj="-", seas_adj="NSA",
+                  ts_type="-", cumperiods=1)
+    metadata._modify_multiindex(output, levels=[3],
+                                new_arrays=[["ARS/USD", "BRL/USD"]])
     output = rebase(output, start_date="2019-01-01",
                     end_date="2019-01-31").dropna(how="all")
 
@@ -856,12 +858,6 @@ def rxr(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                                 index_label=index_label)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
-
-    metadata._set(output, area="Regional", currency="-",
-                  inf_adj="-", seas_adj="NSA",
-                  ts_type="-", cumperiods=1)
-    metadata._modify_multiindex(output, levels=[3],
-                                new_arrays=[["ARS/USD", "BRL/USD"]])
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
