@@ -889,6 +889,9 @@ def _decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
     old_columns = df_proc.columns
     df_proc.columns = df_proc.columns.get_level_values(level=0)
     df_proc.index = pd.to_datetime(df_proc.index, errors="coerce")
+    trends = pd.DataFrame(data=np.nan, index=df_proc.index, 
+                          columns=old_columns)
+    seas_adjs = trends.copy()
 
     if method == "x13":
         try:
@@ -935,7 +938,8 @@ def _decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
                                              **kwargs)
                         except X13Error:
                             warnings.warn("No combination of parameters "
-                                          "successful. Filling with NaN.",
+                                          "successful. No decomposition "
+                                          "performed.",
                                           UserWarning)
                             trends = error_handler(df=df_proc, errors=errors)
                             seas_adjs = trends.copy()
@@ -962,7 +966,7 @@ def _decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
                 if fallback == "loess":
                     results = df_proc.apply(
                         lambda x: STL(x.dropna()).fit(), result_type="expand")
-                elif fallback == "ma":
+                else:
                     results = df_proc.apply(
                         lambda x: seasonal_decompose(
                             x.dropna(), extrapolate_trend="freq"),
@@ -977,7 +981,7 @@ def _decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
         if method == "loess":
             results = df_proc.apply(
                 lambda x: STL(x.dropna()).fit(), result_type="expand")
-        if method == "ma":
+        else:
             results = df_proc.apply(
                 lambda x: seasonal_decompose(x.dropna(),
                                              extrapolate_trend="freq"),
