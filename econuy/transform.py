@@ -538,8 +538,8 @@ def _resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
             if target_freq < base_freq:
                 count = int(base_freq / target_freq)
                 proc = df.resample(rule).count()
-                proc = proc.loc[proc.iloc[:, 0] >= count]
-                resampled_df = resampled_df.reindex(proc.index)
+                antimask = np.where(proc >= count, False, True)
+                resampled_df = resampled_df.mask(antimask, np.nan)
         except KeyError:
             warnings.warn("No bin trimming performed because frequencies "
                           "could not be assigned a numeric value", UserWarning)
