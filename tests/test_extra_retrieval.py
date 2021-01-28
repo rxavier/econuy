@@ -75,7 +75,7 @@ def test_comm_index():
     assert comm.iloc[0][0] == 100
     session.only_get = True
     compare = session.get_custom(
-        dataset="comm_index",
+        dataset="commodity_index",
         only_get_prices=True).dataset
     assert compare.round(4).equals(comm.round(4))
     remove_clutter()

@@ -1,4 +1,5 @@
 import logging
+from inspect import signature
 from datetime import datetime
 from os import PathLike, path, makedirs
 from pathlib import Path
@@ -11,7 +12,7 @@ from econuy import transform
 from econuy.retrieval import (prices, fiscal_accounts, economic_activity,
                               labor, external_sector, financial_sector, income,
                               international, regional)
-from econuy.utils import logutil, ops
+from econuy.utils import logutil, ops, datasets
 
 
 class Session(object):
@@ -140,6 +141,18 @@ class Session(object):
             return output
         else:
             return transformation(self.dataset, **kwargs)
+    
+    @staticmethod
+    def _download(original: bool, dataset: str, **kwargs):
+        if original is True:
+            function = datasets.original[dataset]["function"]
+        else:
+            function = datasets.custom[dataset]["function"]
+        accepted_params = dict(signature(function).parameters)
+        new_kwargs = {k: v for k, v in kwargs.items() 
+                      if k in accepted_params.keys()}
+        return function(**new_kwargs)
+        
 
     def get(self,
             dataset: str,
@@ -172,192 +185,15 @@ class Session(object):
             If an invalid string is given to the ``dataset`` argument.
 
         """
-        update_loc = self.__parse_location(process=update)
-        save_loc = self.__parse_location(process=save)
-
-        if dataset == "cpi" or dataset == "prices":
-            output = prices.cpi(update_loc=update_loc,
+        if dataset not in datasets.original.keys():
+            raise ValueError("Invalid dataset selected.")
+        
+        update_loc = self._parse_location(process=update)
+        save_loc = self._parse_location(process=save)
+        output = self._download(original=True, dataset=dataset, 
+                                update_loc=update_loc, save_loc=save_loc, 
                                 revise_rows=self.revise_rows,
-                                save_loc=save_loc,
-                                only_get=self.only_get,
-                                **kwargs)
-        elif dataset == "industrial_production":
-            output = economic_activity.industrial_production(
-                update_loc=update_loc,
-                revise_rows=self.revise_rows,
-                save_loc=save_loc,
-                only_get=self.only_get,
-                **kwargs)
-        elif dataset == "balance":
-            output = fiscal_accounts.balance(update_loc=update_loc,
-                                             revise_rows=self.revise_rows,
-                                             save_loc=save_loc,
-                                             only_get=self.only_get,
-                                             **kwargs)
-        elif dataset == "public_debt":
-            output = fiscal_accounts.public_debt(update_loc=update_loc,
-                                                 revise_rows=self.revise_rows,
-                                                 save_loc=save_loc,
-                                                 only_get=self.only_get,
-                                                 **kwargs)
-        elif dataset == "nxr_monthly" or dataset == "nxr_m":
-            output = prices.nxr_monthly(update_loc=update_loc,
-                                        revise_rows=self.revise_rows,
-                                        save_loc=save_loc,
-                                        only_get=self.only_get,
-                                        **kwargs)
-        elif dataset == "nxr_daily" or dataset == "nxr_d":
-            output = prices.nxr_daily(update_loc=update_loc,
-                                      save_loc=save_loc,
-                                      only_get=self.only_get,
-                                      **kwargs)
-        elif dataset == "naccounts" or dataset == "na":
-            output = economic_activity.national_accounts(
-                update_loc=update_loc,
-                revise_rows=self.revise_rows,
-                save_loc=save_loc,
-                only_get=self.only_get,
-                **kwargs)
-        elif dataset == "labor" or dataset == "labour":
-            output = labor.labor_rates(update_loc=update_loc,
-                                       revise_rows=self.revise_rows,
-                                       save_loc=save_loc,
-                                       only_get=self.only_get,
-                                       **kwargs)
-        elif dataset == "wages":
-            output = labor.nominal_wages(update_loc=update_loc,
-                                         revise_rows=self.revise_rows,
-                                         save_loc=save_loc,
-                                         only_get=self.only_get,
-                                         **kwargs)
-        elif dataset == "real_wages":
-            output = labor.real_wages(update_loc=update_loc,
-                                      save_loc=save_loc,
-                                      only_get=self.only_get,
-                                      **kwargs)
-        elif dataset == "rxr_official" or dataset == "rxr-official":
-            output = external_sector.rxr_official(update_loc=update_loc,
-                                                  revise_rows=self.revise_rows,
-                                                  save_loc=save_loc,
-                                                  only_get=self.only_get,
-                                                  **kwargs)
-        elif dataset == "reserves":
-            output = external_sector.reserves(update_loc=update_loc,
-                                              save_loc=save_loc,
-                                              only_get=self.only_get,
-                                              **kwargs)
-        elif dataset == "reserves_changes" or dataset == "reserves_chg":
-            output = external_sector.reserves_changes(update_loc=update_loc,
-                                                      save_loc=save_loc,
-                                                      only_get=self.only_get,
-                                                      **kwargs)
-        elif dataset == "trade":
-            output = external_sector.trade(update_loc=update_loc,
-                                           revise_rows=self.revise_rows,
-                                           save_loc=save_loc,
-                                           only_get=self.only_get,
-                                           **kwargs)
-        elif dataset == "call":
-            output = financial_sector.call_rate(update_loc=update_loc,
-                                                revise_rows=self.revise_rows,
-                                                save_loc=save_loc,
-                                                only_get=self.only_get,
-                                                **kwargs)
-        elif dataset == "deposits":
-            output = financial_sector.deposits(update_loc=update_loc,
-                                               revise_rows=self.revise_rows,
-                                               save_loc=save_loc,
-                                               only_get=self.only_get,
-                                               **kwargs)
-        elif dataset == "credit" or dataset == "credits":
-            output = financial_sector.credit(update_loc=update_loc,
-                                             revise_rows=self.revise_rows,
-                                             save_loc=save_loc,
-                                             only_get=self.only_get,
-                                             **kwargs)
-        elif dataset == "interest_rates":
-            output = financial_sector.interest_rates(
-                update_loc=update_loc,
-                revise_rows=self.revise_rows,
-                save_loc=save_loc,
-                only_get=self.only_get,
-                **kwargs)
-        elif dataset == "taxes":
-            output = fiscal_accounts.tax_revenue(update_loc=update_loc,
-                                                 revise_rows=self.revise_rows,
-                                                 save_loc=save_loc,
-                                                 only_get=self.only_get,
-                                                 **kwargs)
-        elif dataset == "diesel":
-            output = economic_activity.diesel(update_loc=update_loc,
-                                              revise_rows=self.revise_rows,
-                                              save_loc=save_loc,
-                                              only_get=self.only_get,
-                                              **kwargs)
-        elif dataset == "gasoline":
-            output = economic_activity.gasoline(update_loc=update_loc,
-                                                revise_rows=self.revise_rows,
-                                                save_loc=save_loc,
-                                                only_get=self.only_get,
-                                                **kwargs)
-        elif dataset == "electricity":
-            output = economic_activity.electricity(
-                update_loc=update_loc,
-                revise_rows=self.revise_rows,
-                save_loc=save_loc,
-                only_get=self.only_get,
-                **kwargs)
-        elif dataset == "hours":
-            output = labor.hours(update_loc=update_loc,
-                                 revise_rows=self.revise_rows,
-                                 save_loc=save_loc,
-                                 only_get=self.only_get,
-                                 **kwargs)
-        elif dataset == "household_income":
-            output = income.income_household(update_loc=update_loc,
-                                             revise_rows=self.revise_rows,
-                                             save_loc=save_loc,
-                                             only_get=self.only_get,
-                                             **kwargs)
-        elif dataset == "capita_income":
-            output = income.income_capita(update_loc=update_loc,
-                                          revise_rows=self.revise_rows,
-                                          save_loc=save_loc,
-                                          only_get=self.only_get,
-                                          **kwargs)
-        elif dataset == "cattle":
-            output = economic_activity.cattle(update_loc=update_loc,
-                                              revise_rows=self.revise_rows,
-                                              save_loc=save_loc,
-                                              only_get=self.only_get,
-                                              **kwargs)
-        elif dataset == "milk":
-            output = economic_activity.milk(update_loc=update_loc,
-                                            revise_rows=self.revise_rows,
-                                            save_loc=save_loc,
-                                            only_get=self.only_get,
-                                            **kwargs)
-        elif dataset == "cement":
-            output = economic_activity.cement(update_loc=update_loc,
-                                              revise_rows=self.revise_rows,
-                                              save_loc=save_loc,
-                                              only_get=self.only_get,
-                                              **kwargs)
-        elif dataset == "consumer_confidence":
-            output = income.consumer_confidence(update_loc=update_loc,
-                                                revise_rows=self.revise_rows,
-                                                save_loc=save_loc,
-                                                only_get=self.only_get,
-                                                **kwargs)
-        elif dataset == "sovereign_risk":
-            output = financial_sector.sovereign_risk(
-                update_loc=update_loc,
-                revise_rows=self.revise_rows,
-                save_loc=save_loc,
-                only_get=self.only_get,
-                **kwargs)
-        else:
-            raise ValueError("Invalid keyword for 'dataset' parameter.")
+                                only_get=self.only_get, **kwargs)
 
         self.dataset = output
         self.logger.info(f"Retrieved '{dataset}' dataset.")
@@ -394,147 +230,18 @@ class Session(object):
             If an invalid string is given to the ``dataset`` argument.
 
         """
-        update_loc = self.__parse_location(process=update)
-        save_loc = self.__parse_location(process=save)
+        update_loc = self._parse_location(process=update)
+        save_loc = self._parse_location(process=save)
 
-        if dataset == "cpi_measures" or dataset == "price_measures":
-            output = prices.cpi_measures(update_loc=update_loc,
-                                         revise_rows=self.revise_rows,
-                                         save_loc=save_loc,
-                                         only_get=self.only_get,
-                                         **kwargs)
-        elif dataset == "core_industrial":
-            output = economic_activity.core_industrial(update_loc=update_loc,
-                                                       save_loc=save_loc,
-                                                       only_get=self.only_get,
-                                                       **kwargs)
-        elif dataset == "balance_fss":
-            output = fiscal_accounts.balance_fss(update_loc=update_loc,
-                                                 save_loc=save_loc,
-                                                 only_get=self.only_get,
-                                                 **kwargs)
-        elif dataset == "net_public_debt":
-            output = fiscal_accounts.net_public_debt(update_loc=update_loc,
-                                                     save_loc=save_loc,
-                                                     only_get=self.only_get,
-                                                     **kwargs)
-        elif dataset == "rates_people":
-            output = labor.rates_people(update_loc=update_loc,
-                                        save_loc=save_loc,
-                                        only_get=self.only_get,
-                                        **kwargs)
-        elif dataset == "net_trade":
-            output = external_sector.trade_balance(update_loc=update_loc,
-                                                   save_loc=save_loc,
-                                                   only_get=self.only_get,
-                                                   **kwargs)
-        elif dataset == "tot" or dataset == "terms_of_trade":
-            output = external_sector.terms_of_trade(update_loc=update_loc,
-                                                    save_loc=save_loc,
-                                                    only_get=self.only_get,
-                                                    **kwargs)
-        elif dataset == "rxr_custom" or dataset == "rxr-custom":
-            output = external_sector.rxr_custom(update_loc=update_loc,
-                                                save_loc=save_loc,
-                                                only_get=self.only_get,
-                                                **kwargs)
-        elif dataset == "commodity_index" or dataset == "comm_index":
-            output = external_sector.commodity_index(update_loc=update_loc,
-                                                     save_loc=save_loc,
-                                                     only_get=self.only_get,
-                                                     **kwargs)
-        elif dataset == "bonds":
-            output = financial_sector.bonds(update_loc=update_loc,
-                                            revise_rows=self.revise_rows,
-                                            save_loc=save_loc,
-                                            only_get=self.only_get,
-                                            **kwargs)
-        elif dataset == "global_gdp":
-            output = international.gdp(update_loc=update_loc,
-                                       revise_rows=self.revise_rows,
-                                       save_loc=save_loc,
-                                       only_get=self.only_get,
-                                       **kwargs)
-        elif dataset == "global_stocks":
-            output = international.stocks(update_loc=update_loc,
-                                          revise_rows=self.revise_rows,
-                                          save_loc=save_loc,
-                                          only_get=self.only_get,
-                                          **kwargs)
-        elif dataset == "global_policy_rates":
-            output = international.policy_rates(update_loc=update_loc,
-                                                revise_rows=self.revise_rows,
-                                                save_loc=save_loc,
-                                                only_get=self.only_get,
-                                                **kwargs)
-        elif dataset == "global_long_rates":
-            output = international.long_rates(update_loc=update_loc,
-                                              revise_rows=self.revise_rows,
-                                              save_loc=save_loc,
-                                              only_get=self.only_get,
-                                              **kwargs)
-        elif dataset == "global_nxr":
-            output = international.nxr(update_loc=update_loc,
-                                       revise_rows=self.revise_rows,
-                                       save_loc=save_loc,
-                                       only_get=self.only_get,
-                                       **kwargs)
-        elif dataset == "regional_gdp":
-            output = regional.gdp(update_loc=update_loc,
-                                  revise_rows=self.revise_rows,
-                                  save_loc=save_loc,
-                                  only_get=self.only_get,
-                                  **kwargs)
-        elif dataset == "regional_monthly_gdp":
-            output = regional.monthly_gdp(update_loc=update_loc,
-                                          revise_rows=self.revise_rows,
-                                          save_loc=save_loc,
-                                          only_get=self.only_get,
-                                          **kwargs)
-        elif dataset == "regional_cpi":
-            output = regional.cpi(update_loc=update_loc,
-                                  revise_rows=self.revise_rows,
-                                  save_loc=save_loc,
-                                  only_get=self.only_get,
-                                  **kwargs)
-        elif dataset == "regional_nxr":
-            output = regional.nxr(update_loc=update_loc,
-                                  revise_rows=self.revise_rows,
-                                  save_loc=save_loc,
-                                  only_get=self.only_get,
-                                  **kwargs)
-        elif dataset == "regional_embi_spreads":
-            output = regional.embi_spreads(update_loc=update_loc,
-                                           revise_rows=self.revise_rows,
-                                           save_loc=save_loc,
-                                           only_get=self.only_get,
-                                           **kwargs)
-        elif dataset == "regional_embi_yields":
-            output = regional.embi_yields(update_loc=update_loc,
-                                          revise_rows=self.revise_rows,
-                                          save_loc=save_loc,
-                                          only_get=self.only_get,
-                                          **kwargs)
-        elif dataset == "regional_policy_rates":
-            output = regional.policy_rates(update_loc=update_loc,
-                                           revise_rows=self.revise_rows,
-                                           save_loc=save_loc,
-                                           only_get=self.only_get,
-                                           **kwargs)
-        elif dataset == "regional_stocks":
-            output = regional.stocks(update_loc=update_loc,
-                                     revise_rows=self.revise_rows,
-                                     save_loc=save_loc,
-                                     only_get=self.only_get,
-                                     **kwargs)
-        elif dataset == "regional_rxr":
-            output = regional.rxr(update_loc=update_loc,
-                                  revise_rows=self.revise_rows,
-                                  save_loc=save_loc,
-                                  only_get=self.only_get,
-                                  **kwargs)
-        else:
-            raise ValueError("Invalid keyword for 'dataset' parameter.")
+        if dataset not in datasets.custom.keys():
+            raise ValueError("Invalid dataset selected.")
+        
+        update_loc = self._parse_location(process=update)
+        save_loc = self._parse_location(process=save)
+        output = self._download(original=False, dataset=dataset, 
+                                update_loc=update_loc, save_loc=save_loc, 
+                                revise_rows=self.revise_rows,
+                                only_get=self.only_get, **kwargs)
 
         self.dataset = output
         self.logger.info(f"Retrieved '{dataset}' dataset.")
@@ -552,7 +259,7 @@ class Session(object):
         :func:`~econuy.transform.resample`
 
         """
-        output = self.__apply_transformation(transform.resample, rule=rule,
+        output = self._apply_transformation(transform.resample, rule=rule,
                                              operation=operation,
                                              interpolation=interpolation)
         self.logger.info(f"Applied 'resample' transformation with '{rule}' "
@@ -578,7 +285,7 @@ class Session(object):
         :func:`~econuy.transform.chg_diff`
 
         """
-        output = self.__apply_transformation(transform.chg_diff,
+        output = self._apply_transformation(transform.chg_diff,
                                              operation=operation, period=period)
         self.logger.info(f"Applied 'chg_diff' transformation with "
                          f"'{operation}' operation and '{period}' period.")
@@ -621,7 +328,7 @@ class Session(object):
         if errors is None:
             errors = self.errors
 
-        output = self.__apply_transformation(transform.decompose,
+        output = self._apply_transformation(transform.decompose,
                                              component=component,
                                              method=method,
                                              force_x13=force_x13,
@@ -674,17 +381,17 @@ class Session(object):
         if errors is None:
             errors = self.errors
 
-        update_loc = self.__parse_location(process=update)
-        save_loc = self.__parse_location(process=save)
+        update_loc = self._parse_location(process=update)
+        save_loc = self._parse_location(process=save)
 
         if flavor == "usd":
-            output = self.__apply_transformation(transform.convert_usd,
+            output = self._apply_transformation(transform.convert_usd,
                                                  update_loc=update_loc,
                                                  save_loc=save_loc,
                                                  only_get=only_get,
                                                  errors=errors)
         elif flavor == "real":
-            output = self.__apply_transformation(transform.convert_real,
+            output = self._apply_transformation(transform.convert_real,
                                                  update_loc=update_loc,
                                                  save_loc=save_loc,
                                                  only_get=only_get,
@@ -692,7 +399,7 @@ class Session(object):
                                                  start_date=start_date,
                                                  end_date=end_date)
         else:
-            output = self.__apply_transformation(transform.convert_gdp,
+            output = self._apply_transformation(transform.convert_gdp,
                                                  update_loc=update_loc,
                                                  save_loc=save_loc,
                                                  only_get=only_get,
@@ -723,7 +430,7 @@ class Session(object):
         :func:`~econuy.transform.rebase`
 
         """
-        output = self.__apply_transformation(transform.rebase,
+        output = self._apply_transformation(transform.rebase,
                                              start_date=start_date,
                                              end_date=end_date, base=base)
         self.logger.info("Applied 'rebase' transformation.")
@@ -749,7 +456,7 @@ class Session(object):
         :func:`~econuy.transform.rolling`
 
         """
-        output = self.__apply_transformation(transform.rolling,
+        output = self._apply_transformation(transform.rolling,
                                              window=window,
                                              operation=operation)
         self.logger.info(f"Applied 'rolling' transformation with "
