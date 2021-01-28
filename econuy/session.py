@@ -122,7 +122,7 @@ class Session(object):
                          f"Dataset: {dataset_message}\n"
                          f"Logging method: {log_method}")
 
-    def __parse_location(self, process: bool):
+    def _parse_location(self, process: bool):
         if process is True:
             if isinstance(self.location, (str, PathLike)):
                 return Path(self.location)
@@ -131,7 +131,7 @@ class Session(object):
         else:
             return None
 
-    def __apply_transformation(self, transformation: Callable, **kwargs):
+    def _apply_transformation(self, transformation: Callable, **kwargs):
         if isinstance(self.dataset, dict):
             output = {}
             for name, data in self.dataset.items():
