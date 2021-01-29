@@ -9,9 +9,6 @@ import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
-from econuy.retrieval import (prices, fiscal_accounts, economic_activity,
-                              labor, external_sector, financial_sector, income,
-                              international, regional)
 from econuy.utils import logutil, ops, datasets
 
 
@@ -72,6 +69,10 @@ class Session(object):
         self.logger = logger
         self.inplace = inplace
         self.errors = errors
+        self.__available = {"original": {k: v["description"]
+                                         for k, v in datasets.original.items()},
+                            "custom": {k: v["description"]
+                                       for k, v in datasets.custom.items()}}
 
         if isinstance(location, (str, PathLike)):
             if not path.exists(self.location):
@@ -121,16 +122,24 @@ class Session(object):
                          f"Offline: {only_get.__str__()}\n"
                          f"Update method: '{revise_method}'\n"
                          f"Dataset: {dataset_message}\n"
-                         f"Logging method: {log_method}")
+                         f"Logging method: {log_method}\n"
+                         f"Inplace: {inplace.__str__()}\n"
+                         f"Error handling: {errors}")
 
-    def _parse_location(self, process: bool):
-        if process is True:
-            if isinstance(self.location, (str, PathLike)):
-                return Path(self.location)
-            else:
-                return self.location
+    @property
+    def available(self):
+        return self.__available
+
+    @staticmethod
+    def _download(original: bool, dataset: str, **kwargs):
+        if original is True:
+            function = datasets.original[dataset]["function"]
         else:
-            return None
+            function = datasets.custom[dataset]["function"]
+        accepted_params = dict(signature(function).parameters)
+        new_kwargs = {k: v for k, v in kwargs.items()
+                      if k in accepted_params.keys()}
+        return function(**new_kwargs)
 
     def _apply_transformation(self, transformation: Callable, **kwargs):
         if isinstance(self.dataset, dict):
@@ -142,17 +151,14 @@ class Session(object):
         else:
             return transformation(self.dataset, **kwargs)
     
-    @staticmethod
-    def _download(original: bool, dataset: str, **kwargs):
-        if original is True:
-            function = datasets.original[dataset]["function"]
+    def _parse_location(self, process: bool):
+        if process is True:
+            if isinstance(self.location, (str, PathLike)):
+                return Path(self.location)
+            else:
+                return self.location
         else:
-            function = datasets.custom[dataset]["function"]
-        accepted_params = dict(signature(function).parameters)
-        new_kwargs = {k: v for k, v in kwargs.items() 
-                      if k in accepted_params.keys()}
-        return function(**new_kwargs)
-        
+            return None
 
     def get(self,
             dataset: str,
@@ -164,7 +170,8 @@ class Session(object):
 
         Parameters
         ----------
-        dataset : str, see available options in datasets.py
+        dataset : str, see available options in datasets.py or in 
+                  :attr:`available`
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -187,11 +194,11 @@ class Session(object):
         """
         if dataset not in datasets.original.keys():
             raise ValueError("Invalid dataset selected.")
-        
+
         update_loc = self._parse_location(process=update)
         save_loc = self._parse_location(process=save)
-        output = self._download(original=True, dataset=dataset, 
-                                update_loc=update_loc, save_loc=save_loc, 
+        output = self._download(original=True, dataset=dataset,
+                                update_loc=update_loc, save_loc=save_loc,
                                 revise_rows=self.revise_rows,
                                 only_get=self.only_get, **kwargs)
 
@@ -210,8 +217,8 @@ class Session(object):
 
         Parameters
         ----------
-        dataset : str, see available options in datasets.py
-            Type of data to download.
+        dataset : str, see available options in datasets.py or in 
+                  :attr:`available`
         update : bool, default True
             Whether to update an existing dataset.
         save : bool, default  True
@@ -235,11 +242,11 @@ class Session(object):
 
         if dataset not in datasets.custom.keys():
             raise ValueError("Invalid dataset selected.")
-        
+
         update_loc = self._parse_location(process=update)
         save_loc = self._parse_location(process=save)
-        output = self._download(original=False, dataset=dataset, 
-                                update_loc=update_loc, save_loc=save_loc, 
+        output = self._download(original=False, dataset=dataset,
+                                update_loc=update_loc, save_loc=save_loc,
                                 revise_rows=self.revise_rows,
                                 only_get=self.only_get, **kwargs)
 
@@ -260,8 +267,8 @@ class Session(object):
 
         """
         output = self._apply_transformation(transform.resample, rule=rule,
-                                             operation=operation,
-                                             interpolation=interpolation)
+                                            operation=operation,
+                                            interpolation=interpolation)
         self.logger.info(f"Applied 'resample' transformation with '{rule}' "
                          f"and '{operation}' operation.")
         if self.inplace is True:
@@ -286,7 +293,7 @@ class Session(object):
 
         """
         output = self._apply_transformation(transform.chg_diff,
-                                             operation=operation, period=period)
+                                            operation=operation, period=period)
         self.logger.info(f"Applied 'chg_diff' transformation with "
                          f"'{operation}' operation and '{period}' period.")
         if self.inplace is True:
@@ -329,17 +336,17 @@ class Session(object):
             errors = self.errors
 
         output = self._apply_transformation(transform.decompose,
-                                             component=component,
-                                             method=method,
-                                             force_x13=force_x13,
-                                             fallback=fallback,
-                                             trading=trading,
-                                             outlier=outlier,
-                                             x13_binary=x13_binary,
-                                             search_parents=search_parents,
-                                             ignore_warnings=ignore_warnings,
-                                             errors=errors,
-                                             **kwargs)
+                                            component=component,
+                                            method=method,
+                                            force_x13=force_x13,
+                                            fallback=fallback,
+                                            trading=trading,
+                                            outlier=outlier,
+                                            x13_binary=x13_binary,
+                                            search_parents=search_parents,
+                                            ignore_warnings=ignore_warnings,
+                                            errors=errors,
+                                            **kwargs)
         self.logger.info(f"Applied 'decompose' transformation with "
                          f"'{method}' method and '{component}' component.")
         if self.inplace is True:
@@ -386,24 +393,24 @@ class Session(object):
 
         if flavor == "usd":
             output = self._apply_transformation(transform.convert_usd,
-                                                 update_loc=update_loc,
-                                                 save_loc=save_loc,
-                                                 only_get=only_get,
-                                                 errors=errors)
+                                                update_loc=update_loc,
+                                                save_loc=save_loc,
+                                                only_get=only_get,
+                                                errors=errors)
         elif flavor == "real":
             output = self._apply_transformation(transform.convert_real,
-                                                 update_loc=update_loc,
-                                                 save_loc=save_loc,
-                                                 only_get=only_get,
-                                                 errors=errors,
-                                                 start_date=start_date,
-                                                 end_date=end_date)
+                                                update_loc=update_loc,
+                                                save_loc=save_loc,
+                                                only_get=only_get,
+                                                errors=errors,
+                                                start_date=start_date,
+                                                end_date=end_date)
         else:
             output = self._apply_transformation(transform.convert_gdp,
-                                                 update_loc=update_loc,
-                                                 save_loc=save_loc,
-                                                 only_get=only_get,
-                                                 errors=errors)
+                                                update_loc=update_loc,
+                                                save_loc=save_loc,
+                                                only_get=only_get,
+                                                errors=errors)
 
         self.logger.info(f"Applied 'convert' transformation "
                          f"with '{flavor}' flavor.")
@@ -431,8 +438,8 @@ class Session(object):
 
         """
         output = self._apply_transformation(transform.rebase,
-                                             start_date=start_date,
-                                             end_date=end_date, base=base)
+                                            start_date=start_date,
+                                            end_date=end_date, base=base)
         self.logger.info("Applied 'rebase' transformation.")
         if self.inplace is True:
             self.dataset = output
@@ -457,8 +464,8 @@ class Session(object):
 
         """
         output = self._apply_transformation(transform.rolling,
-                                             window=window,
-                                             operation=operation)
+                                            window=window,
+                                            operation=operation)
         self.logger.info(f"Applied 'rolling' transformation with "
                          f"{window} periods and '{operation}' operation.")
         if self.inplace is True:
