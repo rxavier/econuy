@@ -70,9 +70,6 @@ class Session(object):
         self.inplace = inplace
         self.errors = errors
         self.__available = {"original": {k: v["description"]
-                                         for k, v in datasets.original.items()},
-                            "custom": {k: v["description"]
-                                       for k, v in datasets.custom.items()}}
 
         if isinstance(location, (str, PathLike)):
             if not path.exists(self.location):
@@ -128,7 +125,10 @@ class Session(object):
 
     @property
     def available(self):
-        return self.__available
+        return {"original": {k: v["description"]
+                             for k, v in datasets.original.items()},
+                "custom": {k: v["description"]
+                           for k, v in datasets.custom.items()}}
 
     @staticmethod
     def _download(original: bool, dataset: str, **kwargs):
