@@ -64,11 +64,11 @@ class Session(object):
         self.location = location
         self.revise_rows = revise_rows
         self.only_get = only_get
-        self.dataset = dataset
         self.log = log
         self.logger = logger
         self.inplace = inplace
         self.errors = errors
+        self._dataset = dataset
         self._dataset_name = None
 
         if isinstance(location, (str, PathLike)):
@@ -104,11 +104,6 @@ class Session(object):
                 log_method = "no logging"
             self.logger = log_obj
 
-            if (isinstance(dataset, pd.DataFrame) and
-                    dataset.equals(pd.DataFrame(columns=[], index=[]))):
-                dataset_message = "empty dataframe"
-            else:
-                dataset_message = "custom dataset"
             if isinstance(revise_rows, int):
                 revise_method = f"{revise_rows} rows to replace"
             else:
@@ -116,11 +111,11 @@ class Session(object):
             log_obj.info(f"Created Session object with the "
                          f"following attributes:\n"
                          f"Location for downloads and updates: {loc_text}\n"
-                         f"Offline: {only_get.__str__()}\n"
+                         f"Offline: {only_get}\n"
                          f"Update method: '{revise_method}'\n"
-                         f"Dataset: {dataset_message}\n"
+                         f"Dataset: {self._dataset_name.__str__()}\n"
                          f"Logging method: {log_method}\n"
-                         f"Inplace: {inplace.__str__()}\n"
+                         f"Inplace: {inplace}\n"
                          f"Error handling: {errors}")
 
     @property
@@ -129,10 +124,19 @@ class Session(object):
                              for k, v in datasets.original.items()},
                 "custom": {k: v["description"]
                            for k, v in datasets.custom.items()}}
-        
+
     @property
     def dataset_name(self):
         return self._dataset_name
+
+    @property
+    def dataset(self):
+        return self._dataset
+
+    @dataset.setter
+    def dataset(self, value):
+        self._dataset = value
+        self._dataset_name = "Custom"
 
     @staticmethod
     def _download(original: bool, dataset: str, **kwargs):
@@ -205,12 +209,21 @@ class Session(object):
                                 update_loc=update_loc, save_loc=save_loc,
                                 revise_rows=self.revise_rows,
                                 only_get=self.only_get, **kwargs)
-
-        self.dataset = output
-        self._dataset_name = dataset
         self.logger.info(f"Retrieved '{dataset}' dataset.")
-
-        return self
+        if self.inplace is True:
+            self.dataset = output
+            self._dataset_name = dataset
+            return self
+        else:
+            new_session = Session(location=self.location,
+                                  revise_rows=self.revise_rows,
+                                  only_get=self.only_get,
+                                  dataset=output,
+                                  logger=self.logger,
+                                  inplace=self.inplace,
+                                  errors=self.errors)
+            new_session._dataset_name = dataset
+            return new_session
 
     def get_custom(self,
                    dataset: str,
@@ -254,12 +267,21 @@ class Session(object):
                                 update_loc=update_loc, save_loc=save_loc,
                                 revise_rows=self.revise_rows,
                                 only_get=self.only_get, **kwargs)
-
-        self.dataset = output
-        self._dataset_name = dataset
         self.logger.info(f"Retrieved '{dataset}' dataset.")
-
-        return self
+        if self.inplace is True:
+            self.dataset = output
+            self._dataset_name = dataset
+            return self
+        else:
+            new_session = Session(location=self.location,
+                                  revise_rows=self.revise_rows,
+                                  only_get=self.only_get,
+                                  dataset=output,
+                                  logger=self.logger,
+                                  inplace=self.inplace,
+                                  errors=self.errors)
+            new_session._dataset_name = dataset
+            return new_session
 
     def resample(self, rule: Union[pd.DateOffset, pd.Timedelta, str],
                  operation: str = "sum",
