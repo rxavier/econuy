@@ -69,7 +69,7 @@ class Session(object):
         self.logger = logger
         self.inplace = inplace
         self.errors = errors
-        self.__available = {"original": {k: v["description"]
+        self._dataset_name = None
 
         if isinstance(location, (str, PathLike)):
             if not path.exists(self.location):
@@ -129,6 +129,10 @@ class Session(object):
                              for k, v in datasets.original.items()},
                 "custom": {k: v["description"]
                            for k, v in datasets.custom.items()}}
+        
+    @property
+    def dataset_name(self):
+        return self._dataset_name
 
     @staticmethod
     def _download(original: bool, dataset: str, **kwargs):
@@ -150,7 +154,7 @@ class Session(object):
             return output
         else:
             return transformation(self.dataset, **kwargs)
-    
+
     def _parse_location(self, process: bool):
         if process is True:
             if isinstance(self.location, (str, PathLike)):
@@ -203,6 +207,7 @@ class Session(object):
                                 only_get=self.only_get, **kwargs)
 
         self.dataset = output
+        self._dataset_name = dataset
         self.logger.info(f"Retrieved '{dataset}' dataset.")
 
         return self
@@ -251,6 +256,7 @@ class Session(object):
                                 only_get=self.only_get, **kwargs)
 
         self.dataset = output
+        self._dataset_name = dataset
         self.logger.info(f"Retrieved '{dataset}' dataset.")
 
         return self
