@@ -1,15 +1,15 @@
 import logging
-from inspect import signature
 from datetime import datetime
-from os import PathLike, path, makedirs
+from inspect import signature
+from os import PathLike, makedirs, path
 from pathlib import Path
-from typing import Union, Optional, Callable
+from typing import Callable, Optional, Union
 
 import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
-from econuy.utils import logutil, ops, datasets
+from econuy.utils import datasets, logutil, ops
 
 
 class Session(object):
