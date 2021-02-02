@@ -299,17 +299,21 @@ class Session(object):
                                             interpolation=interpolation)
         self.logger.info(f"Applied 'resample' transformation with '{rule}' "
                          f"and '{operation}' operation.")
+        old_name = self.dataset_name
         if self.inplace is True:
             self.dataset = output
+            self._dataset_name = old_name
             return self
         else:
-            return Session(location=self.location,
-                           revise_rows=self.revise_rows,
-                           only_get=self.only_get,
-                           dataset=output,
-                           logger=self.logger,
-                           inplace=self.inplace,
-                           errors=self.errors)
+            new_session = Session(location=self.location,
+                                  revise_rows=self.revise_rows,
+                                  only_get=self.only_get,
+                                  dataset=output,
+                                  logger=self.logger,
+                                  inplace=self.inplace,
+                                  errors=self.errors)
+            new_session._dataset_name = old_name
+            return new_session
 
     def chg_diff(self, operation: str = "chg", period: str = "last"):
         """
@@ -324,17 +328,21 @@ class Session(object):
                                             operation=operation, period=period)
         self.logger.info(f"Applied 'chg_diff' transformation with "
                          f"'{operation}' operation and '{period}' period.")
+        old_name = self.dataset_name
         if self.inplace is True:
             self.dataset = output
+            self._dataset_name = old_name
             return self
         else:
-            return Session(location=self.location,
-                           revise_rows=self.revise_rows,
-                           only_get=self.only_get,
-                           dataset=output,
-                           logger=self.logger,
-                           inplace=self.inplace,
-                           errors=self.errors)
+            new_session = Session(location=self.location,
+                                  revise_rows=self.revise_rows,
+                                  only_get=self.only_get,
+                                  dataset=output,
+                                  logger=self.logger,
+                                  inplace=self.inplace,
+                                  errors=self.errors)
+            new_session._dataset_name = old_name
+            return new_session
 
     def decompose(self, component: str = "both", method: str = "x13",
                   force_x13: bool = False, fallback: str = "loess",
@@ -377,17 +385,21 @@ class Session(object):
                                             **kwargs)
         self.logger.info(f"Applied 'decompose' transformation with "
                          f"'{method}' method and '{component}' component.")
+        old_name = self.dataset_name
         if self.inplace is True:
             self.dataset = output
+            self._dataset_name = old_name
             return self
         else:
-            return Session(location=self.location,
-                           revise_rows=self.revise_rows,
-                           only_get=self.only_get,
-                           dataset=output,
-                           logger=self.logger,
-                           inplace=self.inplace,
-                           errors=self.errors)
+            new_session = Session(location=self.location,
+                                  revise_rows=self.revise_rows,
+                                  only_get=self.only_get,
+                                  dataset=output,
+                                  logger=self.logger,
+                                  inplace=self.inplace,
+                                  errors=self.errors)
+            new_session._dataset_name = old_name
+            return new_session
 
     def convert(self, flavor: str, update: bool = True,
                 save: bool = True, only_get: bool = True,
@@ -442,17 +454,21 @@ class Session(object):
 
         self.logger.info(f"Applied 'convert' transformation "
                          f"with '{flavor}' flavor.")
+        old_name = self.dataset_name
         if self.inplace is True:
             self.dataset = output
+            self._dataset_name = old_name
             return self
         else:
-            return Session(location=self.location,
-                           revise_rows=self.revise_rows,
-                           only_get=self.only_get,
-                           dataset=output,
-                           logger=self.logger,
-                           inplace=self.inplace,
-                           errors=self.errors)
+            new_session = Session(location=self.location,
+                                  revise_rows=self.revise_rows,
+                                  only_get=self.only_get,
+                                  dataset=output,
+                                  logger=self.logger,
+                                  inplace=self.inplace,
+                                  errors=self.errors)
+            new_session._dataset_name = old_name
+            return new_session
 
     def rebase(self, start_date: Union[str, datetime],
                end_date: Union[str, datetime, None] = None,
@@ -469,17 +485,21 @@ class Session(object):
                                             start_date=start_date,
                                             end_date=end_date, base=base)
         self.logger.info("Applied 'rebase' transformation.")
+        old_name = self.dataset_name
         if self.inplace is True:
             self.dataset = output
+            self._dataset_name = old_name
             return self
         else:
-            return Session(location=self.location,
-                           revise_rows=self.revise_rows,
-                           only_get=self.only_get,
-                           dataset=output,
-                           logger=self.logger,
-                           inplace=self.inplace,
-                           errors=self.errors)
+            new_session = Session(location=self.location,
+                                  revise_rows=self.revise_rows,
+                                  only_get=self.only_get,
+                                  dataset=output,
+                                  logger=self.logger,
+                                  inplace=self.inplace,
+                                  errors=self.errors)
+            new_session._dataset_name = old_name
+            return new_session
 
     def rolling(self, window: Optional[int] = None,
                 operation: str = "sum"):
@@ -496,17 +516,21 @@ class Session(object):
                                             operation=operation)
         self.logger.info(f"Applied 'rolling' transformation with "
                          f"{window} periods and '{operation}' operation.")
+        old_name = self.dataset_name
         if self.inplace is True:
             self.dataset = output
+            self._dataset_name = old_name
             return self
         else:
-            return Session(location=self.location,
-                           revise_rows=self.revise_rows,
-                           only_get=self.only_get,
-                           dataset=output,
-                           logger=self.logger,
-                           inplace=self.inplace,
-                           errors=self.errors)
+            new_session = Session(location=self.location,
+                                  revise_rows=self.revise_rows,
+                                  only_get=self.only_get,
+                                  dataset=output,
+                                  logger=self.logger,
+                                  inplace=self.inplace,
+                                  errors=self.errors)
+            new_session._dataset_name = old_name
+            return new_session
 
     def save(self, name: str, index_label: str = "index"):
         """Save :attr:`dataset` attribute to a CSV or SQL."""
