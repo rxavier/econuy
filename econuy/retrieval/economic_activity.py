@@ -297,7 +297,8 @@ def industrial_production(update_loc: Union[str, PathLike,
         else:
             raise err
     proc = raw.dropna(how="any", subset=["Mes"]).dropna(thresh=100, axis=1)
-    output = proc[~proc["Mes"].str.contains("Prom")].drop("Mes", axis=1)
+    output = proc[~proc["Mes"].str.contains("PROM|Prom", 
+                                            regex=True)].drop("Mes", axis=1)
     output.index = pd.date_range(start="2002-01-31", freq="M",
                                  periods=len(output))
     output.columns = (["Industrias manufactureras",
