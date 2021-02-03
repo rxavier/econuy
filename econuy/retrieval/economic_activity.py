@@ -187,7 +187,7 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
 
     data_uyu = national_accounts(update_loc=update_loc, only_get=only_get_na)[
         "gdp_cur_nsa"]
-    data_uyu = transform.rolling(data_uyu, periods=4, operation="sum")
+    data_uyu = transform.rolling(data_uyu, window=4, operation="sum")
     data_usd = transform.convert_usd(data_uyu,
                                      update_loc=update_loc,
                                      only_get=only_get)
@@ -199,11 +199,11 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
 
     results = []
     for table, gdp in zip(["NGDP", "NGDPD"], data):
-        table_url = (f"https://www.imf.org/external/pubs/ft/weo/2020/01/weodat"
-                     f"a/weorept.aspx?sy={last_year - 1}&ey={last_year + 1}"
-                     f"&scsm=1&ssd=1&sort=country&ds=.&br=1&pr1.x=27&pr1.y=9&c"
-                     f"=298&s={table}&grp=0&a=")
-        imf_data = pd.to_numeric(pd.read_html(table_url)[4].iloc[2, [5, 6, 7]])
+        table_url = (f"https://www.imf.org/en/Publications/WEO/weo-database/"
+                     f"2020/October/weo-report?c=298,&s={table},&sy="
+                     f"{last_year - 1}&ey={last_year + 1}&ssm=0&scsm=1&scc=0&"
+                     f"ssd=1&ssc=0&sic=0&sort=country&ds=.&br=1")
+        imf_data = pd.to_numeric(pd.read_html(table_url)[0].iloc[0, [5, 6, 7]])
         imf_data = imf_data.reset_index(drop=True)
         fcast = (gdp.loc[[dt.datetime(last_year - 1, 12, 31)]].
                  multiply(imf_data.iloc[1]).divide(imf_data.iloc[0]))
@@ -297,7 +297,8 @@ def industrial_production(update_loc: Union[str, PathLike,
         else:
             raise err
     proc = raw.dropna(how="any", subset=["Mes"]).dropna(thresh=100, axis=1)
-    output = proc[~proc["Mes"].str.contains("Prom")].drop("Mes", axis=1)
+    output = proc[~proc["Mes"].str.contains("PROM|Prom", 
+                                            regex=True)].drop("Mes", axis=1)
     output.index = pd.date_range(start="2002-01-31", freq="M",
                                  periods=len(output))
     output.columns = (["Industrias manufactureras",
@@ -406,8 +407,8 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
     core = pd.concat([core], keys=["Núcleo industrial"],
                      names=["Indicador"], axis=1)
     output = pd.concat([output, core], axis=1)
-    output = transform.base_index(output, start_date="2006-01-01",
-                                  end_date="2006-12-31")
+    output = transform.rebase(output, start_date="2006-01-01",
+                              end_date="2006-12-31")
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,

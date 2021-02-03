@@ -1,17 +1,15 @@
 import logging
-from datetime import date
-from os import PathLike, path, makedirs
+from datetime import datetime
+from inspect import signature
+from os import PathLike, makedirs, path
 from pathlib import Path
-from typing import Union, Optional
+from typing import Callable, Optional, Union
 
 import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
-from econuy.retrieval import (prices, fiscal_accounts, economic_activity,
-                              labor, external_sector, financial_sector, income,
-                              international, regional)
-from econuy.utils import logutil, ops
+from econuy.utils import datasets, logutil, ops
 
 
 class Session(object):
@@ -46,6 +44,10 @@ class Session(object):
     inplace : bool, default False
         If True, transformation methods will modify the :attr:`dataset`
         inplace and return the input :class:`Session` instance.
+    errors : {'raise', 'coerce', 'ignore'}
+        How to handle errors that arise from transformations. ``raise`` will
+        raise a ValueError, ``coerce`` will force the data into ``np.nan`` and
+        ``ignore`` will leave the input data as is.
 
     """
 
@@ -57,14 +59,17 @@ class Session(object):
                  dataset: Union[dict, pd.DataFrame] = pd.DataFrame(),
                  log: Union[int, str] = 1,
                  logger: Optional[logging.Logger] = None,
-                 inplace: bool = False):
+                 inplace: bool = False,
+                 errors: str = "raise"):
         self.location = location
         self.revise_rows = revise_rows
         self.only_get = only_get
-        self.dataset = dataset
         self.log = log
         self.logger = logger
         self.inplace = inplace
+        self.errors = errors
+        self._dataset = dataset
+        self._dataset_name = None
 
         if isinstance(location, (str, PathLike)):
             if not path.exists(self.location):
@@ -99,11 +104,6 @@ class Session(object):
                 log_method = "no logging"
             self.logger = log_obj
 
-            if (isinstance(dataset, pd.DataFrame) and
-                    dataset.equals(pd.DataFrame(columns=[], index=[]))):
-                dataset_message = "empty dataframe"
-            else:
-                dataset_message = "custom dataset"
             if isinstance(revise_rows, int):
                 revise_method = f"{revise_rows} rows to replace"
             else:
@@ -111,10 +111,62 @@ class Session(object):
             log_obj.info(f"Created Session object with the "
                          f"following attributes:\n"
                          f"Location for downloads and updates: {loc_text}\n"
-                         f"Offline: {only_get.__str__()}\n"
+                         f"Offline: {only_get}\n"
                          f"Update method: '{revise_method}'\n"
-                         f"Dataset: {dataset_message}\n"
-                         f"Logging method: {log_method}")
+                         f"Dataset: {self._dataset_name.__str__()}\n"
+                         f"Logging method: {log_method}\n"
+                         f"Inplace: {inplace}\n"
+                         f"Error handling: {errors}")
+
+    @property
+    def available(self):
+        return {"original": {k: v["description"]
+                             for k, v in datasets.original.items()},
+                "custom": {k: v["description"]
+                           for k, v in datasets.custom.items()}}
+
+    @property
+    def dataset_name(self):
+        return self._dataset_name
+
+    @property
+    def dataset(self):
+        return self._dataset
+
+    @dataset.setter
+    def dataset(self, value):
+        self._dataset = value
+        self._dataset_name = "Custom"
+
+    @staticmethod
+    def _download(original: bool, dataset: str, **kwargs):
+        if original is True:
+            function = datasets.original[dataset]["function"]
+        else:
+            function = datasets.custom[dataset]["function"]
+        accepted_params = dict(signature(function).parameters)
+        new_kwargs = {k: v for k, v in kwargs.items()
+                      if k in accepted_params.keys()}
+        return function(**new_kwargs)
+
+    def _apply_transformation(self, transformation: Callable, **kwargs):
+        if isinstance(self.dataset, dict):
+            output = {}
+            for name, data in self.dataset.items():
+                transformed = transformation(data, **kwargs)
+                output.update({name: transformed})
+            return output
+        else:
+            return transformation(self.dataset, **kwargs)
+
+    def _parse_location(self, process: bool):
+        if process is True:
+            if isinstance(self.location, (str, PathLike)):
+                return Path(self.location)
+            else:
+                return self.location
+        else:
+            return None
 
     def get(self,
             dataset: str,
@@ -126,7 +178,8 @@ class Session(object):
 
         Parameters
         ----------
-        dataset : str, see available options in datasets.py
+        dataset : str, see available options in datasets.py or in 
+                  :attr:`available`
             Type of data to download.
         update : bool, default True
             Whether to update an existing dataset.
@@ -147,209 +200,30 @@ class Session(object):
             If an invalid string is given to the ``dataset`` argument.
 
         """
-        if update is True:
-            if isinstance(self.location, (str, PathLike)):
-                update_loc = Path(self.location)
-            else:
-                update_loc = self.location
-        else:
-            update_loc = None
-        if save is True:
-            if isinstance(self.location, (str, PathLike)):
-                save_loc = Path(self.location)
-            else:
-                save_loc = self.location
-        else:
-            save_loc = None
+        if dataset not in datasets.original.keys():
+            raise ValueError("Invalid dataset selected.")
 
-        if dataset == "cpi" or dataset == "prices":
-            output = prices.cpi(update_loc=update_loc,
+        update_loc = self._parse_location(process=update)
+        save_loc = self._parse_location(process=save)
+        output = self._download(original=True, dataset=dataset,
+                                update_loc=update_loc, save_loc=save_loc,
                                 revise_rows=self.revise_rows,
-                                save_loc=save_loc,
-                                only_get=self.only_get,
-                                **kwargs)
-        elif dataset == "industrial_production":
-            output = economic_activity.industrial_production(
-                update_loc=update_loc,
-                revise_rows=self.revise_rows,
-                save_loc=save_loc,
-                only_get=self.only_get,
-                **kwargs)
-        elif dataset == "balance":
-            output = fiscal_accounts.balance(update_loc=update_loc,
-                                             revise_rows=self.revise_rows,
-                                             save_loc=save_loc,
-                                             only_get=self.only_get,
-                                             **kwargs)
-        elif dataset == "public_debt":
-            output = fiscal_accounts.public_debt(update_loc=update_loc,
-                                                 revise_rows=self.revise_rows,
-                                                 save_loc=save_loc,
-                                                 only_get=self.only_get,
-                                                 **kwargs)
-        elif dataset == "nxr_monthly" or dataset == "nxr_m":
-            output = prices.nxr_monthly(update_loc=update_loc,
-                                        revise_rows=self.revise_rows,
-                                        save_loc=save_loc,
-                                        only_get=self.only_get,
-                                        **kwargs)
-        elif dataset == "nxr_daily" or dataset == "nxr_d":
-            output = prices.nxr_daily(update_loc=update_loc,
-                                      save_loc=save_loc,
-                                      only_get=self.only_get,
-                                      **kwargs)
-        elif dataset == "naccounts" or dataset == "na":
-            output = economic_activity.national_accounts(
-                update_loc=update_loc,
-                revise_rows=self.revise_rows,
-                save_loc=save_loc,
-                only_get=self.only_get,
-                **kwargs)
-        elif dataset == "labor" or dataset == "labour":
-            output = labor.labor_rates(update_loc=update_loc,
-                                       revise_rows=self.revise_rows,
-                                       save_loc=save_loc,
-                                       only_get=self.only_get,
-                                       **kwargs)
-        elif dataset == "wages":
-            output = labor.nominal_wages(update_loc=update_loc,
-                                         revise_rows=self.revise_rows,
-                                         save_loc=save_loc,
-                                         only_get=self.only_get,
-                                         **kwargs)
-        elif dataset == "real_wages":
-            output = labor.real_wages(update_loc=update_loc,
-                                      save_loc=save_loc,
-                                      only_get=self.only_get,
-                                      **kwargs)
-        elif dataset == "rxr_official" or dataset == "rxr-official":
-            output = external_sector.rxr_official(update_loc=update_loc,
-                                                  revise_rows=self.revise_rows,
-                                                  save_loc=save_loc,
-                                                  only_get=self.only_get,
-                                                  **kwargs)
-        elif dataset == "reserves":
-            output = external_sector.reserves(update_loc=update_loc,
-                                              save_loc=save_loc,
-                                              only_get=self.only_get,
-                                              **kwargs)
-        elif dataset == "reserves_changes" or dataset == "reserves_chg":
-            output = external_sector.reserves_changes(update_loc=update_loc,
-                                                      save_loc=save_loc,
-                                                      only_get=self.only_get,
-                                                      **kwargs)
-        elif dataset == "trade":
-            output = external_sector.trade(update_loc=update_loc,
-                                           revise_rows=self.revise_rows,
-                                           save_loc=save_loc,
-                                           only_get=self.only_get,
-                                           **kwargs)
-        elif dataset == "call":
-            output = financial_sector.call_rate(update_loc=update_loc,
-                                                revise_rows=self.revise_rows,
-                                                save_loc=save_loc,
-                                                only_get=self.only_get,
-                                                **kwargs)
-        elif dataset == "deposits":
-            output = financial_sector.deposits(update_loc=update_loc,
-                                               revise_rows=self.revise_rows,
-                                               save_loc=save_loc,
-                                               only_get=self.only_get,
-                                               **kwargs)
-        elif dataset == "credit" or dataset == "credits":
-            output = financial_sector.credit(update_loc=update_loc,
-                                             revise_rows=self.revise_rows,
-                                             save_loc=save_loc,
-                                             only_get=self.only_get,
-                                             **kwargs)
-        elif dataset == "interest_rates":
-            output = financial_sector.interest_rates(
-                update_loc=update_loc,
-                revise_rows=self.revise_rows,
-                save_loc=save_loc,
-                only_get=self.only_get,
-                **kwargs)
-        elif dataset == "taxes":
-            output = fiscal_accounts.tax_revenue(update_loc=update_loc,
-                                                 revise_rows=self.revise_rows,
-                                                 save_loc=save_loc,
-                                                 only_get=self.only_get,
-                                                 **kwargs)
-        elif dataset == "diesel":
-            output = economic_activity.diesel(update_loc=update_loc,
-                                              revise_rows=self.revise_rows,
-                                              save_loc=save_loc,
-                                              only_get=self.only_get,
-                                              **kwargs)
-        elif dataset == "gasoline":
-            output = economic_activity.gasoline(update_loc=update_loc,
-                                                revise_rows=self.revise_rows,
-                                                save_loc=save_loc,
-                                                only_get=self.only_get,
-                                                **kwargs)
-        elif dataset == "electricity":
-            output = economic_activity.electricity(
-                update_loc=update_loc,
-                revise_rows=self.revise_rows,
-                save_loc=save_loc,
-                only_get=self.only_get,
-                **kwargs)
-        elif dataset == "hours":
-            output = labor.hours(update_loc=update_loc,
-                                 revise_rows=self.revise_rows,
-                                 save_loc=save_loc,
-                                 only_get=self.only_get,
-                                 **kwargs)
-        elif dataset == "household_income":
-            output = income.income_household(update_loc=update_loc,
-                                             revise_rows=self.revise_rows,
-                                             save_loc=save_loc,
-                                             only_get=self.only_get,
-                                             **kwargs)
-        elif dataset == "capita_income":
-            output = income.income_capita(update_loc=update_loc,
-                                          revise_rows=self.revise_rows,
-                                          save_loc=save_loc,
-                                          only_get=self.only_get,
-                                          **kwargs)
-        elif dataset == "cattle":
-            output = economic_activity.cattle(update_loc=update_loc,
-                                              revise_rows=self.revise_rows,
-                                              save_loc=save_loc,
-                                              only_get=self.only_get,
-                                              **kwargs)
-        elif dataset == "milk":
-            output = economic_activity.milk(update_loc=update_loc,
-                                            revise_rows=self.revise_rows,
-                                            save_loc=save_loc,
-                                            only_get=self.only_get,
-                                            **kwargs)
-        elif dataset == "cement":
-            output = economic_activity.cement(update_loc=update_loc,
-                                              revise_rows=self.revise_rows,
-                                              save_loc=save_loc,
-                                              only_get=self.only_get,
-                                              **kwargs)
-        elif dataset == "consumer_confidence":
-            output = income.consumer_confidence(update_loc=update_loc,
-                                                revise_rows=self.revise_rows,
-                                                save_loc=save_loc,
-                                                only_get=self.only_get,
-                                                **kwargs)
-        elif dataset == "sovereign_risk":
-            output = financial_sector.sovereign_risk(
-                update_loc=update_loc,
-                revise_rows=self.revise_rows,
-                save_loc=save_loc,
-                only_get=self.only_get,
-                **kwargs)
-        else:
-            raise ValueError("Invalid keyword for 'dataset' parameter.")
-
-        self.dataset = output
+                                only_get=self.only_get, **kwargs)
         self.logger.info(f"Retrieved '{dataset}' dataset.")
-
-        return self
+        if self.inplace is True:
+            self.dataset = output
+            self._dataset_name = dataset
+            return self
+        else:
+            new_session = Session(location=self.location,
+                                  revise_rows=self.revise_rows,
+                                  only_get=self.only_get,
+                                  dataset=output,
+                                  logger=self.logger,
+                                  inplace=self.inplace,
+                                  errors=self.errors)
+            new_session._dataset_name = dataset
+            return new_session
 
     def get_custom(self,
                    dataset: str,
@@ -361,8 +235,8 @@ class Session(object):
 
         Parameters
         ----------
-        dataset : str, see available options in datasets.py
-            Type of data to download.
+        dataset : str, see available options in datasets.py or in 
+                  :attr:`available`
         update : bool, default True
             Whether to update an existing dataset.
         save : bool, default  True
@@ -381,166 +255,36 @@ class Session(object):
             If an invalid string is given to the ``dataset`` argument.
 
         """
-        if update is True:
-            if isinstance(self.location, (str, PathLike)):
-                update_loc = Path(self.location)
-            else:
-                update_loc = self.location
-        else:
-            update_loc = None
-        if save is True:
-            if isinstance(self.location, (str, PathLike)):
-                save_loc = Path(self.location)
-            else:
-                save_loc = self.location
-        else:
-            save_loc = None
+        update_loc = self._parse_location(process=update)
+        save_loc = self._parse_location(process=save)
 
-        if dataset == "cpi_measures" or dataset == "price_measures":
-            output = prices.cpi_measures(update_loc=update_loc,
-                                         revise_rows=self.revise_rows,
-                                         save_loc=save_loc,
-                                         only_get=self.only_get,
-                                         **kwargs)
-        elif dataset == "core_industrial":
-            output = economic_activity.core_industrial(update_loc=update_loc,
-                                                       save_loc=save_loc,
-                                                       only_get=self.only_get,
-                                                       **kwargs)
-        elif dataset == "balance_fss":
-            output = fiscal_accounts.balance_fss(update_loc=update_loc,
-                                                 save_loc=save_loc,
-                                                 only_get=self.only_get,
-                                                 **kwargs)
-        elif dataset == "net_public_debt":
-            output = fiscal_accounts.net_public_debt(update_loc=update_loc,
-                                                     save_loc=save_loc,
-                                                     only_get=self.only_get,
-                                                     **kwargs)
-        elif dataset == "rates_people":
-            output = labor.rates_people(update_loc=update_loc,
-                                        save_loc=save_loc,
-                                        only_get=self.only_get,
-                                        **kwargs)
-        elif dataset == "net_trade":
-            output = external_sector.trade_balance(update_loc=update_loc,
-                                                   save_loc=save_loc,
-                                                   only_get=self.only_get,
-                                                   **kwargs)
-        elif dataset == "tot" or dataset == "terms_of_trade":
-            output = external_sector.terms_of_trade(update_loc=update_loc,
-                                                    save_loc=save_loc,
-                                                    only_get=self.only_get,
-                                                    **kwargs)
-        elif dataset == "rxr_custom" or dataset == "rxr-custom":
-            output = external_sector.rxr_custom(update_loc=update_loc,
-                                                save_loc=save_loc,
-                                                only_get=self.only_get,
-                                                **kwargs)
-        elif dataset == "commodity_index" or dataset == "comm_index":
-            output = external_sector.commodity_index(update_loc=update_loc,
-                                                     save_loc=save_loc,
-                                                     only_get=self.only_get,
-                                                     **kwargs)
-        elif dataset == "bonds":
-            output = financial_sector.bonds(update_loc=update_loc,
-                                            revise_rows=self.revise_rows,
-                                            save_loc=save_loc,
-                                            only_get=self.only_get,
-                                            **kwargs)
-        elif dataset == "global_gdp":
-            output = international.gdp(update_loc=update_loc,
-                                       revise_rows=self.revise_rows,
-                                       save_loc=save_loc,
-                                       only_get=self.only_get,
-                                       **kwargs)
-        elif dataset == "global_stocks":
-            output = international.stocks(update_loc=update_loc,
-                                          revise_rows=self.revise_rows,
-                                          save_loc=save_loc,
-                                          only_get=self.only_get,
-                                          **kwargs)
-        elif dataset == "global_policy_rates":
-            output = international.policy_rates(update_loc=update_loc,
-                                                revise_rows=self.revise_rows,
-                                                save_loc=save_loc,
-                                                only_get=self.only_get,
-                                                **kwargs)
-        elif dataset == "global_long_rates":
-            output = international.long_rates(update_loc=update_loc,
-                                              revise_rows=self.revise_rows,
-                                              save_loc=save_loc,
-                                              only_get=self.only_get,
-                                              **kwargs)
-        elif dataset == "global_nxr":
-            output = international.nxr(update_loc=update_loc,
-                                       revise_rows=self.revise_rows,
-                                       save_loc=save_loc,
-                                       only_get=self.only_get,
-                                       **kwargs)
-        elif dataset == "regional_gdp":
-            output = regional.gdp(update_loc=update_loc,
-                                  revise_rows=self.revise_rows,
-                                  save_loc=save_loc,
-                                  only_get=self.only_get,
-                                  **kwargs)
-        elif dataset == "regional_monthly_gdp":
-            output = regional.monthly_gdp(update_loc=update_loc,
-                                          revise_rows=self.revise_rows,
-                                          save_loc=save_loc,
-                                          only_get=self.only_get,
-                                          **kwargs)
-        elif dataset == "regional_cpi":
-            output = regional.cpi(update_loc=update_loc,
-                                  revise_rows=self.revise_rows,
-                                  save_loc=save_loc,
-                                  only_get=self.only_get,
-                                  **kwargs)
-        elif dataset == "regional_nxr":
-            output = regional.nxr(update_loc=update_loc,
-                                  revise_rows=self.revise_rows,
-                                  save_loc=save_loc,
-                                  only_get=self.only_get,
-                                  **kwargs)
-        elif dataset == "regional_embi_spreads":
-            output = regional.embi_spreads(update_loc=update_loc,
-                                           revise_rows=self.revise_rows,
-                                           save_loc=save_loc,
-                                           only_get=self.only_get,
-                                           **kwargs)
-        elif dataset == "regional_embi_yields":
-            output = regional.embi_yields(update_loc=update_loc,
-                                          revise_rows=self.revise_rows,
-                                          save_loc=save_loc,
-                                          only_get=self.only_get,
-                                          **kwargs)
-        elif dataset == "regional_policy_rates":
-            output = regional.policy_rates(update_loc=update_loc,
-                                           revise_rows=self.revise_rows,
-                                           save_loc=save_loc,
-                                           only_get=self.only_get,
-                                           **kwargs)
-        elif dataset == "regional_stocks":
-            output = regional.stocks(update_loc=update_loc,
-                                     revise_rows=self.revise_rows,
-                                     save_loc=save_loc,
-                                     only_get=self.only_get,
-                                     **kwargs)
-        elif dataset == "regional_rxr":
-            output = regional.rxr(update_loc=update_loc,
-                                  revise_rows=self.revise_rows,
-                                  save_loc=save_loc,
-                                  only_get=self.only_get,
-                                  **kwargs)
-        else:
-            raise ValueError("Invalid keyword for 'dataset' parameter.")
+        if dataset not in datasets.custom.keys():
+            raise ValueError("Invalid dataset selected.")
 
-        self.dataset = output
+        update_loc = self._parse_location(process=update)
+        save_loc = self._parse_location(process=save)
+        output = self._download(original=False, dataset=dataset,
+                                update_loc=update_loc, save_loc=save_loc,
+                                revise_rows=self.revise_rows,
+                                only_get=self.only_get, **kwargs)
         self.logger.info(f"Retrieved '{dataset}' dataset.")
+        if self.inplace is True:
+            self.dataset = output
+            self._dataset_name = dataset
+            return self
+        else:
+            new_session = Session(location=self.location,
+                                  revise_rows=self.revise_rows,
+                                  only_get=self.only_get,
+                                  dataset=output,
+                                  logger=self.logger,
+                                  inplace=self.inplace,
+                                  errors=self.errors)
+            new_session._dataset_name = dataset
+            return new_session
 
-        return self
-
-    def resample(self, target: str, operation: str = "sum",
+    def resample(self, rule: Union[pd.DateOffset, pd.Timedelta, str],
+                 operation: str = "sum",
                  interpolation: str = "linear"):
         """
         Resample to target frequencies.
@@ -550,31 +294,28 @@ class Session(object):
         :func:`~econuy.transform.resample`
 
         """
-        if isinstance(self.dataset, dict):
-            output = {}
-            for key, value in self.dataset.items():
-                table = transform.resample(value, target=target,
-                                           operation=operation,
-                                           interpolation=interpolation)
-                output.update({key: table})
-        else:
-            output = transform.resample(self.dataset, target=target,
-                                        operation=operation,
-                                        interpolation=interpolation)
-        self.logger.info(f"Applied 'resample' transformation with '{target}' "
+        output = self._apply_transformation(transform.resample, rule=rule,
+                                            operation=operation,
+                                            interpolation=interpolation)
+        self.logger.info(f"Applied 'resample' transformation with '{rule}' "
                          f"and '{operation}' operation.")
+        old_name = self.dataset_name
         if self.inplace is True:
             self.dataset = output
+            self._dataset_name = old_name
             return self
         else:
-            return Session(location=self.location,
-                           revise_rows=self.revise_rows,
-                           only_get=self.only_get,
-                           dataset=output,
-                           logger=self.logger,
-                           inplace=self.inplace)
+            new_session = Session(location=self.location,
+                                  revise_rows=self.revise_rows,
+                                  only_get=self.only_get,
+                                  dataset=output,
+                                  logger=self.logger,
+                                  inplace=self.inplace,
+                                  errors=self.errors)
+            new_session._dataset_name = old_name
+            return new_session
 
-    def chg_diff(self, operation: str = "chg", period_op: str = "last"):
+    def chg_diff(self, operation: str = "chg", period: str = "last"):
         """
         Calculate pct change or difference.
 
@@ -583,88 +324,55 @@ class Session(object):
         :func:`~econuy.transform.chg_diff`
 
         """
-        if isinstance(self.dataset, dict):
-            output = {}
-            for key, value in self.dataset.items():
-                table = transform.chg_diff(value, operation=operation,
-                                           period_op=period_op)
-                output.update({key: table})
-        else:
-            output = transform.chg_diff(self.dataset, operation=operation,
-                                        period_op=period_op)
+        output = self._apply_transformation(transform.chg_diff,
+                                            operation=operation, period=period)
         self.logger.info(f"Applied 'chg_diff' transformation with "
-                         f"'{operation}' operation and '{period_op}' period.")
+                         f"'{operation}' operation and '{period}' period.")
+        old_name = self.dataset_name
         if self.inplace is True:
             self.dataset = output
+            self._dataset_name = old_name
             return self
         else:
-            return Session(location=self.location,
-                           revise_rows=self.revise_rows,
-                           only_get=self.only_get,
-                           dataset=output,
-                           logger=self.logger,
-                           inplace=self.inplace)
+            new_session = Session(location=self.location,
+                                  revise_rows=self.revise_rows,
+                                  only_get=self.only_get,
+                                  dataset=output,
+                                  logger=self.logger,
+                                  inplace=self.inplace,
+                                  errors=self.errors)
+            new_session._dataset_name = old_name
+            return new_session
 
-    def decompose(self, flavor: str = "both", method: str = "x13",
+    def decompose(self, component: str = "both", method: str = "x13",
                   force_x13: bool = False, fallback: str = "loess",
                   trading: bool = True, outlier: bool = True,
                   x13_binary: Union[str, PathLike] = "search",
                   search_parents: int = 1, ignore_warnings: bool = True,
-                  **kwargs):
+                  errors: str = None, **kwargs):
         """
         Apply seasonal decomposition.
-
-        Parameters
-        ----------
-        flavor : {'both', 'seas', 'trend'}
-            Return both seasonally adjusted and trend dataframes or choose
-            between them.
-        method : {'x13', 'loess', 'ma'}
-            Decomposition method. ``X13`` refers to X13 ARIMA from the US
-            Census, ``loess`` refers to Loess decomposition and ``ma`` refers
-            to moving average decomposition, in all cases as implemented by
-            `statsmodels <https://www.statsmodels.org/dev/tsa.html>`_.
-        force_x13 : bool, default False
-            Whether to try different ``outlier`` and ``trading`` parameters
-            in statsmodels' `x13 arima analysis <https://www.statsmodels.org/
-            dev/ generated/statsmodels.tsa.x13.x13_arima_analysis.html>`_ for
-            each series that fails. If ``False``, jump to the ``fallback``
-            method for the whole dataframe at the first error.
-        fallback : {'loess', 'ma'}
-            Decomposition method to fall back to if ``method="x13"`` fails and
-            ``force_x13=False``.
-        trading : bool, default True
-            Whether to automatically detect trading days in X13 ARIMA.
-        outlier : bool, default True
-            Whether to automatically detect outliers in X13 ARIMA.
-        x13_binary: str, os.PathLike or None, default 'search'
-            Location of the X13 binary. If ``search`` is used, will attempt to
-            find the binary in the project structure. If ``None``, statsmodels
-            will handle it.
-        search_parents: int, default 1
-            If ``x13_binary=search``, this parameter controls how many parent
-            directories to go up before recursively searching for the binary.
-        ignore_warnings : bool, default True
-            Whether to suppress X13Warnings from statsmodels.
-        kwargs
-            Keyword arguments passed to statsmodels' ``x13_arima_analysis``,
-            ``STL`` and ``seasonal_decompose``.
 
         Raises
         ------
         ValueError
-            If an invalid string is given to the ``flavor`` argument.
+            If the ``method`` parameter does not have a valid argument.
+        ValueError
+            If the ``fallback`` parameter does not have a valid argument.
+        ValueError
+            If the path provided for the X13 binary does not point to a file
+            and ``method='x13'``.
 
         See Also
         --------
         :func:`~econuy.transform.decompose`
 
         """
-        if isinstance(self.dataset, dict):
-            output = {}
-            for key, value in self.dataset.items():
-                table = transform.decompose(value,
-                                            flavor=flavor,
+        if errors is None:
+            errors = self.errors
+
+        output = self._apply_transformation(transform.decompose,
+                                            component=component,
                                             method=method,
                                             force_x13=force_x13,
                                             fallback=fallback,
@@ -673,35 +381,31 @@ class Session(object):
                                             x13_binary=x13_binary,
                                             search_parents=search_parents,
                                             ignore_warnings=ignore_warnings,
+                                            errors=errors,
                                             **kwargs)
-                output.update({key: table})
-        else:
-            output = transform.decompose(self.dataset,
-                                         flavor=flavor,
-                                         method=method,
-                                         force_x13=force_x13,
-                                         fallback=fallback,
-                                         trading=trading,
-                                         outlier=outlier,
-                                         x13_binary=x13_binary,
-                                         search_parents=search_parents,
-                                         ignore_warnings=ignore_warnings,
-                                         **kwargs)
         self.logger.info(f"Applied 'decompose' transformation with "
-                         f"'{method}' method and '{flavor}' flavor.")
+                         f"'{method}' method and '{component}' component.")
+        old_name = self.dataset_name
         if self.inplace is True:
             self.dataset = output
+            self._dataset_name = old_name
             return self
         else:
-            return Session(location=self.location,
-                           revise_rows=self.revise_rows,
-                           only_get=self.only_get,
-                           dataset=output,
-                           logger=self.logger,
-                           inplace=self.inplace)
+            new_session = Session(location=self.location,
+                                  revise_rows=self.revise_rows,
+                                  only_get=self.only_get,
+                                  dataset=output,
+                                  logger=self.logger,
+                                  inplace=self.inplace,
+                                  errors=self.errors)
+            new_session._dataset_name = old_name
+            return new_session
 
     def convert(self, flavor: str, update: bool = True,
-                save: bool = True, only_get: bool = True, **kwargs):
+                save: bool = True, only_get: bool = True,
+                errors: str = None,
+                start_date: Union[str, datetime, None] = None,
+                end_date: Union[str, datetime, None] = None):
         """
         Convert to other units.
 
@@ -717,110 +421,87 @@ class Session(object):
         :func:`~econuy.transform.convert_gdp`
 
         """
-        if update is True:
-            if isinstance(self.location, (str, PathLike)):
-                update_loc = Path(self.location)
-            else:
-                update_loc = self.location
-        else:
-            update_loc = None
-        if save is True:
-            if isinstance(self.location, (str, PathLike)):
-                save_loc = Path(self.location)
-            else:
-                save_loc = self.location
-        else:
-            save_loc = None
+        if flavor not in ["usd", "real", "gdp", "pcgdp"]:
+            raise ValueError("'flavor' can be one of 'usd', 'real', "
+                             "or 'gdp'.")
 
-        if isinstance(self.dataset, dict):
-            output = {}
-            for key, value in self.dataset.items():
-                if flavor == "usd":
-                    table = transform.convert_usd(value,
-                                                  update_loc=update_loc,
-                                                  save_loc=save_loc,
-                                                  only_get=only_get)
-                elif flavor == "real":
-                    table = transform.convert_real(value,
-                                                   update_loc=update_loc,
-                                                   save_loc=save_loc,
-                                                   only_get=only_get,
-                                                   **kwargs)
-                elif flavor == "pcgdp" or flavor == "gdp":
-                    table = transform.convert_gdp(value,
-                                                  update_loc=update_loc,
-                                                  save_loc=save_loc,
-                                                  only_get=only_get)
-                else:
-                    raise ValueError("'flavor' can be one of 'usd', 'real', "
-                                     "or 'pcgdp'.")
+        if errors is None:
+            errors = self.errors
 
-                output.update({key: table})
-        else:
-            if flavor == "usd":
-                output = transform.convert_usd(self.dataset,
-                                               update_loc=update_loc,
-                                               save_loc=save_loc,
-                                               only_get=only_get)
-            elif flavor == "real":
-                output = transform.convert_real(self.dataset,
+        update_loc = self._parse_location(process=update)
+        save_loc = self._parse_location(process=save)
+
+        if flavor == "usd":
+            output = self._apply_transformation(transform.convert_usd,
                                                 update_loc=update_loc,
                                                 save_loc=save_loc,
                                                 only_get=only_get,
-                                                **kwargs)
-            elif flavor == "pcgdp" or flavor == "gdp":
-                output = transform.convert_gdp(self.dataset,
-                                               update_loc=update_loc,
-                                               save_loc=save_loc,
-                                               only_get=only_get)
-            else:
-                raise ValueError("'flavor' can be one of 'usd', 'real', "
-                                 "or 'pcgdp'.")
+                                                errors=errors)
+        elif flavor == "real":
+            output = self._apply_transformation(transform.convert_real,
+                                                update_loc=update_loc,
+                                                save_loc=save_loc,
+                                                only_get=only_get,
+                                                errors=errors,
+                                                start_date=start_date,
+                                                end_date=end_date)
+        else:
+            output = self._apply_transformation(transform.convert_gdp,
+                                                update_loc=update_loc,
+                                                save_loc=save_loc,
+                                                only_get=only_get,
+                                                errors=errors)
+
         self.logger.info(f"Applied 'convert' transformation "
                          f"with '{flavor}' flavor.")
+        old_name = self.dataset_name
         if self.inplace is True:
             self.dataset = output
+            self._dataset_name = old_name
             return self
         else:
-            return Session(location=self.location,
-                           revise_rows=self.revise_rows,
-                           only_get=self.only_get,
-                           dataset=output,
-                           logger=self.logger,
-                           inplace=self.inplace)
+            new_session = Session(location=self.location,
+                                  revise_rows=self.revise_rows,
+                                  only_get=self.only_get,
+                                  dataset=output,
+                                  logger=self.logger,
+                                  inplace=self.inplace,
+                                  errors=self.errors)
+            new_session._dataset_name = old_name
+            return new_session
 
-    def base_index(self, start_date: Union[str, date],
-                   end_date: Union[str, date, None] = None, base: float = 100):
+    def rebase(self, start_date: Union[str, datetime],
+               end_date: Union[str, datetime, None] = None,
+               base: float = 100.0):
         """
         Scale to a period or range of periods.
 
         See Also
         --------
-        :func:`~econuy.transform.base_index`
+        :func:`~econuy.transform.rebase`
 
         """
-        if isinstance(self.dataset, dict):
-            output = {}
-            for key, value in self.dataset.items():
-                table = transform.base_index(value, start_date=start_date,
-                                             end_date=end_date, base=base)
-                output.update({key: table})
-        else:
-            output = transform.base_index(self.dataset, start_date=start_date,
-                                          end_date=end_date, base=base)
-        self.logger.info("Applied 'base_index' transformation.")
+        output = self._apply_transformation(transform.rebase,
+                                            start_date=start_date,
+                                            end_date=end_date, base=base)
+        self.logger.info("Applied 'rebase' transformation.")
+        old_name = self.dataset_name
         if self.inplace is True:
             self.dataset = output
+            self._dataset_name = old_name
             return self
         else:
-            return Session(location=self.location,
-                           revise_rows=self.revise_rows,
-                           only_get=self.only_get,
-                           dataset=output,
-                           logger=self.logger,
-                           inplace=self.inplace)
+            new_session = Session(location=self.location,
+                                  revise_rows=self.revise_rows,
+                                  only_get=self.only_get,
+                                  dataset=output,
+                                  logger=self.logger,
+                                  inplace=self.inplace,
+                                  errors=self.errors)
+            new_session._dataset_name = old_name
+            return new_session
 
-    def rolling(self, periods: Optional[int] = None,
+    def rolling(self, window: Optional[int] = None,
                 operation: str = "sum"):
         """
         Calculate rolling averages or sums.
@@ -830,27 +511,26 @@ class Session(object):
         :func:`~econuy.transform.rolling`
 
         """
-        if isinstance(self.dataset, dict):
-            output = {}
-            for key, value in self.dataset.items():
-                table = transform.rolling(value, periods=periods,
-                                          operation=operation)
-                output.update({key: table})
-        else:
-            output = transform.rolling(self.dataset, periods=periods,
-                                       operation=operation)
+        output = self._apply_transformation(transform.rolling,
+                                            window=window,
+                                            operation=operation)
         self.logger.info(f"Applied 'rolling' transformation with "
-                         f"{periods} periods and '{operation}' operation.")
+                         f"{window} periods and '{operation}' operation.")
+        old_name = self.dataset_name
         if self.inplace is True:
             self.dataset = output
+            self._dataset_name = old_name
             return self
         else:
-            return Session(location=self.location,
-                           revise_rows=self.revise_rows,
-                           only_get=self.only_get,
-                           dataset=output,
-                           logger=self.logger,
-                           inplace=self.inplace)
+            new_session = Session(location=self.location,
+                                  revise_rows=self.revise_rows,
+                                  only_get=self.only_get,
+                                  dataset=output,
+                                  logger=self.logger,
+                                  inplace=self.inplace,
+                                  errors=self.errors)
+            new_session._dataset_name = old_name
+            return new_session
 
     def save(self, name: str, index_label: str = "index"):
         """Save :attr:`dataset` attribute to a CSV or SQL."""

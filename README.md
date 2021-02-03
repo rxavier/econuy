@@ -97,7 +97,7 @@ These class methods take a `Session()` object with a valid dataset and allow per
 from econuy.session import Session
 
 sess = Session(location="your/directory")
-df = sess.get(dataset="nxr_monthly").decompose(flavor="trend", method="x13", fallback="loess")
+df = sess.get(dataset="nxr_monthly").decompose(component="trend", method="x13", fallback="loess")
 ```
 will return a the Session object, with the dataset attribute holding the trend component of the monthly nominal exchange rate.
 

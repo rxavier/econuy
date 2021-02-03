@@ -46,8 +46,8 @@ def test_prices_inflation():
     remove_clutter()
     prices = session.get(dataset="cpi").dataset
     prices = prices.loc[prices.index >= "1997-03-31"]
-    prices = transform.base_index(prices, start_date="2010-12-01",
-                                  end_date="2010-12-31")
+    prices = transform.rebase(prices, start_date="2010-12-01",
+                              end_date="2010-12-31")
     compare = measures.iloc[:, [0]]
     compare.columns = prices.columns
     assert compare.equals(prices)
@@ -144,7 +144,7 @@ def test_wages():
     real_wages = session.get(dataset="real_wages").dataset
     nominal_wages = session.get(dataset="wages").dataset
     compare = transform.convert_real(nominal_wages, update_loc=TEST_CON)
-    compare = transform.base_index(compare, start_date="2008-07-31")
+    compare = transform.rebase(compare, start_date="2008-07-31")
     compare.columns = real_wages.columns
     assert compare.equals(real_wages)
 
@@ -485,8 +485,8 @@ def test_trade():
                / tb_["trade_m_orig_pri"].
                rename(columns={"Total importaciones": "Total"}))
     compare = compare.loc[:, ["Total"]]
-    compare = transform.base_index(compare, start_date="2005-01-01",
-                                   end_date="2005-12-31")
+    compare = transform.rebase(compare, start_date="2005-01-01",
+                               end_date="2005-12-31")
     compare.columns = net.columns
     assert net.equals(compare)
     remove_clutter()
@@ -519,8 +519,8 @@ def test_industrial_production():
                - indprod.loc[:, 2101] * 0.008097608)
     compare = pd.concat([compare], keys=["Núcleo industrial"],
                         names=["Indicador"], axis=1)
-    compare = transform.base_index(compare, start_date="2006-01-01",
-                                   end_date="2006-12-31")
+    compare = transform.rebase(compare, start_date="2006-01-01",
+                               end_date="2006-12-31")
     compare.columns = core.columns
     assert core.round(2).equals(compare.round(2))
     remove_clutter()
