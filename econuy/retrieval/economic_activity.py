@@ -199,11 +199,11 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
 
     results = []
     for table, gdp in zip(["NGDP", "NGDPD"], data):
-        table_url = (f"https://www.imf.org/external/pubs/ft/weo/2020/01/weodat"
-                     f"a/weorept.aspx?sy={last_year - 1}&ey={last_year + 1}"
-                     f"&scsm=1&ssd=1&sort=country&ds=.&br=1&pr1.x=27&pr1.y=9&c"
-                     f"=298&s={table}&grp=0&a=")
-        imf_data = pd.to_numeric(pd.read_html(table_url)[4].iloc[2, [5, 6, 7]])
+        table_url = (f"https://www.imf.org/en/Publications/WEO/weo-database/"
+                     f"2020/October/weo-report?c=298,&s={table},&sy="
+                     f"{last_year - 1}&ey={last_year + 1}&ssm=0&scsm=1&scc=0&"
+                     f"ssd=1&ssc=0&sic=0&sort=country&ds=.&br=1")
+        imf_data = pd.to_numeric(pd.read_html(table_url)[0].iloc[0, [5, 6, 7]])
         imf_data = imf_data.reset_index(drop=True)
         fcast = (gdp.loc[[dt.datetime(last_year - 1, 12, 31)]].
                  multiply(imf_data.iloc[1]).divide(imf_data.iloc[0]))
