@@ -1,82 +1,5 @@
 import datetime as dt
 
-na_metadata = {
-    "ind_con_nsa":
-        {"Rows": 12, "Inf. Adj.": "Const. 2005", "Unit": "Miles",
-         "Seas": "NSA",
-         "url": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_101t.xls",
-         "Colnames": ["Actividades primarias",
-                      "Act. prim.: Agricultura, ganadería, caza y silvicultura",
-                      "Industrias manufactureras",
-                      "Suministro de electricidad, gas y agua",
-                      "Construcción",
-                      "Comercio, reparaciones, restaurantes y hoteles",
-                      "Transporte, almacenamiento y comunicaciones",
-                      "Otras actividades",
-                      "Otras actividades: SIFMI",
-                      "Impuestos menos subvenciones",
-                      "Producto bruto interno"]},
-    "ind_cur_nsa":
-        {"Rows": 12, "Inf. Adj.": "No", "Unit": "Miles", "Seas": "NSA",
-         "url": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_100t.xls",
-         "Colnames": ["Actividades primarias",
-                      "Act. prim.: Agricultura, ganadería, caza y silvicultura",
-                      "Industrias manufactureras",
-                      "Suministro de electricidad, gas y agua",
-                      "Construcción",
-                      "Comercio, reparaciones, restaurantes y hoteles",
-                      "Transporte, almacenamiento y comunicaciones",
-                      "Otras actividades",
-                      "Otras actividades: SIFMI",
-                      "Impuestos menos subvenciones",
-                      "Producto bruto interno"]},
-    "gas_con_nsa":
-        {"Rows": 10, "Inf. Adj.": "Const. 2005", "Unit": "Miles",
-         "Seas": "NSA",
-         "url": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_104t.xls",
-         "Colnames": ["Gasto: total", "Gasto: privado",
-                      "Gasto: público",
-                      "Formación bruta de capital",
-                      "Formación bruta de capital: fijo",
-                      "Formación bruta de capital: fijo - pública",
-                      "Formación bruta de capital: fijo - privada",
-                      "Exportaciones",
-                      "Importaciones", "Producto bruto interno"]},
-    "ind_con_idx_nsa":
-        {"Rows": 12, "Inf. Adj.": "Const. 2005", "Unit": "2005=100",
-         "Seas": "NSA",
-         "url": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_132t.xls",
-         "Colnames": ["Actividades primarias",
-                      "Act. prim.: Agricultura, ganadería, caza y silvicultura",
-                      "Industrias manufactureras",
-                      "Suministro de electricidad, gas y agua",
-                      "Construcción",
-                      "Comercio, reparaciones, restaurantes y hoteles",
-                      "Transporte, almacenamiento y comunicaciones",
-                      "Otras actividades",
-                      "Otras actividades: SIFMI",
-                      "Impuestos menos subvenciones",
-                      "Producto bruto interno"]},
-    "ind_con_idx_sa":
-        {"Rows": 12, "Inf. Adj.": "Const. 2005", "Unit": "2005=100",
-         "Seas": "SA",
-         "url": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_133t.xls",
-         "Colnames": ["Actividades primarias",
-                      "Act. prim.: Agricultura, ganadería, caza y silvicultura",
-                      "Industrias manufactureras",
-                      "Suministro de electricidad, gas y agua",
-                      "Construcción",
-                      "Comercio, reparaciones, restaurantes y hoteles",
-                      "Transporte, almacenamiento y comunicaciones",
-                      "Otras actividades",
-                      "Otras actividades: SIFMI",
-                      "Impuestos menos subvenciones",
-                      "Producto bruto interno"]},
-    "gdp_cur_nsa":
-        {"Rows": 2, "Inf. Adj.": "No", "Unit": "Miles", "Seas": "NSA",
-         "url": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_130t.xls",
-         "Colnames": ["Producto bruto interno"]}}
-
 trade_metadata = {
     "x_prod_val": {
         "url": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/exp_ciiu_val.xls",
@@ -792,39 +715,39 @@ urls = {"call":
                 "indirect": [
                     "http://www.ine.gub.uy/web/guest/gastos-e-ingresos-de-las-personas-y-los-hogares"],
                 "provider": ["INE"]}},
-        "naccounts_ind_con_nsa": {
-            "dl": {"main": na_metadata["ind_con_nsa"]["url"]},
-            "source": {"direct": [na_metadata["ind_con_nsa"]["url"]],
+        "natacc_ind_con_nsa": {
+            "dl": {"main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_101t.xls"},
+            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_101t.xls"],
                        "indirect": [
                            "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm"],
                        "provider": ["BCU"]}},
-        "naccounts_ind_cur_nsa": {
-            "dl": {"main": na_metadata["ind_cur_nsa"]["url"]},
-            "source": {"direct": [na_metadata["ind_cur_nsa"]["url"]],
+        "natacc_ind_cur_nsa": {
+            "dl": {"main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_100t.xls"},
+            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_100t.xls"],
                        "indirect": [
                            "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm"],
                        "provider": ["BCU"]}},
-        "naccounts_gas_con_nsa": {
-            "dl": {"main": na_metadata["gas_con_nsa"]["url"]},
-            "source": {"direct": [na_metadata["gas_con_nsa"]["url"]],
+        "natacc_gas_con_nsa": {
+            "dl": {"main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_104t.xls"},
+            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_104t.xls"],
                        "indirect": [
                            "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm"],
                        "provider": ["BCU"]}},
-        "naccounts_ind_con_idx_nsa": {
-            "dl": {"main": na_metadata["ind_con_idx_nsa"]["url"]},
-            "source": {"direct": [na_metadata["ind_con_idx_nsa"]["url"]],
+        "natacc_ind_con_idx_nsa": {
+            "dl": {"main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_132t.xls"},
+            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_132t.xls"],
                        "indirect": [
                            "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm"],
                        "provider": ["BCU"]}},
-        "naccounts_ind_con_idx_sa": {
-            "dl": {"main": na_metadata["ind_con_idx_sa"]["url"]},
-            "source": {"direct": [na_metadata["ind_con_idx_sa"]["url"]],
+        "natacc_ind_con_idx_sa": {
+            "dl": {"main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_133t.xls"},
+            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_133t.xls"],
                        "indirect": [
                            "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm"],
                        "provider": ["BCU"]}},
-        "naccounts_gdp_cur_nsa": {
-            "dl": {"main": na_metadata["gdp_cur_nsa"]["url"]},
-            "source": {"direct": [na_metadata["gdp_cur_nsa"]["url"]],
+        "natacc_gdp_cur_nsa": {
+            "dl": {"main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_130t.xls"},
+            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_130t.xls"],
                        "indirect": [
                            "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm"],
                        "provider": ["BCU"]}},

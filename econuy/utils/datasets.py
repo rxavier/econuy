@@ -2,11 +2,24 @@ from econuy.retrieval import (prices, fiscal_accounts, economic_activity,
                               labor, external_sector, financial_sector, income,
                               international, regional)
 
-original = {"naccounts": {"description": "Cuentas nacionales (demanda precios constantes, "
-                          "oferta precios constantes, oferta índice real, "
-                          "oferta índice real desestacionalizado, oferta "
-                          "precios corrientes, PBI precios corrientes)",
-                          "function": economic_activity.national_accounts},
+original = {"natacc_ind_con_nsa": {"description": "Cuentas nacionales, oferta "
+                                   "precios constantes, serie original",
+                          "function": economic_activity.natacc_ind_con_nsa},
+            "natacc_gas_con_nsa": {"description": "Cuentas nacionales, demanda "
+                                   "precios constantes, serie original",
+                          "function": economic_activity.natacc_gas_con_nsa},
+            "natacc_ind_con_idx_sa": {"description": "Cuentas nacionales, oferta "
+                                      "índice real, serie desestacionalizada",
+                          "function": economic_activity.natacc_ind_con_idx_sa},
+            "natacc_ind_con_idx_nsa": {"description": "Cuentas nacionales, oferta "
+                                      "índice real, serie original",
+                          "function": economic_activity.natacc_ind_con_idx_nsa},
+            "natacc_ind_cur_nsa": {"description": "Cuentas nacionales, oferta "
+                                   "precios corrientes, serie original",
+                          "function": economic_activity.natacc_ind_cur_nsa},
+            "natacc_gdp_cur_nsa": {"description": "Producto bruto interno "
+                                   "precios corrientes, serie original",
+                          "function": economic_activity.natacc_gdp_cur_nsa},
             "industrial_production": {"description": "Producción industrial",
                                       "function": economic_activity.industrial_production},
             "electricity": {"description": "Ventas de energía eléctrica por sector",
