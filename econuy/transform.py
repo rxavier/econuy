@@ -688,8 +688,9 @@ def _rebase(df: pd.DataFrame, start_date: Union[str, datetime],
         indexed = df.apply(lambda x: x / x.loc[start_date] * base)
         if isinstance(start_date, str):
             start_date = datetime.strptime(start_date, "%Y-%m-%d")
-        if base.is_integer():
-            base = int(base)
+        if not isinstance(base, int):
+            if base.is_integer():
+                base = int(base)
         m_start = start_date.strftime("%Y-%m")
         metadata._set(indexed, unit=f"{m_start}={base}")
 
