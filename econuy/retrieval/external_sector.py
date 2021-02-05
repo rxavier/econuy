@@ -23,7 +23,8 @@ from sqlalchemy.engine.base import Engine, Connection
 from econuy import transform
 from econuy.retrieval import prices, regional
 from econuy.utils import ops, metadata
-from econuy.utils.lstrings import trade_metadata, urls, reserves_cols
+from econuy.utils.sources import urls
+from econuy.utils.extras import trade_metadata, reserves_cols
 
 
 @retry(

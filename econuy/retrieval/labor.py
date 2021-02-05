@@ -12,7 +12,7 @@ from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
 from econuy.utils import ops, metadata, get_project_root
-from econuy.utils.lstrings import urls
+from econuy.utils.sources import urls
 
 
 @retry(

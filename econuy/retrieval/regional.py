@@ -22,7 +22,8 @@ from econuy.retrieval.international import long_rates
 from econuy.transform import rebase, resample
 from econuy.utils import metadata, ops
 from econuy.utils.chromedriver import _build
-from econuy.utils.lstrings import urls, investing_headers
+from econuy.utils.sources import urls
+from econuy.utils.extras import investing_headers
 
 
 @retry(

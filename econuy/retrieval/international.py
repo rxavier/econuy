@@ -18,7 +18,8 @@ from sqlalchemy.engine.base import Engine, Connection
 
 from econuy.transform import decompose, rebase
 from econuy.utils import metadata, ops, get_project_root
-from econuy.utils.lstrings import urls, investing_headers
+from econuy.utils.sources import urls
+from econuy.utils.extras import investing_headers
 
 
 @retry(

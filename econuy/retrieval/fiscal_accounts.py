@@ -24,8 +24,8 @@ import econuy.retrieval.external_sector
 from econuy import transform
 from econuy.utils import ops, metadata
 from econuy.utils.chromedriver import _build
-from econuy.utils.lstrings import urls, fiscal_sheets, taxes_columns, \
-    fiscal_metadata
+from econuy.utils.sources import urls
+from econuy.utils.extras import fiscal_sheets, fiscal_metadata, taxes_columns
 
 
 @retry(

@@ -12,7 +12,8 @@ from sqlalchemy import create_engine, inspect
 from econuy import transform
 from econuy.session import Session
 from econuy.utils import metadata, sqlutil
-from econuy.utils.lstrings import fiscal_metadata
+from econuy.utils.extras import fiscal_metadata
+
 try:
     from tests.test_transform import dummy_df
 except ImportError:

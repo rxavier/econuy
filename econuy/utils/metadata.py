@@ -3,7 +3,7 @@ import warnings
 
 import pandas as pd
 
-from econuy.utils.lstrings import urls
+from econuy.utils.sources import urls
 
 
 def _set(

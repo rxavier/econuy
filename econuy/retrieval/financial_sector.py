@@ -15,7 +15,7 @@ from sqlalchemy.engine.base import Engine, Connection
 
 from econuy.utils import ops, metadata
 from econuy.utils.chromedriver import _build
-from econuy.utils.lstrings import urls
+from econuy.utils.sources import urls
 
 
 @retry(
