@@ -17,7 +17,7 @@ from sqlalchemy.engine.base import Engine, Connection
 
 from econuy import transform
 from econuy.utils import ops, metadata, get_project_root
-from econuy.utils.lstrings import na_metadata, urls
+from econuy.utils.lstrings import urls
 
 
 def natacc_retriever(url: str, name: str, nrows: int, inf_adj: str,

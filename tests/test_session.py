@@ -149,14 +149,21 @@ def test_wages():
     assert compare.equals(real_wages)
 
 
-def test_naccounts():
+def test_natacc():
     remove_clutter()
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    na_ = session.get(dataset="naccounts").dataset
-    assert isinstance(na_, dict)
-    assert len(na_) == 6
+    for dataset, cols, start in zip(["ind_con_nsa", "gas_con_nsa", "ind_cur_nsa",
+                                    "ind_con_idx_nsa", "ind_con_idx_sa", 
+                                    "gdp_cur_nsa"],
+                                   [11, 10, 11, 11, 11, 1],
+                                   ["2005-03-31", "2005-03-31", "2005-03-31",
+                                    "1997-03-31", "1997-03-31", "1997-03-31"]):
+        
+        na = session.get(dataset=f"natacc_{dataset}").dataset
+        assert len(na.columns) == cols
+        assert na.index[0] == dt.datetime.strptime(start, "%Y-%m-%d")
     remove_clutter()
 
 
