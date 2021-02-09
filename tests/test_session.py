@@ -475,22 +475,35 @@ def test_trade():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    tb_ = session.get(dataset="trade").dataset
-    assert isinstance(tb_, dict)
-    assert len(tb_) == 12
+    dfs = {}
+    for dataset, cols, start in zip(["x_prod_val", "x_prod_vol", "x_prod_pri",
+                                     "x_dest_val", "x_dest_vol", "x_dest_pri",
+                                     "m_sect_val", "m_sect_vol", "m_sect_pri",
+                                     "m_orig_val", "m_orig_vol", "m_orig_pri"],
+                                   [33, 27, 27, 43, 24, 24, 
+                                    25, 13, 13, 43, 24, 24],
+                                   ["2000-01-31", "2005-01-31", "2005-01-31",
+                                    "2000-01-31", "2005-01-31", "2005-01-31",
+                                    "2000-01-31", "2005-01-31", "2005-01-31",
+                                    "2000-01-31", "2005-01-31", "2005-01-31"]):
+        
+        df = session.get(dataset=f"trade_{dataset}").dataset
+        dfs[f"trade_{dataset}"] = df
+        assert len(df.columns) == cols
+        assert df.index[0] == dt.datetime.strptime(start, "%Y-%m-%d")
     remove_clutter()
     net = session.get_custom(dataset="net_trade").dataset
-    compare = (tb_["trade_x_dest_val"].
+    compare = (dfs["trade_x_dest_val"].
                rename(columns={"Total exportaciones": "Total"})
-               - tb_["trade_m_orig_val"].
+               - dfs["trade_m_orig_val"].
                rename(columns={"Total importaciones": "Total"}))
     compare.columns = net.columns
     assert net.equals(compare)
     remove_clutter()
     net = session.get_custom(dataset="terms_of_trade").dataset
-    compare = (tb_["trade_x_dest_pri"].
+    compare = (dfs["trade_x_dest_pri"].
                rename(columns={"Total exportaciones": "Total"})
-               / tb_["trade_m_orig_pri"].
+               / dfs["trade_m_orig_pri"].
                rename(columns={"Total importaciones": "Total"}))
     compare = compare.loc[:, ["Total"]]
     compare = transform.rebase(compare, start_date="2005-01-01",

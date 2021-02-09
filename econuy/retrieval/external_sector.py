@@ -6,7 +6,7 @@ import zipfile
 from io import BytesIO
 from json import JSONDecodeError
 from os import PathLike, path
-from typing import Union, Dict
+from typing import Union
 from urllib import error
 from urllib.error import HTTPError, URLError
 
@@ -27,17 +27,77 @@ from econuy.utils.sources import urls
 from econuy.utils.extras import trade_metadata, reserves_cols
 
 
+def trade_retriever(name: str, source_name: str,
+                    update_loc: Union[str, PathLike,
+                                      Engine, Connection, None] = None,
+                    revise_rows: Union[str, int] = "nodup",
+                    save_loc: Union[str, PathLike,
+                                    Engine, Connection, None] = None,
+                    index_label: str = "index",
+                    only_get: bool = False) -> pd.DataFrame:
+    if only_get is True and update_loc is not None:
+        output = ops._io(operation="update", data_loc=update_loc,
+                         name=name, index_label=index_label)
+        if not output.equals(pd.DataFrame()):
+            return output
+
+    short_name = source_name[6:]
+    meta = trade_metadata[short_name]
+    xls = pd.ExcelFile(urls[source_name]["dl"]["main"])
+    sheets = []
+    for sheet in xls.sheet_names:
+        raw = (pd.read_excel(xls, sheet_name=sheet,
+                             usecols=meta["cols"], index_col=0,
+                             skiprows=7).dropna(thresh=5).T)
+        raw.index = (pd.to_datetime(raw.index, errors="coerce")
+                     + MonthEnd(0))
+        proc = raw[raw.index.notnull()].dropna(thresh=5, axis=1)
+        if source_name != "trade_m_sect_val":
+            proc = proc.loc[:, meta["colnames"].keys()]
+            proc.columns = meta["colnames"].values()
+        else:
+            proc = proc.loc[:, ~(proc == "miles de dólares").any()]
+            proc = proc.drop(columns=["DESTINO ECONÓMICO"])
+            proc.columns = meta["new_colnames"]
+        sheets.append(proc)
+    output = pd.concat(sheets).sort_index()
+    output = output.apply(pd.to_numeric, errors="coerce")
+    if meta["unit"] == "Millones":
+        output = output.div(1000)
+
+    metadata._set(output, area="Sector externo", currency=meta["currency"],
+                  inf_adj="No", unit=meta["unit"], seas_adj="NSA",
+                  ts_type="Flujo", cumperiods=1)
+
+    if update_loc is not None:
+        previous_data = ops._io(operation="update",
+                                data_loc=update_loc,
+                                name=name,
+                                index_label=index_label)
+        output = ops._revise(new_data=output, prev_data=previous_data,
+                             revise_rows=revise_rows)
+
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=output, name=name, index_label=index_label)
+
+    return output
+
+
 @retry(
     retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=8,
-    retry_window_after_first_call_in_seconds=120,
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
 )
-def trade(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-          revise_rows: Union[str, int] = "nodup",
-          save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-          name: str = "trade", index_label: str = "index",
-          only_get: bool = False) -> Dict[str, pd.DataFrame]:
-    """Get exports and imports of goods data.
+def trade_x_prod_val(update_loc: Union[str, PathLike,
+                                       Engine, Connection, None] = None,
+                     revise_rows: Union[str, int] = "nodup",
+                     save_loc: Union[str, PathLike,
+                                     Engine, Connection, None] = None,
+                     name: str = "trade_x_prod_val",
+                     index_label: str = "index",
+                     only_get: bool = False) -> pd.DataFrame:
+    """Get export values by product.
 
     Parameters
     ----------
@@ -57,7 +117,7 @@ def trade(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'trade'
+    name : str, default 'trade_x_prod_val'
         Either CSV filename for updating and/or saving, or table name if
         using SQL.
     index_label : str, default 'index'
@@ -68,70 +128,596 @@ def trade(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     Returns
     -------
-    Monthly exports and imports : Dict[str, pd.DataFrame]
-        Value, volume and price data for product and destination
-        classifications (exports), and sector and origin classifications
-        (imports).
+    Export values by product : pd.DataFrame
 
     """
-    if only_get is True and update_loc is not None:
-        output = {}
-        for file in trade_metadata.keys():
-            data = ops._io(
-                operation="update", data_loc=update_loc,
-                name=f"{name}_{file}", index_label=index_label
-            )
-            output.update({f"{name}_{file}": data})
-        if all(not value.equals(pd.DataFrame()) for value in output.values()):
-            return output
+    return trade_retriever(name=name, source_name="trade_x_prod_val",
+                           update_loc=update_loc, revise_rows=revise_rows,
+                           save_loc=save_loc, index_label=index_label,
+                           only_get=only_get)
 
-    output = {}
-    for file, meta in trade_metadata.items():
-        xls = pd.ExcelFile(meta["url"])
-        sheets = []
-        for sheet in xls.sheet_names:
-            raw = (pd.read_excel(xls, sheet_name=sheet,
-                                 usecols=meta["cols"], index_col=0,
-                                 skiprows=7).dropna(thresh=5).T)
-            raw.index = (pd.to_datetime(raw.index, errors="coerce")
-                         + MonthEnd(0))
-            proc = raw[raw.index.notnull()].dropna(thresh=5, axis=1)
-            if file != "m_sect_val":
-                proc = proc.loc[:, meta["old_colnames"]]
-            else:
-                proc = proc.loc[:, ~(proc == "miles de dólares").any()]
-                proc = proc.drop(columns=["DESTINO ECONÓMICO"])
-            proc.columns = meta["new_colnames"]
-            sheets.append(proc)
-        data = pd.concat(sheets).sort_index()
-        data = data.apply(pd.to_numeric, errors="coerce")
-        if meta["unit"] == "Millones":
-            data = data.div(1000)
 
-        if update_loc is not None:
-            previous_data = ops._io(
-                operation="update", data_loc=update_loc,
-                name=f"{name}_{file}", index_label=index_label
-            )
-            data = ops._revise(new_data=data,
-                               prev_data=previous_data,
-                               revise_rows=revise_rows)
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def trade_x_prod_vol(update_loc: Union[str, PathLike,
+                                       Engine, Connection, None] = None,
+                     revise_rows: Union[str, int] = "nodup",
+                     save_loc: Union[str, PathLike,
+                                     Engine, Connection, None] = None,
+                     name: str = "trade_x_prod_vol",
+                     index_label: str = "index",
+                     only_get: bool = False) -> pd.DataFrame:
+    """Get export volumes by product.
 
-        metadata._set(
-            data, area="Sector externo", currency=meta["currency"],
-            inf_adj="No", unit=meta["unit"], seas_adj="NSA",
-            ts_type="Flujo", cumperiods=1
-        )
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'trade_x_prod_vol'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
 
-        if save_loc is not None:
-            ops._io(
-                operation="save", data_loc=save_loc, data=data,
-                name=f"{name}_{file}", index_label=index_label
-            )
+    Returns
+    -------
+    Export volumes by product : pd.DataFrame
 
-        output.update({f"{name}_{file}": data})
+    """
+    return trade_retriever(name=name, source_name="trade_x_prod_vol",
+                           update_loc=update_loc, revise_rows=revise_rows,
+                           save_loc=save_loc, index_label=index_label,
+                           only_get=only_get)
 
-    return output
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def trade_x_prod_pri(update_loc: Union[str, PathLike,
+                                       Engine, Connection, None] = None,
+                     revise_rows: Union[str, int] = "nodup",
+                     save_loc: Union[str, PathLike,
+                                     Engine, Connection, None] = None,
+                     name: str = "trade_x_prod_pri",
+                     index_label: str = "index",
+                     only_get: bool = False) -> pd.DataFrame:
+    """Get export prices by product.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'trade_x_prod_pri'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
+
+    Returns
+    -------
+    Export prices by product : pd.DataFrame
+
+    """
+    return trade_retriever(name=name, source_name="trade_x_prod_pri",
+                           update_loc=update_loc, revise_rows=revise_rows,
+                           save_loc=save_loc, index_label=index_label,
+                           only_get=only_get)
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def trade_x_dest_val(update_loc: Union[str, PathLike,
+                                       Engine, Connection, None] = None,
+                     revise_rows: Union[str, int] = "nodup",
+                     save_loc: Union[str, PathLike,
+                                     Engine, Connection, None] = None,
+                     name: str = "trade_x_dest_val",
+                     index_label: str = "index",
+                     only_get: bool = False) -> pd.DataFrame:
+    """Get export values by destination.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'trade_x_dest_val'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
+
+    Returns
+    -------
+    Export values by destination : pd.DataFrame
+
+    """
+    return trade_retriever(name=name, source_name="trade_x_dest_val",
+                           update_loc=update_loc, revise_rows=revise_rows,
+                           save_loc=save_loc, index_label=index_label,
+                           only_get=only_get)
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def trade_x_dest_vol(update_loc: Union[str, PathLike,
+                                       Engine, Connection, None] = None,
+                     revise_rows: Union[str, int] = "nodup",
+                     save_loc: Union[str, PathLike,
+                                     Engine, Connection, None] = None,
+                     name: str = "trade_x_dest_vol",
+                     index_label: str = "index",
+                     only_get: bool = False) -> pd.DataFrame:
+    """Get export volumes by destination.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'trade_x_dest_vol'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
+
+    Returns
+    -------
+    Export volumes by destination : pd.DataFrame
+
+    """
+    return trade_retriever(name=name, source_name="trade_x_dest_vol",
+                           update_loc=update_loc, revise_rows=revise_rows,
+                           save_loc=save_loc, index_label=index_label,
+                           only_get=only_get)
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def trade_x_dest_pri(update_loc: Union[str, PathLike,
+                                       Engine, Connection, None] = None,
+                     revise_rows: Union[str, int] = "nodup",
+                     save_loc: Union[str, PathLike,
+                                     Engine, Connection, None] = None,
+                     name: str = "trade_x_dest_pri",
+                     index_label: str = "index",
+                     only_get: bool = False) -> pd.DataFrame:
+    """Get export prices by destination.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'trade_x_dest_pri'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
+
+    Returns
+    -------
+    Export prices by destination : pd.DataFrame
+
+    """
+    return trade_retriever(name=name, source_name="trade_x_dest_pri",
+                           update_loc=update_loc, revise_rows=revise_rows,
+                           save_loc=save_loc, index_label=index_label,
+                           only_get=only_get)
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def trade_m_sect_val(update_loc: Union[str, PathLike,
+                                       Engine, Connection, None] = None,
+                     revise_rows: Union[str, int] = "nodup",
+                     save_loc: Union[str, PathLike,
+                                     Engine, Connection, None] = None,
+                     name: str = "trade_m_sect_val",
+                     index_label: str = "index",
+                     only_get: bool = False) -> pd.DataFrame:
+    """Get import values by sector.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'trade_m_sect_val'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
+
+    Returns
+    -------
+    Import values by sector : pd.DataFrame
+
+    """
+    return trade_retriever(name=name, source_name="trade_m_sect_val",
+                           update_loc=update_loc, revise_rows=revise_rows,
+                           save_loc=save_loc, index_label=index_label,
+                           only_get=only_get)
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def trade_m_sect_vol(update_loc: Union[str, PathLike,
+                                       Engine, Connection, None] = None,
+                     revise_rows: Union[str, int] = "nodup",
+                     save_loc: Union[str, PathLike,
+                                     Engine, Connection, None] = None,
+                     name: str = "trade_m_sect_vol",
+                     index_label: str = "index",
+                     only_get: bool = False) -> pd.DataFrame:
+    """Get import volumes by sector.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'trade_m_sect_vol'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
+
+    Returns
+    -------
+    Import volumes by sector : pd.DataFrame
+
+    """
+    return trade_retriever(name=name, source_name="trade_m_sect_vol",
+                           update_loc=update_loc, revise_rows=revise_rows,
+                           save_loc=save_loc, index_label=index_label,
+                           only_get=only_get)
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def trade_m_sect_pri(update_loc: Union[str, PathLike,
+                                       Engine, Connection, None] = None,
+                     revise_rows: Union[str, int] = "nodup",
+                     save_loc: Union[str, PathLike,
+                                     Engine, Connection, None] = None,
+                     name: str = "trade_m_sect_pri",
+                     index_label: str = "index",
+                     only_get: bool = False) -> pd.DataFrame:
+    """Get import prices by sector.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'trade_m_sect_pri'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
+
+    Returns
+    -------
+    Import prices by sector : pd.DataFrame
+
+    """
+    return trade_retriever(name=name, source_name="trade_m_sect_pri",
+                           update_loc=update_loc, revise_rows=revise_rows,
+                           save_loc=save_loc, index_label=index_label,
+                           only_get=only_get)
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def trade_m_orig_val(update_loc: Union[str, PathLike,
+                                       Engine, Connection, None] = None,
+                     revise_rows: Union[str, int] = "nodup",
+                     save_loc: Union[str, PathLike,
+                                     Engine, Connection, None] = None,
+                     name: str = "trade_m_orig_val",
+                     index_label: str = "index",
+                     only_get: bool = False) -> pd.DataFrame:
+    """Get import values by origin.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'trade_m_orig_val'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
+
+    Returns
+    -------
+    Import values by origin : pd.DataFrame
+
+    """
+    return trade_retriever(name=name, source_name="trade_m_orig_val",
+                           update_loc=update_loc, revise_rows=revise_rows,
+                           save_loc=save_loc, index_label=index_label,
+                           only_get=only_get)
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def trade_m_orig_vol(update_loc: Union[str, PathLike,
+                                       Engine, Connection, None] = None,
+                     revise_rows: Union[str, int] = "nodup",
+                     save_loc: Union[str, PathLike,
+                                     Engine, Connection, None] = None,
+                     name: str = "trade_m_orig_vol",
+                     index_label: str = "index",
+                     only_get: bool = False) -> pd.DataFrame:
+    """Get import volumes by origin.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'trade_m_orig_vol'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
+
+    Returns
+    -------
+    Import volumes by origin : pd.DataFrame
+
+    """
+    return trade_retriever(name=name, source_name="trade_m_orig_vol",
+                           update_loc=update_loc, revise_rows=revise_rows,
+                           save_loc=save_loc, index_label=index_label,
+                           only_get=only_get)
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def trade_m_orig_pri(update_loc: Union[str, PathLike,
+                                       Engine, Connection, None] = None,
+                     revise_rows: Union[str, int] = "nodup",
+                     save_loc: Union[str, PathLike,
+                                     Engine, Connection, None] = None,
+                     name: str = "trade_m_orig_pri",
+                     index_label: str = "index",
+                     only_get: bool = False) -> pd.DataFrame:
+    """Get import prices by origin.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    name : str, default 'trade_m_orig_pri'
+        Either CSV filename for updating and/or saving, or table name if
+        using SQL.
+    index_label : str, default 'index'
+        Label for SQL indexes.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
+
+    Returns
+    -------
+    Import prices by origin : pd.DataFrame
+
+    """
+    return trade_retriever(name=name, source_name="trade_m_orig_pri",
+                           update_loc=update_loc, revise_rows=revise_rows,
+                           save_loc=save_loc, index_label=index_label,
+                           only_get=only_get)
 
 
 def trade_balance(update_loc: Union[str, PathLike, Engine,
@@ -170,12 +756,12 @@ def trade_balance(update_loc: Union[str, PathLike, Engine,
     Net trade balance value by region/country : pd.DataFrame
 
     """
-    data = trade(update_loc=update_loc, save_loc=save_loc,
-                 only_get=only_get)
-    exports = data["trade_x_dest_val"].rename(
+    exports = trade_x_dest_val(update_loc=update_loc,
+                               save_loc=save_loc, only_get=only_get).rename(
         columns={"Total exportaciones": "Total"}
     )
-    imports = data["trade_m_orig_val"].rename(
+    imports = trade_m_orig_val(update_loc=update_loc,
+                               save_loc=save_loc, only_get=only_get).rename(
         columns={"Total importaciones": "Total"}
     )
     net = exports - imports
@@ -223,14 +809,15 @@ def terms_of_trade(update_loc: Union[str, PathLike, Engine,
     Terms of trade (exports/imports) : pd.DataFrame
 
     """
-    data = trade(update_loc=update_loc, save_loc=save_loc,
-                 only_get=only_get)
-    exports = data["trade_x_dest_pri"].rename(
+    exports = trade_x_dest_pri(update_loc=update_loc, save_loc=save_loc,
+                               only_get=only_get).rename(
         columns={"Total exportaciones": "Total"}
     )
-    imports = data["trade_m_orig_pri"].rename(
+    imports = trade_m_orig_pri(update_loc=update_loc, save_loc=save_loc,
+                               only_get=only_get).rename(
         columns={"Total importaciones": "Total"}
     )
+
     tot = exports / imports
     tot = tot.loc[:, ["Total"]]
     tot.rename(columns={"Total": "Términos de intercambio"}, inplace=True)
