@@ -116,7 +116,8 @@ def test_labor():
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
     labor_tfm = session.get_custom(dataset="rates_people").dataset
-    labor_tfm = labor_tfm.iloc[:, [0, 1, 2]].loc[labor_tfm.index >= "2006-01-01"]
+    labor_tfm = labor_tfm.iloc[:, [0, 1, 2]
+                               ].loc[labor_tfm.index >= "2006-01-01"]
     remove_clutter()
     labor_ = session.get(dataset="labor").dataset.iloc[:, [0, 3, 6]]
     session.only_get = True
@@ -156,12 +157,12 @@ def test_natacc():
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
     for dataset, cols, start in zip(["ind_con_nsa", "gas_con_nsa", "ind_cur_nsa",
-                                    "ind_con_idx_nsa", "ind_con_idx_sa", 
-                                    "gdp_cur_nsa"],
-                                   [11, 10, 11, 11, 11, 1],
-                                   ["2005-03-31", "2005-03-31", "2005-03-31",
-                                    "1997-03-31", "1997-03-31", "1997-03-31"]):
-        
+                                     "ind_con_idx_nsa", "ind_con_idx_sa",
+                                     "gdp_cur_nsa"],
+                                    [11, 10, 11, 11, 11, 1],
+                                    ["2005-03-31", "2005-03-31", "2005-03-31",
+                                     "1997-03-31", "1997-03-31", "1997-03-31"]):
+
         na = session.get(dataset=f"natacc_{dataset}").dataset
         assert len(na.columns) == cols
         assert na.index[0] == dt.datetime.strptime(start, "%Y-%m-%d")
@@ -480,13 +481,13 @@ def test_trade():
                                      "x_dest_val", "x_dest_vol", "x_dest_pri",
                                      "m_sect_val", "m_sect_vol", "m_sect_pri",
                                      "m_orig_val", "m_orig_vol", "m_orig_pri"],
-                                   [33, 27, 27, 43, 24, 24, 
-                                    25, 13, 13, 43, 24, 24],
-                                   ["2000-01-31", "2005-01-31", "2005-01-31",
-                                    "2000-01-31", "2005-01-31", "2005-01-31",
-                                    "2000-01-31", "2005-01-31", "2005-01-31",
-                                    "2000-01-31", "2005-01-31", "2005-01-31"]):
-        
+                                    [33, 27, 27, 43, 24, 24,
+                                     25, 13, 13, 43, 24, 24],
+                                    ["2000-01-31", "2005-01-31", "2005-01-31",
+                                     "2000-01-31", "2005-01-31", "2005-01-31",
+                                     "2000-01-31", "2005-01-31", "2005-01-31",
+                                     "2000-01-31", "2005-01-31", "2005-01-31"]):
+
         df = session.get(dataset=f"trade_{dataset}").dataset
         dfs[f"trade_{dataset}"] = df
         assert len(df.columns) == cols

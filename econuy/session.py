@@ -178,7 +178,7 @@ class Session(object):
 
         Parameters
         ----------
-        dataset : str, see available options in datasets.py or in 
+        dataset : str, see available options in datasets.py or in
                   :attr:`available`
             Type of data to download.
         update : bool, default True
@@ -235,7 +235,7 @@ class Session(object):
 
         Parameters
         ----------
-        dataset : str, see available options in datasets.py or in 
+        dataset : str, see available options in datasets.py or in
                   :attr:`available`
         update : bool, default True
             Whether to update an existing dataset.

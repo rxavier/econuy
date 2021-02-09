@@ -96,7 +96,7 @@ def convert_usd(df: pd.DataFrame,
             for column_name, check in zip(df.columns, checks):
                 df_column = df[[column_name]]
                 if check is False:
-                    msg = (f"{column_name[0]} does not have the " 
+                    msg = (f"{column_name[0]} does not have the "
                            f"appropiate metadata.")
                     columns.append(error_handler(df=df_column, errors=errors,
                                                  msg=msg))
@@ -230,7 +230,7 @@ def convert_real(df: pd.DataFrame,
             for column_name, check in zip(df.columns, checks):
                 df_column = df[[column_name]]
                 if check is False:
-                    msg = (f"{column_name[0]} does not have the " 
+                    msg = (f"{column_name[0]} does not have the "
                            f"appropiate metadata.")
                     columns.append(error_handler(df=df_column, errors=errors,
                                                  msg=msg))
@@ -375,7 +375,7 @@ def convert_gdp(df: pd.DataFrame,
             for column_name, check in zip(df.columns, checks):
                 df_column = df[[column_name]]
                 if check is False:
-                    msg = (f"{column_name[0]} does not have the " 
+                    msg = (f"{column_name[0]} does not have the "
                            f"appropiate metadata.")
                     columns.append(error_handler(df=df_column, errors=errors,
                                                  msg=msg))
@@ -890,7 +890,7 @@ def _decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
     old_columns = df_proc.columns
     df_proc.columns = df_proc.columns.get_level_values(level=0)
     df_proc.index = pd.to_datetime(df_proc.index, errors="coerce")
-    trends = pd.DataFrame(data=np.nan, index=df_proc.index, 
+    trends = pd.DataFrame(data=np.nan, index=df_proc.index,
                           columns=old_columns)
     seas_adjs = trends.copy()
 
@@ -1091,9 +1091,9 @@ def _chg_diff(df: pd.DataFrame, operation: str = "chg",
     inferred_freq = pd.infer_freq(df.index)
 
     type_change = {"last":
-                       {"chg": [lambda x: x.pct_change(periods=1),
-                                "% variación"],
-                        "diff": [lambda x: x.diff(periods=1), "Cambio"]},
+                   {"chg": [lambda x: x.pct_change(periods=1),
+                            "% variación"],
+                    "diff": [lambda x: x.diff(periods=1), "Cambio"]},
                    "inter":
                        {"chg": [lambda x: x.pct_change(periods=last_year),
                                 "% variación interanual"],

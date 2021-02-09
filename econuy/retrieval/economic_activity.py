@@ -259,7 +259,7 @@ def natacc_ind_con_idx_sa(
                             update_loc=update_loc, save_loc=save_loc,
                             only_get=only_get, revise_rows=revise_rows,
                             index_label=index_label)
-    
+
 
 @retry(
     retry_on_exceptions=(HTTPError, URLError),
@@ -324,7 +324,7 @@ def natacc_ind_con_idx_nsa(
                             update_loc=update_loc, save_loc=save_loc,
                             only_get=only_get, revise_rows=revise_rows,
                             index_label=index_label)
-    
+
 
 @retry(
     retry_on_exceptions=(HTTPError, URLError),
@@ -389,7 +389,7 @@ def natacc_ind_cur_nsa(
                             update_loc=update_loc, save_loc=save_loc,
                             only_get=only_get, revise_rows=revise_rows,
                             index_label=index_label)
-    
+
 
 @retry(
     retry_on_exceptions=(HTTPError, URLError),
@@ -524,12 +524,12 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
         fcast = (gdp.loc[[dt.datetime(last_year - 1, 12, 31)]].
                  multiply(imf_data.iloc[1]).divide(imf_data.iloc[0]))
         fcast = fcast.rename(index={dt.datetime(last_year - 1, 12, 31):
-                                        dt.datetime(last_year, 12, 31)})
+                                    dt.datetime(last_year, 12, 31)})
         next_fcast = (gdp.loc[[dt.datetime(last_year - 1, 12, 31)]].
                       multiply(imf_data.iloc[2]).divide(imf_data.iloc[0]))
         next_fcast = next_fcast.rename(
             index={dt.datetime(last_year - 1, 12, 31):
-                       dt.datetime(last_year + 1, 12, 31)}
+                   dt.datetime(last_year + 1, 12, 31)}
         )
         fcast = fcast.append(next_fcast)
         gdp = gdp.append(fcast)
@@ -613,7 +613,7 @@ def industrial_production(update_loc: Union[str, PathLike,
         else:
             raise err
     proc = raw.dropna(how="any", subset=["Mes"]).dropna(thresh=100, axis=1)
-    output = proc[~proc["Mes"].str.contains("PROM|Prom", 
+    output = proc[~proc["Mes"].str.contains("PROM|Prom",
                                             regex=True)].drop("Mes", axis=1)
     output.index = pd.date_range(start="2002-01-31", freq="M",
                                  periods=len(output))
@@ -682,8 +682,11 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
     data = industrial_production(update_loc=update_loc, save_loc=save_loc,
                                  only_get=only_get)
     try:
-        weights = pd.read_excel(urls["core_industrial"]["dl"]["weights"],
-                                skiprows=3, engine="openpyxl").dropna(how="all")
+        weights = pd.read_excel(
+            urls["core_industrial"]["dl"]["weights"],
+            skiprows=3,
+            engine="openpyxl").dropna(
+            how="all")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
@@ -698,14 +701,14 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
                                       "Unnamed: 6": "Pond. agrupación",
                                       "Unnamed: 7": "Pond. clase"})
     other_foods = (
-            weights.loc[weights["clase"] == 1549]["Pond. clase"].values[0]
-            * weights.loc[(weights["agrupacion"] == 154) &
-                          (weights["clase"] == 0)][
-                "Pond. agrupación"].values[0]
-            * weights.loc[(weights["division"] == 15) &
+        weights.loc[weights["clase"] == 1549]["Pond. clase"].values[0]
+        * weights.loc[(weights["agrupacion"] == 154) &
+                      (weights["clase"] == 0)][
+            "Pond. agrupación"].values[0]
+        * weights.loc[(weights["division"] == 15) &
                           (weights["agrupacion"] == 0)][
                 "Pond. división"].values[0]
-            / 1000000)
+        / 1000000)
     pulp = (weights.loc[weights["clase"] == 2101]["Pond. clase"].values[0]
             * weights.loc[(weights["division"] == 21) &
                           (weights["agrupacion"] == 0)][

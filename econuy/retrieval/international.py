@@ -90,8 +90,14 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         chn_datasets.append(df)
     chn_qoq = chn_datasets[0]
     chn_yoy = chn_datasets[1]
-    chn_obs = pd.read_excel(urls["global_gdp"]["dl"]["chn_obs"], index_col=0,
-                            engine="openpyxl").dropna(how="all", axis=1).dropna(how="all", axis=0)
+    chn_obs = pd.read_excel(
+        urls["global_gdp"]["dl"]["chn_obs"],
+        index_col=0,
+        engine="openpyxl").dropna(
+        how="all",
+        axis=1).dropna(
+            how="all",
+        axis=0)
     chn_obs = chn_obs.loc[(chn_obs.index > "2011-01-01")
                           & (chn_obs.index < "2016-01-01")]
     chn_yoy["volume"] = chn_obs
@@ -206,7 +212,7 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
             return output
 
     yahoo = []
-    for series in ["spy", "n100","nikkei", "sse"]:
+    for series in ["spy", "n100", "nikkei", "sse"]:
         aux = pd.read_csv(urls["global_stocks"]["dl"][series],
                           index_col=0, usecols=[0, 4], parse_dates=True)
         aux.columns = [series]
@@ -390,9 +396,9 @@ def long_rates(
     bonds.append(us.apply(pd.to_numeric, errors="coerce").dropna())
 
     for country, sid in zip(["Germany", "France", "Italy", "Spain",
-                            "United Kingdom", "Japan", "China"],
-                           ["23693", "23778", "23738", "23806",
-                            "23673", "23901", "29227"]):
+                             "United Kingdom", "Japan", "China"],
+                            ["23693", "23778", "23738", "23806",
+                             "23673", "23901", "29227"]):
         end_date_dt = dt.datetime(2000, 1, 1)
         start_date_dt = dt.datetime(2000, 1, 1)
         aux = []
