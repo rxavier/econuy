@@ -4,7 +4,7 @@ import tempfile
 from pathlib import Path
 from io import BytesIO
 from os import PathLike, listdir, path
-from typing import Union, Dict, List
+from typing import Union, List
 from urllib.error import HTTPError, URLError
 
 import pandas as pd
