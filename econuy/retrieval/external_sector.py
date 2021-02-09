@@ -35,6 +35,7 @@ def _trade_retriever(name: str, source_name: str,
                                      Engine, Connection, None] = None,
                      index_label: str = "index",
                      only_get: bool = False) -> pd.DataFrame:
+    """Helper function. See any of the `trade_...()` functions."""    
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
                          name=name, index_label=index_label)

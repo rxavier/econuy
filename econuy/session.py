@@ -120,6 +120,14 @@ class Session(object):
 
     @property
     def available(self):
+        """Displays available ``dataset`` arguments for use in  
+        :mod:`~econuy.session.Session.get` and 
+        :mod:`~econuy.session.Session.get_custom`.
+
+        Returns
+        -------
+        Dataset : Dict[str, str]
+        """
         return {"original": {k: v["description"]
                              for k, v in datasets.original.items()},
                 "custom": {k: v["description"]
@@ -127,10 +135,22 @@ class Session(object):
 
     @property
     def dataset_name(self):
+        """Holds the current dataset's name.
+
+        Returns
+        -------
+        Dataset name : str
+        """        
         return self._dataset_name
 
     @property
     def dataset(self):
+        """Holds the current dataset.
+
+        Returns
+        -------
+        Dataset : pd.DataFrame
+        """
         return self._dataset
 
     @dataset.setter

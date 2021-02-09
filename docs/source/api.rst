@@ -12,6 +12,7 @@ Data retrieval functions
 ------------------------
 .. automodule:: econuy.retrieval.economic_activity
    :members:
+   :exclude-members: _natacc_retriever
    :undoc-members:
    :show-inheritance:
 .. automodule:: econuy.retrieval.prices
@@ -20,10 +21,12 @@ Data retrieval functions
    :show-inheritance:
 .. automodule:: econuy.retrieval.fiscal_accounts
    :members:
+   :exclude-members: _balance_retriever
    :undoc-members:
    :show-inheritance:
 .. automodule:: econuy.retrieval.external_sector
    :members:
+   :exclude-members: _trade_retriever
    :undoc-members:
    :show-inheritance:
 .. automodule:: econuy.retrieval.labor

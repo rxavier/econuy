@@ -12,9 +12,7 @@ This project simplifies gathering and processing of Uruguayan economic statistic
 
 If [this screenshot](https://i.imgur.com/Ku5OR0y.jpg) gives you anxiety, this package should be of interest.
 
-# Webapp
-
-A webapp with a limited but interactive version of econuy is available at https://econ.uy. Check out the [repo](https://github.com/rxavier/econuy-web) as well.
+A webapp with a limited but interactive version of econuy is available at [econ.uy](https://econ.uy). Check out the [repo](https://github.com/rxavier/econuy-web) as well.
 
 # Installation
 
@@ -34,7 +32,7 @@ python setup.py install
 
 # Usage
 
-**[Read the documentation](https://econuy.readthedocs.io/)**
+**[Full API documentation available at RTD](https://econuy.readthedocs.io/en/latest/api.html)**
 
 ## The `Session()` class
 
@@ -46,15 +44,16 @@ from econuy.session import Session
 sess = Session(location="your/directory", revise_rows="nodup", only_get=False, log=1, inplace=False)
 ```
 
-The `Session()` object is initialized with the `location`, `revise_rows`,  `only_get`, `dataset`, `log`, `logger` and `inplace` attributes.
+The `Session()` object is initialized with the `location`, `revise_rows`,  `only_get`, `dataset`, `log`, `logger`, `inplace` and `errors` attributes.
 
 * `location` controls where data will be saved and where it will be looked for when updating. It defaults to "econuy-data", and will create the directory if it doesn't exist. It can also be a SQLAlchemy Connection or Engine object.
 * `revise_rows` controls the updating mechanism. It can be an integer, denoting how many rows from the data held on disk to replace with new data, or a string. In the latter case, `auto` indicates that the amount of rows to be replaced will be determined from the inferred data frequency, while `nodup` replaces existing data with new data for each time period found in both.
 * `only_get` controls whether to get data from local sources or attempt to download it.
 * `dataset` holds the current working dataset(s) and by default is initialized with an empty Pandas dataframe.
-* `log` controls how logging works. `0`, don't log; `1`, log to console; `2`, log to console and file with default file; ``str``, log to console and file with filename=str.
+* `log` controls how logging works. `0`, don't log; `1`, log to console; `2`, log to console and file with default file; `str`, log to console and file with filename=str.
 * `logger` holds the current logger object from the logging module. Generally, the end user shouldn't set this manually.
 * `inplace` controls whether transformation methods modify the current Session object inplace or whether they create a new instance with the same attributes (except `dataset`, of course).
+* `errors` controls how errors produced by transformation methods (for example, trying to convert data expressed in USD to USD) are dealt with, in a fashion similar to Pandas' implementation.
 
 ### Session retrieval methods
 
@@ -62,7 +61,7 @@ The `Session()` object is initialized with the `location`, `revise_rows`,  `only
 
 Downloads the basic datasets. These are generally as provided by official sources, except various Pandas transformations are performed to render nice looking dataframes with appropiate column names, time indexes and properly defined values. In select cases, I drop columns that I feel don't add relevant information for the target audience of this package, or that are inconsistent with other datasets.
 
-Available options for the `dataset` argument can be found in [the datasets file](econuy/utils/datasets.py). English descriptions for these will be added in the future.
+Available options for the `dataset` argument can be found in [the datasets file](https://github.com/rxavier/econuy/blob/master/econuy/utils/datasets.py). English descriptions for these will be added in the future.
 
 If you wanted CPI data:
 ```python
@@ -75,7 +74,7 @@ Note that the previous code block accessed the `dataset` attribute in order to g
 
 #### `get_custom()`
 
-Gives access to predefined data pipelines that output frequently used data not provided officially or require the combination of available official sources. These are based on the datasets provided by `get()`, but are transformed to render data that you might find more immediately useful. As with `get()`, available options for the `dataset` argument can be found in [the datasets file](econuy/utils/datasets.py).
+Gives access to predefined data pipelines that output frequently used data not provided officially or require the combination of available official sources. These are based on the datasets provided by `get()`, but are transformed to render data that you might find more immediately useful. As with `get()`, available options for the `dataset` argument can be found in [the datasets file](https://github.com/rxavier/econuy/blob/master/econuy/utils/datasets.py).
 
 For example, the following calculates tradable CPI, non-tradable CPI, core CPI, residual CPI and Winsorized CPI. Also, it uses a SQL database for data updating and saving.
 ```python
@@ -106,7 +105,7 @@ Available transformation methods are
 * `chg_diff()` - calculate percent changes or differences for same period last year, last period or at annual rate.
 * `decompose()` - seasonally decompose series into trend and seasonally adjusted components.
 * `convert()` - convert to US dollars, constant prices or percent of GDP.
-* `base_index()` - set a period or window as 100, scale rest accordingly
+* `rebase()` - set a period or window as 100, scale rest accordingly
 * `rolling()` - calculate rolling windows, either average or sum.
 
 ## Retrieval functions
@@ -147,18 +146,15 @@ This project uses [Camelot](https://github.com/camelot-dev/camelot) to extract d
 
 ----
 
-# Problems and plans
+# Caveats and plans
 
-## Problems
+## Caveats
 
 This project is heavily based on getting data from online sources that could change without notice, causing methods that download data to fail. While I try to stay on my toes and fix these quickly, it helps if you create an issue when you find one of these (or even submit a fix!).
 
 ## Plans
 
-* ~~I now realize this project would greatly benefit from OOP and plan to implement it next.~~
-* ~~Tests.~~
-* CLI.
-* ~~Website.~~
-* Automating data updates.
+* Implement a CLI.
+* Provide methods to make keeping an updated database easy.
 * ~~Visualization.~~ (I have decided that visualization should be up to the end-user. However, the [webapp](https://econ.uy) is available for this purpose).
 * Translations for dataset descriptions and metadata.

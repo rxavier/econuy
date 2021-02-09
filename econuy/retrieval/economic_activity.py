@@ -30,6 +30,7 @@ def _natacc_retriever(url: str, name: str, nrows: int, inf_adj: str,
                                       Engine, Connection, None] = None,
                       index_label: str = "index",
                       only_get: bool = False) -> pd.DataFrame:
+    """Helper function. See any of the `natacc_...()` functions.""" 
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
                          name=name, index_label=index_label)
