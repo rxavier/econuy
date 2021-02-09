@@ -16,14 +16,11 @@ from bs4 import BeautifulSoup
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from requests.exceptions import ConnectionError
-from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.remote.webdriver import WebDriver
 from sqlalchemy.engine.base import Connection, Engine
 
 import econuy.retrieval.external_sector
 from econuy import transform
 from econuy.utils import ops, metadata
-from econuy.utils.chromedriver import _build
 from econuy.utils.sources import urls
 from econuy.utils.extras import fiscal_sheets, fiscal_metadata, taxes_columns
 
