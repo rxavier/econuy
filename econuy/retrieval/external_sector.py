@@ -27,14 +27,14 @@ from econuy.utils.sources import urls
 from econuy.utils.extras import trade_metadata, reserves_cols
 
 
-def trade_retriever(name: str, source_name: str,
-                    update_loc: Union[str, PathLike,
-                                      Engine, Connection, None] = None,
-                    revise_rows: Union[str, int] = "nodup",
-                    save_loc: Union[str, PathLike,
-                                    Engine, Connection, None] = None,
-                    index_label: str = "index",
-                    only_get: bool = False) -> pd.DataFrame:
+def _trade_retriever(name: str, source_name: str,
+                     update_loc: Union[str, PathLike,
+                                       Engine, Connection, None] = None,
+                     revise_rows: Union[str, int] = "nodup",
+                     save_loc: Union[str, PathLike,
+                                     Engine, Connection, None] = None,
+                     index_label: str = "index",
+                     only_get: bool = False) -> pd.DataFrame:
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
                          name=name, index_label=index_label)
@@ -131,10 +131,10 @@ def trade_x_prod_val(update_loc: Union[str, PathLike,
     Export values by product : pd.DataFrame
 
     """
-    return trade_retriever(name=name, source_name="trade_x_prod_val",
-                           update_loc=update_loc, revise_rows=revise_rows,
-                           save_loc=save_loc, index_label=index_label,
-                           only_get=only_get)
+    return _trade_retriever(name=name, source_name="trade_x_prod_val",
+                            update_loc=update_loc, revise_rows=revise_rows,
+                            save_loc=save_loc, index_label=index_label,
+                            only_get=only_get)
 
 
 @retry(
@@ -184,10 +184,10 @@ def trade_x_prod_vol(update_loc: Union[str, PathLike,
     Export volumes by product : pd.DataFrame
 
     """
-    return trade_retriever(name=name, source_name="trade_x_prod_vol",
-                           update_loc=update_loc, revise_rows=revise_rows,
-                           save_loc=save_loc, index_label=index_label,
-                           only_get=only_get)
+    return _trade_retriever(name=name, source_name="trade_x_prod_vol",
+                            update_loc=update_loc, revise_rows=revise_rows,
+                            save_loc=save_loc, index_label=index_label,
+                            only_get=only_get)
 
 
 @retry(
@@ -237,10 +237,10 @@ def trade_x_prod_pri(update_loc: Union[str, PathLike,
     Export prices by product : pd.DataFrame
 
     """
-    return trade_retriever(name=name, source_name="trade_x_prod_pri",
-                           update_loc=update_loc, revise_rows=revise_rows,
-                           save_loc=save_loc, index_label=index_label,
-                           only_get=only_get)
+    return _trade_retriever(name=name, source_name="trade_x_prod_pri",
+                            update_loc=update_loc, revise_rows=revise_rows,
+                            save_loc=save_loc, index_label=index_label,
+                            only_get=only_get)
 
 
 @retry(
@@ -290,10 +290,10 @@ def trade_x_dest_val(update_loc: Union[str, PathLike,
     Export values by destination : pd.DataFrame
 
     """
-    return trade_retriever(name=name, source_name="trade_x_dest_val",
-                           update_loc=update_loc, revise_rows=revise_rows,
-                           save_loc=save_loc, index_label=index_label,
-                           only_get=only_get)
+    return _trade_retriever(name=name, source_name="trade_x_dest_val",
+                            update_loc=update_loc, revise_rows=revise_rows,
+                            save_loc=save_loc, index_label=index_label,
+                            only_get=only_get)
 
 
 @retry(
@@ -343,10 +343,10 @@ def trade_x_dest_vol(update_loc: Union[str, PathLike,
     Export volumes by destination : pd.DataFrame
 
     """
-    return trade_retriever(name=name, source_name="trade_x_dest_vol",
-                           update_loc=update_loc, revise_rows=revise_rows,
-                           save_loc=save_loc, index_label=index_label,
-                           only_get=only_get)
+    return _trade_retriever(name=name, source_name="trade_x_dest_vol",
+                            update_loc=update_loc, revise_rows=revise_rows,
+                            save_loc=save_loc, index_label=index_label,
+                            only_get=only_get)
 
 
 @retry(
@@ -396,10 +396,10 @@ def trade_x_dest_pri(update_loc: Union[str, PathLike,
     Export prices by destination : pd.DataFrame
 
     """
-    return trade_retriever(name=name, source_name="trade_x_dest_pri",
-                           update_loc=update_loc, revise_rows=revise_rows,
-                           save_loc=save_loc, index_label=index_label,
-                           only_get=only_get)
+    return _trade_retriever(name=name, source_name="trade_x_dest_pri",
+                            update_loc=update_loc, revise_rows=revise_rows,
+                            save_loc=save_loc, index_label=index_label,
+                            only_get=only_get)
 
 
 @retry(
@@ -449,10 +449,10 @@ def trade_m_sect_val(update_loc: Union[str, PathLike,
     Import values by sector : pd.DataFrame
 
     """
-    return trade_retriever(name=name, source_name="trade_m_sect_val",
-                           update_loc=update_loc, revise_rows=revise_rows,
-                           save_loc=save_loc, index_label=index_label,
-                           only_get=only_get)
+    return _trade_retriever(name=name, source_name="trade_m_sect_val",
+                            update_loc=update_loc, revise_rows=revise_rows,
+                            save_loc=save_loc, index_label=index_label,
+                            only_get=only_get)
 
 
 @retry(
@@ -502,10 +502,10 @@ def trade_m_sect_vol(update_loc: Union[str, PathLike,
     Import volumes by sector : pd.DataFrame
 
     """
-    return trade_retriever(name=name, source_name="trade_m_sect_vol",
-                           update_loc=update_loc, revise_rows=revise_rows,
-                           save_loc=save_loc, index_label=index_label,
-                           only_get=only_get)
+    return _trade_retriever(name=name, source_name="trade_m_sect_vol",
+                            update_loc=update_loc, revise_rows=revise_rows,
+                            save_loc=save_loc, index_label=index_label,
+                            only_get=only_get)
 
 
 @retry(
@@ -555,10 +555,10 @@ def trade_m_sect_pri(update_loc: Union[str, PathLike,
     Import prices by sector : pd.DataFrame
 
     """
-    return trade_retriever(name=name, source_name="trade_m_sect_pri",
-                           update_loc=update_loc, revise_rows=revise_rows,
-                           save_loc=save_loc, index_label=index_label,
-                           only_get=only_get)
+    return _trade_retriever(name=name, source_name="trade_m_sect_pri",
+                            update_loc=update_loc, revise_rows=revise_rows,
+                            save_loc=save_loc, index_label=index_label,
+                            only_get=only_get)
 
 
 @retry(
@@ -608,10 +608,10 @@ def trade_m_orig_val(update_loc: Union[str, PathLike,
     Import values by origin : pd.DataFrame
 
     """
-    return trade_retriever(name=name, source_name="trade_m_orig_val",
-                           update_loc=update_loc, revise_rows=revise_rows,
-                           save_loc=save_loc, index_label=index_label,
-                           only_get=only_get)
+    return _trade_retriever(name=name, source_name="trade_m_orig_val",
+                            update_loc=update_loc, revise_rows=revise_rows,
+                            save_loc=save_loc, index_label=index_label,
+                            only_get=only_get)
 
 
 @retry(
@@ -661,10 +661,10 @@ def trade_m_orig_vol(update_loc: Union[str, PathLike,
     Import volumes by origin : pd.DataFrame
 
     """
-    return trade_retriever(name=name, source_name="trade_m_orig_vol",
-                           update_loc=update_loc, revise_rows=revise_rows,
-                           save_loc=save_loc, index_label=index_label,
-                           only_get=only_get)
+    return _trade_retriever(name=name, source_name="trade_m_orig_vol",
+                            update_loc=update_loc, revise_rows=revise_rows,
+                            save_loc=save_loc, index_label=index_label,
+                            only_get=only_get)
 
 
 @retry(
@@ -714,10 +714,10 @@ def trade_m_orig_pri(update_loc: Union[str, PathLike,
     Import prices by origin : pd.DataFrame
 
     """
-    return trade_retriever(name=name, source_name="trade_m_orig_pri",
-                           update_loc=update_loc, revise_rows=revise_rows,
-                           save_loc=save_loc, index_label=index_label,
-                           only_get=only_get)
+    return _trade_retriever(name=name, source_name="trade_m_orig_pri",
+                            update_loc=update_loc, revise_rows=revise_rows,
+                            save_loc=save_loc, index_label=index_label,
+                            only_get=only_get)
 
 
 def trade_balance(update_loc: Union[str, PathLike, Engine,

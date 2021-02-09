@@ -20,16 +20,16 @@ from econuy.utils import ops, metadata, get_project_root
 from econuy.utils.sources import urls
 
 
-def natacc_retriever(url: str, name: str, nrows: int, inf_adj: str,
-                     unit: str, seas_adj: str,
-                     colnames: List,
-                     update_loc: Union[str, PathLike,
-                                       Engine, Connection, None] = None,
-                     revise_rows: Union[str, int] = "nodup",
-                     save_loc: Union[str, PathLike,
-                                     Engine, Connection, None] = None,
-                     index_label: str = "index",
-                     only_get: bool = False) -> pd.DataFrame:
+def _natacc_retriever(url: str, name: str, nrows: int, inf_adj: str,
+                      unit: str, seas_adj: str,
+                      colnames: List,
+                      update_loc: Union[str, PathLike,
+                                        Engine, Connection, None] = None,
+                      revise_rows: Union[str, int] = "nodup",
+                      save_loc: Union[str, PathLike,
+                                      Engine, Connection, None] = None,
+                      index_label: str = "index",
+                      only_get: bool = False) -> pd.DataFrame:
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
                          name=name, index_label=index_label)
@@ -126,12 +126,12 @@ def natacc_ind_con_nsa(
                 "Otras actividades: SIFMI",
                 "Impuestos menos subvenciones",
                 "Producto bruto interno"]
-    return natacc_retriever(url=urls["natacc_ind_con_nsa"]["dl"]["main"],
-                            nrows=12, inf_adj="Const. 2005", unit="Millones",
-                            seas_adj="NSA", colnames=colnames, name=name,
-                            update_loc=update_loc, save_loc=save_loc,
-                            only_get=only_get, revise_rows=revise_rows,
-                            index_label=index_label)
+    return _natacc_retriever(url=urls["natacc_ind_con_nsa"]["dl"]["main"],
+                             nrows=12, inf_adj="Const. 2005", unit="Millones",
+                             seas_adj="NSA", colnames=colnames, name=name,
+                             update_loc=update_loc, save_loc=save_loc,
+                             only_get=only_get, revise_rows=revise_rows,
+                             index_label=index_label)
 
 
 @retry(
@@ -188,12 +188,12 @@ def natacc_gas_con_nsa(
                 "Formación bruta de capital: fijo - privada",
                 "Exportaciones",
                 "Importaciones", "Producto bruto interno"]
-    return natacc_retriever(url=urls["natacc_gas_con_nsa"]["dl"]["main"],
-                            nrows=10, inf_adj="Const. 2005", unit="Millones",
-                            seas_adj="NSA", colnames=colnames, name=name,
-                            update_loc=update_loc, save_loc=save_loc,
-                            only_get=only_get, revise_rows=revise_rows,
-                            index_label=index_label)
+    return _natacc_retriever(url=urls["natacc_gas_con_nsa"]["dl"]["main"],
+                             nrows=10, inf_adj="Const. 2005", unit="Millones",
+                             seas_adj="NSA", colnames=colnames, name=name,
+                             update_loc=update_loc, save_loc=save_loc,
+                             only_get=only_get, revise_rows=revise_rows,
+                             index_label=index_label)
 
 
 @retry(
@@ -253,12 +253,12 @@ def natacc_ind_con_idx_sa(
                 "Otras actividades: SIFMI",
                 "Impuestos menos subvenciones",
                 "Producto bruto interno"]
-    return natacc_retriever(url=urls["natacc_ind_con_idx_sa"]["dl"]["main"],
-                            nrows=12, inf_adj="Const. 2005", unit="2005=100",
-                            seas_adj="SA", colnames=colnames, name=name,
-                            update_loc=update_loc, save_loc=save_loc,
-                            only_get=only_get, revise_rows=revise_rows,
-                            index_label=index_label)
+    return _natacc_retriever(url=urls["natacc_ind_con_idx_sa"]["dl"]["main"],
+                             nrows=12, inf_adj="Const. 2005", unit="2005=100",
+                             seas_adj="SA", colnames=colnames, name=name,
+                             update_loc=update_loc, save_loc=save_loc,
+                             only_get=only_get, revise_rows=revise_rows,
+                             index_label=index_label)
 
 
 @retry(
@@ -318,12 +318,12 @@ def natacc_ind_con_idx_nsa(
                 "Otras actividades: SIFMI",
                 "Impuestos menos subvenciones",
                 "Producto bruto interno"]
-    return natacc_retriever(url=urls["natacc_ind_con_idx_nsa"]["dl"]["main"],
-                            nrows=12, inf_adj="Const. 2005", unit="2005=100",
-                            seas_adj="NSA", colnames=colnames, name=name,
-                            update_loc=update_loc, save_loc=save_loc,
-                            only_get=only_get, revise_rows=revise_rows,
-                            index_label=index_label)
+    return _natacc_retriever(url=urls["natacc_ind_con_idx_nsa"]["dl"]["main"],
+                             nrows=12, inf_adj="Const. 2005", unit="2005=100",
+                             seas_adj="NSA", colnames=colnames, name=name,
+                             update_loc=update_loc, save_loc=save_loc,
+                             only_get=only_get, revise_rows=revise_rows,
+                             index_label=index_label)
 
 
 @retry(
@@ -383,12 +383,12 @@ def natacc_ind_cur_nsa(
                 "Otras actividades: SIFMI",
                 "Impuestos menos subvenciones",
                 "Producto bruto interno"]
-    return natacc_retriever(url=urls["natacc_ind_cur_nsa"]["dl"]["main"],
-                            nrows=12, inf_adj="No", unit="Millones",
-                            seas_adj="NSA", colnames=colnames, name=name,
-                            update_loc=update_loc, save_loc=save_loc,
-                            only_get=only_get, revise_rows=revise_rows,
-                            index_label=index_label)
+    return _natacc_retriever(url=urls["natacc_ind_cur_nsa"]["dl"]["main"],
+                             nrows=12, inf_adj="No", unit="Millones",
+                             seas_adj="NSA", colnames=colnames, name=name,
+                             update_loc=update_loc, save_loc=save_loc,
+                             only_get=only_get, revise_rows=revise_rows,
+                             index_label=index_label)
 
 
 @retry(
@@ -438,12 +438,12 @@ def natacc_gdp_cur_nsa(
 
     """
     colnames = ["Producto bruto interno"]
-    return natacc_retriever(url=urls["natacc_gdp_cur_nsa"]["dl"]["main"],
-                            nrows=2, inf_adj="No", unit="Millones",
-                            seas_adj="NSA", colnames=colnames, name=name,
-                            update_loc=update_loc, save_loc=save_loc,
-                            only_get=only_get, revise_rows=revise_rows,
-                            index_label=index_label)
+    return _natacc_retriever(url=urls["natacc_gdp_cur_nsa"]["dl"]["main"],
+                             nrows=2, inf_adj="No", unit="Millones",
+                             seas_adj="NSA", colnames=colnames, name=name,
+                             update_loc=update_loc, save_loc=save_loc,
+                             only_get=only_get, revise_rows=revise_rows,
+                             index_label=index_label)
 
 
 @retry(
