@@ -22,7 +22,7 @@ import econuy.retrieval.external_sector
 from econuy import transform
 from econuy.utils import ops, metadata
 from econuy.utils.sources import urls
-from econuy.utils.extras import fiscal_sheets, fiscal_metadata, taxes_columns
+from econuy.utils.extras import fiscal_sheets, taxes_columns
 
 
 @retry(
@@ -30,13 +30,68 @@ from econuy.utils.extras import fiscal_sheets, fiscal_metadata, taxes_columns
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def balance(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-            revise_rows: Union[str, int] = "nodup",
-            save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-            name: str = "balance",
-            index_label: str = "index",
-            only_get: bool = False) -> Dict[str, pd.DataFrame]:
-    """Get fiscal balance data.
+def _balance_retriever(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
+                       revise_rows: Union[str, int] = "nodup",
+                       save_loc: Union[str, PathLike, Engine, Connection, None] = None,
+                       only_get: bool = False) -> Dict[str, pd.DataFrame]:
+    """Helper function. See any of the `balance_...()` functions."""
+    if only_get is True and update_loc is not None:
+        output = {}
+        for dataset in fiscal_sheets.keys():
+            data = ops._io(
+                operation="update", data_loc=update_loc,
+                name=f"balance_{dataset}", index_label="index"
+            )
+            output.update({dataset: data})
+        if all(not value.equals(pd.DataFrame()) for value in output.values()):
+            return output
+
+    response = requests.get(urls["balance_gps"]["dl"]["main"])
+    soup = BeautifulSoup(response.content, "html.parser")
+    links = soup.find_all(href=re.compile("\\.xlsx$"))
+    link = links[0]["href"]
+    xls = pd.ExcelFile(link, engine="openpyxl")
+    output = {}
+    for dataset, meta in fiscal_sheets.items():
+        data = (pd.read_excel(xls, sheet_name=meta["sheet"], engine="openpyxl").
+                dropna(axis=0, thresh=4).dropna(axis=1, thresh=4).
+                transpose().set_index(2, drop=True))
+        data.columns = data.iloc[0]
+        data = data[data.index.notnull()].rename_axis(None)
+        data.index = data.index + MonthEnd(1)
+        data.columns = meta["colnames"]
+        data = data.apply(pd.to_numeric, errors="coerce")
+        metadata._set(
+            data, area="Sector público", currency="UYU",
+            inf_adj="No", unit="Millones", seas_adj="NSA",
+            ts_type="Flujo", cumperiods=1
+        )
+
+        if update_loc is not None:
+            previous_data = ops._io(
+                operation="update", data_loc=update_loc,
+                name=f"balance_{dataset}", index_label="index"
+            )
+            data = ops._revise(new_data=data,
+                               prev_data=previous_data,
+                               revise_rows=revise_rows)
+
+        if save_loc is not None:
+            ops._io(
+                operation="save", data_loc=save_loc, data=data,
+                name=f"balance_{dataset}", index_label="index"
+            )
+
+        output.update({dataset: data})
+
+    return output
+
+
+def balance_gps(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
+                revise_rows: Union[str, int] = "nodup",
+                save_loc: Union[str, PathLike, Engine, Connection, None] = None,
+                only_get: bool = False) -> pd.DataFrame:
+    """Get fiscal balance data for the consolidated public sector.
 
     Parameters
     ----------
@@ -56,73 +111,276 @@ def balance(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'balance'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
 
     Returns
     -------
-    Monthly fiscal accounts different aggregations : Dict[str, pd.DataFrame]
-        Available aggregations: non-financial public sector, consolidated
-        public sector, central government, aggregated public enterprises
-        and individual public enterprises.
+    Monthly fiscal balance for the consolidated public sector : pd.DataFrame
 
     """
-    if only_get is True and update_loc is not None:
-        output = {}
-        for meta in fiscal_sheets.values():
-            data = ops._io(
-                operation="update", data_loc=update_loc,
-                name=f"{name}_{meta['Name']}", index_label=index_label
-            )
-            output.update({meta["Name"]: data})
-        if all(not value.equals(pd.DataFrame()) for value in output.values()):
-            return output
+    return _balance_retriever(update_loc=update_loc, revise_rows=revise_rows,
+                              save_loc=save_loc, only_get=only_get)["gps"]
 
-    response = requests.get(urls["balance"]["dl"]["main"])
-    soup = BeautifulSoup(response.content, "html.parser")
-    links = soup.find_all(href=re.compile("\\.xlsx$"))
-    link = links[0]["href"]
-    xls = pd.ExcelFile(link, engine="openpyxl")
-    output = {}
-    for sheet, meta in fiscal_sheets.items():
-        data = (pd.read_excel(xls, sheet_name=sheet, engine="openpyxl").
-                dropna(axis=0, thresh=4).dropna(axis=1, thresh=4).
-                transpose().set_index(2, drop=True))
-        data.columns = data.iloc[0]
-        data = data[data.index.notnull()].rename_axis(None)
-        data.index = data.index + MonthEnd(1)
-        data.columns = meta["Colnames"]
 
-        if update_loc is not None:
-            previous_data = ops._io(
-                operation="update", data_loc=update_loc,
-                name=f"{name}_{meta['Name']}", index_label=index_label
-            )
-            data = ops._revise(new_data=data,
-                               prev_data=previous_data,
-                               revise_rows=revise_rows)
-        data = data.apply(pd.to_numeric, errors="coerce")
-        metadata._set(
-            data, area="Sector público", currency="UYU",
-            inf_adj="No", unit="Millones", seas_adj="NSA",
-            ts_type="Flujo", cumperiods=1
-        )
+def balance_nfps(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
+                 revise_rows: Union[str, int] = "nodup",
+                 save_loc: Union[str, PathLike, Engine, Connection, None] = None,
+                 only_get: bool = False) -> pd.DataFrame:
+    """Get fiscal balance data for the non-financial public sector.
 
-        if save_loc is not None:
-            ops._io(
-                operation="save", data_loc=save_loc, data=data,
-                name=f"{name}_{meta['Name']}", index_label=index_label
-            )
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
 
-        output.update({meta["Name"]: data})
+    Returns
+    -------
+    Monthly fiscal balance for the non-financial public sector : pd.DataFrame
 
-    return output
+    """
+    return _balance_retriever(update_loc=update_loc, revise_rows=revise_rows,
+                              save_loc=save_loc, only_get=only_get)["nfps"]
+
+
+def balance_cg_bps(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
+                   revise_rows: Union[str, int] = "nodup",
+                   save_loc: Union[str, PathLike, Engine, Connection, None] = None,
+                   only_get: bool = False) -> pd.DataFrame:
+    """Get fiscal balance data for the central government + BPS.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
+
+    Returns
+    -------
+    Monthly fiscal balance for the central government + BPS : pd.DataFrame
+
+    """
+    return _balance_retriever(update_loc=update_loc, revise_rows=revise_rows,
+                              save_loc=save_loc, only_get=only_get)["cg-bps"]
+
+
+def balance_pe(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
+               revise_rows: Union[str, int] = "nodup",
+               save_loc: Union[str, PathLike, Engine, Connection, None] = None,
+               only_get: bool = False) -> pd.DataFrame:
+    """Get fiscal balance data for public enterprises.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
+
+    Returns
+    -------
+    Monthly fiscal balance for public enterprises : pd.DataFrame
+
+    """
+    return _balance_retriever(update_loc=update_loc, revise_rows=revise_rows,
+                              save_loc=save_loc, only_get=only_get)["pe"]
+
+
+def balance_ancap(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
+                  revise_rows: Union[str, int] = "nodup",
+                  save_loc: Union[str, PathLike, Engine, Connection, None] = None,
+                  only_get: bool = False) -> pd.DataFrame:
+    """Get fiscal balance data for ANCAP.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
+
+    Returns
+    -------
+    Monthly fiscal balance for ANCAP : pd.DataFrame
+
+    """
+    return _balance_retriever(update_loc=update_loc, revise_rows=revise_rows,
+                              save_loc=save_loc, only_get=only_get)["ancap"]
+
+
+def balance_ute(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
+                revise_rows: Union[str, int] = "nodup",
+                save_loc: Union[str, PathLike, Engine, Connection, None] = None,
+                only_get: bool = False) -> pd.DataFrame:
+    """Get fiscal balance data for UTE.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
+
+    Returns
+    -------
+    Monthly fiscal balance for UTE : pd.DataFrame
+
+    """
+    return _balance_retriever(update_loc=update_loc, revise_rows=revise_rows,
+                              save_loc=save_loc, only_get=only_get)["ute"]
+
+
+def balance_antel(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
+                  revise_rows: Union[str, int] = "nodup",
+                  save_loc: Union[str, PathLike, Engine, Connection, None] = None,
+                  only_get: bool = False) -> pd.DataFrame:
+    """Get fiscal balance data for ANTEL.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
+
+    Returns
+    -------
+    Monthly fiscal balance for ANTEL : pd.DataFrame
+
+    """
+    return _balance_retriever(update_loc=update_loc, revise_rows=revise_rows,
+                              save_loc=save_loc, only_get=only_get)["antel"]
+
+
+def balance_ose(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
+                revise_rows: Union[str, int] = "nodup",
+                save_loc: Union[str, PathLike, Engine, Connection, None] = None,
+                only_get: bool = False) -> pd.DataFrame:
+    """Get fiscal balance data for OSE.
+
+    Parameters
+    ----------
+    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                  default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating, SQLAlchemy connection or engine object, or
+        ``None``, don't update.
+    revise_rows : {'nodup', 'auto', int}
+        Defines how to process data updates. An integer indicates how many rows
+        to remove from the tail of the dataframe and replace with new data.
+        String can either be ``auto``, which automatically determines number of
+        rows to replace from the inferred data frequency, or ``nodup``,
+        which replaces existing periods with new data.
+    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+                default None
+        Either Path or path-like string pointing to a directory where to save
+        the CSV, SQL Alchemy connection or engine object, or ``None``,
+        don't save.
+    only_get : bool, default False
+        If True, don't download data, retrieve what is available from
+        ``update_loc``.
+
+    Returns
+    -------
+    Monthly fiscal balance for OSE : pd.DataFrame
+
+    """
+    return _balance_retriever(update_loc=update_loc, revise_rows=revise_rows,
+                              save_loc=save_loc, only_get=only_get)["ose"]
 
 
 @retry(
@@ -479,17 +737,19 @@ def net_public_debt(update_loc: Union[str, PathLike, Engine,
     return output
 
 
-def balance_fss(update_loc: Union[str, PathLike, Engine,
-                                  Connection, None] = None,
-                save_loc: Union[str, PathLike, Engine,
-                                Connection, None] = None,
-                only_get: bool = True,
-                name: str = "balance_fss",
-                index_label: str = "index") -> Dict[str, pd.DataFrame]:
+def balance_summary(update_loc: Union[str, PathLike, Engine,
+                                      Connection, None] = None,
+                    save_loc: Union[str, PathLike, Engine,
+                                    Connection, None] = None,
+                    only_get: bool = True,
+                    name: str = "balance_summary",
+                    index_label: str = "index") -> pd.DataFrame:
     """
-    Get fiscal balance data for the consolidated publci sector, non-financial
-    public sector and central government, both adjusted and non-adjusted for
-    the `Social Security Fund <https://www.impo.com.uy/bases/decretos/
+    Get the summary fiscal balance table found in the `Budget Law 
+    <https://www.gub.uy/contaduria-general-nacion/sites/
+    contaduria-general-nacion/files/2020-09/
+    Mensaje%20y%20Exposici%C3%B3n%20de%20motivos.pdf>`_. Includes adjustments 
+    for the `Social Security Fund <https://www.impo.com.uy/bases/decretos/
     71-2018/25>`_.
 
     Parameters
@@ -504,7 +764,7 @@ def balance_fss(update_loc: Union[str, PathLike, Engine,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'balance_fss'
+    name : str, default 'balance_summary'
         Either CSV filename for updating and/or saving, or table name if
         using SQL. Options will be appended to the base name.
     index_label : str, default 'index'
@@ -515,96 +775,119 @@ def balance_fss(update_loc: Union[str, PathLike, Engine,
 
     Returns
     -------
-    Fiscal balances : Dict[str, pd.DataFrame]
+    Summary fiscal balance table : pd.DataFrame
 
     """
-    data = balance(update_loc=update_loc,
-                   save_loc=save_loc, only_get=only_get)
+    data = _balance_retriever(update_loc=update_loc,
+                              save_loc=save_loc, only_get=only_get)
     gps = data["gps"]
     nfps = data["nfps"]
-    gc = data["gc-bps"]
+    gc = data["cg-bps"]
+    pe = data["pe"]
 
     proc = pd.DataFrame(index=gps.index)
-    proc["Ingresos: SPNF-SPC"] = nfps["Ingresos: SPNF"]
+
     proc["Ingresos: GC-BPS"] = gc["Ingresos: GC-BPS"]
-    proc["Egresos: Primarios SPNF-SPC"] = nfps["Egresos: Primarios SPNF"]
-    proc["Egresos: Totales GC-BPS"] = gc["Egresos: GC-BPS"]
-    proc["Egresos: Inversiones SPNF-SPC"] = nfps["Egresos: Inversiones"]
-    proc["Egresos: Inversiones GC-BPS"] = gc["Egresos: Inversión"]
-    proc["Intereses: SPNF"] = nfps["Intereses: Totales"]
-    proc["Intereses: BCU"] = gps["Intereses: BCU"]
-    proc["Intereses: SPC"] = proc["Intereses: SPNF"] + proc["Intereses: BCU"]
-    proc["Intereses: GC-BPS"] = gc["Intereses: Total"]
-    proc["Egresos: Totales SPNF"] = (proc["Egresos: Primarios SPNF-SPC"]
-                                     + proc["Intereses: SPNF"])
-    proc["Egresos: Totales SPC"] = (proc["Egresos: Totales SPNF"]
-                                    + proc["Intereses: BCU"])
-    proc["Egresos: Primarios GC-BPS"] = (proc["Egresos: Totales GC-BPS"]
-                                         - proc["Intereses: GC-BPS"])
-    proc["Resultado: Primario intendencias"] = nfps[
-        "Resultado: Primario intendencias"
-    ]
-    proc["Resultado: Primario BSE"] = nfps["Resultado: Primario BSE"]
-    proc["Resultado: Primario BCU"] = gps["Resultado: Primario BCU"]
-    proc["Resultado: Primario SPNF"] = nfps["Resultado: Primario SPNF"]
-    proc["Resultado: Global SPNF"] = nfps["Resultado: Global SPNF"]
-    proc["Resultado: Primario SPC"] = gps["Resultado: Primario SPC"]
-    proc["Resultado: Global SPC"] = gps["Resultado: Global SPC"]
+    proc["Ingresos: GC-BPS ex. FSS"] = (gc["Ingresos: GC-BPS"]
+                                        - gc["Ingresos: FSS - Cincuentones"])
+    proc["Ingresos: GC"] = gc["Ingresos: GC"]
+    proc["Ingresos: DGI"] = gc["Ingresos: DGI"]
+    proc["Ingresos: Comercio ext."] = gc["Ingresos: Comercio ext."]
+    proc["Ingresos: Otros"] = (gc["Ingresos: GC"]
+                               - gc["Ingresos: DGI"]
+                               - gc["Ingresos: Comercio ext."])
+    proc["Ingresos: BPS"] = gc["Ingresos: BPS neto"]
+    proc["Ingresos: FSS - Cincuentones"] = gc["Ingresos: FSS - Cincuentones"]
+    proc["Ingresos: BPS ex FSS"] = (gc["Ingresos: BPS neto"]
+                                    - gc["Ingresos: FSS - Cincuentones"])
+    proc["Egresos: Primarios GC-BPS"] = (gc["Egresos: GC-BPS"]
+                                         - gc["Intereses: Total"])
+    proc["Egresos: Primarios corrientes GC-BPS"] = (proc["Egresos: Primarios GC-BPS"]
+                                                    - gc["Egresos: Inversión"].squeeze())
+    proc["Egresos: Remuneraciones"] = gc["Egresos: Remuneraciones"]
+    proc["Egresos: No personales"] = gc["Egresos: No personales"]
+    proc["Egresos: Pasividades"] = gc["Egresos: Pasividades"]
+    proc["Egresos: Transferencias"] = gc["Egresos: Transferencias"]
+    proc["Egresos: Inversión"] = gc["Egresos: Inversión"]
     proc["Resultado: Primario GC-BPS"] = (proc["Ingresos: GC-BPS"]
                                           - proc["Egresos: Primarios GC-BPS"])
-    proc["Resultado: Global GC-BPS"] = gc["Resultado: Global GC-BPS"]
+    proc["Resultado: Primario GC-BPS ex FSS"] = (proc["Ingresos: GC-BPS ex. FSS"]
+                                                 - proc["Egresos: Primarios GC-BPS"])
+    proc["Intereses: GC-BPS"] = gc["Intereses: Total"]
+    proc["Intereses: FSS - Cincuentones"] = gc["Intereses: FSS - Cincuentones"]
+    proc["Intereses: GC-BPS ex FSS"] = (proc["Intereses: GC-BPS"]
+                                        - proc["Intereses: FSS - Cincuentones"])
+    proc["Resultado: Global GC-BPS"] = (proc["Resultado: Primario GC-BPS"]
+                                        - proc["Intereses: GC-BPS"])
+    proc["Resultado: Global GC-BPS ex FSS"] = (proc["Resultado: Primario GC-BPS ex FSS"]
+                                               - proc["Intereses: GC-BPS ex FSS"])
 
-    proc["Ingresos: FSS"] = gc["Ingresos: FSS"]
-    proc["Intereses: FSS"] = gc["Intereses: BPS-FSS"]
-    proc["Ingresos: SPNF-SPC aj. FSS"] = (proc["Ingresos: SPNF-SPC"]
-                                          - proc["Ingresos: FSS"])
-    proc["Ingresos: GC-BPS aj. FSS"] = (proc["Ingresos: GC-BPS"]
-                                        - proc["Ingresos: FSS"])
-    proc["Intereses: SPNF aj. FSS"] = (proc["Intereses: SPNF"]
-                                       - proc["Intereses: FSS"])
-    proc["Intereses: SPC aj. FSS"] = (proc["Intereses: SPC"]
-                                      - proc["Intereses: FSS"])
-    proc["Intereses: GC-BPS aj. FSS"] = (proc["Intereses: GC-BPS"]
-                                         - proc["Intereses: FSS"])
-    proc["Egresos: Totales SPNF aj. FSS"] = (proc["Egresos: Totales SPNF"]
-                                             - proc["Intereses: FSS"])
-    proc["Egresos: Totales SPC aj. FSS"] = (proc["Egresos: Totales SPC"]
-                                            - proc["Intereses: FSS"])
-    proc["Egresos: Totales GC-BPS aj. FSS"] = (proc["Egresos: Totales GC-BPS"]
-                                               - proc["Intereses: FSS"])
-    proc["Resultado: Primario SPNF aj. FSS"] = (
-        proc["Resultado: Primario SPNF"]
-        - proc["Ingresos: FSS"])
-    proc["Resultado: Global SPNF aj. FSS"] = (proc["Resultado: Global SPNF"]
-                                              - proc["Ingresos: FSS"]
-                                              + proc["Intereses: FSS"])
-    proc["Resultado: Primario SPC aj. FSS"] = (proc["Resultado: Primario SPC"]
-                                               - proc["Ingresos: FSS"])
-    proc["Resultado: Global SPC aj. FSS"] = (proc["Resultado: Global SPC"]
-                                             - proc["Ingresos: FSS"]
-                                             + proc["Intereses: FSS"])
-    proc["Resultado: Primario GC-BPS aj. FSS"] = (
-        proc["Resultado: Primario GC-BPS"]
-        - proc["Ingresos: FSS"])
-    proc["Resultado: Global GC-BPS aj. FSS"] = (
-        proc["Resultado: Global GC-BPS"]
-        - proc["Ingresos: FSS"]
-        + proc["Intereses: FSS"])
+    proc["Resultado: Primario corriente EEPP"] = (pe["Ingresos"]
+                                                  - pe["Egresos: Corrientes"]
+                                                  - pe["Egresos: Dividendo"]
+                                                  + pe["Intereses"])
+    proc["Egresos: Inversiones EEPP"] = pe["Egresos: Inversiones"]
+    proc["Resultado: Primario EEPP"] = (proc["Resultado: Primario corriente EEPP"]
+                                        - proc["Egresos: Inversiones EEPP"])
+    proc["Intereses: EEPP"] = pe["Intereses"]
+    proc["Resultado: Global EEPP"] = (proc["Resultado: Primario EEPP"]
+                                      - proc["Intereses: EEPP"])
 
-    output = {}
-    for agg, fss in zip(["gps", "nfps", "gc", "gps", "nfps", "gc"],
-                        [True, True, True, False, False, False]):
-        name_aux = f"{name}_{agg}"
-        if fss:
-            name_aux += "_fssadj"
-        aux = proc.loc[:, fiscal_metadata[agg][fss]]
-        metadata._set(aux, area="Sector público",
-                      currency="UYU", inf_adj="No", unit="Millones",
-                      seas_adj="NSA", ts_type="Flujo", cumperiods=1)
-        output.update({name_aux: aux})
+    proc["Resultado: Primario intendencias"] = nfps["Resultado: Primario intendencias"]
+    proc["Intereses: Intendencias"] = nfps["Intereses: Intendencias"]
+    proc["Resultado: Global intendencias"] = (proc["Resultado: Primario intendencias"]
+                                              - proc["Intereses: Intendencias"])
 
-        if save_loc is not None:
-            ops._io(operation="save", data_loc=save_loc,
-                    data=aux, name=name_aux, index_label=index_label)
+    proc["Resultado: Primario BSE"] = nfps["Resultado: Primario BSE"]
+    proc["Intereses: BSE"] = nfps["Intereses: BSE"]
+    proc["Resultado: Global BSE"] = (proc["Resultado: Primario BSE"]
+                                     - proc["Intereses: BSE"])
+
+    proc["Resultado: Primario resto SPNF"] = (proc["Resultado: Primario EEPP"]
+                                              + proc["Resultado: Primario intendencias"]
+                                              + proc["Resultado: Primario BSE"])
+    proc["Intereses: Resto SPNF"] = (proc["Intereses: EEPP"]
+                                     + proc["Intereses: Intendencias"]
+                                     + proc["Intereses: BSE"])
+    proc["Resultado: Global resto SPNF"] = (proc["Resultado: Global EEPP"]
+                                            + proc["Resultado: Global intendencias"]
+                                            + proc["Resultado: Global BSE"])
+    proc["Resultado: Primario SPNF"] = (proc["Resultado: Primario GC-BPS"]
+                                        + proc["Resultado: Primario resto SPNF"])
+    proc["Resultado: Primario SPNF ex FSS"] = (proc["Resultado: Primario GC-BPS ex FSS"]
+                                               + proc["Resultado: Primario resto SPNF"])
+    proc["Intereses: SPNF"] = (proc["Intereses: GC-BPS"]
+                               - proc["Intereses: Resto SPNF"])
+    proc["Intereses: SPNF ex FSS"] = (proc["Intereses: GC-BPS ex FSS"]
+                                      - proc["Intereses: Resto SPNF"])
+    proc["Resultado: Global SPNF"] = (proc["Resultado: Global GC-BPS"]
+                                      + proc["Resultado: Global resto SPNF"])
+    proc["Resultado: Global SPNF ex FSS"] = (proc["Resultado: Global GC-BPS ex FSS"]
+                                             + proc["Resultado: Global resto SPNF"])
+
+    proc["Resultado: Primario BCU"] = gps["Resultado: Primario BCU"]
+    proc["Intereses: BCU"] = gps["Intereses: BCU"]
+    proc["Resultado: Global BCU"] = gps["Resultado: Global BCU"]
+
+    proc["Resultado: Primario SPC"] = (proc["Resultado: Primario SPNF"]
+                                       + proc["Resultado: Primario BCU"])
+    proc["Resultado: Primario SPC ex FSS"] = (proc["Resultado: Primario SPNF ex FSS"]
+                                              + proc["Resultado: Primario BCU"])
+    proc["Intereses: SPC"] = proc["Intereses: SPNF"] + proc["Intereses: BCU"]
+    proc["Intereses: SPC ex FSS"] = (proc["Intereses: SPNF ex FSS"]
+                                     + proc["Intereses: BCU"])
+    proc["Resultado: Global SPC"] = (proc["Resultado: Global SPNF"]
+                                     + proc["Resultado: Global BCU"])
+    proc["Resultado: Global SPC ex FSS"] = (proc["Resultado: Global SPNF ex FSS"]
+                                            + proc["Resultado: Global BCU"])
+    output = proc
+
+    metadata._set(output, area="Sector público",
+                  currency="UYU", inf_adj="No", unit="Millones",
+                  seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+
+    if save_loc is not None:
+        ops._io(operation="save", data_loc=save_loc,
+                data=output, name=name, index_label=index_label)
 
     return output
