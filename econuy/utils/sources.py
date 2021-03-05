@@ -72,7 +72,7 @@ urls = {"call":
             "wheat": "https://www.quandl.com/api/v3/datasets/CHRIS/CME_W1.csv?api_key=3TPxACcrxy9WsE871Lqe",
             "milk1": "https://www.inale.org/estadisticas/",
             "milk2": "https://ec.europa.eu/info/sites/info/files/food-farming-fisheries/farming/documents/eu-milk-historical-price-series_en.xls",
-            "imf": "https://www.imf.org/~/media/Files/Research/CommodityPrices/Monthly/ExternalData.ashx"},
+            "imf": "https://www.imf.org/-/media/Files/Research/CommodityPrices/Monthly/external-datamar.ashx"},
             "source": {"direct": [
                 "https://www.inac.uy/innovaportal/v/9799/10/innova.front/serie-semanal-ingreso-medio-de-exportacion---bovino-ovino-y-otros-productos",
                 f"https://www.insee.fr/en/statistiques/serie/telecharger/010600339?ordre=antechronologique&"
@@ -81,7 +81,7 @@ urls = {"call":
                 "https://www.quandl.com/api/v3/datasets/CHRIS/CME_S1.csv?api_key=3TPxACcrxy9WsE871Lqe",
                 "https://www.quandl.com/api/v3/datasets/CHRIS/CME_W1.csv?api_key=3TPxACcrxy9WsE871Lqe",
                 "https://ec.europa.eu/info/sites/info/files/food-farming-fisheries/farming/documents/eu-milk-historical-price-series_en.xls",
-                "https://www.imf.org/~/media/Files/Research/CommodityPrices/Monthly/ExternalData.ashx"],
+                "https://www.imf.org/-/media/Files/Research/CommodityPrices/Monthly/external-datamar.ashx"],
                 "indirect": [
                     "https://www.inac.uy/innovaportal/v/5541/10/innova.front/precios",
                     "https://www.insee.fr/fr/statistiques/serie/010600339",
