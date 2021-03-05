@@ -5,7 +5,7 @@ import zipfile
 import datetime as dt
 from random import randint
 from io import BytesIO
-from os import PathLike, path
+from os import PathLike, path, listdir
 from typing import Union
 from urllib.error import HTTPError, URLError
 
@@ -110,7 +110,7 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     temp_dir = tempfile.TemporaryDirectory()
     with zipfile.ZipFile(BytesIO(r.content), "r") as f:
         f.extractall(path=temp_dir.name)
-    path_temp = path.join(temp_dir.name, "Tab_Compl_CNT.xls")
+    path_temp = path.join(temp_dir.name, listdir(temp_dir.name)[0])
     bra = pd.read_excel(path_temp, usecols="Q", skiprows=3,
                         sheet_name="Val encad preços 95 com ajuste")
     bra.index = pd.date_range(start="1996-03-31", freq="Q-DEC",
