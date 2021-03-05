@@ -822,10 +822,7 @@ def balance_summary(update_loc: Union[str, PathLike, Engine,
     proc["Resultado: Global GC-BPS ex FSS"] = (proc["Resultado: Primario GC-BPS ex FSS"]
                                                - proc["Intereses: GC-BPS ex FSS"])
 
-    proc["Resultado: Primario corriente EEPP"] = (pe["Ingresos"]
-                                                  - pe["Egresos: Corrientes"]
-                                                  - pe["Egresos: Dividendo"]
-                                                  + pe["Intereses"])
+    proc["Resultado: Primario corriente EEPP"] = nfps["Ingresos: Res. primario corriente EEPP"]
     proc["Egresos: Inversiones EEPP"] = pe["Egresos: Inversiones"]
     proc["Resultado: Primario EEPP"] = (proc["Resultado: Primario corriente EEPP"]
                                         - proc["Egresos: Inversiones EEPP"])
@@ -852,25 +849,21 @@ def balance_summary(update_loc: Union[str, PathLike, Engine,
     proc["Resultado: Global resto SPNF"] = (proc["Resultado: Global EEPP"]
                                             + proc["Resultado: Global intendencias"]
                                             + proc["Resultado: Global BSE"])
-    proc["Resultado: Primario SPNF"] = (proc["Resultado: Primario GC-BPS"]
-                                        + proc["Resultado: Primario resto SPNF"])
-    proc["Resultado: Primario SPNF ex FSS"] = (proc["Resultado: Primario GC-BPS ex FSS"]
-                                               + proc["Resultado: Primario resto SPNF"])
-    proc["Intereses: SPNF"] = (proc["Intereses: GC-BPS"]
-                               - proc["Intereses: Resto SPNF"])
-    proc["Intereses: SPNF ex FSS"] = (proc["Intereses: GC-BPS ex FSS"]
-                                      - proc["Intereses: Resto SPNF"])
-    proc["Resultado: Global SPNF"] = (proc["Resultado: Global GC-BPS"]
-                                      + proc["Resultado: Global resto SPNF"])
-    proc["Resultado: Global SPNF ex FSS"] = (proc["Resultado: Global GC-BPS ex FSS"]
-                                             + proc["Resultado: Global resto SPNF"])
+    proc["Resultado: Primario SPNF"] = nfps["Resultado: Primario SPNF"]
+    proc["Resultado: Primario SPNF ex FSS"] = (proc["Resultado: Primario SPNF"]
+                                               - proc["Ingresos: FSS - Cincuentones"])
+    proc["Intereses: SPNF"] = nfps["Intereses: Totales"]
+    proc["Intereses: SPNF ex FSS"] = (proc["Intereses: SPNF"]
+                                      - proc["Intereses: FSS - Cincuentones"])
+    proc["Resultado: Global SPNF"] = nfps["Resultado: Global SPNF"]
+    proc["Resultado: Global SPNF ex FSS"] = (proc["Resultado: Primario SPNF ex FSS"]
+                                             - proc["Intereses: SPNF ex FSS"])
 
     proc["Resultado: Primario BCU"] = gps["Resultado: Primario BCU"]
     proc["Intereses: BCU"] = gps["Intereses: BCU"]
     proc["Resultado: Global BCU"] = gps["Resultado: Global BCU"]
 
-    proc["Resultado: Primario SPC"] = (proc["Resultado: Primario SPNF"]
-                                       + proc["Resultado: Primario BCU"])
+    proc["Resultado: Primario SPC"] = gps["Resultado: Primario SPC"]
     proc["Resultado: Primario SPC ex FSS"] = (proc["Resultado: Primario SPNF ex FSS"]
                                               + proc["Resultado: Primario BCU"])
     proc["Intereses: SPC"] = proc["Intereses: SPNF"] + proc["Intereses: BCU"]

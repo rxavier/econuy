@@ -11,8 +11,7 @@ from sqlalchemy import create_engine, inspect
 
 from econuy import transform
 from econuy.session import Session
-from econuy.utils import metadata, sqlutil
-from econuy.utils.extras import fiscal_metadata
+from econuy.utils import sqlutil
 
 try:
     from tests.test_transform import dummy_df
@@ -59,53 +58,19 @@ def test_fiscal():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    fiscal_tfm = session.get_custom(dataset="balance_fss").dataset
+    fiscal_tfm = session.get_custom(dataset="balance_summary").dataset
     remove_clutter()
-    fiscal_ = session.get(dataset="balance").dataset
-    nfps = fiscal_["nfps"]
-    gc = fiscal_["gc-bps"]
-    proc = pd.DataFrame(index=nfps.index)
-    proc["Ingresos: SPNF-SPC"] = nfps["Ingresos: SPNF"]
-    proc["Egresos: Primarios SPNF-SPC"] = nfps["Egresos: Primarios SPNF"]
-    proc["Egresos: Inversiones SPNF-SPC"] = nfps["Egresos: Inversiones"]
-    proc["Intereses: SPNF"] = nfps["Intereses: Totales"]
-    proc["Egresos: Totales SPNF"] = (proc["Egresos: Primarios SPNF-SPC"]
-                                     + proc["Intereses: SPNF"])
-    proc["Resultado: Primario intendencias"] = nfps[
-        "Resultado: Primario intendencias"
-    ]
-    proc["Resultado: Primario BSE"] = nfps["Resultado: Primario BSE"]
-    proc["Resultado: Primario SPNF"] = nfps["Resultado: Primario SPNF"]
-    proc["Resultado: Global SPNF"] = nfps["Resultado: Global SPNF"]
-
-    proc["Ingresos: FSS"] = gc["Ingresos: FSS"]
-    proc["Intereses: FSS"] = gc["Intereses: BPS-FSS"]
-    proc["Ingresos: SPNF-SPC aj. FSS"] = (proc["Ingresos: SPNF-SPC"]
-                                          - proc["Ingresos: FSS"])
-    proc["Intereses: SPNF aj. FSS"] = (proc["Intereses: SPNF"]
-                                       - proc["Intereses: FSS"])
-    proc["Egresos: Totales SPNF aj. FSS"] = (proc["Egresos: Totales SPNF"]
-                                             - proc["Intereses: FSS"])
-    proc["Resultado: Primario SPNF aj. FSS"] = (
-        proc["Resultado: Primario SPNF"]
-        - proc["Ingresos: FSS"])
-    proc["Resultado: Global SPNF aj. FSS"] = (proc["Resultado: Global SPNF"]
-                                              - proc["Ingresos: FSS"]
-                                              + proc["Intereses: FSS"])
-
-    cols = fiscal_metadata["nfps"][True]
-    compare = proc.loc[:, cols]
-    metadata._set(compare, area="Sector público",
-                  currency="UYU", inf_adj="No", unit="No",
-                  seas_adj="NSA", ts_type="Flujo", cumperiods=1)
-    compare.columns = fiscal_tfm["balance_fss_nfps_fssadj"].columns
-    assert compare.equals(fiscal_tfm["balance_fss_nfps_fssadj"])
-    remove_clutter()
-    fiscal_ = session.get(dataset="balance").dataset
-    session.only_get = True
-    compare = session.get(dataset="balance").dataset
-    for v, v2 in zip(fiscal_.values(), compare.values()):
-        assert v.round(4).equals(v2.round(4))
+    nfps = session.get(dataset="balance_nfps").dataset
+    gps = session.get(dataset="balance_gps").dataset
+    gc = session.get(dataset="balance_cg-bps").dataset
+    compare =(gc["Ingresos: GC-BPS"] 
+              + nfps["Ingresos: Res. primario corriente EEPP"]
+              - nfps["Egresos: Primarios SPNF"] 
+              - nfps["Intereses: Totales"]
+              + nfps["Resultado: Primario intendencias"].fillna(0)
+              + nfps["Resultado: Primario BSE"] 
+              + gps["Resultado: Global BCU"])
+    assert fiscal_tfm["Resultado: Global SPC"].round(2).equals(compare.round(2))
     remove_clutter()
     session.only_get = False
 
