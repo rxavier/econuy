@@ -155,13 +155,35 @@ urls = {"call":
                        "https://www.dgi.gub.uy/wdgi/page?2,principal,dgi--datos-y-series-estadisticas--serie-de-datos--recaudacion-anual-y-mensual-por-impuesto,O,es,0,",
                        f"https://www.dgi.gub.uy/wdgi/page?2,principal,dgi--datos-y-series-estadisticas--informes-mensuales-de-la-recaudacion-{dt.datetime.now().year},O,es,0,"],
                        "provider": ["DGI"]}},
-        "public_debt": {"dl": {
+        "public_debt_gps": {"dl": {
             "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"},
             "source": {"direct": [
                 "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"],
             "indirect": [
                 "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"],
             "provider": ["BCU"]}},
+        "public_debt_nfps": {"dl": {
+            "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"},
+            "source": {"direct": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"],
+            "indirect": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"],
+            "provider": ["BCU"]}},
+        "public_debt_cb": {"dl": {
+            "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"},
+            "source": {"direct": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"],
+            "indirect": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"],
+            "provider": ["BCU"]}},
+        "net_public_debt": {"dl": {},
+                            "source": {"direct": [
+                                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls",
+                                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/MonedayCredito/Activos-de-Reserva/reservas.xls"],
+            "indirect": [
+                                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"],
+                            "provider": [
+                                "econuy en base a BCU"]}},
         "diesel": {"dl": {
             "main": "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-petroleo-derivados"},
             "source": {"direct": [],
@@ -479,14 +501,6 @@ urls = {"call":
                                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"],
             "provider": [
                                "econuy en base a BCU"]}},
-        "net_public_debt": {"dl": {},
-                            "source": {"direct": [
-                                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls",
-                                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/MonedayCredito/Activos-de-Reserva/reservas.xls"],
-            "indirect": [
-                                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"],
-                            "provider": [
-                                "econuy en base a BCU"]}},
         "core_industrial": {"dl": {
             "main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181",
             "weights": "http://www.ine.gub.uy/c/document_library/get_file?uuid=864b4bc2-626d-49ab-82ef-1bcf08360da1&groupId=10181"},

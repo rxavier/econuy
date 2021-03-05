@@ -484,11 +484,11 @@ def test_public_debt():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    debt = session.get(dataset="public_debt").dataset
-    assert isinstance(debt, dict)
-    assert len(debt) == 4
+    gps = session.get(dataset="public_debt_gps").dataset
+    nfps = session.get(dataset="public_debt_nfps").dataset
+    cb = session.get(dataset="public_debt_cb").dataset
     net_debt = session.get_custom(dataset="net_public_debt").dataset
-    assert net_debt.index.__len__() < debt["gps"].index.__len__()
+    assert net_debt.index.__len__() < gps.index.__len__()
     remove_clutter()
 
 
