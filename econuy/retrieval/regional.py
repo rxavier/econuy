@@ -388,7 +388,7 @@ def embi_spreads(
         aux.sort_index(inplace=True)
         aux.columns = [cnt]
         region.append(aux)
-    region = pd.concat(region, axis=1)
+    region = region[0].join(region[1]).interpolate(limit_area="inside")
     output = region.join(global_, how="left").interpolate(method="linear",
                                                           limit_area="inside")
     output.columns = ["Argentina", "Brasil", "EMBI Global"]
@@ -503,7 +503,7 @@ def nxr(
         name: str = "regional_nxr",
         index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
-    """Get USDARS an USDBRL.
+    """Get USDARS and USDBRL.
 
     Parameters
     ----------
