@@ -40,8 +40,7 @@ def _balance_retriever(update_loc: Union[str, PathLike, Engine, Connection, None
         for dataset in fiscal_sheets.keys():
             data = ops._io(
                 operation="update", data_loc=update_loc,
-                name=f"balance_{dataset}", index_label="index"
-            )
+                name=f"balance_{dataset}")
             output.update({dataset: data})
         if all(not value.equals(pd.DataFrame()) for value in output.values()):
             return output
@@ -68,19 +67,15 @@ def _balance_retriever(update_loc: Union[str, PathLike, Engine, Connection, None
         )
 
         if update_loc is not None:
-            previous_data = ops._io(
-                operation="update", data_loc=update_loc,
-                name=f"balance_{dataset}", index_label="index"
-            )
+            previous_data = ops._io(operation="update", data_loc=update_loc,
+                                    name=f"balance_{dataset}")
             data = ops._revise(new_data=data,
                                prev_data=previous_data,
                                revise_rows=revise_rows)
 
         if save_loc is not None:
-            ops._io(
-                operation="save", data_loc=save_loc, data=data,
-                name=f"balance_{dataset}", index_label="index"
-            )
+            ops._io(operation="save", data_loc=save_loc, data=data,
+                    name=f"balance_{dataset}")
 
         output.update({dataset: data})
 
@@ -392,8 +387,6 @@ def tax_revenue(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "taxes",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """
     Get tax revenues data.
@@ -419,11 +412,6 @@ def tax_revenue(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'taxes'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -433,13 +421,15 @@ def tax_revenue(
     Monthly tax revenues : pd.DataFrame
 
     """
+    name = "taxes"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
-    raw = pd.read_excel(urls["taxes"]["dl"]["main"],
+    raw = pd.read_excel(urls[name]["dl"]["main"],
                         usecols="C:AO", index_col=0)
     raw.index = pd.to_datetime(raw.index, errors="coerce")
     output = raw.loc[~pd.isna(raw.index)]
@@ -453,8 +443,7 @@ def tax_revenue(
     if update_loc is not None:
         previous_data = ops._io(operation="update",
                                 data_loc=update_loc,
-                                name=name,
-                                index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -465,7 +454,7 @@ def tax_revenue(
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -550,10 +539,8 @@ def _public_debt_retriever(update_loc: Union[str, PathLike,
     if only_get is True and update_loc is not None:
         output = {}
         for meta in ["gps", "nfps", "cb", "assets"]:
-            data = ops._io(
-                operation="update", data_loc=update_loc,
-                name=f"public_debt_{meta}", index_label="index"
-            )
+            data = ops._io(operation="update", data_loc=update_loc,
+                           name=f"public_debt_{meta}")
             output.update({meta: data})
         if all(not value.equals(pd.DataFrame()) for value in output.values()):
             return output
@@ -619,10 +606,8 @@ def _public_debt_retriever(update_loc: Union[str, PathLike,
 
     for meta, data in output.items():
         if update_loc is not None:
-            previous_data = ops._io(
-                operation="update", data_loc=update_loc,
-                name=f"public_debt_{meta}", index_label="index"
-            )
+            previous_data = ops._io(operation="update", data_loc=update_loc,
+                                    name=f"public_debt_{meta}")
             data = ops._revise(new_data=data,
                                prev_data=previous_data,
                                revise_rows=revise_rows)
@@ -632,7 +617,7 @@ def _public_debt_retriever(update_loc: Union[str, PathLike,
 
         if save_loc is not None:
             ops._io(operation="save", data_loc=save_loc,
-                    data=data, name=f"public_debt_{meta}", index_label="index")
+                    data=data, name=f"public_debt_{meta}")
 
         output.update({meta: data})
 
@@ -760,9 +745,7 @@ def net_public_debt(update_loc: Union[str, PathLike, Engine,
                                       Connection, None] = None,
                     save_loc: Union[str, PathLike, Engine,
                                     Connection, None] = None,
-                    only_get: bool = True,
-                    name: str = "net_public_debt",
-                    index_label: str = "index") -> pd.DataFrame:
+                    only_get: bool = True) -> pd.DataFrame:
     """
     Get net public debt excluding deposits at the central bank.
 
@@ -778,11 +761,6 @@ def net_public_debt(update_loc: Union[str, PathLike, Engine,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'net_public_debt'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL. Options will be appended to the base name.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -792,6 +770,8 @@ def net_public_debt(update_loc: Union[str, PathLike, Engine,
     Net public debt excl. deposits at the central bank : pd.DataFrame
 
     """
+    name = "net_public_debt"
+
     data = _public_debt_retriever(update_loc=update_loc,
                                   save_loc=save_loc, only_get=only_get)
     gross_debt = data["gps"].loc[:, ["Total deuda"]]
@@ -813,7 +793,7 @@ def net_public_debt(update_loc: Union[str, PathLike, Engine,
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -822,14 +802,12 @@ def balance_summary(update_loc: Union[str, PathLike, Engine,
                                       Connection, None] = None,
                     save_loc: Union[str, PathLike, Engine,
                                     Connection, None] = None,
-                    only_get: bool = True,
-                    name: str = "balance_summary",
-                    index_label: str = "index") -> pd.DataFrame:
+                    only_get: bool = True) -> pd.DataFrame:
     """
-    Get the summary fiscal balance table found in the `Budget Law 
+    Get the summary fiscal balance table found in the `Budget Law
     <https://www.gub.uy/contaduria-general-nacion/sites/
     contaduria-general-nacion/files/2020-09/
-    Mensaje%20y%20Exposici%C3%B3n%20de%20motivos.pdf>`_. Includes adjustments 
+    Mensaje%20y%20Exposici%C3%B3n%20de%20motivos.pdf>`_. Includes adjustments
     for the `Social Security Fund <https://www.impo.com.uy/bases/decretos/
     71-2018/25>`_.
 
@@ -845,11 +823,6 @@ def balance_summary(update_loc: Union[str, PathLike, Engine,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'balance_summary'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL. Options will be appended to the base name.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -859,6 +832,8 @@ def balance_summary(update_loc: Union[str, PathLike, Engine,
     Summary fiscal balance table : pd.DataFrame
 
     """
+    name = "balance_summary"
+
     data = _balance_retriever(update_loc=update_loc,
                               save_loc=save_loc, only_get=only_get)
     gps = data["gps"]
@@ -962,6 +937,6 @@ def balance_summary(update_loc: Union[str, PathLike, Engine,
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output

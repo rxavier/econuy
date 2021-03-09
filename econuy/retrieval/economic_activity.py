@@ -28,12 +28,12 @@ def _natacc_retriever(url: str, name: str, nrows: int, inf_adj: str,
                       revise_rows: Union[str, int] = "nodup",
                       save_loc: Union[str, PathLike,
                                       Engine, Connection, None] = None,
-                      index_label: str = "index",
                       only_get: bool = False) -> pd.DataFrame:
-    """Helper function. See any of the `natacc_...()` functions.""" 
+    """Helper function. See any of the `natacc_...()` functions."""
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
@@ -58,14 +58,13 @@ def _natacc_retriever(url: str, name: str, nrows: int, inf_adj: str,
     if update_loc is not None:
         previous_data = ops._io(operation="update",
                                 data_loc=update_loc,
-                                name=name,
-                                index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -79,8 +78,6 @@ def natacc_ind_con_nsa(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "natacc_ind_con_nsa",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get supply-side national accounts data in NSA constant prices, 2005-.
 
@@ -102,11 +99,6 @@ def natacc_ind_con_nsa(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'natacc_ind_con_nsa'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -116,6 +108,8 @@ def natacc_ind_con_nsa(
     National accounts, supply side, constant prices, NSA : pd.DataFrame
 
     """
+    name = "natacc_ind_con_nsa"
+
     colnames = ["Actividades primarias",
                 "Act. prim.: Agricultura, ganadería, caza y silvicultura",
                 "Industrias manufactureras",
@@ -127,12 +121,11 @@ def natacc_ind_con_nsa(
                 "Otras actividades: SIFMI",
                 "Impuestos menos subvenciones",
                 "Producto bruto interno"]
-    return _natacc_retriever(url=urls["natacc_ind_con_nsa"]["dl"]["main"],
+    return _natacc_retriever(url=urls[name]["dl"]["main"],
                              nrows=12, inf_adj="Const. 2005", unit="Millones",
                              seas_adj="NSA", colnames=colnames, name=name,
                              update_loc=update_loc, save_loc=save_loc,
-                             only_get=only_get, revise_rows=revise_rows,
-                             index_label=index_label)
+                             only_get=only_get, revise_rows=revise_rows)
 
 
 @retry(
@@ -144,8 +137,6 @@ def natacc_gas_con_nsa(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "natacc_gas_con_nsa",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get demand-side national accounts data in NSA constant prices, 2005-.
 
@@ -167,11 +158,6 @@ def natacc_gas_con_nsa(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'natacc_gas_con_nsa'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -181,6 +167,8 @@ def natacc_gas_con_nsa(
     National accounts, demand side, constant prices, NSA : pd.DataFrame
 
     """
+    name = "natacc_gas_con_nsa"
+
     colnames = ["Gasto: total", "Gasto: privado",
                 "Gasto: público",
                 "Formación bruta de capital",
@@ -189,12 +177,11 @@ def natacc_gas_con_nsa(
                 "Formación bruta de capital: fijo - privada",
                 "Exportaciones",
                 "Importaciones", "Producto bruto interno"]
-    return _natacc_retriever(url=urls["natacc_gas_con_nsa"]["dl"]["main"],
+    return _natacc_retriever(url=urls[name]["dl"]["main"],
                              nrows=10, inf_adj="Const. 2005", unit="Millones",
                              seas_adj="NSA", colnames=colnames, name=name,
                              update_loc=update_loc, save_loc=save_loc,
-                             only_get=only_get, revise_rows=revise_rows,
-                             index_label=index_label)
+                             only_get=only_get, revise_rows=revise_rows)
 
 
 @retry(
@@ -206,8 +193,6 @@ def natacc_ind_con_idx_sa(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "natacc_ind_con_idx_sa",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get supply-side national accounts data in SA real index, 1997-.
 
@@ -229,11 +214,6 @@ def natacc_ind_con_idx_sa(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'natacc_ind_con_idx_sa'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -243,6 +223,8 @@ def natacc_ind_con_idx_sa(
     National accounts, supply side, real index, SA : pd.DataFrame
 
     """
+    name = "natacc_ind_con_idx_sa"
+
     colnames = ["Actividades primarias",
                 "Act. prim.: Agricultura, ganadería, caza y silvicultura",
                 "Industrias manufactureras",
@@ -254,12 +236,11 @@ def natacc_ind_con_idx_sa(
                 "Otras actividades: SIFMI",
                 "Impuestos menos subvenciones",
                 "Producto bruto interno"]
-    return _natacc_retriever(url=urls["natacc_ind_con_idx_sa"]["dl"]["main"],
+    return _natacc_retriever(url=urls[name]["dl"]["main"],
                              nrows=12, inf_adj="Const. 2005", unit="2005=100",
                              seas_adj="SA", colnames=colnames, name=name,
                              update_loc=update_loc, save_loc=save_loc,
-                             only_get=only_get, revise_rows=revise_rows,
-                             index_label=index_label)
+                             only_get=only_get, revise_rows=revise_rows)
 
 
 @retry(
@@ -271,8 +252,6 @@ def natacc_ind_con_idx_nsa(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "natacc_ind_con_idx_nsa",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get supply-side national accounts data in NSA real index, 1997-.
 
@@ -294,11 +273,6 @@ def natacc_ind_con_idx_nsa(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'natacc_ind_con_idx_nsa'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -308,6 +282,8 @@ def natacc_ind_con_idx_nsa(
     National accounts, supply side, real index, NSA : pd.DataFrame
 
     """
+    name = "natacc_ind_con_idx_nsa"
+
     colnames = ["Actividades primarias",
                 "Act. prim.: Agricultura, ganadería, caza y silvicultura",
                 "Industrias manufactureras",
@@ -319,12 +295,11 @@ def natacc_ind_con_idx_nsa(
                 "Otras actividades: SIFMI",
                 "Impuestos menos subvenciones",
                 "Producto bruto interno"]
-    return _natacc_retriever(url=urls["natacc_ind_con_idx_nsa"]["dl"]["main"],
+    return _natacc_retriever(url=urls[name]["dl"]["main"],
                              nrows=12, inf_adj="Const. 2005", unit="2005=100",
                              seas_adj="NSA", colnames=colnames, name=name,
                              update_loc=update_loc, save_loc=save_loc,
-                             only_get=only_get, revise_rows=revise_rows,
-                             index_label=index_label)
+                             only_get=only_get, revise_rows=revise_rows)
 
 
 @retry(
@@ -336,8 +311,6 @@ def natacc_ind_cur_nsa(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "natacc_ind_cur_nsa",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get supply-side national accounts data in NSA current prices, 2005-.
 
@@ -359,11 +332,6 @@ def natacc_ind_cur_nsa(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'natacc_ind_cur_nsa'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -373,6 +341,8 @@ def natacc_ind_cur_nsa(
     National accounts, supply side, current prices, NSA : pd.DataFrame
 
     """
+    name = "natacc_ind_cur_nsa"
+
     colnames = ["Actividades primarias",
                 "Act. prim.: Agricultura, ganadería, caza y silvicultura",
                 "Industrias manufactureras",
@@ -384,12 +354,11 @@ def natacc_ind_cur_nsa(
                 "Otras actividades: SIFMI",
                 "Impuestos menos subvenciones",
                 "Producto bruto interno"]
-    return _natacc_retriever(url=urls["natacc_ind_cur_nsa"]["dl"]["main"],
+    return _natacc_retriever(url=urls[name]["dl"]["main"],
                              nrows=12, inf_adj="No", unit="Millones",
                              seas_adj="NSA", colnames=colnames, name=name,
                              update_loc=update_loc, save_loc=save_loc,
-                             only_get=only_get, revise_rows=revise_rows,
-                             index_label=index_label)
+                             only_get=only_get, revise_rows=revise_rows)
 
 
 @retry(
@@ -401,8 +370,6 @@ def natacc_gdp_cur_nsa(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "natacc_gdp_cur_nsa",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get nominal GDP, 1997-.
 
@@ -424,11 +391,6 @@ def natacc_gdp_cur_nsa(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'natacc_gdp_cur_nsa'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -438,13 +400,14 @@ def natacc_gdp_cur_nsa(
     Nominal GDP : pd.DataFrame
 
     """
+    name = "natacc_gdp_cur_nsa"
+
     colnames = ["Producto bruto interno"]
-    return _natacc_retriever(url=urls["natacc_gdp_cur_nsa"]["dl"]["main"],
+    return _natacc_retriever(url=urls[name]["dl"]["main"],
                              nrows=2, inf_adj="No", unit="Millones",
                              seas_adj="NSA", colnames=colnames, name=name,
                              update_loc=update_loc, save_loc=save_loc,
-                             only_get=only_get, revise_rows=revise_rows,
-                             index_label=index_label)
+                             only_get=only_get, revise_rows=revise_rows)
 
 
 @retry(
@@ -456,8 +419,6 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
                                Connection, None] = None,
              save_loc: Union[str, PathLike, Engine,
                              Connection, None] = None,
-             name: str = "lin_gdp",
-             index_label: str = "index",
              only_get: bool = True,
              only_get_na: bool = True):
     """Get nominal GDP data in UYU and USD with forecasts.
@@ -479,11 +440,6 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'lin_gdp'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -497,9 +453,11 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
         Quarterly GDP in UYU and USD with 1 year forecasts.
 
     """
+    name = "lin_gdp"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
@@ -543,7 +501,7 @@ def _lin_gdp(update_loc: Union[str, PathLike, Engine,
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -558,8 +516,6 @@ def industrial_production(update_loc: Union[str, PathLike,
                           revise_rows: Union[str, int] = "nodup",
                           save_loc: Union[str, PathLike,
                                           Engine, Connection, None] = None,
-                          name: str = "industrial_production",
-                          index_label: str = "index",
                           only_get: bool = False) -> pd.DataFrame:
     """Get industrial production data.
 
@@ -581,11 +537,6 @@ def industrial_production(update_loc: Union[str, PathLike,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'industrial_production'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -595,19 +546,20 @@ def industrial_production(update_loc: Union[str, PathLike,
     Monthly industrial production index : pd.DataFrame
 
     """
+    name = "industrial_production"
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
     try:
-        raw = pd.read_excel(urls["industrial_production"]["dl"]["main"],
+        raw = pd.read_excel(urls[name]["dl"]["main"],
                             skiprows=4, usecols="B:EM", engine="openpyxl")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
                                "ine_certs.pem")
-            r = requests.get(urls["industrial_production"]["dl"]["main"],
+            r = requests.get(urls[name]["dl"]["main"],
                              verify=certificate)
             raw = pd.read_excel(BytesIO(r.content),
                                 skiprows=4, usecols="B:EM")
@@ -626,8 +578,7 @@ def industrial_production(update_loc: Union[str, PathLike,
     if update_loc is not None:
         previous_data = ops._io(operation="update",
                                 data_loc=update_loc,
-                                name=name,
-                                index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -638,7 +589,7 @@ def industrial_production(update_loc: Union[str, PathLike,
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -647,8 +598,6 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
                                       Connection, None] = None,
                     save_loc: Union[str, PathLike, Engine,
                                     Connection, None] = None,
-                    name: str = "core_industrial",
-                    index_label: str = "index",
                     only_get: bool = True) -> pd.DataFrame:
     """
     Get total industrial production, industrial production excluding oil
@@ -666,11 +615,6 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'core_industrial'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -680,11 +624,13 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
     Measures of industrial production : pd.DataFrame
 
     """
+    name = "core_industrial"
+
     data = industrial_production(update_loc=update_loc, save_loc=save_loc,
                                  only_get=only_get)
     try:
         weights = pd.read_excel(
-            urls["core_industrial"]["dl"]["weights"],
+            urls[name]["dl"]["weights"],
             skiprows=3,
             engine="openpyxl").dropna(
             how="all")
@@ -692,7 +638,7 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
                                "ine_certs.pem")
-            r = requests.get(urls["core_industrial"]["dl"]["weights"],
+            r = requests.get(urls[name]["dl"]["weights"],
                              verify=certificate)
             weights = pd.read_excel(BytesIO(r.content),
                                     skiprows=3).dropna(how="all")
@@ -732,7 +678,7 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -746,8 +692,6 @@ def cattle(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "cattle",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get weekly cattle slaughter data.
 
@@ -769,11 +713,6 @@ def cattle(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'cattle'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -783,24 +722,24 @@ def cattle(
     Weekly cattle slaughter : pd.DataFrame
 
     """
+    name = "cattle"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
     temp = tempfile.NamedTemporaryFile(suffix=".xlsx").name
     with open(temp, "wb") as f:
-        r = requests.get(urls["cattle"]["dl"]["main"])
+        r = requests.get(urls[name]["dl"]["main"])
         f.write(r.content)
     output = pd.read_excel(temp, skiprows=8, usecols="A,C:H", index_col=0,
                            engine="openpyxl")
 
     if update_loc is not None:
-        previous_data = ops._io(
-            operation="update", data_loc=update_loc,
-            name=name, index_label=index_label
-        )
+        previous_data = ops._io(operation="update", data_loc=update_loc,
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -810,7 +749,7 @@ def cattle(
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -824,8 +763,6 @@ def milk(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "milk",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get monthly milk production in farms data.
 
@@ -847,11 +784,6 @@ def milk(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'milk'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -861,13 +793,15 @@ def milk(
     Monhtly milk production in farms : pd.DataFrame
 
     """
+    name = "milk"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
-    r = requests.get(urls["milk"]["dl"]["main"])
+    r = requests.get(urls[name]["dl"]["main"])
     soup = BeautifulSoup(r.content, features="lxml")
     link = soup.find_all(href=re.compile(".xls"))[0]
     raw = pd.read_excel(link["href"], skiprows=11, skipfooter=4)
@@ -879,10 +813,8 @@ def milk(
     output.columns = ["Remisión de leche a planta"]
 
     if update_loc is not None:
-        previous_data = ops._io(
-            operation="update", data_loc=update_loc,
-            name=name, index_label=index_label
-        )
+        previous_data = ops._io(operation="update", data_loc=update_loc,
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -892,7 +824,7 @@ def milk(
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -906,8 +838,6 @@ def cement(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "cement",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get monthly cement sales data.
 
@@ -929,11 +859,6 @@ def cement(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'cement'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -943,23 +868,23 @@ def cement(
     Monthly cement sales : pd.DataFrame
 
     """
+    name = "cement"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
-    output = pd.read_excel(urls["cement"]["dl"]["main"], skiprows=2,
+    output = pd.read_excel(urls[name]["dl"]["main"], skiprows=2,
                            usecols="B:E", index_col=0, skipfooter=1,
                            engine="openpyxl")
     output.index = output.index + MonthEnd(0)
     output.columns = ["Exportaciones", "Mercado interno", "Total"]
 
     if update_loc is not None:
-        previous_data = ops._io(
-            operation="update", data_loc=update_loc,
-            name=name, index_label=index_label
-        )
+        previous_data = ops._io(operation="update", data_loc=update_loc,
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -969,7 +894,7 @@ def cement(
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -983,8 +908,6 @@ def diesel(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "diesel",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """
     Get diesel sales by department data.
@@ -1010,11 +933,6 @@ def diesel(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'diesel'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -1024,15 +942,17 @@ def diesel(
     Monthly diesel dales : pd.DataFrame
 
     """
+    name = "diesel"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
     temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
     with open(temp_rar, "wb") as f:
-        r = requests.get(urls["diesel"]["dl"]["main"])
+        r = requests.get(urls[name]["dl"]["main"])
         soup = BeautifulSoup(r.content, features="lxml")
         rar_url = soup.find_all(href=re.compile("gas%20oil"))[0]
         f.write(requests.get(rar_url["href"]).content)
@@ -1048,10 +968,8 @@ def diesel(
         output = raw
 
     if update_loc is not None:
-        previous_data = ops._io(
-            operation="update", data_loc=update_loc,
-            name=name, index_label=index_label
-        )
+        previous_data = ops._io(operation="update", data_loc=update_loc,
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -1061,7 +979,7 @@ def diesel(
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -1075,8 +993,6 @@ def gasoline(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "gasoline",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """
     Get gasoline sales by department data.
@@ -1102,11 +1018,6 @@ def gasoline(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'gasoline'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -1116,15 +1027,17 @@ def gasoline(
     Monthly gasoline dales : pd.DataFrame
 
     """
+    name = "gasoline"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
     temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
     with open(temp_rar, "wb") as f:
-        r = requests.get(urls["gasoline"]["dl"]["main"])
+        r = requests.get(urls[name]["dl"]["main"])
         soup = BeautifulSoup(r.content, features="lxml")
         rar_url = soup.find_all(href=re.compile("gasolina"))[0]
         f.write(requests.get(rar_url["href"]).content)
@@ -1140,10 +1053,8 @@ def gasoline(
         output = raw
 
     if update_loc is not None:
-        previous_data = ops._io(
-            operation="update", data_loc=update_loc,
-            name=name, index_label=index_label
-        )
+        previous_data = ops._io(operation="update", data_loc=update_loc,
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -1153,7 +1064,7 @@ def gasoline(
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -1167,8 +1078,6 @@ def electricity(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "electricity",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """
     Get electricity sales by sector data.
@@ -1194,11 +1103,6 @@ def electricity(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'electricity'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -1208,15 +1112,17 @@ def electricity(
     Monthly electricity dales : pd.DataFrame
 
     """
+    name = "electricity"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
     temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
     with open(temp_rar, "wb") as f:
-        r = requests.get(urls["electricity"]["dl"]["main"])
+        r = requests.get(urls[name]["dl"]["main"])
         soup = BeautifulSoup(r.content, features="lxml")
         rar_url = soup.find_all(href=re.compile("Facturaci[%A-z0-9]+sector"))[
             0]
@@ -1233,10 +1139,8 @@ def electricity(
         output = raw
 
     if update_loc is not None:
-        previous_data = ops._io(
-            operation="update", data_loc=update_loc,
-            name=name, index_label=index_label
-        )
+        previous_data = ops._io(operation="update", data_loc=update_loc,
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -1246,6 +1150,6 @@ def electricity(
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output

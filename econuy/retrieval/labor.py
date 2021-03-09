@@ -25,8 +25,6 @@ def labor_rates(update_loc: Union[str, PathLike,
                 revise_rows: Union[str, int] = "nodup",
                 save_loc: Union[str, PathLike,
                                 Engine, Connection, None] = None,
-                name: str = "labor",
-                index_label: str = "index",
                 only_get: bool = False) -> pd.DataFrame:
     """Get labor market data (LFPR, employment and unemployment).
 
@@ -48,11 +46,6 @@ def labor_rates(update_loc: Union[str, PathLike,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'labor'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -62,15 +55,17 @@ def labor_rates(update_loc: Union[str, PathLike,
     Monthly participation, employment and unemployment rates : pd.DataFrame
 
     """
+    name = "labor_rates"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
     try:
         labor_raw = pd.read_excel(
-            urls["labor"]["dl"]["main"],
+            urls[name]["dl"]["main"],
             engine="openpyxl",
             skiprows=39).dropna(
             axis=0,
@@ -79,7 +74,7 @@ def labor_rates(update_loc: Union[str, PathLike,
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
                                "ine_certs.pem")
-            r = requests.get(urls["labor"]["dl"]["main"],
+            r = requests.get(urls[name]["dl"]["main"],
                              verify=certificate)
             labor_raw = pd.read_excel(BytesIO(r.content),
                                       skiprows=39).dropna(axis=0, thresh=2)
@@ -95,7 +90,7 @@ def labor_rates(update_loc: Union[str, PathLike,
                      "Tasa de empleo: hombres", "Tasa de empleo: mujeres",
                      "Tasa de desempleo: total", "Tasa de desempleo: hombres",
                      "Tasa de desempleo: mujeres"]
-    missing = pd.read_excel(urls["labor"]["dl"]["missing"], engine="openpyxl",
+    missing = pd.read_excel(urls[name]["dl"]["missing"], engine="openpyxl",
                             index_col=0, header=0).iloc[:, :9]
     missing.columns = labor.columns
     labor = labor.append(missing)
@@ -104,8 +99,7 @@ def labor_rates(update_loc: Union[str, PathLike,
     if update_loc is not None:
         previous_data = ops._io(operation="update",
                                 data_loc=update_loc,
-                                name=name,
-                                index_label=index_label)
+                                name=name)
         labor = ops._revise(new_data=labor, prev_data=previous_data,
                             revise_rows=revise_rows)
 
@@ -116,7 +110,7 @@ def labor_rates(update_loc: Union[str, PathLike,
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=labor, name=name, index_label=index_label)
+                data=labor, name=name)
 
     return labor
 
@@ -131,8 +125,6 @@ def nominal_wages(update_loc: Union[str, PathLike,
                   revise_rows: Union[str, int] = "nodup",
                   save_loc: Union[str, PathLike,
                                   Engine, Connection, None] = None,
-                  name: str = "wages",
-                  index_label: str = "index",
                   only_get: bool = False) -> pd.DataFrame:
     """Get nominal general, public and private sector wages data
 
@@ -154,11 +146,6 @@ def nominal_wages(update_loc: Union[str, PathLike,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'wages'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -168,19 +155,21 @@ def nominal_wages(update_loc: Union[str, PathLike,
     Monthly wages separated by public and private sector : pd.DataFrame
 
     """
+    name = "nominal_wages"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
     try:
         historical = pd.read_excel(
-            urls["wages"]["dl"]["historical"],
+            urls[name]["dl"]["historical"],
             skiprows=8,
             usecols="A:B",
             engine="openpyxl")
         current = pd.read_excel(
-            urls["wages"]["dl"]["current"],
+            urls[name]["dl"]["current"],
             engine="openpyxl",
             skiprows=8,
             usecols="A,C:D")
@@ -188,11 +177,11 @@ def nominal_wages(update_loc: Union[str, PathLike,
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
                                "ine_certs.pem")
-            r = requests.get(urls["wages"]["dl"]["historical"],
+            r = requests.get(urls[name]["dl"]["historical"],
                              verify=certificate)
             historical = pd.read_excel(BytesIO(r.content),
                                        skiprows=8, usecols="A:B")
-            r = requests.get(urls["wages"]["dl"]["current"],
+            r = requests.get(urls[name]["dl"]["current"],
                              verify=certificate)
             current = pd.read_excel(BytesIO(r.content),
                                     skiprows=8, usecols="A,C:D")
@@ -210,8 +199,7 @@ def nominal_wages(update_loc: Union[str, PathLike,
     if update_loc is not None:
         previous_data = ops._io(operation="update",
                                 data_loc=update_loc,
-                                name=name,
-                                index_label=index_label)
+                                name=name)
         wages = ops._revise(new_data=wages, prev_data=previous_data,
                             revise_rows=revise_rows)
 
@@ -222,7 +210,7 @@ def nominal_wages(update_loc: Union[str, PathLike,
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=wages, name=name, index_label=index_label)
+                data=wages, name=name)
 
     return wages
 
@@ -237,8 +225,6 @@ def hours(update_loc: Union[str, PathLike,
           revise_rows: Union[str, int] = "nodup",
           save_loc: Union[str, PathLike,
                           Engine, Connection, None] = None,
-          name: str = "hours",
-          index_label: str = "index",
           only_get: bool = False) -> pd.DataFrame:
     """Get average hours worked data.
 
@@ -260,11 +246,6 @@ def hours(update_loc: Union[str, PathLike,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'hours'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -274,31 +255,33 @@ def hours(update_loc: Union[str, PathLike,
     Monthly hours worked : pd.DataFrame
 
     """
+    name = "hours_worked"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
     try:
         raw = pd.read_excel(
-            urls["hours"]["dl"]["main"],
+            urls[name]["dl"]["main"],
             sheet_name="Mensual",
             skiprows=5,
             index_col=0,
             engine="openpyxl").dropna(
             how="all")
-        prev_hours = pd.read_excel(urls["hours"]["dl"]["historical"], index_col=0,
+        prev_hours = pd.read_excel(urls[name]["dl"]["historical"], index_col=0,
                                    skiprows=8, engine="openpyxl").dropna(how="all").iloc[:, [0]]
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
                                "ine_certs.pem")
-            r = requests.get(urls["hours"]["dl"]["main"],
+            r = requests.get(urls[name]["dl"]["main"],
                              verify=certificate)
             raw = pd.read_excel(BytesIO(r.content), sheet_name="Mensual",
                                 skiprows=5, index_col=0).dropna(how="all")
-            r = requests.get(urls["hours"]["dl"]["historical"],
+            r = requests.get(urls[name]["dl"]["historical"],
                              verify=certificate)
             prev_hours = pd.read_excel(BytesIO(r.content), index_col=0,
                                        skiprows=8).dropna(how="all").iloc[:, [0]]
@@ -329,8 +312,7 @@ def hours(update_loc: Union[str, PathLike,
     if update_loc is not None:
         previous_data = ops._io(operation="update",
                                 data_loc=update_loc,
-                                name=name,
-                                index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -340,7 +322,7 @@ def hours(update_loc: Union[str, PathLike,
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -354,8 +336,6 @@ def rates_people(update_loc: Union[str, PathLike, Engine,
                                    Connection, None] = None,
                  save_loc: Union[str, PathLike, Engine,
                                  Connection, None] = None,
-                 name: str = "rates_people",
-                 index_label: str = "index",
                  only_get: bool = True) -> pd.DataFrame:
     """
     Get labor data, both rates and persons. Extends national data between 1991
@@ -373,11 +353,6 @@ def rates_people(update_loc: Union[str, PathLike, Engine,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'rates_people'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -387,12 +362,14 @@ def rates_people(update_loc: Union[str, PathLike, Engine,
     Labor market data : pd.DataFrame
 
     """
+    name = "labor_rates_people"
+
     rates = labor_rates(update_loc=update_loc, only_get=only_get)
     rates = rates.loc[:, ["Tasa de actividad: total", "Tasa de empleo: total",
                           "Tasa de desempleo: total"]]
     try:
         act_5000 = pd.read_excel(
-            urls["rates_people"]["dl"]["act_5000"],
+            urls[name]["dl"]["act_5000"],
             sheet_name="Mensual",
             index_col=0,
             skiprows=8,
@@ -400,7 +377,7 @@ def rates_people(update_loc: Union[str, PathLike, Engine,
             engine="openpyxl").dropna(
             how="any")
         emp_5000 = pd.read_excel(
-            urls["rates_people"]["dl"]["emp_5000"],
+            urls[name]["dl"]["emp_5000"],
             sheet_name="Mensual",
             index_col=0,
             skiprows=8,
@@ -408,7 +385,7 @@ def rates_people(update_loc: Union[str, PathLike, Engine,
             engine="openpyxl").dropna(
             how="any")
         des_5000 = pd.read_excel(
-            urls["rates_people"]["dl"]["des_5000"],
+            urls[name]["dl"]["des_5000"],
             sheet_name="Mensual",
             index_col=0,
             skiprows=7,
@@ -416,7 +393,7 @@ def rates_people(update_loc: Union[str, PathLike, Engine,
             engine="openpyxl").dropna(
             how="any")
         working_age = pd.read_excel(
-            urls["rates_people"]["dl"]["population"],
+            urls[name]["dl"]["population"],
             skiprows=7,
             index_col=0,
             nrows=92,
@@ -426,22 +403,22 @@ def rates_people(update_loc: Union[str, PathLike, Engine,
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
                                "ine_certs.pem")
-            r = requests.get(urls["rates_people"]["dl"]["act_5000"],
+            r = requests.get(urls[name]["dl"]["act_5000"],
                              verify=certificate)
             act_5000 = pd.read_excel(BytesIO(r.content), sheet_name="Mensual",
                                      index_col=0, skiprows=8,
                                      usecols="A:B").dropna(how="any")
-            r = requests.get(urls["rates_people"]["dl"]["emp_5000"],
+            r = requests.get(urls[name]["dl"]["emp_5000"],
                              verify=certificate)
             emp_5000 = pd.read_excel(BytesIO(r.content), sheet_name="Mensual",
                                      index_col=0, skiprows=8,
                                      usecols="A:B").dropna(how="any")
-            r = requests.get(urls["rates_people"]["dl"]["des_5000"],
+            r = requests.get(urls[name]["dl"]["des_5000"],
                              verify=certificate)
             des_5000 = pd.read_excel(BytesIO(r.content), sheet_name="Mensual",
                                      index_col=0, skiprows=7,
                                      usecols="A:B").dropna(how="any")
-            r = requests.get(urls["rates_people"]["dl"]["population"],
+            r = requests.get(urls[name]["dl"]["population"],
                              verify=certificate)
             working_age = pd.read_excel(BytesIO(r.content),
                                         skiprows=7, index_col=0,
@@ -476,7 +453,7 @@ def rates_people(update_loc: Union[str, PathLike, Engine,
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -485,8 +462,6 @@ def real_wages(update_loc: Union[str, PathLike, Engine,
                                  Connection, None] = None,
                save_loc: Union[str, PathLike, Engine,
                                Connection, None] = None,
-               name: str = "real_wages",
-               index_label: str = "index",
                only_get: bool = True) -> pd.DataFrame:
     """
     Get real wages.
@@ -503,11 +478,6 @@ def real_wages(update_loc: Union[str, PathLike, Engine,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'real_wages'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default True
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -517,6 +487,8 @@ def real_wages(update_loc: Union[str, PathLike, Engine,
     Real wages data : pd.DataFrame
 
     """
+    name = "real_wages"
+
     wages = nominal_wages(update_loc=update_loc, only_get=only_get)
     wages.columns = ["Índice medio de salarios reales",
                      "Índice medio de salarios reales privados",
@@ -530,6 +502,6 @@ def real_wages(update_loc: Union[str, PathLike, Engine,
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output

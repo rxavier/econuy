@@ -12,20 +12,18 @@ from econuy.utils import metadata, sqlutil
 def _load(data_loc: Union[str, PathLike,
                           Connection, Engine],
           multiindex=True,
-          table_name: Optional[str] = None,
-          index_label: Optional[str] = None):
+          table_name: Optional[str] = None):
     """Load existing data from CSV or SQL."""
     try:
         if isinstance(data_loc, (Engine, Connection)):
             if multiindex is True:
                 previous_data = sqlutil.read(con=data_loc,
-                                             table_name=table_name,
-                                             index_label=index_label)
+                                             table_name=table_name)
             else:
                 previous_data = pd.read_sql(sql=table_name,
                                             con=data_loc,
-                                            index_col=index_label,
-                                            parse_dates=index_label)
+                                            index_col="index",
+                                            parse_dates="index")
         else:
             if multiindex is True:
                 previous_data = pd.read_csv(data_loc, index_col=0,
@@ -85,15 +83,13 @@ def _io(operation: str,
         data_loc: Union[str, PathLike, Connection, Engine],
         name: str,
         data: Optional[pd.DataFrame] = None,
-        index_label: str = "index",
         multiindex: bool = True) -> Optional[pd.DataFrame]:
     if operation == "update":
         if isinstance(data_loc, (str, PathLike)):
             full_update_loc = (Path(data_loc) / name).with_suffix(".csv")
         else:
             full_update_loc = data_loc
-        return _load(full_update_loc, table_name=name,
-                     index_label=index_label, multiindex=multiindex)
+        return _load(full_update_loc, table_name=name, multiindex=multiindex)
 
     elif operation == "save":
         if isinstance(data_loc, (str, PathLike)):
@@ -104,6 +100,5 @@ def _io(operation: str,
         else:
             full_update_loc = data_loc
             sqlutil.df_to_sql(data, name=name,
-                              con=full_update_loc,
-                              index_label=index_label)
+                              con=full_update_loc)
         return

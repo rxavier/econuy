@@ -59,17 +59,17 @@ original = {"natacc_ind_con_nsa": {"description": "Cuentas nacionales, oferta "
             "taxes": {"description": "Recaudación impositiva",
                       "function": fiscal_accounts.tax_revenue},
             "public_debt_gps": {"description": "Deuda pública (global, no monetario y BCU)",
-                            "function": fiscal_accounts.public_debt_gps},
+                                "function": fiscal_accounts.public_debt_gps},
             "public_debt_nfps": {"description": "Deuda pública (global, no monetario y BCU)",
-                            "function": fiscal_accounts.public_debt_nfps},
+                                 "function": fiscal_accounts.public_debt_nfps},
             "public_debt_cb": {"description": "Deuda pública (global, no monetario y BCU)",
-                            "function": fiscal_accounts.public_debt_cb},
-            "labor": {"description": "Tasa de actividad, empleo y desempleo",
-                      "function": labor.labor_rates},
-            "hours": {"description": "Horas promedio trabajadas por sector",
-                      "function": labor.hours},
-            "wages": {"description": "Salarios nominales totales, sector público y privado",
-                      "function": labor.nominal_wages},
+                               "function": fiscal_accounts.public_debt_cb},
+            "labor_rates": {"description": "Tasa de actividad, empleo y desempleo",
+                            "function": labor.labor_rates},
+            "hours_worked": {"description": "Horas promedio trabajadas por sector",
+                             "function": labor.hours},
+            "nominal_wages": {"description": "Salarios nominales totales, sector público y privado",
+                              "function": labor.nominal_wages},
             "real_wages": {"description": "Salarios reales totales, sector público y privado",
                            "function": labor.real_wages},
             "trade_x_prod_val": {"description": "Exportaciones por producto, valor",
@@ -113,10 +113,10 @@ original = {"natacc_ind_con_nsa": {"description": "Cuentas nacionales, oferta "
             "sovereign_risk": {"description": "Spread de bonos uruguayos respecto de bonos "
                                "norteamericanos",
                                "function": financial_sector.sovereign_risk},
-            "household_income": {"description": "Ingreso medio de los hogares sin VL ni "
+            "income_household": {"description": "Ingreso medio de los hogares sin VL ni "
                                  "aguinaldo",
                                  "function": income.income_household},
-            "capita_income": {"description": "Ingreso medio per cápita sin VL ni aguinaldo",
+            "income_capita": {"description": "Ingreso medio per cápita sin VL ni aguinaldo",
                               "function": income.income_capita},
             "consumer_confidence": {"description": "Índice de confianza de los consumidores",
                                     "function": income.consumer_confidence}}
@@ -131,12 +131,12 @@ custom = {"core_industrial": {"description": "Producción industrial total, sin 
                               "function": fiscal_accounts.balance_summary},
           "net_public_debt": {"description": "Deuda neta excluyendo encajes",
                               "function": fiscal_accounts.net_public_debt},
-          "rates_people": {"description": "Tasas de actividad, empleo y desempleo, incluyendo "
-                           "localidades de más de 5 mil personas, y cantidad "
-                           "de personas",
-                           "function": labor.rates_people},
-          "net_trade": {"description": "Balanza comercial por país",
-                        "function": external_sector.trade_balance},
+          "labor_rates_people": {"description": "Tasas de actividad, empleo y desempleo, incluyendo "
+                                 "localidades de más de 5 mil personas, y cantidad "
+                                 "de personas",
+                                 "function": labor.rates_people},
+          "trade_balance": {"description": "Balanza comercial por país",
+                            "function": external_sector.trade_balance},
           "terms_of_trade": {"description": "Términos de intercambio",
                              "function": external_sector.terms_of_trade},
           "commodity_index": {"description": "Índice de precios de materias primas",

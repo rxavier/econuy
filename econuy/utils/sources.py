@@ -202,7 +202,7 @@ urls = {"call":
                        "indirect": [
                        "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-energia-electrica"],
                        "provider": ["MIEM"]}},
-        "labor": {"dl": {
+        "labor_rates": {"dl": {
             "main": "http://ine.gub.uy/c/document_library/get_file?uuid=50ae926c-1ddc-4409-afc6-1fecf641e3d0&groupId=10181",
             "missing": "https://docs.google.com/spreadsheets/d/1amqU3fUSok0kDB_LYvCZlBtVpkZeTK5vW5O8bShlOtw/export?format=xlsx&authuser=0"},
             "source": {"direct": [
@@ -210,7 +210,7 @@ urls = {"call":
             "indirect": [
                 "http://www.ine.gub.uy/web/guest/actividad-empleo-y-desempleo"],
             "provider": ["INE"]}},
-        "wages": {"dl": {
+        "nominal_wages": {"dl": {
             "historical": "http://www.ine.gub.uy/c/document_library/get_file?uuid=a76433b7-5fba-40fc-9958-dd913338e989&groupId=10181",
             "current": "http://www.ine.gub.uy/c/document_library/get_file?uuid=97f07fd8-9410-476e-bf81-e6b1c11467ef&groupId=10181"},
             "source": {"direct": [
@@ -219,7 +219,7 @@ urls = {"call":
             "indirect": [
                 "http://www.ine.gub.uy/web/guest/ims-indice-medio-de-salarios"],
             "provider": ["INE"]}},
-        "hours": {"dl": {
+        "hours_worked": {"dl": {
             "main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=167e0db0-95ca-45d2-8e81-3b8c5bb8f9ee&groupId=10181",
             "historical": "http://www.ine.gub.uy/c/document_library/get_file?uuid=73ac6ede-8452-48b8-ad32-993d3b047091&groupId=10181",
             "missing": "https://docs.google.com/spreadsheets/d/1amqU3fUSok0kDB_LYvCZlBtVpkZeTK5vW5O8bShlOtw/export?format=xlsx&authuser=0"},
@@ -229,7 +229,7 @@ urls = {"call":
             "indirect": [
                 "http://www.ine.gub.uy/web/guest/actividad-empleo-y-desempleo"],
             "provider": ["INE"]}},
-        "household_income": {"dl": {
+        "income_household": {"dl": {
             "main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=40bd0267-3922-478d-8bc0-252f508a72fe&groupId=10181",
             "missing": "https://docs.google.com/spreadsheets/d/1amqU3fUSok0kDB_LYvCZlBtVpkZeTK5vW5O8bShlOtw/export?format=xlsx&authuser=0"},
             "source": {"direct": [
@@ -237,7 +237,7 @@ urls = {"call":
             "indirect": [
                 "http://www.ine.gub.uy/web/guest/gastos-e-ingresos-de-las-personas-y-los-hogares"],
             "provider": ["INE"]}},
-        "capita_income": {"dl": {
+        "income_capita": {"dl": {
             "main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=ca57dafa-8091-4c2f-8df8-7b8445859b93&groupId=10181",
             "missing": "https://docs.google.com/spreadsheets/d/1amqU3fUSok0kDB_LYvCZlBtVpkZeTK5vW5O8bShlOtw/export?format=xlsx&authuser=0"},
             "source": {"direct": [
@@ -459,7 +459,7 @@ urls = {"call":
                                    "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos"],
                                    "provider": [
                                    "econuy en base a MEF"]}},
-        "rates_people": {"dl": {
+        "labor_rates_people": {"dl": {
             "act_5000": "http://www.ine.gub.uy/c/document_library/get_file?uuid=b51d8104-d367-4d0f-828b-189eefc29de2&groupId=10181",
             "emp_5000": "http://www.ine.gub.uy/c/document_library/get_file?uuid=0902797e-e588-4da3-91cd-153c4d1d28a5&groupId=10181",
             "des_5000": "http://www.ine.gub.uy/c/document_library/get_file?uuid=d1434567-3da4-4321-9341-4fb3d8b6a09c&groupId=10181",
@@ -485,14 +485,14 @@ urls = {"call":
                            "http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
                        "provider": [
                            "econuy en base a INE"]}},
-        "net_trade": {"dl": {},
-                      "source": {"direct": [
-                          "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/exp_pais_val.xls",
-                          "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/imp_pais_val.xls"],
+        "trade_balance": {"dl": {},
+                          "source": {"direct": [
+                              "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/exp_pais_val.xls",
+                              "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/imp_pais_val.xls"],
             "indirect": [
-                          "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"],
+                              "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"],
             "provider": [
-                          "econuy en base a BCU"]}},
+                              "econuy en base a BCU"]}},
         "terms_of_trade": {"dl": {},
                            "source": {"direct": [
                                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_exp_pais_ip.xls",

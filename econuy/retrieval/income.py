@@ -24,8 +24,6 @@ def income_household(update_loc: Union[str, PathLike,
                      revise_rows: Union[str, int] = "nodup",
                      save_loc: Union[str, PathLike,
                                      Engine, Connection, None] = None,
-                     name: str = "household_income",
-                     index_label: str = "index",
                      only_get: bool = False) -> pd.DataFrame:
     """Get average household income.
 
@@ -47,11 +45,6 @@ def income_household(update_loc: Union[str, PathLike,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'household_income'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -61,20 +54,22 @@ def income_household(update_loc: Union[str, PathLike,
     Monthly average household income : pd.DataFrame
 
     """
+    name = "income_household"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
     try:
-        raw = pd.read_excel(urls["household_income"]["dl"]["main"],
+        raw = pd.read_excel(urls[name]["dl"]["main"],
                             sheet_name="Mensual", engine="openpyxl",
                             skiprows=5, index_col=0).dropna(how="all")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
                                "ine_certs.pem")
-            r = requests.get(urls["household_income"]["dl"]["main"],
+            r = requests.get(urls[name]["dl"]["main"],
                              verify=certificate)
             raw = pd.read_excel(BytesIO(r.content),
                                 sheet_name="Mensual",
@@ -88,7 +83,7 @@ def income_household(update_loc: Union[str, PathLike,
                       "Interior: localidades de más de 5 mil hab.",
                       "Interior: localidades pequeñas y rural"]
 
-    missing = pd.read_excel(urls["household_income"]["dl"]["missing"],
+    missing = pd.read_excel(urls[name]["dl"]["missing"],
                             index_col=0, header=0, engine="openpyxl").iloc[:, 10:13]
     missing.columns = output.columns[:3]
     output = output.append(missing, sort=False)
@@ -97,8 +92,7 @@ def income_household(update_loc: Union[str, PathLike,
     if update_loc is not None:
         previous_data = ops._io(operation="update",
                                 data_loc=update_loc,
-                                name=name,
-                                index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -108,7 +102,7 @@ def income_household(update_loc: Union[str, PathLike,
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -123,8 +117,6 @@ def income_capita(update_loc: Union[str, PathLike,
                   revise_rows: Union[str, int] = "nodup",
                   save_loc: Union[str, PathLike,
                                   Engine, Connection, None] = None,
-                  name: str = "capita_income",
-                  index_label: str = "index",
                   only_get: bool = False) -> pd.DataFrame:
     """Get average per capita income.
 
@@ -146,11 +138,6 @@ def income_capita(update_loc: Union[str, PathLike,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'capita_income'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -160,20 +147,22 @@ def income_capita(update_loc: Union[str, PathLike,
     Monthly average per capita income : pd.DataFrame
 
     """
+    name = "income_capita"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
     try:
-        raw = pd.read_excel(urls["capita_income"]["dl"]["main"],
+        raw = pd.read_excel(urls[name]["dl"]["main"],
                             sheet_name="Mensuall", skiprows=5,
                             index_col=0, engine="openpyxl").dropna(how="all")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
                                "ine_certs.pem")
-            r = requests.get(urls["capita_income"]["dl"]["main"],
+            r = requests.get(urls[name]["dl"]["main"],
                              verify=certificate)
             raw = pd.read_excel(BytesIO(r.content),
                                 sheet_name="Mensuall", skiprows=5,
@@ -187,7 +176,7 @@ def income_capita(update_loc: Union[str, PathLike,
                       "Interior: localidades de más de 5 mil hab.",
                       "Interior: localidades pequeñas y rural"]
 
-    missing = pd.read_excel(urls["capita_income"]["dl"]["missing"],
+    missing = pd.read_excel(urls[name]["dl"]["missing"],
                             index_col=0, header=0, engine="openpyxl").iloc[:, 13:16]
     missing.columns = output.columns[:3]
     output = output.append(missing, sort=False)
@@ -195,8 +184,7 @@ def income_capita(update_loc: Union[str, PathLike,
     if update_loc is not None:
         previous_data = ops._io(operation="update",
                                 data_loc=update_loc,
-                                name=name,
-                                index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -206,7 +194,7 @@ def income_capita(update_loc: Union[str, PathLike,
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -220,8 +208,6 @@ def consumer_confidence(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "consumer_confidence",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get monthly consumer confidence data.
 
@@ -243,27 +229,24 @@ def consumer_confidence(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'consumer_confidence'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
 
     Returns
     -------
-    Weekly cattle slaughter : pd.DataFrame
+    Monthly consumer confidence data : pd.DataFrame
 
     """
+    name = "consumer_confidence"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
-    raw = pd.read_excel(urls["consumer_confidence"]["dl"]["main"],
+    raw = pd.read_excel(urls[name]["dl"]["main"],
                         skiprows=3, usecols="B:F", index_col=0,
                         engine="openpyxl")
     output = raw.loc[~pd.isna(raw.index)]
@@ -275,10 +258,8 @@ def consumer_confidence(
     output = output.apply(pd.to_numeric, errors="coerce")
 
     if update_loc is not None:
-        previous_data = ops._io(
-            operation="update", data_loc=update_loc,
-            name=name, index_label=index_label
-        )
+        previous_data = ops._io(operation="update", data_loc=update_loc,
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -288,6 +269,6 @@ def consumer_confidence(
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
