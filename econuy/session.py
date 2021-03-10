@@ -1,4 +1,5 @@
 import logging
+import pprint
 from datetime import datetime
 from inspect import signature
 from os import PathLike, makedirs, path
@@ -128,10 +129,12 @@ class Session(object):
         -------
         Dataset : Dict[str, str]
         """
-        return {"original": {k: v["description"]
+        result = {"original": {k: v["description"]
                              for k, v in datasets.original.items()},
                 "custom": {k: v["description"]
                            for k, v in datasets.custom.items()}}
+        pprint.pprint(result)
+        return
 
     @property
     def dataset_name(self):
