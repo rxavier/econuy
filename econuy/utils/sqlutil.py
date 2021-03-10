@@ -13,7 +13,6 @@ def read(con: sqla.engine.base.Connection,
          table_name: Optional[str] = None,
          cols: Union[str, Iterable[str], None] = None,
          start_date: Optional[str] = None, end_date: Optional[str] = None,
-         index_label: str = "index",
          **kwargs) -> pd.DataFrame:
     """
     Convenience wrapper around `pandas.read_sql_query <https://pandas.pydata.
@@ -38,11 +37,6 @@ def read(con: sqla.engine.base.Connection,
         Dates to filter. Inclusive.
     end_date : str or None, default None
         Dates to filter. Inclusive.
-    index_label : str, default `index`
-        Passed to `pandas.read_sql_query <https://pandas.pydata.org/
-        pandas-docs/stable/reference/api/pandas.read_sql_query.html>`_.
-        Name of the column in the table which should be used as dataframe
-        index.
     **kwargs
         Keyword arguments passed to `pandas.read_sql_query <https://pandas.
         pydata.org/pandas-docs/stable/reference/api/
@@ -55,12 +49,12 @@ def read(con: sqla.engine.base.Connection,
     """
     if command is not None:
         output = pd.read_sql_query(sql=command, con=con,
-                                   index_col=index_label, **kwargs)
+                                   index_col="index", **kwargs)
     else:
         if all(v is None for v in [cols, start_date, end_date]):
             output = pd.read_sql(sql=table_name, con=con,
-                                 index_col=index_label,
-                                 parse_dates=index_label, **kwargs)
+                                 index_col="index",
+                                 parse_dates="index", **kwargs)
         else:
             if isinstance(cols, Iterable) and not isinstance(cols, str):
                 cols_sql = [column(x) for x in cols]
@@ -71,7 +65,7 @@ def read(con: sqla.engine.base.Connection,
             else:
                 cols_sql = "*"
             command = select(cols_sql).select_from(table(table_name))
-            dates = column(index_label)
+            dates = column("index")
             if start_date is not None:
                 if end_date is not None:
                     command = command.where(and_(dates >= f"{start_date}",
@@ -82,8 +76,8 @@ def read(con: sqla.engine.base.Connection,
                 command = command.where(dates <= f"{end_date}")
 
             output = pd.read_sql(sql=command, con=con,
-                                 index_col=index_label,
-                                 parse_dates=index_label, **kwargs)
+                                 index_col="index",
+                                 parse_dates="index", **kwargs)
         metadata = pd.read_sql(sql=f"{table_name}_metadata", con=con,
                                index_col="index")
         if isinstance(cols, Iterable) and cols != "*":
@@ -99,8 +93,8 @@ def read(con: sqla.engine.base.Connection,
 
 
 def df_to_sql(df: pd.DataFrame, name: str,
-              con: sqla.engine.base.Connection, if_exists: str = "replace",
-              index_label: str = "index") -> None:
+              con: sqla.engine.base.Connection, 
+              if_exists: str = "replace") -> None:
     """Flatten MultiIndex index columns before creating SQL table
     from dataframe."""
     data = df.copy()
@@ -110,7 +104,7 @@ def df_to_sql(df: pd.DataFrame, name: str,
         data.columns = data.columns.get_level_values(level=0)
 
     data.to_sql(name=name, con=con, if_exists=if_exists,
-                index_label=index_label)
+                index_label="index")
 
     return
 
@@ -130,7 +124,7 @@ def insert_csvs(con: sqla.engine.base.Connection,
             data = pd.read_csv(full_path, index_col=0, float_precision="high",
                                parse_dates=True)
         df_to_sql(df=data, name=Path(file).with_suffix("").as_posix(),
-                  con=con, index_label="index", if_exists="replace")
+                  con=con, if_exists="replace")
         print(f"Inserted {file} into {con.engine.url}.")
 
     return

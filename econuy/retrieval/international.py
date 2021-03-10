@@ -18,7 +18,8 @@ from sqlalchemy.engine.base import Engine, Connection
 
 from econuy.transform import decompose, rebase
 from econuy.utils import metadata, ops, get_project_root
-from econuy.utils.lstrings import urls, investing_headers
+from econuy.utils.sources import urls
+from econuy.utils.extras import investing_headers
 
 
 @retry(
@@ -29,8 +30,6 @@ from econuy.utils.lstrings import urls, investing_headers
 def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "global_gdp",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get seasonally adjusted real quarterly GDP for select countries.
 
@@ -54,11 +53,6 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'global_gdp'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -68,14 +62,16 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     Quarterly real GDP in seasonally adjusted terms : pd.DataFrame
 
     """
+    name = "global_gdp"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
     chn_y = dt.datetime.now().year + 1
-    chn_r = requests.get(f"{urls['global_gdp']['dl']['chn_oecd']}{chn_y}-Q4")
+    chn_r = requests.get(f"{urls[name]['dl']['chn_oecd']}{chn_y}-Q4")
     chn_json = chn_r.json()
     chn_datasets = []
     for dataset, start in zip(["0", "1"], ["2011-03-31", "1993-03-31"]):
@@ -89,8 +85,14 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         chn_datasets.append(df)
     chn_qoq = chn_datasets[0]
     chn_yoy = chn_datasets[1]
-    chn_obs = pd.read_excel(urls["global_gdp"]["dl"]["chn_obs"], index_col=0,
-                            engine="openpyxl").dropna(how="all", axis=1).dropna(how="all", axis=0)
+    chn_obs = pd.read_excel(
+        urls["global_gdp"]["dl"]["chn_obs"],
+        index_col=0,
+        engine="openpyxl").dropna(
+        how="all",
+        axis=1).dropna(
+            how="all",
+        axis=0)
     chn_obs = chn_obs.loc[(chn_obs.index > "2011-01-01")
                           & (chn_obs.index < "2016-01-01")]
     chn_yoy["volume"] = chn_obs
@@ -113,7 +115,7 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     load_dotenv(Path(get_project_root(), ".env"))
     fred_api_key = os.environ.get("FRED_API_KEY")
     for series in ["GDPC1", "CLVMNACSCAB1GQEU272020", "JPNRGDPEXP"]:
-        r = requests.get(f"{urls['global_gdp']['dl']['fred']}{series}&api_key="
+        r = requests.get(f"{urls[name]['dl']['fred']}{series}&api_key="
                          f"{fred_api_key}&file_type=json")
         aux = pd.DataFrame.from_records(r.json()["observations"])
         aux = aux[["date", "value"]].set_index("date")
@@ -133,7 +135,7 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     if update_loc is not None:
         previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name, index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -145,7 +147,7 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -158,8 +160,6 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
            revise_rows: Union[str, int] = "nodup",
            save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-           name: str = "global_stocks",
-           index_label: str = "index",
            only_get: bool = False) -> pd.DataFrame:
     """Get stock market index data.
 
@@ -184,11 +184,6 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'global_stocks'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -198,15 +193,17 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     Daily stock market index in USD : pd.DataFrame
 
     """
+    name = "global_stocks"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
     yahoo = []
-    for series in ["spy", "n100","nikkei", "sse"]:
-        aux = pd.read_csv(urls["global_stocks"]["dl"][series],
+    for series in ["spy", "n100", "nikkei", "sse"]:
+        aux = pd.read_csv(urls[name]["dl"][series],
                           index_col=0, usecols=[0, 4], parse_dates=True)
         aux.columns = [series]
         yahoo.append(aux)
@@ -224,14 +221,13 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     if update_loc is not None:
         previous_data = ops._io(operation="update",
                                 data_loc=update_loc,
-                                name=name,
-                                index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -245,8 +241,6 @@ def policy_rates(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "global_policy_rates",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get central bank policy interest rates data.
 
@@ -270,11 +264,6 @@ def policy_rates(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'global_policy_rates'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -284,13 +273,15 @@ def policy_rates(
     Daily policy interest rates : pd.DataFrame
 
     """
+    name = "global_policy_rates"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
-    r = requests.get(urls["global_policy_rates"]["dl"]["main"])
+    r = requests.get(urls[name]["dl"]["main"])
     temp_dir = tempfile.TemporaryDirectory()
     with zipfile.ZipFile(BytesIO(r.content), "r") as f:
         f.extractall(path=temp_dir.name)
@@ -305,7 +296,7 @@ def policy_rates(
 
     if update_loc is not None:
         previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name, index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -317,7 +308,7 @@ def policy_rates(
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -331,8 +322,6 @@ def long_rates(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "global_long_rates",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get 10-year government bonds interest rates.
 
@@ -357,11 +346,6 @@ def long_rates(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'global_long_rates'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -371,16 +355,18 @@ def long_rates(
     Daily 10-year government bonds interest rates : pd.DataFrame
 
     """
+    name = "global_long_rates"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
     bonds = []
     load_dotenv(Path(get_project_root(), ".env"))
     fred_api_key = os.environ.get("FRED_API_KEY")
-    r = requests.get(f"{urls['global_long_rates']['dl']['fred']}DGS10&api_key="
+    r = requests.get(f"{urls[name]['dl']['fred']}DGS10&api_key="
                      f"{fred_api_key}&file_type=json")
     us = pd.DataFrame.from_records(r.json()["observations"])
     us = us[["date", "value"]].set_index("date")
@@ -389,9 +375,9 @@ def long_rates(
     bonds.append(us.apply(pd.to_numeric, errors="coerce").dropna())
 
     for country, sid in zip(["Germany", "France", "Italy", "Spain",
-                            "United Kingdom", "Japan", "China"],
-                           ["23693", "23778", "23738", "23806",
-                            "23673", "23901", "29227"]):
+                             "United Kingdom", "Japan", "China"],
+                            ["23693", "23778", "23738", "23806",
+                             "23673", "23901", "29227"]):
         end_date_dt = dt.datetime(2000, 1, 1)
         start_date_dt = dt.datetime(2000, 1, 1)
         aux = []
@@ -424,7 +410,7 @@ def long_rates(
 
     if update_loc is not None:
         previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name, index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -437,7 +423,7 @@ def long_rates(
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -450,8 +436,6 @@ def long_rates(
 def nxr(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "global_nxr",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get currencies data.
 
@@ -475,11 +459,6 @@ def nxr(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'global_nxr'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -489,15 +468,17 @@ def nxr(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     Daily currencies : pd.DataFrame
 
     """
+    name = "global_nxr"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
     output = []
     for series in ["dollar", "eur", "jpy", "cny"]:
-        aux = pd.read_csv(urls["global_nxr"]["dl"][series],
+        aux = pd.read_csv(urls[name]["dl"][series],
                           index_col=0, usecols=[0, 4], parse_dates=True)
         aux.columns = [series]
         if series == "dollar":
@@ -510,8 +491,7 @@ def nxr(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     if update_loc is not None:
         previous_data = ops._io(operation="update",
                                 data_loc=update_loc,
-                                name=name,
-                                index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -525,6 +505,6 @@ def nxr(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output

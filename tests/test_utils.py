@@ -46,6 +46,6 @@ def test_sqlutil():
 
 
 def test_sources():
-    source_1 = _get_sources("public_debt_test")
-    source_2 = _get_sources("public_debt")
+    source_1 = _get_sources("balance_gps")
+    source_2 = _get_sources("balance_nfps")
     assert source_1 == source_2

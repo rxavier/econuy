@@ -120,6 +120,14 @@ class Session(object):
 
     @property
     def available(self):
+        """Displays available ``dataset`` arguments for use in
+        :mod:`~econuy.session.Session.get` and
+        :mod:`~econuy.session.Session.get_custom`.
+
+        Returns
+        -------
+        Dataset : Dict[str, str]
+        """
         return {"original": {k: v["description"]
                              for k, v in datasets.original.items()},
                 "custom": {k: v["description"]
@@ -127,10 +135,22 @@ class Session(object):
 
     @property
     def dataset_name(self):
+        """Holds the current dataset's name.
+
+        Returns
+        -------
+        Dataset name : str
+        """
         return self._dataset_name
 
     @property
     def dataset(self):
+        """Holds the current dataset.
+
+        Returns
+        -------
+        Dataset : pd.DataFrame
+        """
         return self._dataset
 
     @dataset.setter
@@ -178,7 +198,7 @@ class Session(object):
 
         Parameters
         ----------
-        dataset : str, see available options in datasets.py or in 
+        dataset : str, see available options in datasets.py or in
                   :attr:`available`
             Type of data to download.
         update : bool, default True
@@ -235,7 +255,7 @@ class Session(object):
 
         Parameters
         ----------
-        dataset : str, see available options in datasets.py or in 
+        dataset : str, see available options in datasets.py or in
                   :attr:`available`
         update : bool, default True
             Whether to update an existing dataset.
@@ -532,18 +552,16 @@ class Session(object):
             new_session._dataset_name = old_name
             return new_session
 
-    def save(self, name: str, index_label: str = "index"):
+    def save(self, name: str):
         """Save :attr:`dataset` attribute to a CSV or SQL."""
         name = Path(name).with_suffix("").as_posix()
 
         if isinstance(self.dataset, dict):
             for key, value in self.dataset.items():
                 ops._io(operation="save", data_loc=self.location,
-                        data=value, name=f"{name}_{key}",
-                        index_label=index_label)
+                        data=value, name=f"{name}_{key}")
         else:
             ops._io(operation="save", data_loc=self.location,
-                    data=self.dataset, name=name,
-                    index_label=index_label)
+                    data=self.dataset, name=name)
 
         self.logger.info(f"Saved dataset to '{self.location}'.")

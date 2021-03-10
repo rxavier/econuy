@@ -5,7 +5,7 @@ import zipfile
 import datetime as dt
 from random import randint
 from io import BytesIO
-from os import PathLike, path
+from os import PathLike, path, listdir
 from typing import Union
 from urllib.error import HTTPError, URLError
 
@@ -22,7 +22,8 @@ from econuy.retrieval.international import long_rates
 from econuy.transform import rebase, resample
 from econuy.utils import metadata, ops
 from econuy.utils.chromedriver import _build
-from econuy.utils.lstrings import urls, investing_headers
+from econuy.utils.sources import urls
+from econuy.utils.extras import investing_headers
 
 
 @retry(
@@ -33,8 +34,6 @@ from econuy.utils.lstrings import urls, investing_headers
 def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "regional_gdp",
-        index_label: str = "index",
         only_get: bool = False,
         driver: WebDriver = None) -> pd.DataFrame:
     """Get seasonally adjusted real GDP for Argentina and Brazil.
@@ -60,11 +59,6 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'regional_gdp'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -76,15 +70,17 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     Quarterly real GDP : pd.DataFrame
 
     """
+    name = "regional_gdp"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
     if driver is None:
         driver = _build()
-    driver.get(urls["regional_gdp"]["dl"]["arg_new"])
+    driver.get(urls[name]["dl"]["arg_new"])
     time.sleep(5)
     soup = BeautifulSoup(driver.page_source, "lxml")
     driver.quit()
@@ -94,7 +90,7 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                         usecols="D").dropna(how="all")
     arg.index = pd.date_range(start="2004-03-31", freq="Q-DEC",
                               periods=len(arg))
-    arg_old = pd.read_excel(urls["regional_gdp"]["dl"]["arg_old"], skiprows=7,
+    arg_old = pd.read_excel(urls[name]["dl"]["arg_old"], skiprows=7,
                             usecols="D").dropna(how="all")
     arg_old.index = pd.date_range(start="1993-03-31", freq="Q-DEC",
                                   periods=len(arg_old))
@@ -105,11 +101,11 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                                 * arg.iloc[row + 1, 0])
     arg = arg.iloc[:, [0]]
 
-    r = requests.get(urls["regional_gdp"]["dl"]["bra"])
+    r = requests.get(urls[name]["dl"]["bra"])
     temp_dir = tempfile.TemporaryDirectory()
     with zipfile.ZipFile(BytesIO(r.content), "r") as f:
         f.extractall(path=temp_dir.name)
-    path_temp = path.join(temp_dir.name, "Tab_Compl_CNT.xls")
+    path_temp = path.join(temp_dir.name, listdir(temp_dir.name)[0])
     bra = pd.read_excel(path_temp, usecols="Q", skiprows=3,
                         sheet_name="Val encad preços 95 com ajuste")
     bra.index = pd.date_range(start="1996-03-31", freq="Q-DEC",
@@ -120,7 +116,7 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     if update_loc is not None:
         previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name, index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -132,7 +128,7 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -146,8 +142,6 @@ def monthly_gdp(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "regional_monthly_gdp",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get monthly GDP data.
 
@@ -171,11 +165,6 @@ def monthly_gdp(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'regional_monthly_gdp'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -185,17 +174,19 @@ def monthly_gdp(
     Daily policy interest rates : pd.DataFrame
 
     """
+    name = "regional_monthly_gdp"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
-    arg = pd.read_excel(urls["regional_monthly_gdp"]["dl"]["arg"], usecols="D",
+    arg = pd.read_excel(urls[name]["dl"]["arg"], usecols="D",
                         skiprows=4).dropna(how="all")
     arg.index = pd.date_range(start="2004-01-31", freq="M", periods=len(arg))
 
-    bra = pd.read_csv(urls["regional_monthly_gdp"]["dl"]["bra"], sep=";",
+    bra = pd.read_csv(urls[name]["dl"]["bra"], sep=";",
                       index_col=0, decimal=",")
     bra.index = pd.date_range(start="2003-01-31", freq="M", periods=len(bra))
 
@@ -210,13 +201,13 @@ def monthly_gdp(
 
     if update_loc is not None:
         previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name, index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -229,8 +220,6 @@ def monthly_gdp(
 def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "regional_cpi",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get consumer price index for Argentina and Brazil.
 
@@ -252,11 +241,6 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'regional_cpi'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -266,21 +250,23 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     Monthly CPI : pd.DataFrame
 
     """
+    name = "regional_cpi"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
-    arg = requests.get(urls["regional_cpi"]["dl"]["ar"],
-                       params=urls["regional_cpi"]["dl"]["ar_payload"])
+    arg = requests.get(urls[name]["dl"]["ar"],
+                       params=urls[name]["dl"]["ar_payload"])
     arg = pd.read_html(arg.content)[0]
     arg.set_index("Fecha", drop=True, inplace=True)
     arg.index = pd.to_datetime(arg.index, format="%d/%m/%Y")
     arg.columns = ["nivel"]
     arg = arg.divide(10)
 
-    arg_unoff = pd.read_excel(urls["regional_cpi"]["dl"]["ar_unofficial"])
+    arg_unoff = pd.read_excel(urls[name]["dl"]["ar_unofficial"])
     arg_unoff.set_index("date", drop=True, inplace=True)
     arg_unoff.index = arg_unoff.index + MonthEnd(0)
     arg_unoff = arg_unoff.loc[(arg_unoff.index >= "2006-12-01") &
@@ -292,7 +278,7 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
            set_index("index", drop=True).sort_index())
     arg = arg.divide(100).add(1).cumprod()
 
-    bra_r = requests.get(urls["regional_cpi"]["dl"]["bra"])
+    bra_r = requests.get(urls[name]["dl"]["bra"])
     bra = pd.DataFrame(bra_r.json())[["v"]]
     bra.index = pd.date_range(start="1979-12-31", freq="M", periods=len(bra))
     bra = bra.apply(pd.to_numeric, errors="coerce")
@@ -309,13 +295,13 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     if update_loc is not None:
         previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name, index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -329,8 +315,6 @@ def embi_spreads(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "regional_embi_spreads",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get EMBI spread for Argentina, Brazil and the EMBI Global.
 
@@ -352,11 +336,6 @@ def embi_spreads(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'regional_embi_spreads'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -366,19 +345,21 @@ def embi_spreads(
     Daily 10-year government bond spreads : pd.DataFrame
 
     """
+    name = "regional_embi_spreads"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
-    global_ = pd.read_excel(urls["regional_embi_spreads"]["dl"]["global"],
+    global_ = pd.read_excel(urls[name]["dl"]["global"],
                             usecols="A:B", skiprows=1, index_col=0,
                             parse_dates=True, engine="openpyxl")
     global_ = global_.loc[~pd.isna(global_.index)].mul(100)
     region = []
     for cnt in ["argentina", "brasil"]:
-        r = requests.get(urls["regional_embi_spreads"]["dl"][cnt])
+        r = requests.get(urls[name]["dl"][cnt])
         aux = pd.DataFrame(r.json())
         aux.set_index(0, drop=True, inplace=True)
         aux.drop("Fecha", inplace=True)
@@ -387,7 +368,7 @@ def embi_spreads(
         aux.sort_index(inplace=True)
         aux.columns = [cnt]
         region.append(aux)
-    region = pd.concat(region, axis=1)
+    region = region[0].join(region[1]).interpolate(limit_area="inside")
     output = region.join(global_, how="left").interpolate(method="linear",
                                                           limit_area="inside")
     output.columns = ["Argentina", "Brasil", "EMBI Global"]
@@ -395,7 +376,7 @@ def embi_spreads(
 
     if update_loc is not None:
         previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name, index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -405,7 +386,7 @@ def embi_spreads(
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -419,8 +400,6 @@ def embi_yields(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "regional_embi_yields",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get EMBI yields for Argentina, Brazil and the EMBI Global.
 
@@ -445,11 +424,6 @@ def embi_yields(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'regional_embi_yields'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -459,9 +433,11 @@ def embi_yields(
     Daily 10-year government bonds interest rates : pd.DataFrame
 
     """
+    name = "regional_embi_yields"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
@@ -475,7 +451,7 @@ def embi_yields(
 
     if update_loc is not None:
         previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name, index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -485,7 +461,7 @@ def embi_yields(
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -499,10 +475,8 @@ def nxr(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "regional_nxr",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
-    """Get USDARS an USDBRL.
+    """Get USDARS and USDBRL.
 
     Parameters
     ----------
@@ -522,11 +496,6 @@ def nxr(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'regional_nxr'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -536,15 +505,17 @@ def nxr(
     Daily exchange rates : pd.DataFrame
 
     """
+    name = "regional_nxr"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
     arg = []
     for dollar in ["ar", "ar_unofficial"]:
-        r = requests.get(urls["regional_nxr"]["dl"][dollar])
+        r = requests.get(urls[name]["dl"][dollar])
         aux = pd.DataFrame(r.json())[[0, 2]]
         aux.set_index(0, drop=True, inplace=True)
         aux.drop("Fecha", inplace=True)
@@ -556,7 +527,7 @@ def nxr(
     arg = arg[0].join(arg[1], how="left")
     arg.columns = ["Argentina - oficial", "Argentina - informal"]
 
-    r = requests.get(urls["regional_nxr"]["dl"]["bra"])
+    r = requests.get(urls[name]["dl"]["bra"])
     bra = pd.DataFrame(r.json())
     bra = [(x["VALDATA"], x["VALVALOR"]) for x in bra["value"]]
     bra = pd.DataFrame.from_records(bra).dropna(how="any")
@@ -570,7 +541,7 @@ def nxr(
 
     if update_loc is not None:
         previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name, index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -583,7 +554,7 @@ def nxr(
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -597,8 +568,6 @@ def policy_rates(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "regional_policy_rates",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get central bank policy interest rates data.
 
@@ -622,11 +591,6 @@ def policy_rates(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'regional_policy_rates'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -636,13 +600,15 @@ def policy_rates(
     Daily policy interest rates : pd.DataFrame
 
     """
+    name = "regional_policy_rates"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
-    r = requests.get(urls["regional_policy_rates"]["dl"]["main"])
+    r = requests.get(urls[name]["dl"]["main"])
     temp_dir = tempfile.TemporaryDirectory()
     with zipfile.ZipFile(BytesIO(r.content), "r") as f:
         f.extractall(path=temp_dir.name)
@@ -656,7 +622,7 @@ def policy_rates(
 
     if update_loc is not None:
         previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name, index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -668,7 +634,7 @@ def policy_rates(
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -681,8 +647,6 @@ def policy_rates(
 def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
            revise_rows: Union[str, int] = "nodup",
            save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-           name: str = "regional_stocks",
-           index_label: str = "index",
            only_get: bool = False) -> pd.DataFrame:
     """Get stock market index data in USD terms.
 
@@ -706,11 +670,6 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'regional_stocks'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -720,9 +679,11 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     Daily stock market index in USD terms: pd.DataFrame
 
     """
+    name = "regional_stocks"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
@@ -742,14 +703,14 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
             "sort_ord": "DESC",
             "action": "historical_data"
         }
-        r = requests.post(urls["regional_stocks"]["dl"]["arg"],
+        r = requests.post(urls[name]["dl"]["arg"],
                           headers=investing_headers, data=params)
         aux.append(pd.read_html(r.content, match="Price",
                                 index_col=0, parse_dates=True)[0])
         start_date_dt = end_date_dt + dt.timedelta(days=1)
     arg = pd.concat(aux, axis=0)[["Price"]].sort_index()
 
-    bra = pd.read_csv(urls["regional_stocks"]["dl"]["bra"], index_col=0,
+    bra = pd.read_csv(urls[name]["dl"]["bra"], index_col=0,
                       parse_dates=True)[["Close"]]
     bra = bra.loc[bra.index >= "2000-01-01"]
 
@@ -774,14 +735,13 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     if update_loc is not None:
         previous_data = ops._io(operation="update",
                                 data_loc=update_loc,
-                                name=name,
-                                index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -794,8 +754,6 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 def rxr(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "regional_rxr",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get real exchange rates vis-á-vis the US dollar for Argentina and Brasil .
 
@@ -817,11 +775,6 @@ def rxr(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'regional_rxr'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -831,9 +784,11 @@ def rxr(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     Monthly real exchange rate : pd.DataFrame
 
     """
+    name = "regional_rxr"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
@@ -854,14 +809,13 @@ def rxr(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     if update_loc is not None:
         previous_data = ops._io(operation="update",
                                 data_loc=update_loc,
-                                name=name,
-                                index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 

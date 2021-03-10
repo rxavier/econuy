@@ -11,8 +11,8 @@ from sqlalchemy import create_engine, inspect
 
 from econuy import transform
 from econuy.session import Session
-from econuy.utils import metadata, sqlutil
-from econuy.utils.lstrings import fiscal_metadata
+from econuy.utils import sqlutil
+
 try:
     from tests.test_transform import dummy_df
 except ImportError:
@@ -58,53 +58,19 @@ def test_fiscal():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    fiscal_tfm = session.get_custom(dataset="balance_fss").dataset
+    fiscal_tfm = session.get_custom(dataset="balance_summary").dataset
     remove_clutter()
-    fiscal_ = session.get(dataset="balance").dataset
-    nfps = fiscal_["nfps"]
-    gc = fiscal_["gc-bps"]
-    proc = pd.DataFrame(index=nfps.index)
-    proc["Ingresos: SPNF-SPC"] = nfps["Ingresos: SPNF"]
-    proc["Egresos: Primarios SPNF-SPC"] = nfps["Egresos: Primarios SPNF"]
-    proc["Egresos: Inversiones SPNF-SPC"] = nfps["Egresos: Inversiones"]
-    proc["Intereses: SPNF"] = nfps["Intereses: Totales"]
-    proc["Egresos: Totales SPNF"] = (proc["Egresos: Primarios SPNF-SPC"]
-                                     + proc["Intereses: SPNF"])
-    proc["Resultado: Primario intendencias"] = nfps[
-        "Resultado: Primario intendencias"
-    ]
-    proc["Resultado: Primario BSE"] = nfps["Resultado: Primario BSE"]
-    proc["Resultado: Primario SPNF"] = nfps["Resultado: Primario SPNF"]
-    proc["Resultado: Global SPNF"] = nfps["Resultado: Global SPNF"]
-
-    proc["Ingresos: FSS"] = gc["Ingresos: FSS"]
-    proc["Intereses: FSS"] = gc["Intereses: BPS-FSS"]
-    proc["Ingresos: SPNF-SPC aj. FSS"] = (proc["Ingresos: SPNF-SPC"]
-                                          - proc["Ingresos: FSS"])
-    proc["Intereses: SPNF aj. FSS"] = (proc["Intereses: SPNF"]
-                                       - proc["Intereses: FSS"])
-    proc["Egresos: Totales SPNF aj. FSS"] = (proc["Egresos: Totales SPNF"]
-                                             - proc["Intereses: FSS"])
-    proc["Resultado: Primario SPNF aj. FSS"] = (
-        proc["Resultado: Primario SPNF"]
-        - proc["Ingresos: FSS"])
-    proc["Resultado: Global SPNF aj. FSS"] = (proc["Resultado: Global SPNF"]
-                                              - proc["Ingresos: FSS"]
-                                              + proc["Intereses: FSS"])
-
-    cols = fiscal_metadata["nfps"][True]
-    compare = proc.loc[:, cols]
-    metadata._set(compare, area="Sector público",
-                  currency="UYU", inf_adj="No", unit="No",
-                  seas_adj="NSA", ts_type="Flujo", cumperiods=1)
-    compare.columns = fiscal_tfm["balance_fss_nfps_fssadj"].columns
-    assert compare.equals(fiscal_tfm["balance_fss_nfps_fssadj"])
-    remove_clutter()
-    fiscal_ = session.get(dataset="balance").dataset
-    session.only_get = True
-    compare = session.get(dataset="balance").dataset
-    for v, v2 in zip(fiscal_.values(), compare.values()):
-        assert v.round(4).equals(v2.round(4))
+    nfps = session.get(dataset="balance_nfps").dataset
+    gps = session.get(dataset="balance_gps").dataset
+    gc = session.get(dataset="balance_cg-bps").dataset
+    compare =(gc["Ingresos: GC-BPS"]
+              + nfps["Ingresos: Res. primario corriente EEPP"]
+              - nfps["Egresos: Primarios SPNF"]
+              - nfps["Intereses: Totales"]
+              + nfps["Resultado: Primario intendencias"].fillna(0)
+              + nfps["Resultado: Primario BSE"]
+              + gps["Resultado: Global BCU"])
+    assert fiscal_tfm["Resultado: Global SPC"].round(2).equals(compare.round(2))
     remove_clutter()
     session.only_get = False
 
@@ -114,16 +80,17 @@ def test_labor():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    labor_tfm = session.get_custom(dataset="rates_people").dataset
-    labor_tfm = labor_tfm.iloc[:, [0, 1, 2]].loc[labor_tfm.index >= "2006-01-01"]
+    labor_tfm = session.get_custom(dataset="labor_rates_people").dataset
+    labor_tfm = labor_tfm.iloc[:, [0, 1, 2]
+                               ].loc[labor_tfm.index >= "2006-01-01"]
     remove_clutter()
-    labor_ = session.get(dataset="labor").dataset.iloc[:, [0, 3, 6]]
+    labor_ = session.get(dataset="labor_rates").dataset.iloc[:, [0, 3, 6]]
     session.only_get = True
-    compare = session.get(dataset="labor").dataset.iloc[:, [0, 3, 6]]
+    compare = session.get(dataset="labor_rates").dataset.iloc[:, [0, 3, 6]]
     compare.columns = labor_tfm.columns
     assert labor_tfm.round(4).equals(compare.round(4))
     remove_clutter()
-    labor_tfm = session.get_custom(dataset="rates_people").dataset
+    labor_tfm = session.get_custom(dataset="labor_rates_people").dataset
     labor_tfm = labor_tfm.loc[labor_tfm.index >= "2006-01-01"]
     compare = labor_.iloc[:, 0].div(labor_.iloc[:, 1]).round(4)
     compare_2 = labor_tfm.iloc[:, 3].div(labor_tfm.iloc[:, 4]).round(4)
@@ -131,7 +98,7 @@ def test_labor():
     compare = labor_tfm.iloc[:, 3].mul(labor_.iloc[:, 2]).div(100).round(4)
     assert compare.equals(labor_tfm.iloc[:, 5].round(4))
     remove_clutter()
-    labor_ext = session.get_custom(dataset="rates_people").dataset
+    labor_ext = session.get_custom(dataset="labor_rates_people").dataset
     assert len(labor_ext) > len(labor_tfm)
     remove_clutter()
 
@@ -142,21 +109,28 @@ def test_wages():
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
     real_wages = session.get(dataset="real_wages").dataset
-    nominal_wages = session.get(dataset="wages").dataset
+    nominal_wages = session.get(dataset="nominal_wages").dataset
     compare = transform.convert_real(nominal_wages, update_loc=TEST_CON)
     compare = transform.rebase(compare, start_date="2008-07-31")
     compare.columns = real_wages.columns
     assert compare.equals(real_wages)
 
 
-def test_naccounts():
+def test_natacc():
     remove_clutter()
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    na_ = session.get(dataset="naccounts").dataset
-    assert isinstance(na_, dict)
-    assert len(na_) == 6
+    for dataset, cols, start in zip(["ind_con_nsa", "gas_con_nsa", "ind_cur_nsa",
+                                     "ind_con_idx_nsa", "ind_con_idx_sa",
+                                     "gdp_cur_nsa"],
+                                    [11, 10, 11, 11, 11, 1],
+                                    ["2005-03-31", "2005-03-31", "2005-03-31",
+                                     "1997-03-31", "1997-03-31", "1997-03-31"]):
+
+        na = session.get(dataset=f"natacc_{dataset}").dataset
+        assert len(na.columns) == cols
+        assert na.index[0] == dt.datetime.strptime(start, "%Y-%m-%d")
     remove_clutter()
 
 
@@ -217,7 +191,7 @@ def test_hours():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    hours = session.get(dataset="hours").dataset
+    hours = session.get(dataset="hours_worked").dataset
     assert hours.index[0] == dt.datetime(2006, 1, 31)
     assert len(hours.columns) == 17
     remove_clutter()
@@ -238,11 +212,11 @@ def test_income():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    household = session.get(dataset="household_income").dataset
+    household = session.get(dataset="income_household").dataset
     assert household.index[0] == dt.datetime(2006, 1, 31)
     assert len(household.columns) == 5
     remove_clutter()
-    capita = session.get(dataset="capita_income").dataset
+    capita = session.get(dataset="income_capita").dataset
     assert capita.index[0] == dt.datetime(2006, 1, 31)
     assert len(capita.columns) == 5
     remove_clutter()
@@ -467,22 +441,35 @@ def test_trade():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    tb_ = session.get(dataset="trade").dataset
-    assert isinstance(tb_, dict)
-    assert len(tb_) == 12
+    dfs = {}
+    for dataset, cols, start in zip(["x_prod_val", "x_prod_vol", "x_prod_pri",
+                                     "x_dest_val", "x_dest_vol", "x_dest_pri",
+                                     "m_sect_val", "m_sect_vol", "m_sect_pri",
+                                     "m_orig_val", "m_orig_vol", "m_orig_pri"],
+                                    [33, 27, 27, 43, 24, 24,
+                                     25, 13, 13, 43, 24, 24],
+                                    ["2000-01-31", "2005-01-31", "2005-01-31",
+                                     "2000-01-31", "2005-01-31", "2005-01-31",
+                                     "2000-01-31", "2005-01-31", "2005-01-31",
+                                     "2000-01-31", "2005-01-31", "2005-01-31"]):
+
+        df = session.get(dataset=f"trade_{dataset}").dataset
+        dfs[f"trade_{dataset}"] = df
+        assert len(df.columns) == cols
+        assert df.index[0] == dt.datetime.strptime(start, "%Y-%m-%d")
     remove_clutter()
-    net = session.get_custom(dataset="net_trade").dataset
-    compare = (tb_["trade_x_dest_val"].
+    net = session.get_custom(dataset="trade_balance").dataset
+    compare = (dfs["trade_x_dest_val"].
                rename(columns={"Total exportaciones": "Total"})
-               - tb_["trade_m_orig_val"].
+               - dfs["trade_m_orig_val"].
                rename(columns={"Total importaciones": "Total"}))
     compare.columns = net.columns
     assert net.equals(compare)
     remove_clutter()
     net = session.get_custom(dataset="terms_of_trade").dataset
-    compare = (tb_["trade_x_dest_pri"].
+    compare = (dfs["trade_x_dest_pri"].
                rename(columns={"Total exportaciones": "Total"})
-               / tb_["trade_m_orig_pri"].
+               / dfs["trade_m_orig_pri"].
                rename(columns={"Total importaciones": "Total"}))
     compare = compare.loc[:, ["Total"]]
     compare = transform.rebase(compare, start_date="2005-01-01",
@@ -497,11 +484,11 @@ def test_public_debt():
     session = Session(location=TEST_CON)
     assert isinstance(session, Session)
     assert isinstance(session.dataset, pd.DataFrame)
-    debt = session.get(dataset="public_debt").dataset
-    assert isinstance(debt, dict)
-    assert len(debt) == 4
+    gps = session.get(dataset="public_debt_gps").dataset
+    nfps = session.get(dataset="public_debt_nfps").dataset
+    cb = session.get(dataset="public_debt_cb").dataset
     net_debt = session.get_custom(dataset="net_public_debt").dataset
-    assert net_debt.index.__len__() < debt["gps"].index.__len__()
+    assert net_debt.index.__len__() < gps.index.__len__()
     remove_clutter()
 
 

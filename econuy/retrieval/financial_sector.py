@@ -15,7 +15,7 @@ from sqlalchemy.engine.base import Engine, Connection
 
 from econuy.utils import ops, metadata
 from econuy.utils.chromedriver import _build
-from econuy.utils.lstrings import urls
+from econuy.utils.sources import urls
 
 
 @retry(
@@ -28,8 +28,6 @@ def credit(update_loc: Union[str, PathLike,
            revise_rows: Union[str, int] = "nodup",
            save_loc: Union[str, PathLike,
                            Engine, Connection, None] = None,
-           name: str = "credit",
-           index_label: str = "index",
            only_get: bool = False) -> pd.DataFrame:
     """Get bank credit data.
 
@@ -51,11 +49,6 @@ def credit(update_loc: Union[str, PathLike,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'credit'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -65,13 +58,15 @@ def credit(update_loc: Union[str, PathLike,
     Monthly credit : pd.DataFrame
 
     """
+    name = "credit"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
-    raw = pd.read_excel(urls["credit"]["dl"]["main"],
+    raw = pd.read_excel(urls[name]["dl"]["main"],
                         sheet_name="Total Sist. Banc.",
                         skiprows=10, usecols="A:P,T:AB,AD:AL", index_col=0)
     output = raw.loc[~pd.isna(raw.index)].dropna(how="all", axis=1)
@@ -113,8 +108,7 @@ def credit(update_loc: Union[str, PathLike,
     if update_loc is not None:
         previous_data = ops._io(operation="update",
                                 data_loc=update_loc,
-                                name=name,
-                                index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -125,7 +119,7 @@ def credit(update_loc: Union[str, PathLike,
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -140,8 +134,6 @@ def deposits(update_loc: Union[str, PathLike,
              revise_rows: Union[str, int] = "nodup",
              save_loc: Union[str, PathLike,
                              Engine, Connection, None] = None,
-             name: str = "deposits",
-             index_label: str = "index",
              only_get: bool = False) -> pd.DataFrame:
     """Get bank deposits data.
 
@@ -163,11 +155,6 @@ def deposits(update_loc: Union[str, PathLike,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'deposits'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -177,13 +164,15 @@ def deposits(update_loc: Union[str, PathLike,
     Monthly deposits : pd.DataFrame
 
     """
+    name = "deposits"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
-    raw = pd.read_excel(urls["deposits"]["dl"]["main"],
+    raw = pd.read_excel(urls[name]["dl"]["main"],
                         sheet_name="Total Sist. Banc.",
                         skiprows=8, usecols="A:S", index_col=0)
     output = raw.loc[~pd.isna(raw.index)].dropna(how="all", axis=1)
@@ -209,8 +198,7 @@ def deposits(update_loc: Union[str, PathLike,
     if update_loc is not None:
         previous_data = ops._io(operation="update",
                                 data_loc=update_loc,
-                                name=name,
-                                index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -221,7 +209,7 @@ def deposits(update_loc: Union[str, PathLike,
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -236,8 +224,6 @@ def interest_rates(update_loc: Union[str, PathLike,
                    revise_rows: Union[str, int] = "nodup",
                    save_loc: Union[str, PathLike,
                                    Engine, Connection, None] = None,
-                   name: str = "interest_rates",
-                   index_label: str = "index",
                    only_get: bool = False) -> pd.DataFrame:
     """Get interest rates data.
 
@@ -259,11 +245,6 @@ def interest_rates(update_loc: Union[str, PathLike,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'interest_rates'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -273,9 +254,11 @@ def interest_rates(update_loc: Union[str, PathLike,
     Monthly interest rates : pd.DataFrame
 
     """
+    name = "interest_rates"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
@@ -319,8 +302,7 @@ def interest_rates(update_loc: Union[str, PathLike,
     if update_loc is not None:
         previous_data = ops._io(operation="update",
                                 data_loc=update_loc,
-                                name=name,
-                                index_label=index_label)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -344,7 +326,7 @@ def interest_rates(update_loc: Union[str, PathLike,
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -358,8 +340,6 @@ def sovereign_risk(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "sovereign_risk",
-        index_label: str = "index",
         only_get: bool = False) -> pd.DataFrame:
     """Get Uruguayan Bond Index (sovereign risk spreads) data.
 
@@ -381,11 +361,6 @@ def sovereign_risk(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'sovereign_risk'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -395,16 +370,18 @@ def sovereign_risk(
     Uruguayan Bond Index : pd.DataFrame
 
     """
+    name = "sovereign_risk"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
-    historical = pd.read_excel(urls["sovereign_risk"]["dl"]["historical"],
+    historical = pd.read_excel(urls[name]["dl"]["historical"],
                                usecols="B:C", skiprows=1, index_col=0,
                                sheet_name="Valores de Cierre Diarios")
-    r = requests.get(urls["sovereign_risk"]["dl"]["current"])
+    r = requests.get(urls[name]["dl"]["current"])
     soup = BeautifulSoup(r.content, features="lxml")
     raw_string = soup.find_all(type="hidden")[0]["value"]
     raw_list = raw_string.split("],")
@@ -419,10 +396,8 @@ def sovereign_risk(
     output = output.apply(pd.to_numeric, errors="coerce")
 
     if update_loc is not None:
-        previous_data = ops._io(
-            operation="update", data_loc=update_loc,
-            name=name, index_label=index_label
-        )
+        previous_data = ops._io(operation="update", data_loc=update_loc,
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -432,7 +407,7 @@ def sovereign_risk(
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
 
@@ -446,8 +421,6 @@ def call_rate(
         update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         revise_rows: Union[str, int] = "nodup",
         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        name: str = "call",
-        index_label: str = "index",
         only_get: bool = False,
         driver: WebDriver = None) -> pd.DataFrame:
     """Get 1-day call interest rate data.
@@ -473,11 +446,6 @@ def call_rate(
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'call'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -489,15 +457,16 @@ def call_rate(
     Daily call rate : pd.DataFrame
 
     """
+    name = "call"
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
     if driver is None:
         driver = _build()
-    driver.get(urls["call"]["dl"]["main"])
+    driver.get(urls[name]["dl"]["main"])
     start = driver.find_element(
         by="name", value="ctl00$ContentPlaceHolder1$dateDesde$dateInput")
     start.clear()
@@ -522,10 +491,8 @@ def call_rate(
                     "Tasa call a 1 día: Mínimo"]
 
     if update_loc is not None:
-        previous_data = ops._io(
-            operation="update", data_loc=update_loc,
-            name=name, index_label=index_label
-        )
+        previous_data = ops._io(operation="update", data_loc=update_loc,
+                                name=name)
         call = ops._revise(new_data=call, prev_data=previous_data,
                            revise_rows=revise_rows)
 
@@ -536,7 +503,7 @@ def call_rate(
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=call, name=name, index_label=index_label)
+                data=call, name=name)
 
     return call
 
@@ -549,8 +516,6 @@ def call_rate(
 def bonds(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
           revise_rows: Union[str, int] = "nodup",
           save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-          name: str = "bonds",
-          index_label: str = "index",
           only_get: bool = False,
           driver: WebDriver = None) -> pd.DataFrame:
     """Get interest rate yield for Uruguayan US-denominated bonds,
@@ -577,11 +542,6 @@ def bonds(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
         Either Path or path-like string pointing to a directory where to save
         the CSV, SQL Alchemy connection or engine object, or ``None``,
         don't save.
-    name : str, default 'bonds'
-        Either CSV filename for updating and/or saving, or table name if
-        using SQL.
-    index_label : str, default 'index'
-        Label for SQL indexes.
     only_get : bool, default False
         If True, don't download data, retrieve what is available from
         ``update_loc``.
@@ -593,16 +553,18 @@ def bonds(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     Daily bond yields in basis points : pd.DataFrame
 
     """
+    name = "bonds"
+
     if only_get is True and update_loc is not None:
         output = ops._io(operation="update", data_loc=update_loc,
-                         name=name, index_label=index_label)
+                         name=name)
         if not output.equals(pd.DataFrame()):
             return output
 
     if driver is None:
         driver = _build()
     dfs = []
-    for url in urls["bonds"]["dl"].values():
+    for url in urls[name]["dl"].values():
         driver.get(url)
         start = driver.find_element(
             by="name", value="ctl00$ContentPlaceHolder1$dateDesde$dateInput")
@@ -631,10 +593,8 @@ def bonds(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                       "Bonos soberanos en pesos"]
 
     if update_loc is not None:
-        previous_data = ops._io(
-            operation="update", data_loc=update_loc,
-            name=name, index_label=index_label
-        )
+        previous_data = ops._io(operation="update", data_loc=update_loc,
+            name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
@@ -648,6 +608,6 @@ def bonds(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     if save_loc is not None:
         ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name, index_label=index_label)
+                data=output, name=name)
 
     return output
