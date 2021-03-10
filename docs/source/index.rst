@@ -8,16 +8,13 @@ econuy
 
 Wrangling Uruguayan economic data so you don't have to.
 
-.. contents::
-   :local:
-
 User documentation
 ------------------
 
 Check the readme for a brief explainer on how to use the package, what extra stuff you might need and which problems you might face.
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
 
    README.md
 
