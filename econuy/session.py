@@ -120,7 +120,7 @@ class Session(object):
                          f"Error handling: {errors}")
 
     @property
-    def available(self):
+    def available_datasets(self):
         """Displays available ``dataset`` arguments for use in
         :mod:`~econuy.session.Session.get` and
         :mod:`~econuy.session.Session.get_custom`.
