@@ -886,8 +886,7 @@ def commodity_prices(
             return output
 
     url = urls["commodity_index"]["dl"]
-    raw_beef = (pd.read_excel(url["beef"], header=4,
-                              index_col=0, engine="openpyxl")
+    raw_beef = (pd.read_excel(url["beef"], header=4, index_col=0)
                 .dropna(how="all"))
     raw_beef.columns = raw_beef.columns.str.strip()
     proc_beef = raw_beef["Ing. Prom./Ton."].to_frame()
@@ -954,7 +953,7 @@ def commodity_prices(
     prev_milk.columns, proc_milk.columns = ["Price"], ["Price"]
     milk = prev_milk.append(proc_milk)
 
-    raw_imf = (pd.read_excel(url["imf"], engine="openpyxl")
+    raw_imf = (pd.read_excel(url["imf"])
                .dropna(how="all", axis=1).dropna(how="all", axis=0))
     raw_imf.columns = raw_imf.iloc[0, :]
     proc_imf = raw_imf.iloc[3:, 1:]
@@ -1404,8 +1403,7 @@ def reserves_changes(update_loc: Union[str, PathLike, Engine,
             print(f"{link} could not be reached.")
             pass
 
-    mar14 = pd.read_excel(urls[name]["dl"]["missing"],
-                          index_col=0, engine="openpyxl")
+    mar14 = pd.read_excel(urls[name]["dl"]["missing"], index_col=0)
     mar14.columns = reserves_cols[1:46]
     reserves = pd.concat(reports + [mar14], sort=False).sort_index()
 

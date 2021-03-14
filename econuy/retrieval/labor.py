@@ -65,11 +65,7 @@ def labor_rates(update_loc: Union[str, PathLike,
 
     try:
         labor_raw = pd.read_excel(
-            urls[name]["dl"]["main"],
-            engine="openpyxl",
-            skiprows=39).dropna(
-            axis=0,
-            thresh=2)
+            urls[name]["dl"]["main"], skiprows=39).dropna(axis=0, thresh=2)
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
@@ -90,7 +86,7 @@ def labor_rates(update_loc: Union[str, PathLike,
                      "Tasa de empleo: hombres", "Tasa de empleo: mujeres",
                      "Tasa de desempleo: total", "Tasa de desempleo: hombres",
                      "Tasa de desempleo: mujeres"]
-    missing = pd.read_excel(urls[name]["dl"]["missing"], engine="openpyxl",
+    missing = pd.read_excel(urls[name]["dl"]["missing"],
                             index_col=0, header=0).iloc[:, :9]
     missing.columns = labor.columns
     labor = labor.append(missing)
@@ -163,16 +159,10 @@ def nominal_wages(update_loc: Union[str, PathLike,
         if not output.equals(pd.DataFrame()):
             return output
     try:
-        historical = pd.read_excel(
-            urls[name]["dl"]["historical"],
-            skiprows=8,
-            usecols="A:B",
-            engine="openpyxl")
-        current = pd.read_excel(
-            urls[name]["dl"]["current"],
-            engine="openpyxl",
-            skiprows=8,
-            usecols="A,C:D")
+        historical = pd.read_excel(urls[name]["dl"]["historical"],
+                                   skiprows=8, usecols="A:B")
+        current = pd.read_excel(urls[name]["dl"]["current"],
+                                skiprows=8, usecols="A,C:D")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
@@ -264,15 +254,10 @@ def hours(update_loc: Union[str, PathLike,
             return output
 
     try:
-        raw = pd.read_excel(
-            urls[name]["dl"]["main"],
-            sheet_name="Mensual",
-            skiprows=5,
-            index_col=0,
-            engine="openpyxl").dropna(
-            how="all")
+        raw = pd.read_excel(urls[name]["dl"]["main"], sheet_name="Mensual",
+                            skiprows=5, index_col=0).dropna(how="all")
         prev_hours = pd.read_excel(urls[name]["dl"]["historical"], index_col=0,
-                                   skiprows=8, engine="openpyxl").dropna(how="all").iloc[:, [0]]
+                                   skiprows=8).dropna(how="all").iloc[:, [0]]
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
@@ -368,37 +353,18 @@ def rates_people(update_loc: Union[str, PathLike, Engine,
     rates = rates.loc[:, ["Tasa de actividad: total", "Tasa de empleo: total",
                           "Tasa de desempleo: total"]]
     try:
-        act_5000 = pd.read_excel(
-            urls[name]["dl"]["act_5000"],
-            sheet_name="Mensual",
-            index_col=0,
-            skiprows=8,
-            usecols="A:B",
-            engine="openpyxl").dropna(
-            how="any")
-        emp_5000 = pd.read_excel(
-            urls[name]["dl"]["emp_5000"],
-            sheet_name="Mensual",
-            index_col=0,
-            skiprows=8,
-            usecols="A:B",
-            engine="openpyxl").dropna(
-            how="any")
-        des_5000 = pd.read_excel(
-            urls[name]["dl"]["des_5000"],
-            sheet_name="Mensual",
-            index_col=0,
-            skiprows=7,
-            usecols="A:B",
-            engine="openpyxl").dropna(
-            how="any")
-        working_age = pd.read_excel(
-            urls[name]["dl"]["population"],
-            skiprows=7,
-            index_col=0,
-            nrows=92,
-            engine="openpyxl").dropna(
-            how="all")
+        act_5000 = pd.read_excel(urls[name]["dl"]["act_5000"],
+                                 sheet_name="Mensual", index_col=0,
+                                 skiprows=8, usecols="A:B").dropna(how="any")
+        emp_5000 = pd.read_excel(urls[name]["dl"]["emp_5000"],
+                                 sheet_name="Mensual", index_col=0,
+                                 skiprows=8, usecols="A:B").dropna(how="any")
+        des_5000 = pd.read_excel(urls[name]["dl"]["des_5000"],
+                                 sheet_name="Mensual", index_col=0,
+                                 skiprows=7, usecols="A:B").dropna(how="any")
+        working_age = pd.read_excel(urls[name]["dl"]["population"],
+                                    skiprows=7,
+                                    index_col=0, nrows=92).dropna(how="all")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",

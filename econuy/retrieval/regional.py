@@ -355,7 +355,7 @@ def embi_spreads(
 
     global_ = pd.read_excel(urls[name]["dl"]["global"],
                             usecols="A:B", skiprows=1, index_col=0,
-                            parse_dates=True, engine="openpyxl")
+                            parse_dates=True)
     global_ = global_.loc[~pd.isna(global_.index)].mul(100)
     region = []
     for cnt in ["argentina", "brasil"]:

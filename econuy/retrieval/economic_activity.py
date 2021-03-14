@@ -554,7 +554,7 @@ def industrial_production(update_loc: Union[str, PathLike,
             return output
     try:
         raw = pd.read_excel(urls[name]["dl"]["main"],
-                            skiprows=4, usecols="B:EM", engine="openpyxl")
+                            skiprows=4, usecols="B:EM")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
@@ -631,8 +631,7 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
     try:
         weights = pd.read_excel(
             urls[name]["dl"]["weights"],
-            skiprows=3,
-            engine="openpyxl").dropna(
+            skiprows=3).dropna(
             how="all")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
@@ -734,8 +733,7 @@ def cattle(
     with open(temp, "wb") as f:
         r = requests.get(urls[name]["dl"]["main"])
         f.write(r.content)
-    output = pd.read_excel(temp, skiprows=8, usecols="A,C:H", index_col=0,
-                           engine="openpyxl")
+    output = pd.read_excel(temp, skiprows=8, usecols="A,C:H", index_col=0)
 
     if update_loc is not None:
         previous_data = ops._io(operation="update", data_loc=update_loc,
@@ -877,8 +875,7 @@ def cement(
             return output
 
     output = pd.read_excel(urls[name]["dl"]["main"], skiprows=2,
-                           usecols="B:E", index_col=0, skipfooter=1,
-                           engine="openpyxl")
+                           usecols="B:E", index_col=0, skipfooter=1)
     output.index = output.index + MonthEnd(0)
     output.columns = ["Exportaciones", "Mercado interno", "Total"]
 

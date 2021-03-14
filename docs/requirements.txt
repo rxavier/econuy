@@ -64,7 +64,7 @@ opencv-python==4.5.1.48
 openpyxl==3.0.5
 opnieuw==1.0.0
 packaging==20.9
-pandas==1.1.5
+pandas==1.2.3
 pandocfilters==1.4.3
 parso==0.8.1
 patool==1.12
@@ -87,7 +87,7 @@ pytest==6.2.2
 python-dateutil==2.8.1
 python-dotenv==0.14.0
 pytz==2021.1
-pywin32==300
+#pywin32==300
 pywinpty==0.5.7
 pyzmq==22.0.2
 qtconsole==5.0.2
