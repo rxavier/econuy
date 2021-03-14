@@ -278,7 +278,7 @@ def nxr_daily(update_loc: Union[str, PathLike,
         metadata._set(output, area="Precios", currency="UYU/USD",
                       inf_adj="No", unit="-", seas_adj="NSA",
                       ts_type="-", cumperiods=1)
-        output.columns.set_levels(["-"], level=2, inplace=True)
+        output.columns = output.columns.set_levels(["-"], level=2)
 
         if update_loc is not None:
             output = pd.concat([previous_data, output])

@@ -397,9 +397,9 @@ def rates_people(update_loc: Union[str, PathLike, Engine,
     rates_prev = rates_5000.loc[rates_5000.index < "2006-01-31"]
     rates_prev.columns = rates.columns
     rates = pd.concat([rates_prev, rates])
-    rates.columns.set_levels(rates.columns.levels[0].str.replace(": total",
-                                                                 ""),
-                             level=0, inplace=True)
+    rates.columns = rates.columns.set_levels(
+        rates.columns.levels[0].str.replace(": total", ""), level=0
+        )
 
     ages = list(range(14, 90)) + ["90 y más"]
     working_age = working_age.loc[ages].sum()

@@ -40,7 +40,7 @@ def _natacc_retriever(url: str, name: str, nrows: int, inf_adj: str,
     raw = pd.read_excel(url,
                         skiprows=9, nrows=nrows, usecols="B:AAA",
                         index_col=0).dropna(how="all").T
-    raw.index = raw.index.str.replace("*", "")
+    raw.index = raw.index.str.replace("*", "", regex=True)
     raw.index = raw.index.str.replace(r"\bI \b", "3-", regex=True)
     raw.index = raw.index.str.replace(r"\bII \b", "6-", regex=True)
     raw.index = raw.index.str.replace(r"\bIII \b", "9-", regex=True)
