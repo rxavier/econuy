@@ -69,7 +69,7 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
             return output
 
     try:
-        cpi = pd.read_excel(urls[name]["dl"]["main"], engine="openpyxl",
+        cpi = pd.read_excel(urls[name]["dl"]["main"],
                             skiprows=7, usecols="A:B",
                             index_col=0).dropna()
     except URLError as err:
@@ -154,9 +154,8 @@ def nxr_monthly(update_loc: Union[str, PathLike,
         if not output.equals(pd.DataFrame()):
             return output
     try:
-        nxr_raw = pd.read_excel(urls[name]["dl"]["main"],
-                                engine="openpyxl", skiprows=4, index_col=0,
-                                usecols="A,C,F")
+        nxr_raw = pd.read_excel(urls[name]["dl"]["main"], skiprows=4,
+                                index_col=0, usecols="A,C,F")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
@@ -253,7 +252,7 @@ def nxr_daily(update_loc: Union[str, PathLike,
             dates = f"%22FechaDesde%22:%22{from_}%22,%22FechaHasta%22:%22{to_}"
             url = f"{base_url}{dates}%22,%22Grupo%22:%222%22}}" + "}"
             try:
-                data.append(pd.read_excel(url, engine="openpyxl"))
+                data.append(pd.read_excel(url))
                 start_date = dt.datetime.strptime(to_, '%d/%m/%Y')
             except (TypeError, BadZipFile):
                 pass
@@ -262,7 +261,7 @@ def nxr_daily(update_loc: Union[str, PathLike,
     dates = f"%22FechaDesde%22:%22{from_}%22,%22FechaHasta%22:%22{to_}"
     url = f"{base_url}{dates}%22,%22Grupo%22:%222%22}}" + "}"
     try:
-        data.append(pd.read_excel(url, engine="openpyxl"))
+        data.append(pd.read_excel(url))
     except (TypeError, BadZipFile):
         pass
     try:
@@ -279,7 +278,7 @@ def nxr_daily(update_loc: Union[str, PathLike,
         metadata._set(output, area="Precios", currency="UYU/USD",
                       inf_adj="No", unit="-", seas_adj="NSA",
                       ts_type="-", cumperiods=1)
-        output.columns.set_levels(["-"], level=2, inplace=True)
+        output.columns = output.columns.set_levels(["-"], level=2)
 
         if update_loc is not None:
             output = pd.concat([previous_data, output])
@@ -378,11 +377,11 @@ def cpi_measures(update_loc: Union[str, PathLike,
         xls_10_14 = pd.ExcelFile(urls[name]["dl"]["2010-14"])
         xls_15 = pd.ExcelFile(urls[name]["dl"]["2015-"])
         prod_97 = (pd.read_excel(urls[name]["dl"]["1997"],
-                                 skiprows=5, engine="openpyxl")
-                   .dropna(how="any")
-                   .set_index(
-                       "Rubros, Agrupaciones, Subrubros, Familias y Artículos")
-                   .T)
+                                    skiprows=5)
+                    .dropna(how="any")
+                    .set_index(
+                        "Rubros, Agrupaciones, Subrubros, Familias y Artículos")
+                    .T)
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
@@ -403,7 +402,7 @@ def cpi_measures(update_loc: Union[str, PathLike,
         else:
             raise err
     weights_97 = (pd.read_excel(urls[name]["dl"]["1997_weights"],
-                                index_col=0, engine="openpyxl")
+                                index_col=0)
                   .drop_duplicates(subset="Descripción", keep="first"))
     weights = pd.read_excel(xls_10_14, sheet_name=xls_10_14.sheet_names[0],
                             usecols="A:C", skiprows=13,
