@@ -57,7 +57,7 @@ urls = {"call":
                 "provider": ["INE"]}},
         "nxr_daily":
         {"dl": {
-            "main": "https://www.bcu.gub.uy/_layouts/BCU.Cotizaciones/handler/FileHandler.ashx?op=downloadcotizacionesexcel&KeyValuePairs={%22KeyValuePairs%22:{%22Monedas%22:[{%22Val%22:%222224%22,%22Text%22:%22DLS.%20USA%20CABLE%22}],"},
+            "main": "https://www.bcu.gub.uy/_layouts/15/BCU.Cotizaciones/handler/FileHandler.ashx?op=downloadcotizacionesexcel&KeyValuePairs={%22KeyValuePairs%22:{%22Monedas%22:[{%22Val%22:%222224%22,%22Text%22:%22DLS.%20USA%20CABLE%22}],"},
             "source": {"direct": [],
                        "indirect": [
                            "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Cotizaciones.aspx"],
@@ -315,9 +315,8 @@ urls = {"call":
                        "http://www.ciu.com.uy/innovaportal/v/83062/9/innova.front/series-de-ventas-mensuales-por-destino.html"],
                        "provider": ["AFCPU y CIU"]}},
         "consumer_confidence": {"dl": {
-            "main": "https://ucu.edu.uy/sites/default/files/facultad/fce/i_competitividad/serie_icc_-_agosto_20.xlsx"},
-            "source": {"direct": [
-                "https://ucu.edu.uy/sites/default/files/facultad/fce/i_competitividad/serie_icc_-_agosto_20.xlsx"],
+            "main": "https://ucu.edu.uy/es/icc"},
+            "source": {"direct": [],
             "indirect": [
                 "https://ucu.edu.uy/es/icc"],
             "provider": ["UCU"]}},

@@ -49,10 +49,10 @@ def _balance_retriever(update_loc: Union[str, PathLike, Engine, Connection, None
     soup = BeautifulSoup(response.content, "html.parser")
     links = soup.find_all(href=re.compile("\\.xlsx$"))
     link = links[0]["href"]
-    xls = pd.ExcelFile(link, engine="openpyxl")
+    xls = pd.ExcelFile(link)
     output = {}
     for dataset, meta in fiscal_sheets.items():
-        data = (pd.read_excel(xls, sheet_name=meta["sheet"], engine="openpyxl").
+        data = (pd.read_excel(xls, sheet_name=meta["sheet"]).
                 dropna(axis=0, thresh=4).dropna(axis=1, thresh=4).
                 transpose().set_index(2, drop=True))
         data.columns = data.iloc[0]
