@@ -1,3 +1,4 @@
+import re
 from os import PathLike
 from pathlib import Path
 from io import BytesIO
@@ -245,8 +246,10 @@ def consumer_confidence(
         if not output.equals(pd.DataFrame()):
             return output
 
-    raw = pd.read_excel(urls[name]["dl"]["main"],
-                        skiprows=3, usecols="B:F", index_col=0)
+    r = requests.get(urls[name]["dl"]["main"])
+    url = re.findall("[a-z:/\._]+serie_icc_-_[a-z0-9_\.]+xlsx", r.text)[0]
+    raw = pd.read_excel("https://ucu.edu.uy" + url, skiprows=3,
+                        usecols="B:F", index_col=0)
     output = raw.loc[~pd.isna(raw.index)]
     output.index = output.index + MonthEnd(0)
     output.columns = ["Subíndice: Situación Económica Personal",
