@@ -41,7 +41,7 @@ This is the recommended entry point for the package. It allows setting up the co
 ```python
 from econuy.session import Session
 
-sess = Session(location="your/directory", revise_rows="nodup", only_get=False, log=1, inplace=False)
+sess = Session(location="your/directory", revise_rows="nodup", only_get=False, log=1, inplace=True, errors="raise")
 ```
 
 The `Session()` object is initialized with the `location`, `revise_rows`,  `only_get`, `dataset`, `log`, `logger`, `inplace` and `errors` attributes.
@@ -61,20 +61,21 @@ The `Session()` object is initialized with the `location`, `revise_rows`,  `only
 
 Downloads the basic datasets. These are generally as provided by official sources, except various Pandas transformations are performed to render nice looking dataframes with appropiate column names, time indexes and properly defined values. In select cases, I drop columns that I feel don't add relevant information for the target audience of this package, or that are inconsistent with other datasets.
 
-Available options for the `dataset` argument can be found in [the datasets file](https://github.com/rxavier/econuy/blob/master/econuy/utils/datasets.py). English descriptions for these will be added in the future.
+Available options for the `dataset` argument can be found in [the datasets file](https://github.com/rxavier/econuy/blob/master/econuy/utils/datasets.py) or they can be accessed through the `available_datasets` method of `Session` objects. English descriptions for these will be added in the future.
 
 If you wanted CPI data:
 ```python
 from econuy.session import Session
 
 sess = Session(location="your/directory")
-df = sess.get(dataset="cpi").dataset
+sess.get(dataset="cpi")
+df = sess.datasets["cpi"]
 ```
-Note that the previous code block accessed the `dataset` attribute in order to get a dataframe.
+Note that the previous code block accessed the `datasets` attribute in order to get a dataframe.
 
 #### `get_custom()`
 
-Gives access to predefined data pipelines that output frequently used data not provided officially or require the combination of available official sources. These are based on the datasets provided by `get()`, but are transformed to render data that you might find more immediately useful. As with `get()`, available options for the `dataset` argument can be found in [the datasets file](https://github.com/rxavier/econuy/blob/master/econuy/utils/datasets.py).
+Gives access to predefined data pipelines that output frequently used data not provided officially or require the combination of available official sources. These are based on the datasets provided by `get()`, but are transformed to render data that you might find more immediately useful. As with `get()`, available options for the `dataset` argument can be found in [the datasets file](https://github.com/rxavier/econuy/blob/master/econuy/utils/datasets.py) or they can be accessed through the `available_datasets` method of `Session` objects.
 
 For example, the following calculates tradable CPI, non-tradable CPI, core CPI, residual CPI and Winsorized CPI. Also, it uses a SQL database for data updating and saving.
 ```python
@@ -85,22 +86,26 @@ from econuy.session import Session
 eng = create_engine("dialect+driver://user:pwd@host:port/database")
 
 sess = Session(location=eng)
-df = sess.get_custom(dataset="cpi_measures")
+sess.get_custom(dataset=["cpi_measures", "commodity_index"])
+cpi = sess.datasets["cpi_measures"]
+commodity_index = sess.datasets["commodity_index"]
 ```
 
 ### Session transformation methods
 
-These class methods take a `Session()` object with a valid dataset and allow performing preset transformation pipelines. For example:
+These class methods take a `Session()` object and perform transformations. For example:
 
 ```python
 from econuy.session import Session
 
-sess = Session(location="your/directory")
-df = sess.get(dataset="nxr_monthly").decompose(component="trend", method="x13", fallback="loess")
+sess = Session()
+sess.get(dataset="nxr_monthly").decompose(component="trend", method="x13", fallback="loess")
 ```
-will return a the Session object, with the dataset attribute holding the trend component of the monthly nominal exchange rate.
+will return the Session object, with the dataset attribute holding the trend component of the monthly nominal exchange rate.
 
-Available transformation methods are 
+Note that by default transformation methods will be applied to every dataframe in the `datasets` attribute. The `select` argument in all transformation methods allows choosing, either by dataset name or index, which dataset to transform.
+
+Available transformation methods are
 * `resample()` - resample data to a different frequency, taking into account whether data is of stock or flow type.
 * `chg_diff()` - calculate percent changes or differences for same period last year, last period or at annual rate.
 * `decompose()` - seasonally decompose series into trend and seasonally adjusted components.
@@ -110,7 +115,7 @@ Available transformation methods are
 
 ## Retrieval functions
 
-If you don't want to go the `Session()` way, you can simply get your data from the functions under `econuy.retrieval`, for example `econuy.retrieval.fiscal_accounts.balance()`. While creating a Session object is recommended, this can be easier if you only plan on retrieving a single dataset.
+If you don't want to go the `Session()` way, you can simply get your data from the functions under `econuy.retrieval`, for example `econuy.retrieval.fiscal_accounts.balance_gps()`. While creating a Session object is recommended, this can be easier if you only plan on retrieving a single dataset.
 
 ## Dataframe/CSV headers
 
@@ -128,7 +133,7 @@ Metadata for each dataset is held in Pandas MultiIndexes with the following:
 
 ## External binaries and libraries
 
-### unrar libraries	
+### unrar libraries
 
 The [patool](https://github.com/wummel/patool) library is used in order to access data provided in `.rar` format. This library requires that you have the unrar binaries in your system, which you can get from [here](https://www.rarlab.com/rar_add.htm).
 
