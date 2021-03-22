@@ -21,10 +21,10 @@ class Session(object):
     Attributes
     ----------
     location : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-               default 'econuy-data'
+               default None
         Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
+        a CSV for updating and saving, SQLAlchemy connection or engine object,
+        or ``None``, don't save or update.
     revise_rows : {'nodup', 'auto', int}
         Defines how to process data updates. An integer indicates how many rows
         to remove from the tail of the dataframe and replace with new data.
