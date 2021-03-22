@@ -290,7 +290,7 @@ class Session(object):
         self.logger.info(f"Retrieved {', '.join(dataset)} dataset(s).")
         if self.inplace is True:
             self._datasets.update(output)
-            return self
+            return
         else:
             new_session = Session(location=self.location,
                                   revise_rows=self.revise_rows,
@@ -352,7 +352,7 @@ class Session(object):
         self.logger.info(f"Retrieved {', '.join(dataset)} dataset(s).")
         if self.inplace is True:
             self._datasets.update(output)
-            return self
+            return
         else:
             new_session = Session(location=self.location,
                                   revise_rows=self.revise_rows,
@@ -387,7 +387,7 @@ class Session(object):
                          f"and '{operation}' operation.")
         if self.inplace is True:
             self._datasets = output
-            return self
+            return
         else:
             new_session = Session(location=self.location,
                                   revise_rows=self.revise_rows,
@@ -417,7 +417,7 @@ class Session(object):
                          f"'{operation}' operation and '{period}' period.")
         if self.inplace is True:
             self._datasets = output
-            return self
+            return
         else:
             new_session = Session(location=self.location,
                                   revise_rows=self.revise_rows,
@@ -479,7 +479,7 @@ class Session(object):
                          f"'{method}' method and '{component}' component.")
         if self.inplace is True:
             self._datasets = output
-            return self
+            return
         else:
             new_session = Session(location=self.location,
                                   revise_rows=self.revise_rows,
@@ -552,7 +552,7 @@ class Session(object):
                          f"with '{flavor}' flavor.")
         if self.inplace is True:
             self._datasets = output
-            return self
+            return
         else:
             new_session = Session(location=self.location,
                                   revise_rows=self.revise_rows,
@@ -583,7 +583,7 @@ class Session(object):
         self.logger.info("Applied 'rebase' transformation.")
         if self.inplace is True:
             self._dataset = output
-            return self
+            return
         else:
             new_session = Session(location=self.location,
                                   revise_rows=self.revise_rows,
@@ -614,7 +614,7 @@ class Session(object):
                          f"{window} periods and '{operation}' operation.")
         if self.inplace is True:
             self._datasets = output
-            return self
+            return
         else:
             new_session = Session(location=self.location,
                                   revise_rows=self.revise_rows,
