@@ -209,10 +209,10 @@ class Session(object):
 
         new_kwargs = {}
         for k, v in kwargs.items():
-            if isinstance(v, str):
+            if not isinstance(v, Sequence) or isinstance(v, str):
                 new_kwargs.update({k: [v] * len(select_datasets)})
             elif len(v) != len(select_datasets):
-                raise ValueError(f"Wrong number of arguments for {k}")
+                raise ValueError(f"Wrong number of arguments for '{k}'")
             else:
                 new_kwargs.update({k: v})
 
