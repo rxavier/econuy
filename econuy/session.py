@@ -1,10 +1,11 @@
+from __future__ import annotations
 import logging
 import pprint
 from datetime import datetime
 from inspect import signature
 from os import PathLike, makedirs, path
 from pathlib import Path
-from typing import Callable, Optional, Union
+from typing import Callable, Optional, Union, Sequence, Dict
 
 import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
@@ -57,10 +58,9 @@ class Session(object):
                                  Connection, Engine, None] = "econuy-data",
                  revise_rows: Union[int, str] = "nodup",
                  only_get: bool = False,
-                 dataset: Union[dict, pd.DataFrame] = pd.DataFrame(),
                  log: Union[int, str] = 1,
                  logger: Optional[logging.Logger] = None,
-                 inplace: bool = False,
+                 inplace: bool = True,
                  errors: str = "raise"):
         self.location = location
         self.revise_rows = revise_rows
@@ -69,8 +69,7 @@ class Session(object):
         self.logger = logger
         self.inplace = inplace
         self.errors = errors
-        self._dataset = dataset
-        self._dataset_name = None
+        self._datasets = {}
 
         if isinstance(location, (str, PathLike)):
             if not path.exists(self.location):
@@ -114,13 +113,12 @@ class Session(object):
                          f"Location for downloads and updates: {loc_text}\n"
                          f"Offline: {only_get}\n"
                          f"Update method: '{revise_method}'\n"
-                         f"Dataset: {self._dataset_name.__str__()}\n"
                          f"Logging method: {log_method}\n"
                          f"Inplace: {inplace}\n"
                          f"Error handling: {errors}")
 
     @property
-    def available_datasets(self):
+    def available_datasets(self) -> Dict[str, Dict]:
         """Displays available ``dataset`` arguments for use in
         :mod:`~econuy.session.Session.get` and
         :mod:`~econuy.session.Session.get_custom`.
@@ -129,40 +127,43 @@ class Session(object):
         -------
         Dataset : Dict[str, str]
         """
-        result = {"original": {k: v["description"]
+        available = self._available_datasets()
+        pprint.pprint(available)
+        return
+
+    @staticmethod
+    def _available_datasets() -> Dict[str, Dict]:
+        return {"original": {k: v["description"]
                              for k, v in datasets.original.items()},
                 "custom": {k: v["description"]
                            for k, v in datasets.custom.items()}}
-        pprint.pprint(result)
-        return
 
     @property
-    def dataset_name(self):
-        """Holds the current dataset's name.
+    def datasets(self) -> Dict[str, pd.DataFrame]:
+        """Holds retrieved datasets.
 
         Returns
         -------
-        Dataset name : str
+        Datasets : Dict[str, pd.DataFrame]
         """
-        return self._dataset_name
-
-    @property
-    def dataset(self):
-        """Holds the current dataset.
-
-        Returns
-        -------
-        Dataset : pd.DataFrame
-        """
-        return self._dataset
-
-    @dataset.setter
-    def dataset(self, value):
-        self._dataset = value
-        self._dataset_name = "Custom"
+        return self._datasets
 
     @staticmethod
-    def _download(original: bool, dataset: str, **kwargs):
+    def _download(original: bool, dataset: str, **kwargs) -> pd.DataFrame:
+        """Helper method to handle parameters passed to retrieval functions.
+
+        Parameters
+        ----------
+        original : bool
+            Whether to retrieve original or custom datasets.
+        dataset : str
+            Name of dataset to retrieve.
+
+        Returns
+        -------
+        Downloaded dataset : pd.DataFrame
+
+        """
         if original is True:
             function = datasets.original[dataset]["function"]
         else:
@@ -172,17 +173,66 @@ class Session(object):
                       if k in accepted_params.keys()}
         return function(**new_kwargs)
 
-    def _apply_transformation(self, transformation: Callable, **kwargs):
-        if isinstance(self.dataset, dict):
-            output = {}
-            for name, data in self.dataset.items():
-                transformed = transformation(data, **kwargs)
-                output.update({name: transformed})
-            return output
-        else:
-            return transformation(self.dataset, **kwargs)
+    def _apply_transformation(self, select: Union[str, int, Sequence[str],
+                                                  Sequence[int]],
+                              transformation: Callable,
+                              **kwargs) -> Dict[str, pd.DataFrame]:
+        """Helper method to apply transformations on :attr:`datasets`.
 
-    def _parse_location(self, process: bool):
+        Parameters
+        ----------
+        select : Union[str, int, Sequence[str], Sequence[int]]
+            Datasets in :attr:`datasets` to apply transformation on.
+        transformation : Callable
+            Function representing the transformation to apply.
+
+        Returns
+        -------
+        Transformed datasets : Dict[str, pd.DataFrame]
+
+        """
+        keys = list(self.datasets.keys())
+        if isinstance(select, Sequence) and not isinstance(select, str):
+            if not all(type(select[i]) == type(select[0])
+                       for i in range(len(select))):
+                raise ValueError("`select` must be all `int` or all `str`")
+            if isinstance(select[0], int):
+                select_datasets = [keys[i] for i in select]
+            else:
+                select_datasets = [i for i in keys if i in select]
+        elif isinstance(select, int):
+            select_datasets = [keys[select]]
+        elif select == "all":
+            select_datasets = keys
+        else:
+            select_datasets = [select]
+
+        new_kwargs = {}
+        for k, v in kwargs.items():
+            if isinstance(v, str):
+                new_kwargs.update({k: [v] * len(select_datasets)})
+            elif len(v) != len(select_datasets):
+                raise ValueError(f"Wrong number of arguments for {k}")
+            else:
+                new_kwargs.update({k: v})
+
+        output = self.datasets.copy()
+        for i, (name, data) in enumerate(self.datasets.items()):
+            if name in select_datasets:
+                current_kwargs = {k: v[i] for k, v in new_kwargs.items()}
+                if isinstance(data, Dict):
+                    transformed = {}
+                    for subname, subdata in data.items():
+                        subtransformed = transformation(subdata,
+                                                        **current_kwargs)
+                        transformed.update({subname: subtransformed})
+                else:
+                    transformed = transformation(data, **current_kwargs)
+                output.update({name: transformed})
+
+        return output
+
+    def _parse_location(self, process: bool) -> Union[Path, str, None]:
         if process is True:
             if isinstance(self.location, (str, PathLike)):
                 return Path(self.location)
@@ -191,19 +241,18 @@ class Session(object):
         else:
             return None
 
-    def get(self,
-            dataset: str,
-            update: bool = True,
-            save: bool = True,
-            **kwargs):
+    def get(self, dataset: Union[str, Sequence[str]], update: bool = True,
+            save: bool = True, **kwargs) -> Session:
         """
         Main download method.
 
         Parameters
         ----------
-        dataset : str, see available options in datasets.py or in
-                  :attr:`available`
-            Type of data to download.
+        dataset : Union[str, Sequence[str]]
+            Type of data to download, see available options in datasets.py
+            or in :attr:`available_datasets`. Either a string representing
+            a dataset name or a sequence of strings in order to download
+            several datasets.
         update : bool, default True
             Whether to update an existing dataset.
         save : bool, default True
@@ -214,7 +263,7 @@ class Session(object):
         Returns
         -------
         :class:`~econuy.session.Session`
-            Loads the pd.DataFrame output into the :attr:`dataset`
+            Loads the pd.DataFrame output into the :attr:`datasets`
             attribute.
 
         Raises
@@ -223,43 +272,50 @@ class Session(object):
             If an invalid string is given to the ``dataset`` argument.
 
         """
-        if dataset not in datasets.original.keys():
+        if isinstance(dataset, str):
+            dataset = [dataset]
+        if any(name not in datasets.original.keys() for name in dataset):
             raise ValueError("Invalid dataset selected.")
 
         update_loc = self._parse_location(process=update)
         save_loc = self._parse_location(process=save)
-        output = self._download(original=True, dataset=dataset,
-                                update_loc=update_loc, save_loc=save_loc,
-                                revise_rows=self.revise_rows,
-                                only_get=self.only_get, **kwargs)
-        self.logger.info(f"Retrieved '{dataset}' dataset.")
+        output = {}
+        for name in dataset:
+            retrieved = self._download(original=True, dataset=name,
+                                       update_loc=update_loc,
+                                       save_loc=save_loc,
+                                       revise_rows=self.revise_rows,
+                                       only_get=self.only_get, **kwargs)
+            output.update({name: retrieved})
+        self.logger.info(f"Retrieved {', '.join(dataset)} dataset(s).")
         if self.inplace is True:
-            self.dataset = output
-            self._dataset_name = dataset
+            self._datasets.update(output)
             return self
         else:
             new_session = Session(location=self.location,
                                   revise_rows=self.revise_rows,
                                   only_get=self.only_get,
-                                  dataset=output,
                                   logger=self.logger,
                                   inplace=self.inplace,
                                   errors=self.errors)
-            new_session._dataset_name = dataset
+            new_datasets = self.datasets.copy()
+            new_datasets.update(output)
+            new_session._datasets = new_datasets
             return new_session
 
-    def get_custom(self,
-                   dataset: str,
-                   update: bool = True,
-                   save: bool = True,
-                   **kwargs):
+    def get_custom(self, dataset: Union[str, Sequence[str]],
+                   update: bool = True, save: bool = True,
+                   **kwargs) -> Session:
         """
         Get custom datasets.
 
         Parameters
         ----------
-        dataset : str, see available options in datasets.py or in
-                  :attr:`available`
+        dataset : Union[str, Sequence[str]]
+            Type of data to download, see available options in datasets.py
+            or in :attr:`available_datasets`. Either a string representing a
+            dataset name or a sequence of strings in order to download several
+            datasets.
         update : bool, default True
             Whether to update an existing dataset.
         save : bool, default  True
@@ -270,7 +326,7 @@ class Session(object):
         Returns
         -------
         :class:`~econuy.session.Session`
-            Loads the downloaded dataframe into the :attr:`dataset` attribute.
+            Loads the downloaded dataframe into the :attr:`datasets` attribute.
 
         Raises
         ------
@@ -278,37 +334,42 @@ class Session(object):
             If an invalid string is given to the ``dataset`` argument.
 
         """
-        update_loc = self._parse_location(process=update)
-        save_loc = self._parse_location(process=save)
-
-        if dataset not in datasets.custom.keys():
+        if isinstance(dataset, str):
+            dataset = [dataset]
+        if any(name not in datasets.custom.keys() for name in dataset):
             raise ValueError("Invalid dataset selected.")
 
         update_loc = self._parse_location(process=update)
         save_loc = self._parse_location(process=save)
-        output = self._download(original=False, dataset=dataset,
-                                update_loc=update_loc, save_loc=save_loc,
-                                revise_rows=self.revise_rows,
-                                only_get=self.only_get, **kwargs)
-        self.logger.info(f"Retrieved '{dataset}' dataset.")
+        output = {}
+        for name in dataset:
+            retrieved = self._download(original=False, dataset=name,
+                                       update_loc=update_loc,
+                                       save_loc=save_loc,
+                                       revise_rows=self.revise_rows,
+                                       only_get=self.only_get, **kwargs)
+            output.update({name: retrieved})
+        self.logger.info(f"Retrieved {', '.join(dataset)} dataset(s).")
         if self.inplace is True:
-            self.dataset = output
-            self._dataset_name = dataset
+            self._datasets.update(output)
             return self
         else:
             new_session = Session(location=self.location,
                                   revise_rows=self.revise_rows,
                                   only_get=self.only_get,
-                                  dataset=output,
                                   logger=self.logger,
                                   inplace=self.inplace,
                                   errors=self.errors)
-            new_session._dataset_name = dataset
+            new_datasets = self.datasets.copy()
+            new_datasets.update(output)
+            new_session._datasets = new_datasets
             return new_session
 
     def resample(self, rule: Union[pd.DateOffset, pd.Timedelta, str],
                  operation: str = "sum",
-                 interpolation: str = "linear"):
+                 interpolation: str = "linear",
+                 select: Union[str, int, Sequence[str],
+                               Sequence[int]] = "all") -> Session:
         """
         Resample to target frequencies.
 
@@ -317,28 +378,29 @@ class Session(object):
         :func:`~econuy.transform.resample`
 
         """
-        output = self._apply_transformation(transform.resample, rule=rule,
+        output = self._apply_transformation(select=select,
+                                            transformation=transform.resample,
+                                            rule=rule,
                                             operation=operation,
                                             interpolation=interpolation)
         self.logger.info(f"Applied 'resample' transformation with '{rule}' "
                          f"and '{operation}' operation.")
-        old_name = self.dataset_name
         if self.inplace is True:
-            self.dataset = output
-            self._dataset_name = old_name
+            self._datasets = output
             return self
         else:
             new_session = Session(location=self.location,
                                   revise_rows=self.revise_rows,
                                   only_get=self.only_get,
-                                  dataset=output,
                                   logger=self.logger,
                                   inplace=self.inplace,
                                   errors=self.errors)
-            new_session._dataset_name = old_name
+            new_session._datasets = output
             return new_session
 
-    def chg_diff(self, operation: str = "chg", period: str = "last"):
+    def chg_diff(self, operation: str = "chg", period: str = "last",
+                 select: Union[str, int, Sequence[str],
+                               Sequence[int]] = "all") -> Session:
         """
         Calculate pct change or difference.
 
@@ -347,24 +409,22 @@ class Session(object):
         :func:`~econuy.transform.chg_diff`
 
         """
-        output = self._apply_transformation(transform.chg_diff,
+        output = self._apply_transformation(select=select,
+                                            transformation=transform.chg_diff,
                                             operation=operation, period=period)
         self.logger.info(f"Applied 'chg_diff' transformation with "
                          f"'{operation}' operation and '{period}' period.")
-        old_name = self.dataset_name
         if self.inplace is True:
-            self.dataset = output
-            self._dataset_name = old_name
+            self._datasets = output
             return self
         else:
             new_session = Session(location=self.location,
                                   revise_rows=self.revise_rows,
                                   only_get=self.only_get,
-                                  dataset=output,
                                   logger=self.logger,
                                   inplace=self.inplace,
                                   errors=self.errors)
-            new_session._dataset_name = old_name
+            new_session._datasets = output
             return new_session
 
     def decompose(self, component: str = "both", method: str = "x13",
@@ -372,7 +432,9 @@ class Session(object):
                   trading: bool = True, outlier: bool = True,
                   x13_binary: Union[str, PathLike] = "search",
                   search_parents: int = 1, ignore_warnings: bool = True,
-                  errors: str = None, **kwargs):
+                  errors: str = None, select: Union[str, int, Sequence[str],
+                                                    Sequence[int]] = "all",
+                  **kwargs) -> Session:
         """
         Apply seasonal decomposition.
 
@@ -394,7 +456,8 @@ class Session(object):
         if errors is None:
             errors = self.errors
 
-        output = self._apply_transformation(transform.decompose,
+        output = self._apply_transformation(select=select,
+                                            transformation=transform.decompose,
                                             component=component,
                                             method=method,
                                             force_x13=force_x13,
@@ -408,27 +471,26 @@ class Session(object):
                                             **kwargs)
         self.logger.info(f"Applied 'decompose' transformation with "
                          f"'{method}' method and '{component}' component.")
-        old_name = self.dataset_name
         if self.inplace is True:
-            self.dataset = output
-            self._dataset_name = old_name
+            self._datasets = output
             return self
         else:
             new_session = Session(location=self.location,
                                   revise_rows=self.revise_rows,
                                   only_get=self.only_get,
-                                  dataset=output,
                                   logger=self.logger,
                                   inplace=self.inplace,
                                   errors=self.errors)
-            new_session._dataset_name = old_name
+            new_session._datasets = output
             return new_session
 
     def convert(self, flavor: str, update: bool = True,
                 save: bool = True, only_get: bool = True,
                 errors: str = None,
                 start_date: Union[str, datetime, None] = None,
-                end_date: Union[str, datetime, None] = None):
+                end_date: Union[str, datetime, None] = None,
+                select: Union[str, int, Sequence[str],
+                              Sequence[int]] = "all") -> Session:
         """
         Convert to other units.
 
@@ -455,13 +517,15 @@ class Session(object):
         save_loc = self._parse_location(process=save)
 
         if flavor == "usd":
-            output = self._apply_transformation(transform.convert_usd,
+            output = self._apply_transformation(select=select,
+                                                transformation=transform.convert_usd,
                                                 update_loc=update_loc,
                                                 save_loc=save_loc,
                                                 only_get=only_get,
                                                 errors=errors)
         elif flavor == "real":
-            output = self._apply_transformation(transform.convert_real,
+            output = self._apply_transformation(select=select,
+                                                transformation=transform.convert_real,
                                                 update_loc=update_loc,
                                                 save_loc=save_loc,
                                                 only_get=only_get,
@@ -469,7 +533,8 @@ class Session(object):
                                                 start_date=start_date,
                                                 end_date=end_date)
         else:
-            output = self._apply_transformation(transform.convert_gdp,
+            output = self._apply_transformation(select=select,
+                                                transformation=transform.convert_gdp,
                                                 update_loc=update_loc,
                                                 save_loc=save_loc,
                                                 only_get=only_get,
@@ -477,25 +542,24 @@ class Session(object):
 
         self.logger.info(f"Applied 'convert' transformation "
                          f"with '{flavor}' flavor.")
-        old_name = self.dataset_name
         if self.inplace is True:
-            self.dataset = output
-            self._dataset_name = old_name
+            self._datasets = output
             return self
         else:
             new_session = Session(location=self.location,
                                   revise_rows=self.revise_rows,
                                   only_get=self.only_get,
-                                  dataset=output,
                                   logger=self.logger,
                                   inplace=self.inplace,
                                   errors=self.errors)
-            new_session._dataset_name = old_name
+            new_session._datasets = output
             return new_session
 
     def rebase(self, start_date: Union[str, datetime],
                end_date: Union[str, datetime, None] = None,
-               base: float = 100.0):
+               base: float = 100.0,
+               select: Union[str, int, Sequence[str],
+                             Sequence[int]] = "all") -> Session:
         """
         Scale to a period or range of periods.
 
@@ -504,28 +568,28 @@ class Session(object):
         :func:`~econuy.transform.rebase`
 
         """
-        output = self._apply_transformation(transform.rebase,
+        output = self._apply_transformation(select=select,
+                                            transformation=transform.rebase,
                                             start_date=start_date,
                                             end_date=end_date, base=base)
         self.logger.info("Applied 'rebase' transformation.")
-        old_name = self.dataset_name
         if self.inplace is True:
-            self.dataset = output
-            self._dataset_name = old_name
+            self._dataset = output
             return self
         else:
             new_session = Session(location=self.location,
                                   revise_rows=self.revise_rows,
                                   only_get=self.only_get,
-                                  dataset=output,
                                   logger=self.logger,
                                   inplace=self.inplace,
                                   errors=self.errors)
-            new_session._dataset_name = old_name
+            new_session._datasets = output
             return new_session
 
     def rolling(self, window: Optional[int] = None,
-                operation: str = "sum"):
+                operation: str = "sum",
+                select: Union[str, int, Sequence[str],
+                              Sequence[int]] = "all") -> Session:
         """
         Calculate rolling averages or sums.
 
@@ -534,25 +598,23 @@ class Session(object):
         :func:`~econuy.transform.rolling`
 
         """
-        output = self._apply_transformation(transform.rolling,
+        output = self._apply_transformation(select=select,
+                                            transformation=transform.rolling,
                                             window=window,
                                             operation=operation)
         self.logger.info(f"Applied 'rolling' transformation with "
                          f"{window} periods and '{operation}' operation.")
-        old_name = self.dataset_name
         if self.inplace is True:
-            self.dataset = output
-            self._dataset_name = old_name
+            self._datasets = output
             return self
         else:
             new_session = Session(location=self.location,
                                   revise_rows=self.revise_rows,
                                   only_get=self.only_get,
-                                  dataset=output,
                                   logger=self.logger,
                                   inplace=self.inplace,
                                   errors=self.errors)
-            new_session._dataset_name = old_name
+            new_session._datasets = output
             return new_session
 
     def save(self, name: str):
