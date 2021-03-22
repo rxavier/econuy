@@ -55,7 +55,7 @@ class Session(object):
 
     def __init__(self,
                  location: Union[str, PathLike,
-                                 Connection, Engine, None] = "econuy-data",
+                                 Connection, Engine, None] = None,
                  revise_rows: Union[int, str] = "nodup",
                  only_get: bool = False,
                  log: Union[int, str] = 1,
