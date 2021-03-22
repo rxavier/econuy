@@ -5,7 +5,7 @@ from datetime import datetime
 from inspect import signature
 from os import PathLike, makedirs, path
 from pathlib import Path
-from typing import Callable, Optional, Union, Sequence, Dict
+from typing import Callable, Optional, Union, Sequence, Dict, List
 
 import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
@@ -365,9 +365,9 @@ class Session(object):
             new_session._datasets = new_datasets
             return new_session
 
-    def resample(self, rule: Union[pd.DateOffset, pd.Timedelta, str],
-                 operation: str = "sum",
-                 interpolation: str = "linear",
+    def resample(self, rule: Union[pd.DateOffset, pd.Timedelta, str, List],
+                 operation: Union[str, List] = "sum",
+                 interpolation: Union[str, List] = "linear",
                  select: Union[str, int, Sequence[str],
                                Sequence[int]] = "all") -> Session:
         """
@@ -398,7 +398,8 @@ class Session(object):
             new_session._datasets = output
             return new_session
 
-    def chg_diff(self, operation: str = "chg", period: str = "last",
+    def chg_diff(self, operation: Union[str, List] = "chg",
+                 period: Union[str, List] = "last",
                  select: Union[str, int, Sequence[str],
                                Sequence[int]] = "all") -> Session:
         """
@@ -427,12 +428,17 @@ class Session(object):
             new_session._datasets = output
             return new_session
 
-    def decompose(self, component: str = "both", method: str = "x13",
-                  force_x13: bool = False, fallback: str = "loess",
-                  trading: bool = True, outlier: bool = True,
-                  x13_binary: Union[str, PathLike] = "search",
-                  search_parents: int = 1, ignore_warnings: bool = True,
-                  errors: str = None, select: Union[str, int, Sequence[str],
+    def decompose(self, component: Union[str, List] = "both",
+                  method: Union[str, List] = "x13",
+                  force_x13: Union[bool, List] = False,
+                  fallback: Union[str, List] = "loess",
+                  trading: Union[bool, List] = True,
+                  outlier: Union[bool, List] = True,
+                  x13_binary: Union[str, PathLike, List] = "search",
+                  search_parents: Union[int, List] = 1,
+                  ignore_warnings: Union[bool, List] = True,
+                  errors: Union[str, List, None] = None,
+                  select: Union[str, int, Sequence[str],
                                                     Sequence[int]] = "all",
                   **kwargs) -> Session:
         """
@@ -484,11 +490,13 @@ class Session(object):
             new_session._datasets = output
             return new_session
 
-    def convert(self, flavor: str, update: bool = True,
-                save: bool = True, only_get: bool = True,
-                errors: str = None,
-                start_date: Union[str, datetime, None] = None,
-                end_date: Union[str, datetime, None] = None,
+    def convert(self, flavor: Union[str, List],
+                update: Union[bool, List] = True,
+                save: Union[bool, List] = True,
+                only_get: Union[bool, List] = True,
+                errors: Union[str, None, List] = None,
+                start_date: Union[str, datetime, None, List] = None,
+                end_date: Union[str, datetime, None, List] = None,
                 select: Union[str, int, Sequence[str],
                               Sequence[int]] = "all") -> Session:
         """
@@ -555,9 +563,9 @@ class Session(object):
             new_session._datasets = output
             return new_session
 
-    def rebase(self, start_date: Union[str, datetime],
-               end_date: Union[str, datetime, None] = None,
-               base: float = 100.0,
+    def rebase(self, start_date: Union[str, datetime, List],
+               end_date: Union[str, datetime, None, List] = None,
+               base: Union[float, List] = 100.0,
                select: Union[str, int, Sequence[str],
                              Sequence[int]] = "all") -> Session:
         """
@@ -586,8 +594,8 @@ class Session(object):
             new_session._datasets = output
             return new_session
 
-    def rolling(self, window: Optional[int] = None,
-                operation: str = "sum",
+    def rolling(self, window: Union[int, List, None] = None,
+                operation: Union[str, List] = "sum",
                 select: Union[str, int, Sequence[str],
                               Sequence[int]] = "all") -> Session:
         """
