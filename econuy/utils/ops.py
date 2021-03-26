@@ -96,7 +96,7 @@ def _io(operation: str,
             full_save_loc = (Path(data_loc) / name).with_suffix(".csv")
             if not path.exists(path.dirname(full_save_loc)):
                 mkdir(path.dirname(full_save_loc))
-            data.to_csv(full_save_loc)
+            data.to_csv(full_save_loc, encoding="latin1")
         else:
             full_update_loc = data_loc
             sqlutil.df_to_sql(data, name=name,
