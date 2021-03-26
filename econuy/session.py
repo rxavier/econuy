@@ -600,16 +600,41 @@ class Session(object):
             new_session._datasets = output
             return new_session
 
-    def save(self, name: str):
-        """Save :attr:`dataset` attribute to a CSV or SQL."""
-        name = Path(name).with_suffix("").as_posix()
-
-        if isinstance(self.dataset, dict):
-            for key, value in self.dataset.items():
-                ops._io(operation="save", data_loc=self.location,
-                        data=value, name=f"{name}_{key}")
+    def save(self,
+             select: Union[str, int, Sequence[str], Sequence[int]] = "all"):
+        """Save :attr:`datasets` attribute to CSV or SQL."""
+        if self.location is None:
+            raise ValueError("No save location defined.")
+        
+        keys = list(self.datasets.keys())
+        if isinstance(select, Sequence) and not isinstance(select, str):
+            if not all(type(select[i]) == type(select[0])
+                       for i in range(len(select))):
+                raise ValueError("`select` must be all `int` or all `str`")
+            if isinstance(select[0], int):
+                select_datasets = [keys[i] for i in select]
+            else:
+                select_datasets = [i for i in keys if i in select]
+        elif isinstance(select, int):
+            select_datasets = [keys[select]]
+        elif select == "all":
+            select_datasets = keys
         else:
-            ops._io(operation="save", data_loc=self.location,
-                    data=self.dataset, name=name)
+            select_datasets = [select]
 
-        self.logger.info(f"Saved dataset to '{self.location}'.")
+        for name, dataset in self.datasets.items():
+            if name in select_datasets:
+                if isinstance(dataset, dict):
+                    for subname, subdataset in dataset.items():
+                        ops._io(operation="save", data_loc=self.location,
+                                data=subdataset, name=f"{name}_{subname}")
+                else:
+                    ops._io(operation="save", data_loc=self.location,
+                            data=dataset, name=name)
+            else:
+                continue
+
+        self.logger.info(f"Saved {', '.join(select_datasets)} "
+                         f"to '{self.location}'.")
+
+        return
