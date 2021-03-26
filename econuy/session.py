@@ -1,6 +1,7 @@
 from __future__ import annotations
 import logging
 import pprint
+import copy
 from datetime import datetime
 from inspect import signature
 from os import PathLike, makedirs, path
@@ -148,6 +149,24 @@ class Session(object):
         """
         return self._datasets
 
+    def copy(self, deep: bool = True):
+        """Copy or deepcopy a Session object.
+
+        Parameters
+        ----------
+        deep : bool, default True
+            If True, deepcopy.
+
+        Returns
+        -------
+        :class:`~econuy.session.Session`
+
+        """
+        if deep:
+            return copy.deepcopy(self)
+        else:
+            return copy.copy(self)
+
     @staticmethod
     def _download(original: bool, dataset: str, **kwargs) -> pd.DataFrame:
         """Helper method to handle parameters passed to retrieval functions.
@@ -292,15 +311,8 @@ class Session(object):
             self._datasets.update(output)
             return
         else:
-            new_session = Session(location=self.location,
-                                  revise_rows=self.revise_rows,
-                                  only_get=self.only_get,
-                                  logger=self.logger,
-                                  inplace=self.inplace,
-                                  errors=self.errors)
-            new_datasets = self.datasets.copy()
-            new_datasets.update(output)
-            new_session._datasets = new_datasets
+            new_session = self.copy(deep=True)
+            new_session._datasets.update(output)
             return new_session
 
     def get_custom(self, dataset: Union[str, Sequence[str]],
@@ -354,15 +366,8 @@ class Session(object):
             self._datasets.update(output)
             return
         else:
-            new_session = Session(location=self.location,
-                                  revise_rows=self.revise_rows,
-                                  only_get=self.only_get,
-                                  logger=self.logger,
-                                  inplace=self.inplace,
-                                  errors=self.errors)
-            new_datasets = self.datasets.copy()
-            new_datasets.update(output)
-            new_session._datasets = new_datasets
+            new_session = self.copy(deep=True)
+            new_session._datasets.update(output)
             return new_session
 
     def resample(self, rule: Union[pd.DateOffset, pd.Timedelta, str, List],
@@ -389,12 +394,7 @@ class Session(object):
             self._datasets = output
             return
         else:
-            new_session = Session(location=self.location,
-                                  revise_rows=self.revise_rows,
-                                  only_get=self.only_get,
-                                  logger=self.logger,
-                                  inplace=self.inplace,
-                                  errors=self.errors)
+            new_session = self.copy(deep=True)
             new_session._datasets = output
             return new_session
 
@@ -419,12 +419,7 @@ class Session(object):
             self._datasets = output
             return
         else:
-            new_session = Session(location=self.location,
-                                  revise_rows=self.revise_rows,
-                                  only_get=self.only_get,
-                                  logger=self.logger,
-                                  inplace=self.inplace,
-                                  errors=self.errors)
+            new_session = self.copy(deep=True)
             new_session._datasets = output
             return new_session
 
@@ -481,12 +476,7 @@ class Session(object):
             self._datasets = output
             return
         else:
-            new_session = Session(location=self.location,
-                                  revise_rows=self.revise_rows,
-                                  only_get=self.only_get,
-                                  logger=self.logger,
-                                  inplace=self.inplace,
-                                  errors=self.errors)
+            new_session = self.copy(deep=True)
             new_session._datasets = output
             return new_session
 
@@ -554,12 +544,7 @@ class Session(object):
             self._datasets = output
             return
         else:
-            new_session = Session(location=self.location,
-                                  revise_rows=self.revise_rows,
-                                  only_get=self.only_get,
-                                  logger=self.logger,
-                                  inplace=self.inplace,
-                                  errors=self.errors)
+            new_session = self.copy(deep=True)
             new_session._datasets = output
             return new_session
 
@@ -585,12 +570,7 @@ class Session(object):
             self._dataset = output
             return
         else:
-            new_session = Session(location=self.location,
-                                  revise_rows=self.revise_rows,
-                                  only_get=self.only_get,
-                                  logger=self.logger,
-                                  inplace=self.inplace,
-                                  errors=self.errors)
+            new_session = self.copy(deep=True)
             new_session._datasets = output
             return new_session
 
@@ -616,12 +596,7 @@ class Session(object):
             self._datasets = output
             return
         else:
-            new_session = Session(location=self.location,
-                                  revise_rows=self.revise_rows,
-                                  only_get=self.only_get,
-                                  logger=self.logger,
-                                  inplace=self.inplace,
-                                  errors=self.errors)
+            new_session = self.copy(deep=True)
             new_session._datasets = output
             return new_session
 
