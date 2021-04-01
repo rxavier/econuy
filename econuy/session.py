@@ -1,9 +1,8 @@
 from __future__ import annotations
 import logging
-import pprint
 import copy
 from datetime import datetime
-from inspect import signature
+from inspect import signature, getmodule
 from os import PathLike, makedirs, path
 from pathlib import Path
 from typing import Callable, Optional, Union, Sequence, Dict, List
@@ -17,7 +16,7 @@ from econuy.utils import datasets, logutil, ops
 
 class Session(object):
     """
-    Main class to access download and processing methods.
+    Main class to access download and transformation methods.
 
     Attributes
     ----------
@@ -118,9 +117,9 @@ class Session(object):
                          f"Inplace: {inplace}\n"
                          f"Error handling: {errors}")
 
-    @property
-    def available_datasets(self) -> Dict[str, Dict]:
-        """Displays available ``dataset`` arguments for use in
+    @staticmethod
+    def available_datasets(functions: bool = False) -> Dict[str, Dict]:
+        """Return available ``dataset`` arguments for use in
         :mod:`~econuy.session.Session.get` and
         :mod:`~econuy.session.Session.get_custom`.
 
@@ -128,16 +127,16 @@ class Session(object):
         -------
         Dataset : Dict[str, str]
         """
-        available = self._available_datasets()
-        pprint.pprint(available)
-        return
-
-    @staticmethod
-    def _available_datasets() -> Dict[str, Dict]:
-        return {"original": {k: v["description"]
-                             for k, v in datasets.original.items()},
-                "custom": {k: v["description"]
-                           for k, v in datasets.custom.items()}}
+        if functions:
+            return {"original": {k: v
+                                 for k, v in datasets.original.items()},
+                    "custom": {k: v
+                               for k, v in datasets.custom.items()}}
+        else:
+            return {"original": {k: v["description"]
+                                 for k, v in datasets.original.items()},
+                    "custom": {k: v["description"]
+                               for k, v in datasets.custom.items()}}
 
     @property
     def datasets(self) -> Dict[str, pd.DataFrame]:
@@ -269,7 +268,7 @@ class Session(object):
         ----------
         dataset : Union[str, Sequence[str]]
             Type of data to download, see available options in datasets.py
-            or in :attr:`available_datasets`. Either a string representing
+            or in :mod:`available_datasets`. Either a string representing
             a dataset name or a sequence of strings in order to download
             several datasets.
         update : bool, default True
@@ -282,7 +281,7 @@ class Session(object):
         Returns
         -------
         :class:`~econuy.session.Session`
-            Loads the pd.DataFrame output into the :attr:`datasets`
+            Loads the downloaded dataframes into the :attr:`datasets`
             attribute.
 
         Raises
@@ -325,7 +324,7 @@ class Session(object):
         ----------
         dataset : Union[str, Sequence[str]]
             Type of data to download, see available options in datasets.py
-            or in :attr:`available_datasets`. Either a string representing a
+            or in :mod:`available_datasets`. Either a string representing a
             dataset name or a sequence of strings in order to download several
             datasets.
         update : bool, default True
@@ -338,7 +337,8 @@ class Session(object):
         Returns
         -------
         :class:`~econuy.session.Session`
-            Loads the downloaded dataframe into the :attr:`datasets` attribute.
+            Loads the downloaded dataframes into the :attr:`datasets`
+            attribute.
 
         Raises
         ------
@@ -368,6 +368,82 @@ class Session(object):
         else:
             new_session = self.copy(deep=True)
             new_session._datasets.update(output)
+            return new_session
+
+    def get_bulk(self, group: str, update: bool = True,
+                 save: bool = True, **kwargs) -> Session:
+        """
+        Get datasets in bulk.
+
+        Parameters
+        ----------
+        group : {'all', 'original', 'custom', 'economic_activity',
+                 'prices', 'fiscal_accounts', 'labor', 'external_sector',
+                 'financial_sector', 'income', 'international', 'regional'}
+            Type of data to download. `all` gets all available datasets,
+            `original` gets all original datatsets and `custom` gets all
+            custom datasets. The remaining options get all datasets for that
+            area.
+        update : bool, default True
+            Whether to update an existing dataset.
+        save : bool, default  True
+            Whether to save the dataset.
+        **kwargs
+            Keyword arguments.
+
+        Returns
+        -------
+        :class:`~econuy.session.Session`
+            Loads the downloaded dataframes into the :attr:`datasets`
+            attribute.
+
+        Raises
+        ------
+        ValueError
+            If an invalid string is given to the ``group`` argument.
+
+        """
+        valid_group = ["all", "original", "custom", "economic_activity",
+                       "prices", "fiscal_accounts", "labor", "external_sector",
+                       "financial_sector", "income", "international",
+                       "regional"]
+        if group not in valid_group:
+            raise ValueError(f"'group' can only be one of "
+                             f"{', '.join(valid_group)}.")
+        available_datasets = self.available_datasets(functions=True)
+        original_datasets = list(available_datasets["original"].keys())
+        custom_datasets = list(available_datasets["custom"].keys())
+        new_session = self.copy(deep=True)
+
+        if group == "original":
+            new_session.get(dataset=original_datasets, update=update,
+                            save=save, **kwargs)
+        elif group == "custom":
+            new_session.get_custom(dataset=custom_datasets, update=update,
+                                   save=save, **kwargs)
+        elif group == "all":
+            new_session.get(dataset=original_datasets, update=update,
+                            save=save, **kwargs)
+            new_session.get_custom(dataset=custom_datasets, update=update,
+                                   save=save, **kwargs)
+        else:
+            original_area_datasets = []
+            for k, v in available_datasets["original"].items():
+                if group in getmodule(v["function"]).__name__:
+                    original_area_datasets.append(k)
+            custom_area_datasets = []
+            for k, v in available_datasets["custom"].items():
+                if group in getmodule(v["function"]).__name__:
+                    custom_area_datasets.append(k)
+            new_session.get(dataset=original_area_datasets, update=update,
+                            save=save, **kwargs)
+            new_session.get_custom(dataset=custom_area_datasets, update=update,
+                                   save=save, **kwargs)
+
+        if self.inplace is True:
+            self._datasets.update(new_session.datasets)
+            return
+        else:
             return new_session
 
     def resample(self, rule: Union[pd.DateOffset, pd.Timedelta, str, List],
@@ -434,7 +510,7 @@ class Session(object):
                   ignore_warnings: Union[bool, List] = True,
                   errors: Union[str, List, None] = None,
                   select: Union[str, int, Sequence[str],
-                                                    Sequence[int]] = "all",
+                                Sequence[int]] = "all",
                   **kwargs) -> Session:
         """
         Apply seasonal decomposition.
@@ -605,7 +681,7 @@ class Session(object):
         """Save :attr:`datasets` attribute to CSV or SQL."""
         if self.location is None:
             raise ValueError("No save location defined.")
-        
+
         keys = list(self.datasets.keys())
         if isinstance(select, Sequence) and not isinstance(select, str):
             if not all(type(select[i]) == type(select[0])
