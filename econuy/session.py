@@ -43,9 +43,6 @@ class Session(object):
     logger : logging.Logger, default None
         Logger object. For most cases this attribute should be ``None``,
         allowing :attr:`log` to control how logging works.
-    inplace : bool, default False
-        If True, transformation methods will modify the :attr:`dataset`
-        inplace and return the input :class:`Session` instance.
     errors : {'raise', 'coerce', 'ignore'}
         How to handle errors that arise from transformations. ``raise`` will
         raise a ValueError, ``coerce`` will force the data into ``np.nan`` and
@@ -60,14 +57,12 @@ class Session(object):
                  only_get: bool = False,
                  log: Union[int, str] = 1,
                  logger: Optional[logging.Logger] = None,
-                 inplace: bool = True,
                  errors: str = "raise"):
         self.location = location
         self.revise_rows = revise_rows
         self.only_get = only_get
         self.log = log
         self.logger = logger
-        self.inplace = inplace
         self.errors = errors
         self._datasets = {}
 
@@ -114,7 +109,6 @@ class Session(object):
                          f"Offline: {only_get}\n"
                          f"Update method: '{revise_method}'\n"
                          f"Logging method: {log_method}\n"
-                         f"Inplace: {inplace}\n"
                          f"Error handling: {errors}")
 
     @staticmethod
@@ -297,22 +291,15 @@ class Session(object):
 
         update_loc = self._parse_location(process=update)
         save_loc = self._parse_location(process=save)
-        output = {}
         for name in dataset:
             retrieved = self._download(original=True, dataset=name,
-                                       update_loc=update_loc,
-                                       save_loc=save_loc,
-                                       revise_rows=self.revise_rows,
-                                       only_get=self.only_get, **kwargs)
-            output.update({name: retrieved})
+                                    update_loc=update_loc,
+                                    save_loc=save_loc,
+                                    revise_rows=self.revise_rows,
+                                    only_get=self.only_get, **kwargs)
+            self._datasets.update({name: retrieved})
         self.logger.info(f"Retrieved {', '.join(dataset)} dataset(s).")
-        if self.inplace is True:
-            self._datasets.update(output)
-            return
-        else:
-            new_session = self.copy(deep=True)
-            new_session._datasets.update(output)
-            return new_session
+        return
 
     def get_custom(self, dataset: Union[str, Sequence[str]],
                    update: bool = True, save: bool = True,
@@ -353,22 +340,15 @@ class Session(object):
 
         update_loc = self._parse_location(process=update)
         save_loc = self._parse_location(process=save)
-        output = {}
         for name in dataset:
             retrieved = self._download(original=False, dataset=name,
                                        update_loc=update_loc,
                                        save_loc=save_loc,
                                        revise_rows=self.revise_rows,
                                        only_get=self.only_get, **kwargs)
-            output.update({name: retrieved})
+            self._datasets.update({name: retrieved})
         self.logger.info(f"Retrieved {', '.join(dataset)} dataset(s).")
-        if self.inplace is True:
-            self._datasets.update(output)
-            return
-        else:
-            new_session = self.copy(deep=True)
-            new_session._datasets.update(output)
-            return new_session
+        return
 
     def get_bulk(self, group: str, update: bool = True,
                  save: bool = True, **kwargs) -> Session:
@@ -440,11 +420,9 @@ class Session(object):
             new_session.get_custom(dataset=custom_area_datasets, update=update,
                                    save=save, **kwargs)
 
-        if self.inplace is True:
-            self._datasets.update(new_session.datasets)
-            return
-        else:
-            return new_session
+        self._datasets.update(new_session.datasets)
+        return
+
 
     def resample(self, rule: Union[pd.DateOffset, pd.Timedelta, str, List],
                  operation: Union[str, List] = "sum",
@@ -466,13 +444,8 @@ class Session(object):
                                             interpolation=interpolation)
         self.logger.info(f"Applied 'resample' transformation with '{rule}' "
                          f"and '{operation}' operation.")
-        if self.inplace is True:
-            self._datasets = output
-            return
-        else:
-            new_session = self.copy(deep=True)
-            new_session._datasets = output
-            return new_session
+        self._datasets = output
+        return
 
     def chg_diff(self, operation: Union[str, List] = "chg",
                  period: Union[str, List] = "last",
@@ -491,13 +464,9 @@ class Session(object):
                                             operation=operation, period=period)
         self.logger.info(f"Applied 'chg_diff' transformation with "
                          f"'{operation}' operation and '{period}' period.")
-        if self.inplace is True:
-            self._datasets = output
-            return
-        else:
-            new_session = self.copy(deep=True)
-            new_session._datasets = output
-            return new_session
+        self._datasets = output
+        return
+
 
     def decompose(self, component: Union[str, List] = "both",
                   method: Union[str, List] = "x13",
@@ -548,13 +517,8 @@ class Session(object):
                                             **kwargs)
         self.logger.info(f"Applied 'decompose' transformation with "
                          f"'{method}' method and '{component}' component.")
-        if self.inplace is True:
-            self._datasets = output
-            return
-        else:
-            new_session = self.copy(deep=True)
-            new_session._datasets = output
-            return new_session
+        self._datasets = output
+        return
 
     def convert(self, flavor: Union[str, List],
                 update: Union[bool, List] = True,
@@ -616,13 +580,8 @@ class Session(object):
 
         self.logger.info(f"Applied 'convert' transformation "
                          f"with '{flavor}' flavor.")
-        if self.inplace is True:
-            self._datasets = output
-            return
-        else:
-            new_session = self.copy(deep=True)
-            new_session._datasets = output
-            return new_session
+        self._datasets = output
+        return
 
     def rebase(self, start_date: Union[str, datetime, List],
                end_date: Union[str, datetime, None, List] = None,
@@ -642,13 +601,8 @@ class Session(object):
                                             start_date=start_date,
                                             end_date=end_date, base=base)
         self.logger.info("Applied 'rebase' transformation.")
-        if self.inplace is True:
-            self._dataset = output
-            return
-        else:
-            new_session = self.copy(deep=True)
-            new_session._datasets = output
-            return new_session
+        self._datasets = output
+        return
 
     def rolling(self, window: Union[int, List, None] = None,
                 operation: Union[str, List] = "sum",
@@ -668,13 +622,8 @@ class Session(object):
                                             operation=operation)
         self.logger.info(f"Applied 'rolling' transformation with "
                          f"{window} periods and '{operation}' operation.")
-        if self.inplace is True:
-            self._datasets = output
-            return
-        else:
-            new_session = self.copy(deep=True)
-            new_session._datasets = output
-            return new_session
+        self._datasets = output
+        return
 
     def save(self,
              select: Union[str, int, Sequence[str], Sequence[int]] = "all"):
