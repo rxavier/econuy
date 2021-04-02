@@ -229,18 +229,18 @@ class Session(object):
                 new_kwargs.update({k: v})
 
         output = self.datasets.copy()
-        for i, (name, data) in enumerate(self.datasets.items()):
-            if name in select_datasets:
-                current_kwargs = {k: v[i] for k, v in new_kwargs.items()}
-                if isinstance(data, Dict):
-                    transformed = {}
-                    for subname, subdata in data.items():
-                        subtransformed = transformation(subdata,
-                                                        **current_kwargs)
-                        transformed.update({subname: subtransformed})
-                else:
-                    transformed = transformation(data, **current_kwargs)
-                output.update({name: transformed})
+        for i, name in enumerate(select_datasets):
+            current_kwargs = {k: v[i] for k, v in new_kwargs.items()}
+            data = self.datasets[name]
+            if isinstance(data, Dict):
+                transformed = {}
+                for subname, subdata in data.items():
+                    subtransformed = transformation(subdata,
+                                                    **current_kwargs)
+                    transformed.update({subname: subtransformed})
+            else:
+                transformed = transformation(data, **current_kwargs)
+            output.update({name: transformed})
 
         return output
 
