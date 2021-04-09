@@ -953,7 +953,10 @@ def commodity_prices(
     prev_milk.columns, proc_milk.columns = ["Price"], ["Price"]
     milk = prev_milk.append(proc_milk)
 
-    raw_imf = (pd.read_excel(url["imf"])
+    r_imf = requests.get(url["imf"])
+    imf = re.findall("external-data[A-z]+.ashx", r_imf.text)[0]
+    imf = f"https://imf.org/-/media/Files/Research/CommodityPrices/Monthly/{imf}"
+    raw_imf = (pd.read_excel(imf)
                .dropna(how="all", axis=1).dropna(how="all", axis=0))
     raw_imf.columns = raw_imf.iloc[0, :]
     proc_imf = raw_imf.iloc[3:, 1:]
