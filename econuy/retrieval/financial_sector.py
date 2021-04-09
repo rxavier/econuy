@@ -1,12 +1,12 @@
 import datetime as dt
 import re
 import time
+from urllib import request
 from os import PathLike
 from typing import Union
 from urllib.error import HTTPError, URLError
 
 import pandas as pd
-import requests
 from bs4 import BeautifulSoup
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
@@ -381,8 +381,8 @@ def sovereign_risk(
     historical = pd.read_excel(urls[name]["dl"]["historical"],
                                usecols="B:C", skiprows=1, index_col=0,
                                sheet_name="Valores de Cierre Diarios")
-    r = requests.get(urls[name]["dl"]["current"])
-    soup = BeautifulSoup(r.content, features="lxml")
+    r = request.urlopen(urls[name]["dl"]["current"])
+    soup = BeautifulSoup(r.peek(), features="lxml")
     raw_string = soup.find_all(type="hidden")[0]["value"]
     raw_list = raw_string.split("],")
     raw_list = [re.sub(r'["\[\]]', "", line) for line in raw_list]

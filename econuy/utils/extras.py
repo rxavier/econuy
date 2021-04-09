@@ -751,6 +751,6 @@ investing_headers = {
                   "Chrome/86.0.4240.111 Safari/537.36",
     "X-Requested-With": "XMLHttpRequest",
     "Accept": "text/html",
-    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Encoding": "gzip, deflate",
     "Connection": "keep-alive",
 }
