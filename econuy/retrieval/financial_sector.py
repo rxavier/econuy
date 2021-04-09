@@ -1,19 +1,22 @@
 import datetime as dt
 import re
 import time
+from pathlib import Path
+from io import BytesIO
 from urllib import request
 from os import PathLike
 from typing import Union
 from urllib.error import HTTPError, URLError
 
 import pandas as pd
+import requests
 from bs4 import BeautifulSoup
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from selenium.webdriver.remote.webdriver import WebDriver
 from sqlalchemy.engine.base import Engine, Connection
 
-from econuy.utils import ops, metadata
+from econuy.utils import ops, metadata, get_project_root
 from econuy.utils.chromedriver import _build
 from econuy.utils.sources import urls
 
@@ -377,10 +380,21 @@ def sovereign_risk(
                          name=name)
         if not output.equals(pd.DataFrame()):
             return output
-
-    historical = pd.read_excel(urls[name]["dl"]["historical"],
-                               usecols="B:C", skiprows=1, index_col=0,
-                               sheet_name="Valores de Cierre Diarios")
+    try:
+        historical = pd.read_excel(urls[name]["dl"]["historical"],
+                                   usecols="B:C", skiprows=1, index_col=0,
+                                   sheet_name="Valores de Cierre Diarios")
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certificate = Path(get_project_root(), "utils", "files",
+                               "rafap_certs.pem")
+            r = requests.get(urls[name]["dl"]["historical"],
+                             verify=certificate)
+            historical = pd.read_excel(BytesIO(r.content), usecols="B:C",
+                                       skiprows=1, index_col=0,
+                                       sheet_name="Valores de Cierre Diarios")
+        else:
+            raise err
     r = request.urlopen(urls[name]["dl"]["current"])
     soup = BeautifulSoup(r.peek(), features="lxml")
     raw_string = soup.find_all(type="hidden")[0]["value"]
@@ -594,7 +608,7 @@ def bonds(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     if update_loc is not None:
         previous_data = ops._io(operation="update", data_loc=update_loc,
-            name=name)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
