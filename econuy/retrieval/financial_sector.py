@@ -1,12 +1,14 @@
 import datetime as dt
 import re
 import time
-from urllib import request
+from io import BytesIO
 from os import PathLike
 from typing import Union
 from urllib.error import HTTPError, URLError
+from requests.exceptions import SSLError
 
 import pandas as pd
+import requests
 from bs4 import BeautifulSoup
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
@@ -378,11 +380,19 @@ def sovereign_risk(
         if not output.equals(pd.DataFrame()):
             return output
 
-    historical = pd.read_excel(urls[name]["dl"]["historical"],
-                               usecols="B:C", skiprows=1, index_col=0,
-                               sheet_name="Valores de Cierre Diarios")
-    r = request.urlopen(urls[name]["dl"]["current"])
-    soup = BeautifulSoup(r.peek(), features="lxml")
+    try:
+        historical = pd.read_excel(urls[name]["dl"]["historical"],
+                                   usecols="B:C", skiprows=1, index_col=0,
+                                   sheet_name="Valores de Cierre Diarios")
+        r_current = requests.get(urls[name]["dl"]["current"])
+    except (SSLError, URLError, HTTPError):
+        r_historical = requests.get(
+            urls[name]["dl"]["historical"], verify=False)
+        historical = pd.read_excel(BytesIO(r_historical.content),
+                                   usecols="B:C", skiprows=1, index_col=0,
+                                   sheet_name="Valores de Cierre Diarios")
+        r_current = requests.get(urls[name]["dl"]["current"], verify=False)
+    soup = BeautifulSoup(r_current.text, features="lxml")
     raw_string = soup.find_all(type="hidden")[0]["value"]
     raw_list = raw_string.split("],")
     raw_list = [re.sub(r'["\[\]]', "", line) for line in raw_list]
@@ -594,7 +604,7 @@ def bonds(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     if update_loc is not None:
         previous_data = ops._io(operation="update", data_loc=update_loc,
-            name=name)
+                                name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows=revise_rows)
 
