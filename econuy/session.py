@@ -220,7 +220,7 @@ class Session(object):
 
         Parameters
         ----------
-        select : Union[str, int, Sequence[str], Sequence[int]]
+        select : str, int, Sequence[str] or Sequence[int], default "all"
             Datasets in :attr:`datasets` to apply transformation on.
         transformation : Callable
             Function representing the transformation to apply.
@@ -327,7 +327,6 @@ class Session(object):
                                  f"Retrying (run {self._retries}).")
                 self.get(dataset=failed, update=update, save=save, **kwargs)
             else:
-
                 self.logger.info(f"Could not retrieve {', '.join(failed)}")
             self._retries = 1
             return
