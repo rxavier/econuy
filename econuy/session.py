@@ -373,14 +373,33 @@ class Session(object):
 
         update_loc = self._parse_location(process=update)
         save_loc = self._parse_location(process=save)
+        failed = []
+        not_failed = []
         for name in dataset:
-            retrieved = self._download(original=False, dataset=name,
-                                       update_loc=update_loc,
-                                       save_loc=save_loc,
-                                       revise_rows=self.revise_rows,
-                                       only_get=self.only_get, **kwargs)
-            self._datasets.update({name: retrieved})
-        self.logger.info(f"Retrieved {', '.join(dataset)} dataset(s).")
+            try:
+                retrieved = self._download(original=False, dataset=name,
+                                           update_loc=update_loc,
+                                           save_loc=save_loc,
+                                           revise_rows=self.revise_rows,
+                                           only_get=self.only_get, **kwargs)
+                self._datasets.update({name: retrieved})
+                not_failed.append(name)
+            except:
+                failed.append(name)
+                continue
+        if len(not_failed) > 0:
+            self.logger.info(f"Retrieved {', '.join(not_failed)}")
+        if len(failed) > 0:
+            if self._retries < self.max_retries:
+                self._retries += 1
+                self.logger.info(f"Failed to retrieve {', '.join(failed)}. "
+                                 f"Retrying (run {self._retries}).")
+                self.get(dataset=failed, update=update, save=save, **kwargs)
+            else:
+                self.logger.info(f"Could not retrieve {', '.join(failed)}")
+            self._retries = 1
+            return
+        self._retries = 1
         return
 
     def get_bulk(self, group: str, update: bool = True,
