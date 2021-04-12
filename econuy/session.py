@@ -47,6 +47,10 @@ class Session(object):
         How to handle errors that arise from transformations. ``raise`` will
         raise a ValueError, ``coerce`` will force the data into ``np.nan`` and
         ``ignore`` will leave the input data as is.
+    max_retries : int, default 3
+        Number of retries for :mod:`~econuy.session.Session.get` and
+        :mod:`~econuy.session.Session.get_custom` in case any of the selected
+        datasets cannot be retrieved.
 
     """
 
@@ -57,14 +61,18 @@ class Session(object):
                  only_get: bool = False,
                  log: Union[int, str] = 1,
                  logger: Optional[logging.Logger] = None,
-                 errors: str = "raise"):
+                 errors: str = "raise",
+                 max_retries: int = 3):
         self.location = location
         self.revise_rows = revise_rows
         self.only_get = only_get
         self.log = log
         self.logger = logger
         self.errors = errors
+        self.max_retries = max_retries
+
         self._datasets = {}
+        self._retries = 1
 
         if isinstance(location, (str, PathLike)):
             if not path.exists(self.location):
@@ -291,14 +299,34 @@ class Session(object):
 
         update_loc = self._parse_location(process=update)
         save_loc = self._parse_location(process=save)
+        failed = []
+        not_failed = []
         for name in dataset:
-            retrieved = self._download(original=True, dataset=name,
-                                    update_loc=update_loc,
-                                    save_loc=save_loc,
-                                    revise_rows=self.revise_rows,
-                                    only_get=self.only_get, **kwargs)
-            self._datasets.update({name: retrieved})
-        self.logger.info(f"Retrieved {', '.join(dataset)} dataset(s).")
+            try:
+                retrieved = self._download(original=True, dataset=name,
+                                           update_loc=update_loc,
+                                           save_loc=save_loc,
+                                           revise_rows=self.revise_rows,
+                                           only_get=self.only_get, **kwargs)
+                self._datasets.update({name: retrieved})
+                not_failed.append(name)
+            except:
+                failed.append(name)
+                continue
+        if len(not_failed) > 0:
+            self.logger.info(f"Retrieved {', '.join(not_failed)}")
+        if len(failed) > 0:
+            if self._retries < self.max_retries:
+                self._retries += 1
+                self.logger.info(f"Failed to retrieve {', '.join(failed)}. "
+                                 f"Retrying (run {self._retries}).")
+                self.get(dataset=failed, update=update, save=save, **kwargs)
+            else:
+
+                self.logger.info(f"Could not retrieve {', '.join(failed)}")
+            self._retries = 1
+            return
+        self._retries = 1
         return
 
     def get_custom(self, dataset: Union[str, Sequence[str]],
