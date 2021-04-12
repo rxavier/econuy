@@ -757,7 +757,18 @@ class Session(object):
 
     def save(self,
              select: Union[str, int, Sequence[str], Sequence[int]] = "all"):
-        """Save :attr:`datasets` attribute to CSV or SQL."""
+        """Save :attr:`datasets` attribute to CSV or SQL.
+
+        Parameters
+        ----------
+        select : str, int, Sequence[str] or Sequence[int], default "all"
+            Datasets to save.
+
+        Raises
+        ------
+        ValueError
+            If `self.location` is None.
+        """
         if self.location is None:
             raise ValueError("No save location defined.")
 
