@@ -193,6 +193,25 @@ class Session(object):
                       if k in accepted_params.keys()}
         return function(**new_kwargs)
 
+    def _select_datasets(self, select: Union[str, int, Sequence[str],
+                                             Sequence[int]]) -> List[str]:
+        keys = list(self.datasets.keys())
+        if isinstance(select, Sequence) and not isinstance(select, str):
+            if not all(type(select[i]) == type(select[0])
+                       for i in range(len(select))):
+                raise ValueError("`select` must be all `int` or all `str`")
+            if isinstance(select[0], int):
+                proc_select = [keys[i] for i in select]
+            else:
+                proc_select = [i for i in keys if i in select]
+        elif isinstance(select, int):
+            proc_select = [keys[select]]
+        elif select == "all":
+            proc_select = keys
+        else:
+            proc_select = [select]
+        return proc_select
+
     def _apply_transformation(self, select: Union[str, int, Sequence[str],
                                                   Sequence[int]],
                               transformation: Callable,
@@ -211,33 +230,19 @@ class Session(object):
         Transformed datasets : Dict[str, pd.DataFrame]
 
         """
-        keys = list(self.datasets.keys())
-        if isinstance(select, Sequence) and not isinstance(select, str):
-            if not all(type(select[i]) == type(select[0])
-                       for i in range(len(select))):
-                raise ValueError("`select` must be all `int` or all `str`")
-            if isinstance(select[0], int):
-                select_datasets = [keys[i] for i in select]
-            else:
-                select_datasets = [i for i in keys if i in select]
-        elif isinstance(select, int):
-            select_datasets = [keys[select]]
-        elif select == "all":
-            select_datasets = keys
-        else:
-            select_datasets = [select]
+        proc_select = self._select_datasets(select=select)
 
         new_kwargs = {}
         for k, v in kwargs.items():
             if not isinstance(v, Sequence) or isinstance(v, str):
-                new_kwargs.update({k: [v] * len(select_datasets)})
-            elif len(v) != len(select_datasets):
+                new_kwargs.update({k: [v] * len(proc_select)})
+            elif len(v) != len(proc_select):
                 raise ValueError(f"Wrong number of arguments for '{k}'")
             else:
                 new_kwargs.update({k: v})
 
         output = self.datasets.copy()
-        for i, name in enumerate(select_datasets):
+        for i, name in enumerate(proc_select):
             current_kwargs = {k: v[i] for k, v in new_kwargs.items()}
             data = self.datasets[name]
             if isinstance(data, Dict):
@@ -659,24 +664,10 @@ class Session(object):
         if self.location is None:
             raise ValueError("No save location defined.")
 
-        keys = list(self.datasets.keys())
-        if isinstance(select, Sequence) and not isinstance(select, str):
-            if not all(type(select[i]) == type(select[0])
-                       for i in range(len(select))):
-                raise ValueError("`select` must be all `int` or all `str`")
-            if isinstance(select[0], int):
-                select_datasets = [keys[i] for i in select]
-            else:
-                select_datasets = [i for i in keys if i in select]
-        elif isinstance(select, int):
-            select_datasets = [keys[select]]
-        elif select == "all":
-            select_datasets = keys
-        else:
-            select_datasets = [select]
+        proc_select = self._select_datasets(select=select)
 
         for name, dataset in self.datasets.items():
-            if name in select_datasets:
+            if name in proc_select:
                 if isinstance(dataset, dict):
                     for subname, subdataset in dataset.items():
                         ops._io(operation="save", data_loc=self.location,
@@ -687,7 +678,7 @@ class Session(object):
             else:
                 continue
 
-        self.logger.info(f"Saved {', '.join(select_datasets)} "
+        self.logger.info(f"Saved {', '.join(proc_select)} "
                          f"to '{self.location}'.")
 
         return
