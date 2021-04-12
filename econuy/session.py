@@ -456,7 +456,6 @@ class Session(object):
         self._datasets.update(new_session.datasets)
         return
 
-
     def resample(self, rule: Union[pd.DateOffset, pd.Timedelta, str, List],
                  operation: Union[str, List] = "sum",
                  interpolation: Union[str, List] = "linear",
@@ -499,7 +498,6 @@ class Session(object):
                          f"'{operation}' operation and '{period}' period.")
         self._datasets = output
         return
-
 
     def decompose(self, component: Union[str, List] = "both",
                   method: Union[str, List] = "x13",
@@ -656,6 +654,65 @@ class Session(object):
         self.logger.info(f"Applied 'rolling' transformation with "
                          f"{window} periods and '{operation}' operation.")
         self._datasets = output
+        return
+
+    def combine(self, select: Union[str, int, Sequence[str],
+                                    Sequence[int]] = "all",
+                name: Optional[str] = None,
+                force_suffix: bool = False) -> Session:
+        proc_select = self._select_datasets(select=select)
+        proc_select = [x for x in proc_select if "com_" not in x]
+        selected_datasets = [d for n, d in self.datasets.items()
+                             if n in proc_select]
+
+        indicator_names = [col for df in selected_datasets
+                           for col in df.columns.get_level_values(0)]
+        if (len(indicator_names) > len(set(indicator_names))
+                or force_suffix is True):
+            for n, d in zip(proc_select, selected_datasets):
+                try:
+                    full_name = datasets.original[n]["description"]
+                except KeyError:
+                    full_name = datasets.custom[n]["description"]
+                d.columns = d.columns.set_levels(
+                    f"{full_name}_" + d.columns.get_level_values(0),
+                    level=0
+                )
+
+        freqs = [pd.infer_freq(df.index) for df in selected_datasets]
+        if all(freq == freqs[0] for freq in freqs):
+            combined = pd.concat(selected_datasets, axis=1)
+        else:
+            for freq_opt in ["A-DEC", "A", "Q-DEC", "Q",
+                             "M", "2W-SUN", "W-SUN"]:
+                if freq_opt in freqs:
+                    output = []
+                    for df in selected_datasets:
+                        freq_df = pd.infer_freq(df.index)
+                        if freq_df == freq_opt:
+                            df_match = df.copy()
+                        else:
+                            type_df = df.columns.get_level_values("Tipo")[0]
+                            unit_df = df.columns.get_level_values("Unidad")[0]
+                            if type_df == "Stock":
+                                df_match = transform.resample(df, rule=freq_opt,
+                                                              operation="last")
+                            elif (type_df == "Flujo" and
+                                  not any(x in unit_df for
+                                          x in ["%", "=", "Cambio"])):
+                                df_match = transform.resample(df, rule=freq_opt,
+                                                              operation="sum")
+                            else:
+                                df_match = transform.resample(df, rule=freq_opt,
+                                                              operation="mean")
+                        output.append(df_match)
+                    combined = pd.concat(output, axis=1)
+                    break
+                else:
+                    continue
+        if name is None:
+            name = "com_" + "_".join(proc_select)
+        self._datasets.update({name: combined})
         return
 
     def save(self,
