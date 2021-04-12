@@ -674,10 +674,32 @@ class Session(object):
         self._datasets = output
         return
 
-    def combine(self, select: Union[str, int, Sequence[str],
-                                    Sequence[int]] = "all",
-                name: Optional[str] = None,
-                force_suffix: bool = False) -> Session:
+    def concat(self, select: Union[str, int, Sequence[str],
+                                   Sequence[int]] = "all",
+               name: Optional[str] = None,
+               force_suffix: bool = False) -> Session:
+        """Concatenate datasets in :attr:`datasets`and add as a new dataset.
+
+        Resample to lowest frequency of selected datasets.
+
+        Parameters
+        ----------
+        select : str, int, Sequence[str] or Sequence[int], default "all"
+            Datasets to concatenate.
+        name : Optional[str], default None
+            Name used as a key for the output dataset. The default None sets
+            the name to "com_{dataset_1_name}_..._{dataset_n_name}",
+        force_suffix : bool, default False
+            Whether to include each dataset's full name as a prefix in all
+            indicator columns.
+
+        Returns
+        -------
+        :class:`~econuy.session.Session`
+            Loads the concatenated dataframes into the :attr:`datasets`
+            attribute.
+
+        """
         proc_select = self._select_datasets(select=select)
         proc_select = [x for x in proc_select if "com_" not in x]
         selected_datasets = [d for n, d in self.datasets.items()
