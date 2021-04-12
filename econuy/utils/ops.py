@@ -29,12 +29,14 @@ def _load(data_loc: Union[str, PathLike,
                 previous_data = pd.read_csv(data_loc, index_col=0,
                                             parse_dates=True,
                                             header=list(range(9)),
-                                            float_precision="high")
+                                            float_precision="high",
+                                            encoding="latin1")
                 metadata._set(previous_data)
             else:
                 previous_data = pd.read_csv(data_loc, index_col=0,
                                             parse_dates=True,
-                                            float_precision="high")
+                                            float_precision="high",
+                                            encoding="latin1")
     except (ProgrammingError, OperationalError, FileNotFoundError):
         print("Data does not exist. No data will be updated")
         previous_data = pd.DataFrame()
