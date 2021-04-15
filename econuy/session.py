@@ -408,8 +408,8 @@ class Session(object):
 
         Parameters
         ----------
-        group : {'all', 'original', 'custom', 'economic_activity',
-                 'prices', 'fiscal_accounts', 'labor', 'external_sector',
+        group : {'all', 'original', 'custom', 'economic_activity', \
+                 'prices', 'fiscal_accounts', 'labor', 'external_sector', \
                  'financial_sector', 'income', 'international', 'regional'}
             Type of data to download. `all` gets all available datasets,
             `original` gets all original datatsets and `custom` gets all
@@ -678,7 +678,8 @@ class Session(object):
                                    Sequence[int]] = "all",
                name: Optional[str] = None,
                force_suffix: bool = False) -> Session:
-        """Concatenate datasets in :attr:`datasets`and add as a new dataset.
+        """
+        Concatenate datasets in :attr:`datasets` and add as a new dataset.
 
         Resample to lowest frequency of selected datasets.
 
@@ -688,7 +689,7 @@ class Session(object):
             Datasets to concatenate.
         name : Optional[str], default None
             Name used as a key for the output dataset. The default None sets
-            the name to "com_{dataset_1_name}_..._{dataset_n_name}",
+            the name to "com_{dataset_1_name}_..._{dataset_n_name}".
         force_suffix : bool, default False
             Whether to include each dataset's full name as a prefix in all
             indicator columns.
