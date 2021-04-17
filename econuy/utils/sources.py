@@ -314,8 +314,8 @@ urls = {"call":
                        "http://www.ciu.com.uy/innovaportal/v/83062/9/innova.front/series-de-ventas-mensuales-por-destino.html"],
                        "provider": ["AFCPU y CIU"]}},
         "consumer_confidence": {"dl": {
-            "main": "https://ucu.edu.uy/es/icc"},
-            "source": {"direct": [],
+            "main": "https://ucu.edu.uy/sites/default/files/facultad/fce/i_competitividad/serie_icc_-.xlsx"},
+            "source": {"direct": ["https://ucu.edu.uy/sites/default/files/facultad/fce/i_competitividad/serie_icc_-.xlsx"],
             "indirect": [
                 "https://ucu.edu.uy/es/icc"],
             "provider": ["UCU"]}},
