@@ -288,7 +288,8 @@ urls = {"call":
                 "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"],
             "provider": ["BCU"]}},
         "industrial_production": {"dl": {
-            "main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181"},
+            "main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181",
+            "weights": "http://www.ine.gub.uy/c/document_library/get_file?uuid=864b4bc2-626d-49ab-82ef-1bcf08360da1&groupId=10181"},
             "source": {"direct": [
                 "http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181"],
             "indirect": [
