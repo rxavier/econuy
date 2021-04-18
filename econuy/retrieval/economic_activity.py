@@ -576,7 +576,7 @@ def industrial_production(update_loc: Union[str, PathLike,
                                             regex=True)].drop("Mes", axis=1)
     output.index = pd.date_range(start="2002-01-31", freq="M",
                                  periods=len(output))
-    
+
     column_names = []
     for c in output.columns[2:]:
         match = weights.loc[weights["division"] == c, "Denominación"]
@@ -683,12 +683,8 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
             / 10000)
     output = data.loc[:, ["Industrias manufactureras",
                           "Industrias manufactureras sin refinería"]]
-    try:
-        exclude = (data.loc[:, "1549"] * other_foods
-                   + data.loc[:, "2101"] * pulp)
-    except KeyError:
-        exclude = (data.loc[:, 1549] * other_foods
-                   + data.loc[:, 2101] * pulp)
+    exclude = (data.loc[:, "Elaboración de productos alimenticios n.c.p"] * other_foods
+                + data.loc[:, "Pulpa de madera, papel y cartón"] * pulp)
     core = data["Industrias manufactureras sin refinería"] - exclude
     core = pd.concat([core], keys=["Núcleo industrial"],
                      names=["Indicador"], axis=1)
