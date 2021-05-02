@@ -25,18 +25,24 @@ def _load(data_loc: Union[str, PathLike,
                                             index_col="index",
                                             parse_dates="index")
         else:
+            date_format = None
+            if "cattle" in str(data_loc):
+                date_format = "%d/%m/%Y"
             if multiindex is True:
                 previous_data = pd.read_csv(data_loc, index_col=0,
-                                            parse_dates=True,
                                             header=list(range(9)),
                                             float_precision="high",
                                             encoding="latin1")
+                previous_data.index = pd.to_datetime(previous_data.index,
+                                                     format=date_format)
                 metadata._set(previous_data)
             else:
                 previous_data = pd.read_csv(data_loc, index_col=0,
-                                            parse_dates=True,
                                             float_precision="high",
                                             encoding="latin1")
+                previous_data.index = pd.to_datetime(previous_data.index,
+                                                     format=date_format)
+
     except (ProgrammingError, OperationalError, FileNotFoundError):
         print("Data does not exist. No data will be updated")
         previous_data = pd.DataFrame()
