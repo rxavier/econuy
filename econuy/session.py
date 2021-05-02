@@ -12,6 +12,7 @@ from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
 from econuy.utils import datasets, logutil, ops
+from econuy.utils.exceptions import RetryLimitError
 
 
 class Session(object):
@@ -328,6 +329,9 @@ class Session(object):
                 self.get(dataset=failed, update=update, save=save, **kwargs)
             else:
                 self.logger.info(f"Could not retrieve {', '.join(failed)}")
+                self._retries = 1
+                raise RetryLimitError(f"Maximum retries ({self.max_retries})"
+                                      f" reached.")
             self._retries = 1
             return
         self._retries = 1
@@ -393,9 +397,13 @@ class Session(object):
                 self._retries += 1
                 self.logger.info(f"Failed to retrieve {', '.join(failed)}. "
                                  f"Retrying (run {self._retries}).")
-                self.get(dataset=failed, update=update, save=save, **kwargs)
+                self.get_custom(dataset=failed, update=update,
+                                save=save, **kwargs)
             else:
                 self.logger.info(f"Could not retrieve {', '.join(failed)}")
+                self._retries = 1
+                raise RetryLimitError(f"Maximum retries ({self.max_retries})"
+                                      f" reached.")
             self._retries = 1
             return
         self._retries = 1
@@ -466,10 +474,12 @@ class Session(object):
             for k, v in available_datasets["custom"].items():
                 if group in getmodule(v["function"]).__name__:
                     custom_area_datasets.append(k)
-            new_session.get(dataset=original_area_datasets, update=update,
-                            save=save, **kwargs)
-            new_session.get_custom(dataset=custom_area_datasets, update=update,
-                                   save=save, **kwargs)
+            if len(original_area_datasets) > 0:
+                new_session.get(dataset=original_area_datasets,
+                                update=update, save=save, **kwargs)
+            if len(custom_area_datasets) > 0:
+                new_session.get_custom(dataset=custom_area_datasets,
+                                       update=update, save=save, **kwargs)
 
         self._datasets.update(new_session.datasets)
         return
