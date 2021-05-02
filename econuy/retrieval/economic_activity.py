@@ -580,15 +580,18 @@ def industrial_production(update_loc: Union[str, PathLike,
     column_names = []
     for c in output.columns[2:]:
         match = weights.loc[weights["division"] == c, "Denominación"]
+        prefix = "Div_"
         if isinstance(match, pd.Series) and match.empty:
+            prefix = "Agr_"
             match = weights.loc[weights["agrupacion"] == c, "Denominación"]
             if isinstance(match, pd.Series) and match.empty:
+                prefix = "Cla_"
                 match = weights.loc[weights["clase"] == c, "Denominación"]
         try:
             match = match.iloc[0]
         except AttributeError:
             pass
-        match = match.strip()[:-1].capitalize()
+        match = (prefix + match.capitalize().strip())[:-1]
         if len(match) > 60:
             match = match[:58] + "..."
         column_names.append(match)
@@ -683,8 +686,8 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
             / 10000)
     output = data.loc[:, ["Industrias manufactureras",
                           "Industrias manufactureras sin refinería"]]
-    exclude = (data.loc[:, "Elaboración de productos alimenticios n.c.p"] * other_foods
-                + data.loc[:, "Pulpa de madera, papel y cartón"] * pulp)
+    exclude = (data.loc[:, "Cla_Elaboración de productos alimenticios n.c.p"] * other_foods
+                + data.loc[:, "Cla_Pulpa de madera, papel y cartón"] * pulp)
     core = data["Industrias manufactureras sin refinería"] - exclude
     core = pd.concat([core], keys=["Núcleo industrial"],
                      names=["Indicador"], axis=1)
@@ -750,7 +753,9 @@ def cattle(
     with open(temp, "wb") as f:
         r = requests.get(urls[name]["dl"]["main"])
         f.write(r.content)
-    output = pd.read_excel(temp, skiprows=8, usecols="A,C:H", index_col=0)
+    output = pd.read_excel(temp, skiprows=8, usecols="C:H")
+    output.index = pd.date_range(start="2005-01-02", freq="W",
+                                 periods=len(output))
 
     if update_loc is not None:
         previous_data = ops._io(operation="update", data_loc=update_loc,
