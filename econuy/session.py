@@ -409,14 +409,14 @@ class Session(object):
         self._retries = 1
         return
 
-    def get_bulk(self, group: str, update: bool = True,
+    def get_bulk(self, dataset: str, update: bool = True,
                  save: bool = True, **kwargs) -> Session:
         """
         Get datasets in bulk.
 
         Parameters
         ----------
-        group : {'all', 'original', 'custom', 'economic_activity', \
+        dataset : {'all', 'original', 'custom', 'economic_activity', \
                  'prices', 'fiscal_accounts', 'labor', 'external_sector', \
                  'financial_sector', 'income', 'international', 'regional'}
             Type of data to download. `all` gets all available datasets,
@@ -439,28 +439,28 @@ class Session(object):
         Raises
         ------
         ValueError
-            If an invalid string is given to the ``group`` argument.
+            If an invalid string is given to the ``dataset`` argument.
 
         """
-        valid_group = ["all", "original", "custom", "economic_activity",
-                       "prices", "fiscal_accounts", "labor", "external_sector",
-                       "financial_sector", "income", "international",
-                       "regional"]
-        if group not in valid_group:
-            raise ValueError(f"'group' can only be one of "
-                             f"{', '.join(valid_group)}.")
+        valid_datasets = ["all", "original", "custom", "economic_activity",
+                          "prices", "fiscal_accounts", "labor", "external_sector",
+                          "financial_sector", "income", "international",
+                          "regional"]
+        if dataset not in valid_datasets:
+            raise ValueError(f"'dataset' can only be one of "
+                             f"{', '.join(valid_datasets)}.")
         available_datasets = self.available_datasets(functions=True)
         original_datasets = list(available_datasets["original"].keys())
         custom_datasets = list(available_datasets["custom"].keys())
         new_session = self.copy(deep=True)
 
-        if group == "original":
+        if dataset == "original":
             new_session.get(dataset=original_datasets, update=update,
                             save=save, **kwargs)
-        elif group == "custom":
+        elif dataset == "custom":
             new_session.get_custom(dataset=custom_datasets, update=update,
                                    save=save, **kwargs)
-        elif group == "all":
+        elif dataset == "all":
             new_session.get(dataset=original_datasets, update=update,
                             save=save, **kwargs)
             new_session.get_custom(dataset=custom_datasets, update=update,
@@ -468,11 +468,11 @@ class Session(object):
         else:
             original_area_datasets = []
             for k, v in available_datasets["original"].items():
-                if group in getmodule(v["function"]).__name__:
+                if dataset in getmodule(v["function"]).__name__:
                     original_area_datasets.append(k)
             custom_area_datasets = []
             for k, v in available_datasets["custom"].items():
-                if group in getmodule(v["function"]).__name__:
+                if dataset in getmodule(v["function"]).__name__:
                     custom_area_datasets.append(k)
             if len(original_area_datasets) > 0:
                 new_session.get(dataset=original_area_datasets,
