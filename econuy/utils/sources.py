@@ -20,14 +20,14 @@ urls = {"call":
                        "provider": ["BEVSA"]}},
         "deposits":
         {"dl": {
-            "main": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Depositos.xls"},
+            "main": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Depositos.xlsx"},
             "source": {"direct": ["https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Depositos.xls"],
                        "indirect": [
                            "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Series-estadisticas-Depositos.aspx"],
                        "provider": ["BCU"]}},
         "credit":
         {"dl": {
-            "main": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Creditos.xls"},
+            "main": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Creditos.xlsx "},
             "source": {"direct": ["https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Creditos.xls"],
                        "indirect": [
                            "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Series-Estadisticas-Creditos.aspx"],
@@ -65,8 +65,8 @@ urls = {"call":
         "commodity_index":
         {"dl": {
             "beef": "https://www.inac.uy/innovaportal/v/9799/10/innova.front/serie-semanal-ingreso-medio-de-exportacion---bovino-ovino-y-otros-productos",
-            "pulp": f"https://www.insee.fr/en/statistiques/serie/telecharger/010600339?ordre=antechronologique&"
-                    f"transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=11&anneeFin="
+            "pulp": f"https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600339?ordre="
+                    f"antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=4&anneeFin="
                     f"{dt.datetime.now().year}",
             "soybean": "https://www.quandl.com/api/v3/datasets/CHRIS/CME_S1.csv?api_key=3TPxACcrxy9WsE871Lqe",
             "wheat": "https://www.quandl.com/api/v3/datasets/CHRIS/CME_W1.csv?api_key=3TPxACcrxy9WsE871Lqe",

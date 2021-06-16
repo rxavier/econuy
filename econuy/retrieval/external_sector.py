@@ -981,6 +981,7 @@ def commodity_prices(
     complete = complete.reindex(beef.index).dropna(thresh=8)
     complete.columns = ["Beef", "Pulp", "Soybeans", "Milk", "Rice", "Wood",
                         "Wool", "Barley", "Gold", "Wheat"]
+    complete = complete.apply(pd.to_numeric, errors="coerce")
 
     if update_loc is not None:
         previous_data = ops._io(operation="update",
