@@ -43,8 +43,8 @@ class Retriever(object):
 
     @staticmethod
     def available_datasets():
-        all = datasets.original
-        all.update(datasets.custom)
+        all = datasets.original()
+        all.update(datasets.custom())
         return all
 
     @property

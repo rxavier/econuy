@@ -1,8 +1,8 @@
-from econuy.retrieval import (prices, fiscal_accounts, economic_activity,
-                              labor, external_sector, financial_sector, income,
-                              international, regional)
+def original():
+    from econuy.retrieval import (prices, fiscal_accounts, economic_activity,
+                                  labor, external_sector, financial_sector, income)
 
-original = {"natacc_ind_con_nsa": {"description": "Cuentas nacionales, oferta "
+    return {"natacc_ind_con_nsa": {"description": "Cuentas nacionales, oferta "
                                    "precios constantes, serie original",
                                    "function": economic_activity.natacc_ind_con_nsa},
             "natacc_gas_con_nsa": {"description": "Cuentas nacionales, demanda "
@@ -65,7 +65,7 @@ original = {"natacc_ind_con_nsa": {"description": "Cuentas nacionales, oferta "
             "public_debt_cb": {"description": "Deuda pública del BCU",
                                "function": fiscal_accounts.public_debt_cb},
             "public_assets": {"description": "Activos del sectro público",
-                               "function": fiscal_accounts.public_assets},
+                              "function": fiscal_accounts.public_assets},
             "labor_rates": {"description": "Tasa de actividad, empleo y desempleo",
                             "function": labor.labor_rates},
             "hours_worked": {"description": "Horas promedio trabajadas por sector",
@@ -123,74 +123,80 @@ original = {"natacc_ind_con_nsa": {"description": "Cuentas nacionales, oferta "
             "consumer_confidence": {"description": "Índice de confianza de los consumidores",
                                     "function": income.consumer_confidence}}
 
-custom = {"core_industrial": {"description": "Producción industrial total, sin refinería y "
-                              "núcleo",
-                              "function": economic_activity.core_industrial},
-          "cpi_measures": {"description": "índice de precios transable, no transable, "
-                           "subyacente, residual y Winsorized 5%",
-                           "function": prices.cpi_measures},
-          "balance_summary": {"description": "Resultado fiscal resumido",
-                              "function": fiscal_accounts.balance_summary},
-          "net_public_debt": {"description": "Deuda neta excluyendo encajes",
-                              "function": fiscal_accounts.net_public_debt},
-          "labor_rates_people": {"description": "Tasas de actividad, empleo y desempleo, incluyendo "
-                                 "localidades de más de 5 mil personas, y cantidad "
-                                 "de personas",
-                                 "function": labor.rates_people},
-          "trade_balance": {"description": "Balanza comercial por país",
-                            "function": external_sector.trade_balance},
-          "terms_of_trade": {"description": "Términos de intercambio",
-                             "function": external_sector.terms_of_trade},
-          "commodity_prices": {"description": "Precios de materias",
-                               "function": external_sector.commodity_prices},
-          "commodity_index": {"description": "Índice de precios de materias primas",
-                              "function": external_sector.commodity_index},
-          "rxr_custom": {"description": "Tipos de cambio reales vs. EE.UU., Argentina y "
-                         "Brasil",
-                         "function": external_sector.rxr_custom},
-          "bonds": {"description": "Rendimiento de bonos soberanos en USD, UI y pesos",
-                    "function": financial_sector.bonds},
-          "global_gdp": {"description": "PBI real desestacionalizado de Estados Unidos,"
-                         "Unión Europea, Japón y China",
-                         "function": international.gdp},
-          "global_stocks": {"description": "Índices bursátiles (S&P 500, Euronext 100, Nikkei"
-                            "225 y Shanghai Composite)",
-                            "function": international.stocks},
-          "global_policy_rates": {"description": "Tasas de política monetaria de Estados "
-                                  "Unidos, Eurozona, Japón y China",
-                                  "function": international.policy_rates},
-          "global_long_rates": {"description": "Tasas de bonos soberanos a 10 años de Estados "
-                                "Unidos, Alemania, Francia, Italia, España, "
-                                "Reino unido, Japón y China",
-                                "function": international.long_rates},
-          "global_nxr": {"description": "Cotización de monedas de Estados Unidos "
-                         "(dollar index), USDUER, USDJPY y USDCNY",
-                         "function": international.nxr},
-          "regional_gdp": {"description": "PBI real desestacionalizado de Argentina y Brasil",
-                           "function": regional.gdp},
-          "regional_monthly_gdp": {"description": "PBI mensual real desestacionalizado de "
-                                   "Argentina y Brasil",
-                                   "function": regional.monthly_gdp},
-          "regional_cpi": {"description": "Índice de precios al consumo de Argentina y Brasil",
-                           "function": regional.cpi},
-          "regional_embi_spreads": {"description": "EMBI spread de Argentina, Brasil y "
-                                    "EMBI Global",
-                                    "function": regional.embi_spreads},
-          "regional_embi_yields": {"description": "EMBI yield de Argentina, Brasil y "
-                                   "EMBI Global",
-                                   "function": regional.embi_yields},
-          "regional_nxr": {"description": "Tipo de cambio de Argentina (oficial y "
-                           "paralelo) y Brasil",
-                           "function": regional.nxr},
-          "regional_policy_rates": {"description": "Tasas de política monetaria de Argentina "
-                                    "y Brasil",
-                                    "function": regional.policy_rates},
-          "regional_stocks": {"description": "Índices bursátiles (MERVAL y BOVESPA) "
-                              "en dólares",
-                              "function": regional.stocks},
-          "regional_rxr": {"description": "Tipo de cambio real de Argentina y Brasil "
-                           "vis-à-vis EE.UU.",
-                           "function": regional.rxr},
-          "_lin_gdp": {"desription": "PBI mensual linealizado en pesos y USD con proyecciones",
-                       "function": economic_activity._lin_gdp}
-          }
+
+def custom():
+    from econuy.retrieval import (prices, fiscal_accounts, economic_activity,
+                                  labor, external_sector, financial_sector, income,
+                                  international, regional)
+
+    return {"core_industrial": {"description": "Producción industrial total, sin refinería y "
+                                "núcleo",
+                                "function": economic_activity.core_industrial},
+            "cpi_measures": {"description": "índice de precios transable, no transable, "
+                             "subyacente, residual y Winsorized 5%",
+                             "function": prices.cpi_measures},
+            "balance_summary": {"description": "Resultado fiscal resumido",
+                                "function": fiscal_accounts.balance_summary},
+            "net_public_debt": {"description": "Deuda neta excluyendo encajes",
+                                "function": fiscal_accounts.net_public_debt},
+            "labor_rates_people": {"description": "Tasas de actividad, empleo y desempleo, incluyendo "
+                                   "localidades de más de 5 mil personas, y cantidad "
+                                   "de personas",
+                                   "function": labor.rates_people},
+            "trade_balance": {"description": "Balanza comercial por país",
+                              "function": external_sector.trade_balance},
+            "terms_of_trade": {"description": "Términos de intercambio",
+                               "function": external_sector.terms_of_trade},
+            "commodity_prices": {"description": "Precios de materias",
+                                 "function": external_sector.commodity_prices},
+            "commodity_index": {"description": "Índice de precios de materias primas",
+                                "function": external_sector.commodity_index},
+            "rxr_custom": {"description": "Tipos de cambio reales vs. EE.UU., Argentina y "
+                           "Brasil",
+                           "function": external_sector.rxr_custom},
+            "bonds": {"description": "Rendimiento de bonos soberanos en USD, UI y pesos",
+                      "function": financial_sector.bonds},
+            "global_gdp": {"description": "PBI real desestacionalizado de Estados Unidos,"
+                           "Unión Europea, Japón y China",
+                           "function": international.gdp},
+            "global_stocks": {"description": "Índices bursátiles (S&P 500, Euronext 100, Nikkei"
+                              "225 y Shanghai Composite)",
+                              "function": international.stocks},
+            "global_policy_rates": {"description": "Tasas de política monetaria de Estados "
+                                    "Unidos, Eurozona, Japón y China",
+                                    "function": international.policy_rates},
+            "global_long_rates": {"description": "Tasas de bonos soberanos a 10 años de Estados "
+                                  "Unidos, Alemania, Francia, Italia, España, "
+                                  "Reino unido, Japón y China",
+                                  "function": international.long_rates},
+            "global_nxr": {"description": "Cotización de monedas de Estados Unidos "
+                           "(dollar index), USDUER, USDJPY y USDCNY",
+                           "function": international.nxr},
+            "regional_gdp": {"description": "PBI real desestacionalizado de Argentina y Brasil",
+                             "function": regional.gdp},
+            "regional_monthly_gdp": {"description": "PBI mensual real desestacionalizado de "
+                                     "Argentina y Brasil",
+                                     "function": regional.monthly_gdp},
+            "regional_cpi": {"description": "Índice de precios al consumo de Argentina y Brasil",
+                             "function": regional.cpi},
+            "regional_embi_spreads": {"description": "EMBI spread de Argentina, Brasil y "
+                                      "EMBI Global",
+                                      "function": regional.embi_spreads},
+            "regional_embi_yields": {"description": "EMBI yield de Argentina, Brasil y "
+                                     "EMBI Global",
+                                     "function": regional.embi_yields},
+            "regional_nxr": {"description": "Tipo de cambio de Argentina (oficial y "
+                             "paralelo) y Brasil",
+                             "function": regional.nxr},
+            "regional_policy_rates": {"description": "Tasas de política monetaria de Argentina "
+                                      "y Brasil",
+                                      "function": regional.policy_rates},
+            "regional_stocks": {"description": "Índices bursátiles (MERVAL y BOVESPA) "
+                                "en dólares",
+                                "function": regional.stocks},
+            "regional_rxr": {"description": "Tipo de cambio real de Argentina y Brasil "
+                             "vis-à-vis EE.UU.",
+                             "function": regional.rxr},
+            "_lin_gdp": {"description": "PBI mensual linealizado en pesos y USD con proyecciones",
+                         "function": economic_activity._lin_gdp}
+            }

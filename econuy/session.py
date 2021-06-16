@@ -133,14 +133,14 @@ class Session(object):
         """
         if functions:
             return {"original": {k: v
-                                 for k, v in datasets.original.items()},
+                                 for k, v in datasets.original().items()},
                     "custom": {k: v
-                               for k, v in datasets.custom.items()}}
+                               for k, v in datasets.custom().items()}}
         else:
             return {"original": {k: v["description"]
-                                 for k, v in datasets.original.items()},
+                                 for k, v in datasets.original().items()},
                     "custom": {k: v["description"]
-                               for k, v in datasets.custom.items()}}
+                               for k, v in datasets.custom().items()}}
 
     @property
     def datasets(self) -> Dict[str, pd.DataFrame]:
