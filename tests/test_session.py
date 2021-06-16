@@ -502,8 +502,8 @@ def test_industrial_production():
     core = session.get_custom(dataset="core_industrial").dataset
     core = core.loc[:, ["Núcleo industrial"]]
     compare = (indprod["Industrias manufactureras sin refinería"]
-               - indprod.loc[:, 1549] * 0.082210446
-               - indprod.loc[:, 2101] * 0.008097608)
+               - indprod.loc[:, "Elaboración de productos alimenticios n.c.p"] * 0.082210446
+               - indprod.loc[:, "Pulpa de madera, papel y cartón"] * 0.008097608)
     compare = pd.concat([compare], keys=["Núcleo industrial"],
                         names=["Indicador"], axis=1)
     compare = transform.rebase(compare, start_date="2006-01-01",
