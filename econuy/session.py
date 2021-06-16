@@ -11,6 +11,7 @@ import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
+from econuy.retrieval.core import Retriever
 from econuy.utils import datasets, logutil, ops
 from econuy.utils.exceptions import RetryLimitError
 
@@ -767,13 +768,21 @@ class Session(object):
         return
 
     def save(self,
-             select: Union[str, int, Sequence[str], Sequence[int]] = "all"):
+             select: Union[str, int, Sequence[str], Sequence[int]] = "all",
+             file_fmt: str = "csv", multiindex: Optional[str] = "included"):
         """Save :attr:`datasets` attribute to CSV or SQL.
 
         Parameters
         ----------
         select : str, int, Sequence[str] or Sequence[int], default "all"
             Datasets to save.
+        file_fmt : {'csv', 'xlsx'}
+            File format. Ignored if ``self.location`` refers to a SQL object.
+        multiindex : {'included', 'separate', None}
+            How to handle multiindexes for metadata. ``None`` keeps only the
+            first level, ``included`` keeps as DataFrame columns and
+            ``separate`` saves it to another sheet (only valid for Excel-type
+            formats).
 
         Raises
         ------
@@ -790,10 +799,12 @@ class Session(object):
                 if isinstance(dataset, dict):
                     for subname, subdataset in dataset.items():
                         ops._io(operation="save", data_loc=self.location,
-                                data=subdataset, name=f"{name}_{subname}")
+                                data=subdataset, name=f"{name}_{subname}",
+                                file_fmt=file_fmt, multiindex=multiindex)
                 else:
                     ops._io(operation="save", data_loc=self.location,
-                            data=dataset, name=name)
+                            data=dataset, name=name, file_fmt=file_fmt,
+                            multiindex=multiindex)
             else:
                 continue
 

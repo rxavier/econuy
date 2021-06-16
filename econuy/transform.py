@@ -7,7 +7,6 @@ from typing import Union, Optional, Tuple, Dict
 
 import numpy as np
 import pandas as pd
-from sqlalchemy.engine.base import Connection, Engine
 from statsmodels.tools.sm_exceptions import X13Error, X13Warning
 from statsmodels.tsa import x13
 from statsmodels.tsa.x13 import x13_arima_analysis as x13a
@@ -15,14 +14,12 @@ from statsmodels.tsa.seasonal import STL, seasonal_decompose
 
 from econuy.retrieval import prices, economic_activity
 from econuy.utils import metadata
+from econuy.retrieval.core import Retriever
 
 
 def convert_usd(df: pd.DataFrame,
-                update_loc: Union[str, PathLike, Engine,
-                                  Connection, None] = None,
-                save_loc: Union[str, PathLike, Engine,
-                                Connection, None] = None,
-                only_get: bool = True, errors: str = "raise") -> pd.DataFrame:
+                retriever: Optional[Retriever],
+                errors: str = "raise") -> pd.DataFrame:
     """
     Convert dataframe from UYU to USD.
 
@@ -39,21 +36,8 @@ def convert_usd(df: pd.DataFrame,
 
     Parameters
     ----------
-    df : pd.DataFrame
-        Input dataframe.
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default True
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
+    retriever : econuy.retrieval.base.Retriever or None, default None
+        An instance of the econuy Retriever class.
     errors : {'raise', 'coerce', 'ignore'}
         What to do when a column in the input dataframe is not expressed in
         Uruguayan pesos. ``raise`` will raise a ValueError, ``coerce`` will
@@ -79,6 +63,9 @@ def convert_usd(df: pd.DataFrame,
         raise ValueError("Input dataframe's multiindex requires the "
                          "'Moneda' level.")
 
+    if retriever is None:
+        retriever = Retriever()
+
     checks = [x == "UYU" for x in df.columns.get_level_values("Moneda")]
     if any(checks):
         if not all(checks) and errors == "raise":
@@ -86,8 +73,8 @@ def convert_usd(df: pd.DataFrame,
             msg = (f"{error_df.columns[0][0]} does not have the "
                    f"appropiate metadata.")
             return error_handler(df=df, errors=errors, msg=msg)
-        nxr_data = prices.nxr_monthly(update_loc=update_loc, save_loc=save_loc,
-                                      only_get=only_get)
+        retriever.get(dataset="nxr_monthly")
+        nxr_data = retriever.dataset
         all_metadata = df.columns.droplevel("Indicador")
         if all(x == all_metadata[0] for x in all_metadata):
             return _convert_usd(df=df, nxr=nxr_data)
@@ -143,11 +130,7 @@ def _convert_usd(df: pd.DataFrame,
 def convert_real(df: pd.DataFrame,
                  start_date: Union[str, datetime, None] = None,
                  end_date: Union[str, datetime, None] = None,
-                 update_loc: Union[str, PathLike, Engine,
-                                   Connection, None] = None,
-                 save_loc: Union[str, PathLike, Engine,
-                                 Connection, None] = None,
-                 only_get: bool = True,
+                 retriever: Retriever = None,
                  errors: str = "raise") -> pd.DataFrame:
     """
     Convert dataframe to real prices.
@@ -172,19 +155,8 @@ def convert_real(df: pd.DataFrame,
     end_date : str, datetime.date or None, default None
         If ``start_date`` is set, calculate so that the data is in constant
         prices of ``start_date-end_date``.
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default True
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
+    retriever : econuy.retrieval.base.Retriever or None, default None
+        An instance of the econuy Retriever class.
     errors : {'raise', 'coerce', 'ignore'}
         What to do when a column in the input dataframe is not expressed in
         nominal Uruguayan pesos. ``raise`` will raise a ValueError, ``coerce``
@@ -210,6 +182,9 @@ def convert_real(df: pd.DataFrame,
         raise ValueError("Input dataframe's multiindex requires the "
                          "'Inf. adj.' level.")
 
+    if retriever is None:
+        retriever = Retriever()
+
     checks = [x == "UYU" and "Const." not in y
               for x, y in zip(df.columns.get_level_values("Moneda"),
                               df.columns.get_level_values("Inf. adj."))]
@@ -219,8 +194,8 @@ def convert_real(df: pd.DataFrame,
             msg = (f"{error_df.columns[0][0]} does not have the "
                    f"appropiate metadata.")
             return error_handler(df=df, errors=errors, msg=msg)
-        cpi_data = prices.cpi(update_loc=update_loc, save_loc=save_loc,
-                              only_get=only_get)
+        retriever.get(dataset="cpi")
+        cpi_data = retriever.dataset
         all_metadata = df.columns.droplevel("Indicador")
         if all(x == all_metadata[0] for x in all_metadata):
             return _convert_real(df=df, start_date=start_date,
@@ -291,11 +266,7 @@ def _convert_real(df: pd.DataFrame,
 
 
 def convert_gdp(df: pd.DataFrame,
-                update_loc: Union[str, PathLike, Engine,
-                                  Connection, None] = None,
-                save_loc: Union[str, PathLike, Engine,
-                                Connection, None] = None,
-                only_get: bool = True,
+                retriever: Retriever = None,
                 errors: str = "raise") -> pd.DataFrame:
     """
     Calculate dataframe as percentage of GDP.
@@ -317,19 +288,8 @@ def convert_gdp(df: pd.DataFrame,
     ----------
     df : pd.DataFrame
         Input dataframe.
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default True
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
+    retriever : econuy.retrieval.base.Retriever or None, default None
+        An instance of the econuy Retriever class.
     errors : {'raise', 'coerce', 'ignore'}
         What to do when a column in the input dataframe does not refer to
         Uruguayan data or is already in % of GDP. ``raise`` will raise a
@@ -355,6 +315,9 @@ def convert_gdp(df: pd.DataFrame,
         raise ValueError("Input dataframe's multiindex requires the 'Área' "
                          "and 'Unidad' levels.")
 
+    if retriever is None:
+        retriever = Retriever()
+
     checks = [x not in ["Regional", "Global"] and "%PBI" not in y
               for x, y in zip(df.columns.get_level_values("Área"),
                               df.columns.get_level_values("Unidad"))]
@@ -364,9 +327,8 @@ def convert_gdp(df: pd.DataFrame,
             msg = (f"{error_df.columns[0][0]} does not have the "
                    f"appropiate metadata.")
             return error_handler(df=df, errors=errors, msg=msg)
-        gdp_data = economic_activity._lin_gdp(update_loc=update_loc,
-                                              save_loc=save_loc,
-                                              only_get=only_get)
+        retriever.get(dataset="_lin_gdp")
+        gdp_data = retriever.dataset
         all_metadata = df.columns.droplevel("Indicador")
         if all(x == all_metadata[0] for x in all_metadata):
             return _convert_gdp(df=df, gdp=gdp_data)
@@ -644,7 +606,7 @@ def _rolling(df: pd.DataFrame, window: Optional[int] = None,
 
 def rebase(df: pd.DataFrame, start_date: Union[str, datetime],
            end_date: Union[str, datetime, None] = None,
-           base: float = 100.0) -> pd.DataFrame:
+           base: Union[int, float] = 100.0) -> pd.DataFrame:
     """Rebase all dataframe columns to a date or range of dates.
 
     Parameters

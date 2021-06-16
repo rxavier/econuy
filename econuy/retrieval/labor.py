@@ -58,7 +58,7 @@ def labor_rates(update_loc: Union[str, PathLike,
     name = "labor_rates"
 
     if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
+        output = ops._io(operation="read", data_loc=update_loc,
                          name=name)
         if not output.equals(pd.DataFrame()):
             return output
@@ -93,7 +93,7 @@ def labor_rates(update_loc: Union[str, PathLike,
     labor = labor.loc[~labor.index.duplicated(keep="first")]
 
     if update_loc is not None:
-        previous_data = ops._io(operation="update",
+        previous_data = ops._io(operation="read",
                                 data_loc=update_loc,
                                 name=name)
         labor = ops._revise(new_data=labor, prev_data=previous_data,
@@ -154,7 +154,7 @@ def nominal_wages(update_loc: Union[str, PathLike,
     name = "nominal_wages"
 
     if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
+        output = ops._io(operation="read", data_loc=update_loc,
                          name=name)
         if not output.equals(pd.DataFrame()):
             return output
@@ -187,7 +187,7 @@ def nominal_wages(update_loc: Union[str, PathLike,
                      "Índice medio de salarios públicos"]
 
     if update_loc is not None:
-        previous_data = ops._io(operation="update",
+        previous_data = ops._io(operation="read",
                                 data_loc=update_loc,
                                 name=name)
         wages = ops._revise(new_data=wages, prev_data=previous_data,
@@ -248,7 +248,7 @@ def hours(update_loc: Union[str, PathLike,
     name = "hours_worked"
 
     if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
+        output = ops._io(operation="read", data_loc=update_loc,
                          name=name)
         if not output.equals(pd.DataFrame()):
             return output
@@ -295,7 +295,7 @@ def hours(update_loc: Union[str, PathLike,
     output = prev_hours.append(output, sort=False)
 
     if update_loc is not None:
-        previous_data = ops._io(operation="update",
+        previous_data = ops._io(operation="read",
                                 data_loc=update_loc,
                                 name=name)
         output = ops._revise(new_data=output, prev_data=previous_data,

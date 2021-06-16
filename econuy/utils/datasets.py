@@ -58,12 +58,14 @@ original = {"natacc_ind_con_nsa": {"description": "Cuentas nacionales, oferta "
                             "function": fiscal_accounts.balance_ose},
             "taxes": {"description": "Recaudación impositiva",
                       "function": fiscal_accounts.tax_revenue},
-            "public_debt_gps": {"description": "Deuda pública (global, no monetario y BCU)",
+            "public_debt_gps": {"description": "Deuda pública del sector público consolidad",
                                 "function": fiscal_accounts.public_debt_gps},
-            "public_debt_nfps": {"description": "Deuda pública (global, no monetario y BCU)",
+            "public_debt_nfps": {"description": "Deuda pública sector público no financiero",
                                  "function": fiscal_accounts.public_debt_nfps},
-            "public_debt_cb": {"description": "Deuda pública (global, no monetario y BCU)",
+            "public_debt_cb": {"description": "Deuda pública del BCU",
                                "function": fiscal_accounts.public_debt_cb},
+            "public_assets": {"description": "Activos del sectro público",
+                               "function": fiscal_accounts.public_assets},
             "labor_rates": {"description": "Tasa de actividad, empleo y desempleo",
                             "function": labor.labor_rates},
             "hours_worked": {"description": "Horas promedio trabajadas por sector",
@@ -139,6 +141,8 @@ custom = {"core_industrial": {"description": "Producción industrial total, sin 
                             "function": external_sector.trade_balance},
           "terms_of_trade": {"description": "Términos de intercambio",
                              "function": external_sector.terms_of_trade},
+          "commodity_prices": {"description": "Precios de materias",
+                               "function": external_sector.commodity_prices},
           "commodity_index": {"description": "Índice de precios de materias primas",
                               "function": external_sector.commodity_index},
           "rxr_custom": {"description": "Tipos de cambio reales vs. EE.UU., Argentina y "
@@ -186,5 +190,7 @@ custom = {"core_industrial": {"description": "Producción industrial total, sin 
                               "function": regional.stocks},
           "regional_rxr": {"description": "Tipo de cambio real de Argentina y Brasil "
                            "vis-à-vis EE.UU.",
-                           "function": regional.rxr}
+                           "function": regional.rxr},
+          "_lin_gdp": {"desription": "PBI mensual linealizado en pesos y USD con proyecciones",
+                       "function": economic_activity._lin_gdp}
           }

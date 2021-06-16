@@ -62,17 +62,37 @@ urls = {"call":
                        "indirect": [
                            "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Cotizaciones.aspx"],
                        "provider": ["BCU"]}},
-        "commodity_index":
+        "commodity_prices":
         {"dl": {
             "beef": "https://www.inac.uy/innovaportal/v/9799/10/innova.front/serie-semanal-ingreso-medio-de-exportacion---bovino-ovino-y-otros-productos",
-            "pulp": f"https://www.insee.fr/en/statistiques/serie/telecharger/010600339?ordre=antechronologique&"
-                    f"transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=11&anneeFin="
+            "pulp": f"https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600339?ordre=antechronologique&"
+                    f"transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=3&anneeFin="
                     f"{dt.datetime.now().year}",
             "soybean": "https://www.quandl.com/api/v3/datasets/CHRIS/CME_S1.csv?api_key=3TPxACcrxy9WsE871Lqe",
             "wheat": "https://www.quandl.com/api/v3/datasets/CHRIS/CME_W1.csv?api_key=3TPxACcrxy9WsE871Lqe",
             "milk1": "https://www.inale.org/estadisticas/",
             "milk2": "https://ec.europa.eu/info/sites/info/files/food-farming-fisheries/farming/documents/eu-milk-historical-price-series_en.xls",
             "imf": "https://www.imf.org/en/Research/commodity-prices"},
+            "source": {"direct": [
+                "https://www.inac.uy/innovaportal/v/9799/10/innova.front/serie-semanal-ingreso-medio-de-exportacion---bovino-ovino-y-otros-productos",
+                f"https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600339?ordre=antechronologique&"
+                f"transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=3&anneeFin="
+                f"{dt.datetime.now().year}",
+                "https://www.quandl.com/api/v3/datasets/CHRIS/CME_S1.csv?api_key=3TPxACcrxy9WsE871Lqe",
+                "https://www.quandl.com/api/v3/datasets/CHRIS/CME_W1.csv?api_key=3TPxACcrxy9WsE871Lqe",
+                "https://ec.europa.eu/info/sites/info/files/food-farming-fisheries/farming/documents/eu-milk-historical-price-series_en.xls"],
+                "indirect": [
+                    "https://www.inac.uy/innovaportal/v/5541/10/innova.front/precios",
+                    "https://www.insee.fr/fr/statistiques/serie/010600339",
+                    "https://www.quandl.com/data/CHRIS/CME_S1-Soybean-Futures-Continuous-Contract-1-S1-Front-Month",
+                    "https://www.quandl.com/data/CHRIS/CME_W1-Wheat-Futures-Continuous-Contract-1-W1-Front-Month",
+                    "https://www.inale.org/estadisticas/",
+                    "https://ec.europa.eu/info/food-farming-fisheries/farming/facts-and-figures/markets/overviews/market-observatories/milk",
+                    "https://www.imf.org/en/Research/commodity-prices"],
+                "provider": [
+                    "econuy en base a INAC, INSEE, Quandl, INALE, Comisión Europea y FMI"]}},
+        "commodity_index":
+        {"dl": {},
             "source": {"direct": [
                 "https://www.inac.uy/innovaportal/v/9799/10/innova.front/serie-semanal-ingreso-medio-de-exportacion---bovino-ovino-y-otros-productos",
                 f"https://www.insee.fr/en/statistiques/serie/telecharger/010600339?ordre=antechronologique&"
@@ -317,7 +337,7 @@ urls = {"call":
         "consumer_confidence": {"dl": {
             "main": "https://ucu.edu.uy/sites/default/files/facultad/fce/i_competitividad/serie_icc_-.xlsx"},
             "source": {"direct": ["https://ucu.edu.uy/sites/default/files/facultad/fce/i_competitividad/serie_icc_-.xlsx"],
-            "indirect": [
+                       "indirect": [
                 "https://ucu.edu.uy/es/icc"],
             "provider": ["UCU"]}},
         "sovereign_risk": {"dl": {

@@ -2,8 +2,7 @@ import datetime as dt
 import re
 import time
 from io import BytesIO
-from os import PathLike
-from typing import Union
+from typing import Optional
 from urllib.error import HTTPError, URLError
 from requests.exceptions import SSLError
 
@@ -13,11 +12,11 @@ from bs4 import BeautifulSoup
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from selenium.webdriver.remote.webdriver import WebDriver
-from sqlalchemy.engine.base import Engine, Connection
 
-from econuy.utils import ops, metadata
+from econuy.utils import metadata
 from econuy.utils.chromedriver import _build
 from econuy.utils.sources import urls
+from econuy.retrieval.core import Retriever
 
 
 @retry(
@@ -25,35 +24,8 @@ from econuy.utils.sources import urls
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def credit(update_loc: Union[str, PathLike,
-                             Engine, Connection, None] = None,
-           revise_rows: Union[str, int] = "nodup",
-           save_loc: Union[str, PathLike,
-                           Engine, Connection, None] = None,
-           only_get: bool = False) -> pd.DataFrame:
+def credit() -> pd.DataFrame:
     """Get bank credit data.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
@@ -61,12 +33,6 @@ def credit(update_loc: Union[str, PathLike,
 
     """
     name = "credit"
-
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
 
     raw = pd.read_excel(urls[name]["dl"]["main"],
                         sheet_name="Total Sist. Banc.",
@@ -107,21 +73,10 @@ def credit(update_loc: Union[str, PathLike,
                       "Créditos: Resid. ME total - vencidos",
                       "Créditos: Resid. ME total- total"]
 
-    if update_loc is not None:
-        previous_data = ops._io(operation="update",
-                                data_loc=update_loc,
-                                name=name)
-        output = ops._revise(new_data=output, prev_data=previous_data,
-                             revise_rows=revise_rows)
-
     output = output.apply(pd.to_numeric, errors="coerce")
     metadata._set(output, area="Sector financiero", currency="USD",
                   inf_adj="No", unit="Millones", seas_adj="NSA",
                   ts_type="Stock", cumperiods=1)
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
 
     return output
 
@@ -131,35 +86,8 @@ def credit(update_loc: Union[str, PathLike,
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def deposits(update_loc: Union[str, PathLike,
-                               Engine, Connection, None] = None,
-             revise_rows: Union[str, int] = "nodup",
-             save_loc: Union[str, PathLike,
-                             Engine, Connection, None] = None,
-             only_get: bool = False) -> pd.DataFrame:
+def deposits() -> pd.DataFrame:
     """Get bank deposits data.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
@@ -167,12 +95,6 @@ def deposits(update_loc: Union[str, PathLike,
 
     """
     name = "deposits"
-
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
 
     raw = pd.read_excel(urls[name]["dl"]["main"],
                         sheet_name="Total Sist. Banc.",
@@ -197,21 +119,10 @@ def deposits(update_loc: Union[str, PathLike,
                       "Depósitos: S. privado - residente",
                       "Depósitos: S. privado - no residente"]
 
-    if update_loc is not None:
-        previous_data = ops._io(operation="update",
-                                data_loc=update_loc,
-                                name=name)
-        output = ops._revise(new_data=output, prev_data=previous_data,
-                             revise_rows=revise_rows)
-
     output = output.apply(pd.to_numeric, errors="coerce")
     metadata._set(output, area="Sector financiero", currency="USD",
                   inf_adj="No", unit="Millones", seas_adj="NSA",
                   ts_type="Stock", cumperiods=1)
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
 
     return output
 
@@ -221,35 +132,8 @@ def deposits(update_loc: Union[str, PathLike,
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def interest_rates(update_loc: Union[str, PathLike,
-                                     Engine, Connection, None] = None,
-                   revise_rows: Union[str, int] = "nodup",
-                   save_loc: Union[str, PathLike,
-                                   Engine, Connection, None] = None,
-                   only_get: bool = False) -> pd.DataFrame:
+def interest_rates() -> pd.DataFrame:
     """Get interest rates data.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
@@ -257,12 +141,6 @@ def interest_rates(update_loc: Union[str, PathLike,
 
     """
     name = "interest_rates"
-
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
 
     xls = pd.ExcelFile(urls["interest_rates"]["dl"]["main"])
     sheets = ["Activas $", "Activas UI", "Activas U$S",
@@ -301,13 +179,6 @@ def interest_rates(update_loc: Union[str, PathLike,
                       "Tasas pasivas: US$, promedio empresas",
                       "Tasas pasivas: US$, promedio familias"]
 
-    if update_loc is not None:
-        previous_data = ops._io(operation="update",
-                                data_loc=update_loc,
-                                name=name)
-        output = ops._revise(new_data=output, prev_data=previous_data,
-                             revise_rows=revise_rows)
-
     output = output.apply(pd.to_numeric, errors="coerce")
     metadata._set(output, area="Sector financiero", currency="-",
                   inf_adj="-", unit="Tasa", seas_adj="NSA",
@@ -326,10 +197,6 @@ def interest_rates(update_loc: Union[str, PathLike,
                                              "Const.", "Const.", "Const.",
                                              "No", "No", "No"]])
 
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
-
     return output
 
 
@@ -338,34 +205,8 @@ def interest_rates(update_loc: Union[str, PathLike,
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def sovereign_risk(
-        update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        revise_rows: Union[str, int] = "nodup",
-        save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        only_get: bool = False) -> pd.DataFrame:
+def sovereign_risk() -> pd.DataFrame:
     """Get Uruguayan Bond Index (sovereign risk spreads) data.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
@@ -373,12 +214,6 @@ def sovereign_risk(
 
     """
     name = "sovereign_risk"
-
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
 
     try:
         historical = pd.read_excel(urls[name]["dl"]["historical"],
@@ -405,19 +240,9 @@ def sovereign_risk(
     output.sort_index(inplace=True)
     output = output.apply(pd.to_numeric, errors="coerce")
 
-    if update_loc is not None:
-        previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name)
-        output = ops._revise(new_data=output, prev_data=previous_data,
-                             revise_rows=revise_rows)
-
     metadata._set(output, area="Sector financiero", currency="USD",
                   inf_adj="No", unit="PBS", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
 
     return output
 
@@ -427,12 +252,7 @@ def sovereign_risk(
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def call_rate(
-        update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        revise_rows: Union[str, int] = "nodup",
-        save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        only_get: bool = False,
-        driver: WebDriver = None) -> pd.DataFrame:
+def call_rate(driver: Optional[WebDriver] = None) -> pd.DataFrame:
     """Get 1-day call interest rate data.
 
     This function requires a Selenium webdriver. It can be provided in the
@@ -440,25 +260,6 @@ def call_rate(
 
     Parameters
     ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
     driver : selenium.webdriver.chrome.webdriver.WebDriver, default None
         Selenium webdriver for scraping. If None, build a Chrome webdriver.
 
@@ -468,11 +269,6 @@ def call_rate(
 
     """
     name = "call"
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
 
     if driver is None:
         driver = _build()
@@ -500,20 +296,10 @@ def call_rate(
                     "Tasa call a 1 día: Máximo",
                     "Tasa call a 1 día: Mínimo"]
 
-    if update_loc is not None:
-        previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name)
-        call = ops._revise(new_data=call, prev_data=previous_data,
-                           revise_rows=revise_rows)
-
     call = call.apply(pd.to_numeric, errors="coerce")
     metadata._set(call, area="Sector financiero", currency="UYU",
                   inf_adj="No", unit="Tasa", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=call, name=name)
 
     return call
 
@@ -523,11 +309,7 @@ def call_rate(
     max_calls_total=8,
     retry_window_after_first_call_in_seconds=60,
 )
-def bonds(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-          revise_rows: Union[str, int] = "nodup",
-          save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-          only_get: bool = False,
-          driver: WebDriver = None) -> pd.DataFrame:
+def bonds(driver: Optional[WebDriver] = None) -> pd.DataFrame:
     """Get interest rate yield for Uruguayan US-denominated bonds,
     inflation-linked bonds and peso bonds.
 
@@ -536,25 +318,6 @@ def bonds(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     Parameters
     ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
     driver : selenium.webdriver.chrome.webdriver.WebDriver, default None
         Selenium webdriver for scraping. If None, build a Chrome webdriver.
 
@@ -564,12 +327,6 @@ def bonds(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     """
     name = "bonds"
-
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
 
     if driver is None:
         driver = _build()
@@ -602,12 +359,6 @@ def bonds(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     output.columns = ["Bonos soberanos en dólares", "Bonos soberanos en UI",
                       "Bonos soberanos en pesos"]
 
-    if update_loc is not None:
-        previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name)
-        output = ops._revise(new_data=output, prev_data=previous_data,
-                             revise_rows=revise_rows)
-
     output = output.apply(pd.to_numeric, errors="coerce")
     metadata._set(output, area="Sector financiero", currency="-",
                   inf_adj="No", unit="PBS", seas_adj="NSA",
@@ -615,9 +366,5 @@ def bonds(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     metadata._modify_multiindex(output, levels=[3, 4],
                                 new_arrays=[["USD", "UYU", "UYU"],
                                             ["No", "Const.", "No"]])
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
 
     return output

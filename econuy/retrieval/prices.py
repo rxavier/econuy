@@ -1,11 +1,10 @@
 import datetime as dt
 import warnings
-from os import PathLike
-from typing import Union
 from urllib.error import URLError, HTTPError
 from io import BytesIO
 from pathlib import Path
 from zipfile import BadZipFile
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -14,10 +13,10 @@ from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from scipy.stats import stats
 from scipy.stats.mstats_basic import winsorize
-from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
-from econuy.utils import ops, metadata, get_project_root
+from econuy.retrieval.core import Retriever
+from econuy.utils import metadata, get_project_root
 from econuy.utils.sources import urls
 from econuy.utils.extras import cpi_details
 
@@ -27,33 +26,8 @@ from econuy.utils.extras import cpi_details
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        revise_rows: Union[str, int] = "nodup",
-        save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        only_get: bool = False) -> pd.DataFrame:
+def cpi() -> pd.DataFrame:
     """Get CPI data.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
@@ -61,12 +35,6 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     """
     name = "cpi"
-
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
 
     try:
         cpi = pd.read_excel(urls[name]["dl"]["main"],
@@ -87,20 +55,10 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     cpi.rename_axis(None, inplace=True)
     cpi.index = cpi.index + MonthEnd(1)
 
-    if update_loc is not None:
-        previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name)
-        cpi = ops._revise(new_data=cpi, prev_data=previous_data,
-                          revise_rows=revise_rows)
-
     cpi = cpi.apply(pd.to_numeric, errors="coerce")
     metadata._set(cpi, area="Precios", currency="-",
                   inf_adj="No", unit="2010-10=100", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=cpi, name=name)
 
     return cpi
 
@@ -110,35 +68,8 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=30,
 )
-def nxr_monthly(update_loc: Union[str, PathLike,
-                                  Engine, Connection, None] = None,
-                revise_rows: Union[str, int] = "nodup",
-                save_loc: Union[str, PathLike,
-                                Engine, Connection, None] = None,
-                only_get: bool = False) -> pd.DataFrame:
+def nxr_monthly() -> pd.DataFrame:
     """Get monthly nominal exchange rate data.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
@@ -148,11 +79,6 @@ def nxr_monthly(update_loc: Union[str, PathLike,
     """
     name = "nxr_monthly"
 
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
     try:
         nxr_raw = pd.read_excel(urls[name]["dl"]["main"], skiprows=4,
                                 index_col=0, usecols="A,C,F")
@@ -172,20 +98,9 @@ def nxr_monthly(update_loc: Union[str, PathLike,
     nxr.index = nxr.index + MonthEnd(1)
     nxr = nxr.apply(pd.to_numeric, errors="coerce")
 
-    if update_loc is not None:
-        previous_data = ops._io(operation="update",
-                                data_loc=update_loc,
-                                name=name)
-        nxr = ops._revise(new_data=nxr, prev_data=previous_data,
-                          revise_rows=revise_rows)
-
     metadata._set(nxr, area="Precios", currency="UYU/USD",
                   inf_adj="No", unit="-", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=nxr, name=name)
 
     return nxr
 
@@ -195,28 +110,17 @@ def nxr_monthly(update_loc: Union[str, PathLike,
     max_calls_total=10,
     retry_window_after_first_call_in_seconds=60,
 )
-def nxr_daily(update_loc: Union[str, PathLike,
-                                Engine, Connection, None] = None,
-              save_loc: Union[str, PathLike,
-                              Engine, Connection, None] = None,
-              only_get: bool = False) -> pd.DataFrame:
+def nxr_daily(retriever: Optional[Retriever] = None,
+              previous_data: pd.DataFrame = pd.DataFrame()) -> pd.DataFrame:
     """Get daily nominal exchange rate data.
 
     Parameters
     ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
+    retriever : econuy.retrieval.base.Retriever or None, default None
+        An instance of the econuy Retriever class.
+    previous_data : pd.DataFrame
+        A DataFrame representing this dataset used to extract last
+        available dates.
 
     Returns
     -------
@@ -224,31 +128,21 @@ def nxr_daily(update_loc: Union[str, PathLike,
         Sell rate, monthly average and end of period.
 
     """
-    name = "nxr_daily"
-
-    if only_get is True and update_loc is not None:
-        return ops._io(operation="update", data_loc=update_loc,
-                       name=name)
-
-    start_date = dt.datetime(1999, 12, 31)
-
-    if update_loc is not None:
-        previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name)
-        metadata._set(previous_data)
-        try:
-            start_date = previous_data.index[len(previous_data) - 1]
-        except IndexError:
-            pass
+    if retriever is not None:
+        retriever = Retriever()
+    if previous_data.empty:
+        start_date = dt.datetime(1999, 12, 31)
+    else:
+        start_date = previous_data.index[-1]
 
     today = dt.datetime.now() - dt.timedelta(days=1)
-    runs = (today - start_date).days // 30
+    runs = (today - start_date).days // 360
     data = []
-    base_url = urls[name]['dl']['main']
+    base_url = urls["nxr_daily"]["dl"]["main"]
     if runs > 0:
         for i in range(1, runs + 1):
             from_ = (start_date + dt.timedelta(days=1)).strftime('%d/%m/%Y')
-            to_ = (start_date + dt.timedelta(days=30)).strftime('%d/%m/%Y')
+            to_ = (start_date + dt.timedelta(days=360)).strftime('%d/%m/%Y')
             dates = f"%22FechaDesde%22:%22{from_}%22,%22FechaHasta%22:%22{to_}"
             url = f"{base_url}{dates}%22,%22Grupo%22:%222%22}}" + "}"
             try:
@@ -279,13 +173,6 @@ def nxr_daily(update_loc: Union[str, PathLike,
                       inf_adj="No", unit="-", seas_adj="NSA",
                       ts_type="-", cumperiods=1)
         output.columns = output.columns.set_levels(["-"], level=2)
-
-        if update_loc is not None:
-            output = pd.concat([previous_data, output])
-
-        if save_loc is not None:
-            ops._io(operation="save", data_loc=save_loc,
-                    data=output, name=name)
 
     except ValueError as e:
         if str(e) == "No objects to concatenate":
@@ -329,50 +216,26 @@ stats._contains_nan = _new_contains_nan
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def cpi_measures(update_loc: Union[str, PathLike,
-                                   Engine, Connection, None] = None,
-                 revise_rows: Union[str, int] = "nodup",
-                 save_loc: Union[str, PathLike, Engine,
-                                 Connection, None] = None,
-                 only_get: bool = False) -> pd.DataFrame:
+def cpi_measures(retriever: Optional[Retriever] = None) -> pd.DataFrame:
     """
     Get core CPI, Winsorized CPI, tradabe CPI, non-tradable CPI and residual
     CPI.
 
     Parameters
     ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
+    retriever : econuy.retrieval.base.Retriever or None, default None
+        An instance of the econuy Retriever class.
 
     Returns
     -------
     Monthly CPI measures : pd.DataFrame
 
     """
+    if retriever is None:
+        retriever = Retriever()
+
     name = "cpi_measures"
 
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
     try:
         xls_10_14 = pd.ExcelFile(urls[name]["dl"]["2010-14"])
         xls_15 = pd.ExcelFile(urls[name]["dl"]["2015-"])
@@ -486,7 +349,8 @@ def cpi_measures(update_loc: Union[str, PathLike,
                          x.pct_change().loc[x.index > "2011-01-01"]])
         output.append(aux.fillna(0).add(1).cumprod().mul(100))
 
-    cpi_re = cpi(update_loc=update_loc, save_loc=save_loc, only_get=True)
+    retriever.get("cpi")
+    cpi_re = retriever.dataset
     cpi_re = cpi_re.loc[cpi_re.index >= "1997-03-31"]
     output = pd.concat([cpi_re] + output + [cpi_win], axis=1)
     output.columns = ["Índice de precios al consumo: total",
@@ -501,15 +365,5 @@ def cpi_measures(update_loc: Union[str, PathLike,
                   ts_type="-", cumperiods=1)
     output = transform.rebase(output, start_date="2010-12-01",
                               end_date="2010-12-31")
-
-    if update_loc is not None:
-        previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name)
-        output = ops._revise(new_data=output, prev_data=previous_data,
-                             revise_rows=revise_rows)
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
 
     return output
