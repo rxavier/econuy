@@ -20,14 +20,14 @@ urls = {"call":
                        "provider": ["BEVSA"]}},
         "deposits":
         {"dl": {
-            "main": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Depositos.xls"},
+            "main": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Depositos.xlsx"},
             "source": {"direct": ["https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Depositos.xls"],
                        "indirect": [
                            "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Series-estadisticas-Depositos.aspx"],
                        "provider": ["BCU"]}},
         "credit":
         {"dl": {
-            "main": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Creditos.xls"},
+            "main": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Creditos.xlsx "},
             "source": {"direct": ["https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Creditos.xls"],
                        "indirect": [
                            "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Series-Estadisticas-Creditos.aspx"],
@@ -65,8 +65,8 @@ urls = {"call":
         "commodity_index":
         {"dl": {
             "beef": "https://www.inac.uy/innovaportal/v/9799/10/innova.front/serie-semanal-ingreso-medio-de-exportacion---bovino-ovino-y-otros-productos",
-            "pulp": f"https://www.insee.fr/en/statistiques/serie/telecharger/010600339?ordre=antechronologique&"
-                    f"transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=11&anneeFin="
+            "pulp": f"https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600339?ordre="
+                    f"antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=4&anneeFin="
                     f"{dt.datetime.now().year}",
             "soybean": "https://www.quandl.com/api/v3/datasets/CHRIS/CME_S1.csv?api_key=3TPxACcrxy9WsE871Lqe",
             "wheat": "https://www.quandl.com/api/v3/datasets/CHRIS/CME_W1.csv?api_key=3TPxACcrxy9WsE871Lqe",
@@ -288,7 +288,8 @@ urls = {"call":
                 "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"],
             "provider": ["BCU"]}},
         "industrial_production": {"dl": {
-            "main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181"},
+            "main": "http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181",
+            "weights": "http://www.ine.gub.uy/c/document_library/get_file?uuid=864b4bc2-626d-49ab-82ef-1bcf08360da1&groupId=10181"},
             "source": {"direct": [
                 "http://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181"],
             "indirect": [
@@ -314,8 +315,8 @@ urls = {"call":
                        "http://www.ciu.com.uy/innovaportal/v/83062/9/innova.front/series-de-ventas-mensuales-por-destino.html"],
                        "provider": ["AFCPU y CIU"]}},
         "consumer_confidence": {"dl": {
-            "main": "https://ucu.edu.uy/es/icc"},
-            "source": {"direct": [],
+            "main": "https://ucu.edu.uy/sites/default/files/facultad/fce/i_competitividad/serie_icc_-.xlsx"},
+            "source": {"direct": ["https://ucu.edu.uy/sites/default/files/facultad/fce/i_competitividad/serie_icc_-.xlsx"],
             "indirect": [
                 "https://ucu.edu.uy/es/icc"],
             "provider": ["UCU"]}},

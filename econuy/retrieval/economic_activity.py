@@ -555,6 +555,8 @@ def industrial_production(update_loc: Union[str, PathLike,
     try:
         raw = pd.read_excel(urls[name]["dl"]["main"],
                             skiprows=4, usecols="B:EM")
+        weights = pd.read_excel(urls[name]["dl"]["weights"],
+                                skiprows=3, usecols="B:E").dropna(how="all")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files",
@@ -563,6 +565,10 @@ def industrial_production(update_loc: Union[str, PathLike,
                              verify=certificate)
             raw = pd.read_excel(BytesIO(r.content),
                                 skiprows=4, usecols="B:EM")
+            r = requests.get(urls[name]["dl"]["weights"],
+                             verify=certificate)
+            weights = pd.read_excel(BytesIO(r.content),
+                                skiprows=3, usecols="B:E").dropna(how="all")
         else:
             raise err
     proc = raw.dropna(how="any", subset=["Mes"]).dropna(thresh=100, axis=1)
@@ -570,10 +576,25 @@ def industrial_production(update_loc: Union[str, PathLike,
                                             regex=True)].drop("Mes", axis=1)
     output.index = pd.date_range(start="2002-01-31", freq="M",
                                  periods=len(output))
+
+    column_names = []
+    for c in output.columns[2:]:
+        match = weights.loc[weights["division"] == c, "Denominación"]
+        if isinstance(match, pd.Series) and match.empty:
+            match = weights.loc[weights["agrupacion"] == c, "Denominación"]
+            if isinstance(match, pd.Series) and match.empty:
+                match = weights.loc[weights["clase"] == c, "Denominación"]
+        try:
+            match = match.iloc[0]
+        except AttributeError:
+            pass
+        match = match.strip()[:-1].capitalize()
+        if len(match) > 60:
+            match = match[:58] + "..."
+        column_names.append(match)
     output.columns = (["Industrias manufactureras",
                        "Industrias manufactureras sin refinería"]
-                      + [col for col in output.columns
-                         if col not in ["D", "D sin refinería"]])
+                      + column_names)
 
     if update_loc is not None:
         previous_data = ops._io(operation="update",
@@ -662,12 +683,8 @@ def core_industrial(update_loc: Union[str, PathLike, Engine,
             / 10000)
     output = data.loc[:, ["Industrias manufactureras",
                           "Industrias manufactureras sin refinería"]]
-    try:
-        exclude = (data.loc[:, "1549"] * other_foods
-                   + data.loc[:, "2101"] * pulp)
-    except KeyError:
-        exclude = (data.loc[:, 1549] * other_foods
-                   + data.loc[:, 2101] * pulp)
+    exclude = (data.loc[:, "Elaboración de productos alimenticios n.c.p"] * other_foods
+                + data.loc[:, "Pulpa de madera, papel y cartón"] * pulp)
     core = data["Industrias manufactureras sin refinería"] - exclude
     core = pd.concat([core], keys=["Núcleo industrial"],
                      names=["Indicador"], axis=1)
