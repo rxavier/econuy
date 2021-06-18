@@ -129,7 +129,6 @@ class Retriever(object):
                   x13_binary: Union[str, PathLike] = "search",
                   search_parents: int = 1,
                   ignore_warnings: bool = True,
-                  errors: Optional[str] = None,
                   **kwargs) -> Retriever:
         """
         Apply seasonal decomposition.
@@ -159,9 +158,6 @@ class Retriever(object):
         if component not in valid_component:
             raise ValueError(f"Only {', '.join(valid_component)} are allowed."
                              f"See underlying 'decompose'.")
-
-        if errors is None:
-            errors = self.errors
 
         output = transform.decompose(self.dataset, component=component,
                                      method=method,
