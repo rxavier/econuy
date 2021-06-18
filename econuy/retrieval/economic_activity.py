@@ -403,8 +403,8 @@ def core_industrial(retriever: Optional[Retriever] = None) -> pd.DataFrame:
             / 10000)
     output = data.loc[:, ["Industrias manufactureras",
                           "Industrias manufactureras sin refinería"]]
-    exclude = (data.loc[:, "Cla_Elaboración de productos alimenticios n.c.p"] * other_foods
-                + data.loc[:, "Cla_Pulpa de madera, papel y cartón"] * pulp)
+    exclude = (data.loc[:, "Cls_Elaboración de productos alimenticios n.c.p"] * other_foods
+                + data.loc[:, "Cls_Pulpa de madera, papel y cartón"] * pulp)
     core = data["Industrias manufactureras sin refinería"] - exclude
     core = pd.concat([core], keys=["Núcleo industrial"],
                      names=["Indicador"], axis=1)
