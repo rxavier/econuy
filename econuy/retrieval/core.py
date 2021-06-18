@@ -243,6 +243,9 @@ class Retriever(object):
         return
 
     def save(self):
+        if self.location is None:
+            raise ValueError("No save location defined.")
+        
         if isinstance(self.dataset, Dict):
             for k, v in self.dataset.items():
                 ops._io(operation="save", data_loc=self.location,
