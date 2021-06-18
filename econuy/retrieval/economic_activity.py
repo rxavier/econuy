@@ -323,13 +323,14 @@ def industrial_production() -> pd.DataFrame:
             prefix = "Agr_"
             match = weights.loc[weights["agrupacion"] == c, "Denominación"]
             if isinstance(match, pd.Series) and match.empty:
-                prefix = "Cla_"
+                prefix = "Cls_"
                 match = weights.loc[weights["clase"] == c, "Denominación"]
         try:
             match = match.iloc[0]
         except AttributeError:
             pass
         match = (prefix + match.capitalize().strip())[:-1]
+        match = re.sub(r"[\(\)]", "-", match)
         if len(match) > 60:
             match = match[:58] + "..."
         column_names.append(match)
