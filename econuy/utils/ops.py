@@ -73,8 +73,12 @@ def _read(data_loc: Union[str, PathLike,
                 else:
                     previous_data = pd.read_excel(data_loc, index_col=0,
                                                   header=0, sheet_name="Data")
-            previous_data.index = pd.to_datetime(previous_data.index,
-                                                 format=date_format)
+            try:
+                previous_data.index = pd.to_datetime(previous_data.index,
+                                                    format=date_format)
+            except ValueError:
+                previous_data.index = pd.to_datetime(previous_data.index,
+                                                     format=None)
 
     except (ProgrammingError, OperationalError, FileNotFoundError):
         print("Previous data does not exist.")
