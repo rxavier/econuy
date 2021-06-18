@@ -87,32 +87,6 @@ class Retriever(object):
             self.save()
         return
 
-    def _apply_transformation(self,
-                              transformation: Callable,
-                              **kwargs) -> Dict[str, pd.DataFrame]:
-        """Helper method to apply transformations on :attr:`dataset`.
-
-        Parameters
-        ----------
-        transformation : Callable
-            Function representing the transformation to apply.
-
-        Returns
-        -------
-        Transformed dataset : pd.DataFrame
-
-        """
-        if isinstance(self.dataset, Dict):
-            output = {}
-            for subname, subdata in self.dataset.items():
-                subtransformed = transformation(subdata,
-                                                **kwargs)
-                output.update({subname: subtransformed})
-        else:
-            output = transformation(self.dataset, **kwargs)
-
-        return output
-
     def resample(self, rule: Union[pd.DateOffset, pd.Timedelta, str],
                  operation: str = "sum",
                  interpolation: str = "linear") -> Retriever:
@@ -160,12 +134,18 @@ class Retriever(object):
         """
         Apply seasonal decomposition.
 
+        For ``component`` only 'seas' and 'trend' are allowed. Use
+        :func:`~econuy.transform.decompose` if you want to get both components
+        in a single function call.
+
         Raises
         ------
         ValueError
             If the ``method`` parameter does not have a valid argument.
         ValueError
             If the ``fallback`` parameter does not have a valid argument.
+        ValueError
+            If the ``component`` parameter does not have a valid argument.
         ValueError
             If the path provided for the X13 binary does not point to a file
             and ``method='x13'``.
@@ -175,6 +155,11 @@ class Retriever(object):
         :func:`~econuy.transform.decompose`
 
         """
+        valid_component = ["seas", "trend"]
+        if component not in valid_component:
+            raise ValueError(f"Only {', '.join(valid_component)} are allowed."
+                             f"See underlying 'decompose'.")
+
         if errors is None:
             errors = self.errors
 
