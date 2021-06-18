@@ -64,7 +64,9 @@ class Retriever(object):
             selection = self.available_datasets()[dataset]
             if dataset in ["trade_balance", "terms_of_trade", "rxr_custom",
                            "commodity_index", "cpi_measures", "_lin_gdp",
-                           "net_public_debt", "balance_summary"]:
+                           "net_public_debt", "balance_summary",
+                           "core_industrial", "regional_embi_yields",
+                           "regional_rxr"]:
                 # Some datasets require retrieving other datasets. Passing the
                 # class instance allows running these retrieval operations
                 # with the same parameters (for example, save file formats).
