@@ -1,17 +1,16 @@
 ﻿from pathlib import Path
 from io import BytesIO
-from os import PathLike
-from typing import Union
+from typing import Optional
 from urllib.error import URLError, HTTPError
 
 import pandas as pd
 import requests
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
-from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
-from econuy.utils import ops, metadata, get_project_root
+from econuy.retrieval.core import Retriever
+from econuy.utils import metadata, get_project_root
 from econuy.utils.sources import urls
 
 
@@ -20,35 +19,8 @@ from econuy.utils.sources import urls
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def labor_rates(update_loc: Union[str, PathLike,
-                                  Engine, Connection, None] = None,
-                revise_rows: Union[str, int] = "nodup",
-                save_loc: Union[str, PathLike,
-                                Engine, Connection, None] = None,
-                only_get: bool = False) -> pd.DataFrame:
+def labor_rates() -> pd.DataFrame:
     """Get labor market data (LFPR, employment and unemployment).
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
@@ -56,12 +28,6 @@ def labor_rates(update_loc: Union[str, PathLike,
 
     """
     name = "labor_rates"
-
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="read", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
 
     try:
         labor_raw = pd.read_excel(
@@ -92,21 +58,10 @@ def labor_rates(update_loc: Union[str, PathLike,
     labor = labor.append(missing)
     labor = labor.loc[~labor.index.duplicated(keep="first")]
 
-    if update_loc is not None:
-        previous_data = ops._io(operation="read",
-                                data_loc=update_loc,
-                                name=name)
-        labor = ops._revise(new_data=labor, prev_data=previous_data,
-                            revise_rows=revise_rows)
-
     labor = labor.apply(pd.to_numeric, errors="coerce")
     metadata._set(labor, area="Mercado laboral", currency="-",
                   inf_adj="No", unit="Tasa", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=labor, name=name)
 
     return labor
 
@@ -116,35 +71,8 @@ def labor_rates(update_loc: Union[str, PathLike,
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def nominal_wages(update_loc: Union[str, PathLike,
-                                    Engine, Connection, None] = None,
-                  revise_rows: Union[str, int] = "nodup",
-                  save_loc: Union[str, PathLike,
-                                  Engine, Connection, None] = None,
-                  only_get: bool = False) -> pd.DataFrame:
+def nominal_wages() -> pd.DataFrame:
     """Get nominal general, public and private sector wages data
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
@@ -153,11 +81,6 @@ def nominal_wages(update_loc: Union[str, PathLike,
     """
     name = "nominal_wages"
 
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="read", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
     try:
         historical = pd.read_excel(urls[name]["dl"]["historical"],
                                    skiprows=8, usecols="A:B")
@@ -186,21 +109,10 @@ def nominal_wages(update_loc: Union[str, PathLike,
                      "Índice medio de salarios privados",
                      "Índice medio de salarios públicos"]
 
-    if update_loc is not None:
-        previous_data = ops._io(operation="read",
-                                data_loc=update_loc,
-                                name=name)
-        wages = ops._revise(new_data=wages, prev_data=previous_data,
-                            revise_rows=revise_rows)
-
     wages = wages.apply(pd.to_numeric, errors="coerce")
     metadata._set(wages, area="Mercado laboral", currency="UYU",
                   inf_adj="No", unit="2008-07=100", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=wages, name=name)
 
     return wages
 
@@ -210,35 +122,8 @@ def nominal_wages(update_loc: Union[str, PathLike,
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def hours(update_loc: Union[str, PathLike,
-                            Engine, Connection, None] = None,
-          revise_rows: Union[str, int] = "nodup",
-          save_loc: Union[str, PathLike,
-                          Engine, Connection, None] = None,
-          only_get: bool = False) -> pd.DataFrame:
+def hours() -> pd.DataFrame:
     """Get average hours worked data.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
@@ -246,12 +131,6 @@ def hours(update_loc: Union[str, PathLike,
 
     """
     name = "hours_worked"
-
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="read", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
 
     try:
         raw = pd.read_excel(urls[name]["dl"]["main"], sheet_name="Mensual",
@@ -294,20 +173,9 @@ def hours(update_loc: Union[str, PathLike,
     prev_hours.columns = ["Total"]
     output = prev_hours.append(output, sort=False)
 
-    if update_loc is not None:
-        previous_data = ops._io(operation="read",
-                                data_loc=update_loc,
-                                name=name)
-        output = ops._revise(new_data=output, prev_data=previous_data,
-                             revise_rows=revise_rows)
-
     metadata._set(output, area="Mercado laboral", currency="-",
                   inf_adj="No", unit="Horas por semana", seas_adj="NSA",
                   ts_type="Stock", cumperiods=1)
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
 
     return output
 
@@ -317,30 +185,15 @@ def hours(update_loc: Union[str, PathLike,
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def rates_people(update_loc: Union[str, PathLike, Engine,
-                                   Connection, None] = None,
-                 save_loc: Union[str, PathLike, Engine,
-                                 Connection, None] = None,
-                 only_get: bool = True) -> pd.DataFrame:
+def rates_people(retriever: Optional[Retriever] = None) -> pd.DataFrame:
     """
     Get labor data, both rates and persons. Extends national data between 1991
     and 2005 with data for jurisdictions with more than 5,000 inhabitants.
 
     Parameters
     ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default True
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
+    retriever : econuy.retrieval.base.Retriever or None, default None
+        An instance of the econuy Retriever class.
 
     Returns
     -------
@@ -348,8 +201,11 @@ def rates_people(update_loc: Union[str, PathLike, Engine,
 
     """
     name = "labor_rates_people"
+    if retriever is None:
+        retriever = Retriever()
 
-    rates = labor_rates(update_loc=update_loc, only_get=only_get)
+    retriever.get("labor_rates")
+    rates = retriever.dataset
     rates = rates.loc[:, ["Tasa de actividad: total", "Tasa de empleo: total",
                           "Tasa de desempleo: total"]]
     try:
@@ -417,36 +273,17 @@ def rates_people(update_loc: Union[str, PathLike, Engine,
 
     output = pd.concat([rates, persons], axis=1)
 
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
-
     return output
 
 
-def real_wages(update_loc: Union[str, PathLike, Engine,
-                                 Connection, None] = None,
-               save_loc: Union[str, PathLike, Engine,
-                               Connection, None] = None,
-               only_get: bool = True) -> pd.DataFrame:
+def real_wages(retriever: Optional[Retriever] = None) -> pd.DataFrame:
     """
     Get real wages.
 
     Parameters
     ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default True
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
+    retriever : econuy.retrieval.base.Retriever or None, default None
+        An instance of the econuy Retriever class.
 
     Returns
     -------
@@ -455,19 +292,18 @@ def real_wages(update_loc: Union[str, PathLike, Engine,
     """
     name = "real_wages"
 
-    wages = nominal_wages(update_loc=update_loc, only_get=only_get)
+    if retriever is None:
+        retriever = Retriever()
+
+    retriever.get("nominal_wages")
+    wages = retriever.dataset
     wages.columns = ["Índice medio de salarios reales",
                      "Índice medio de salarios reales privados",
                      "Índice medio de salarios reales públicos"]
     metadata._set(wages, area="Mercado laboral", currency="UYU",
                   inf_adj="Sí", seas_adj="NSA", ts_type="-", cumperiods=1)
-    output = transform.convert_real(wages, update_loc=update_loc,
-                                    only_get=only_get)
+    output = transform.convert_real(wages, retriever=retriever)
 
     output = transform.rebase(output, start_date="2008-07-31")
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
 
     return output
