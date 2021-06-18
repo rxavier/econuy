@@ -247,14 +247,7 @@ class Session(object):
         for i, name in enumerate(proc_select):
             current_kwargs = {k: v[i] for k, v in new_kwargs.items()}
             data = self.datasets[name]
-            if isinstance(data, Dict):
-                transformed = {}
-                for subname, subdata in data.items():
-                    subtransformed = transformation(subdata,
-                                                    **current_kwargs)
-                    transformed.update({subname: subtransformed})
-            else:
-                transformed = transformation(data, **current_kwargs)
+            transformed = transformation(data, **current_kwargs)
             output.update({name: transformed})
 
         return output
@@ -544,12 +537,18 @@ class Session(object):
         """
         Apply seasonal decomposition.
 
+        For ``component`` only 'seas' and 'trend' are allowed. Use
+        :func:`~econuy.transform.decompose` if you want to get both components
+        in a single function call.
+
         Raises
         ------
         ValueError
             If the ``method`` parameter does not have a valid argument.
         ValueError
             If the ``fallback`` parameter does not have a valid argument.
+        ValueError
+            If the ``component`` parameter does not have a valid argument.
         ValueError
             If the path provided for the X13 binary does not point to a file
             and ``method='x13'``.
@@ -559,6 +558,11 @@ class Session(object):
         :func:`~econuy.transform.decompose`
 
         """
+        valid_component = ["seas", "trend"]
+        if component not in valid_component:
+            raise ValueError(f"Only {', '.join(valid_component)} are allowed."
+                             f"See underlying 'decompose'.")
+
         if errors is None:
             errors = self.errors
 
@@ -796,15 +800,9 @@ class Session(object):
 
         for name, dataset in self.datasets.items():
             if name in proc_select:
-                if isinstance(dataset, dict):
-                    for subname, subdataset in dataset.items():
-                        ops._io(operation="save", data_loc=self.location,
-                                data=subdataset, name=f"{name}_{subname}",
-                                file_fmt=file_fmt, multiindex=multiindex)
-                else:
-                    ops._io(operation="save", data_loc=self.location,
-                            data=dataset, name=name, file_fmt=file_fmt,
-                            multiindex=multiindex)
+                ops._io(operation="save", data_loc=self.location,
+                        data=dataset, name=name, file_fmt=file_fmt,
+                        multiindex=multiindex)
             else:
                 continue
 
