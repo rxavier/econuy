@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Union, Optional, Dict, Callable
+import copy
+from typing import Union, Optional, Dict
 from os import PathLike
 from datetime import datetime
 
@@ -11,6 +12,41 @@ from econuy import transform
 
 
 class Retriever(object):
+    """
+    Main class to access download and transformation methods.
+
+    Attributes
+    ----------
+    location : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
+               default None
+        Either Path or path-like string pointing to a directory where to find
+        a CSV for updating and saving, SQLAlchemy connection or engine object,
+        or ``None``, don't save or update.
+    download : bool, default True
+        If False the ``get`` method will only try to retrieve data on disk.
+    always_Save : bool, default True
+        If True, save every retrieved dataset to the specified ``location``.
+    read_fmt : {'csv', 'xls', 'xlsx'}
+        File format of previously downloaded data. Ignored if ``location``
+        points to a SQL object.
+    save_fmt : {'csv', 'xls', 'xlsx'}
+        File format for saving. Ignored if ``location`` points to a SQL object.
+    read_header : {'included', 'separate', None}
+        Location of dataset metadata headers. 'included' means they are in the
+        first 9 rows of the dataset. 'separate' means they are in a separate
+        Excel sheet (if ``read_fmt='csv'``, headers are discarded).
+        None means there are no metadata headers.
+    save_header : {'included', 'separate', None}
+        Location of dataset metadata headers. 'included' means they will be set
+        as the first 9 rows of the dataset. 'separate' means they will be saved
+        in a separate Excel sheet (if ``save_fmt='csv'``, headers are
+        discarded). None discards any headers.
+    errors : {'raise', 'coerce', 'ignore'}
+        How to handle errors that arise from transformations. ``raise`` will
+        raise a ValueError, ``coerce`` will force the data into ``np.nan`` and
+        ``ignore`` will leave the input data as is.
+
+    """
     def __init__(self,
                  location: Union[str, PathLike, Engine,
                                  Connection, None] = None,
@@ -54,6 +90,24 @@ class Retriever(object):
         except KeyError:
             return None
 
+    def copy(self, deep: bool = True):
+        """Copy or deepcopy a Retriever object.
+
+        Parameters
+        ----------
+        deep : bool, default True
+            If True, deepcopy.
+
+        Returns
+        -------
+        :class:`~econuy.retrieval.core.Retriever`
+
+        """
+        if deep:
+            return copy.deepcopy(self)
+        else:
+            return copy.copy(self)
+
     def get(self, dataset: str) -> Retriever:
         prev_data = ops._io(operation="read", data_loc=self.location,
                             name=dataset, file_fmt=self.read_fmt,
@@ -66,7 +120,7 @@ class Retriever(object):
                            "commodity_index", "cpi_measures", "_lin_gdp",
                            "net_public_debt", "balance_summary",
                            "core_industrial", "regional_embi_yields",
-                           "regional_rxr"]:
+                           "regional_rxr", "real_wages", "labor_rates_people"]:
                 # Some datasets require retrieving other datasets. Passing the
                 # class instance allows running these retrieval operations
                 # with the same parameters (for example, save file formats).
@@ -245,7 +299,7 @@ class Retriever(object):
     def save(self):
         if self.location is None:
             raise ValueError("No save location defined.")
-        
+
         if isinstance(self.dataset, Dict):
             for k, v in self.dataset.items():
                 ops._io(operation="save", data_loc=self.location,
