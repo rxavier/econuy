@@ -108,10 +108,13 @@ class Retriever(object):
         else:
             return copy.copy(self)
 
-    def get(self, dataset: str) -> Retriever:
-        prev_data = ops._io(operation="read", data_loc=self.location,
-                            name=dataset, file_fmt=self.read_fmt,
-                            multiindex=self.read_header)
+    def get(self, dataset: str):
+        if self.location is None:
+            prev_data = pd.DataFrame()
+        else:
+            prev_data = ops._io(operation="read", data_loc=self.location,
+                                name=dataset, file_fmt=self.read_fmt,
+                                multiindex=self.read_header)
         if not self.download and not prev_data.empty:
             self._dataset = prev_data
         else:
