@@ -301,13 +301,7 @@ class Retriever(object):
 
     def save(self):
         if self.location is None:
-            raise ValueError("No save location defined.")
-
-        if isinstance(self.dataset, Dict):
-            for k, v in self.dataset.items():
-                ops._io(operation="save", data_loc=self.location,
-                        name=f"{self.name}_{k}", file_fmt=self.save_fmt,
-                        multiindex=self.save_header, data=v)
+            return
         else:
             ops._io(operation="save", data_loc=self.location,
                     name=self.name, file_fmt=self.save_fmt,
