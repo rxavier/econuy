@@ -1,4 +1,3 @@
-from __future__ import annotations
 import copy
 from typing import Union, Optional, Dict
 from os import PathLike
@@ -77,18 +76,18 @@ class Retriever(object):
     def name(self):
         return self._name
 
-    @staticmethod
-    def available_datasets():
-        all = datasets.original()
-        all.update(datasets.custom())
-        return all
-
     @property
     def description(self):
         try:
             return self.available_datasets()[self.name]["description"]
         except KeyError:
             return None
+
+    @staticmethod
+    def available_datasets() -> Dict:
+        all = datasets.original()
+        all.update(datasets.custom())
+        return all
 
     def copy(self, deep: bool = True):
         """Copy or deepcopy a Retriever object.
@@ -146,7 +145,7 @@ class Retriever(object):
 
     def resample(self, rule: Union[pd.DateOffset, pd.Timedelta, str],
                  operation: str = "sum",
-                 interpolation: str = "linear") -> Retriever:
+                 interpolation: str = "linear"):
         """
         Resample to target frequencies.
 
@@ -163,7 +162,7 @@ class Retriever(object):
         return
 
     def chg_diff(self, operation: str = "chg",
-                 period: str = "last") -> Retriever:
+                 period: str = "last"):
         """
         Calculate pct change or difference.
 
@@ -186,7 +185,7 @@ class Retriever(object):
                   x13_binary: Union[str, PathLike] = "search",
                   search_parents: int = 1,
                   ignore_warnings: bool = True,
-                  **kwargs) -> Retriever:
+                  **kwargs):
         """
         Apply seasonal decomposition.
 
@@ -232,7 +231,7 @@ class Retriever(object):
 
     def convert(self, flavor: str,
                 start_date: Union[str, datetime, None] = None,
-                end_date: Union[str, datetime, None] = None) -> Retriever:
+                end_date: Union[str, datetime, None] = None):
         """
         Convert to other units.
 
@@ -270,7 +269,7 @@ class Retriever(object):
 
     def rebase(self, start_date: Union[str, datetime],
                end_date: Union[str, datetime, None] = None,
-               base: Union[float, int] = 100.0) -> Retriever:
+               base: Union[float, int] = 100.0):
         """
         Scale to a period or range of periods.
 
@@ -285,7 +284,7 @@ class Retriever(object):
         return
 
     def rolling(self, window: Optional[int] = None,
-                operation: str = "sum") -> Retriever:
+                operation: str = "sum"):
         """
         Calculate rolling averages or sums.
 
