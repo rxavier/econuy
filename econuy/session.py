@@ -3,7 +3,7 @@ import logging
 import copy
 from datetime import datetime
 from inspect import signature, getmodule
-from os import PathLike, makedirs, path
+from os import PathLike
 from pathlib import Path
 from typing import Callable, Optional, Union, Sequence, Dict, List
 
@@ -18,26 +18,44 @@ from econuy.utils.exceptions import RetryLimitError
 
 class Session(object):
     """
-    Main class to access download and transformation methods.
+    A download and transformation session based on a Retriever object that
+    simplifies working with multiple datasets.
 
     Attributes
     ----------
+    retriever : econuy.retrieval.base.Retriever or None, default None
+        An instance of the econuy Retriever class. If this attribute is not
+        ``None``, ``location``, ``download``, ``always_save``, ``read_fmt``,
+        ``save_fmt``, ``read_header``, ``save_header`` and ``errors`` will be
+        ignored.
     location : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                default None
         Either Path or path-like string pointing to a directory where to find
         a CSV for updating and saving, SQLAlchemy connection or engine object,
         or ``None``, don't save or update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
-    dataset : pd.DataFrame, default pd.DataFrame(index=[], columns=[])
-        Current working dataset.
+    download : bool, default True
+        If False the ``get`` method will only try to retrieve data on disk.
+    always_Save : bool, default True
+        If True, save every retrieved dataset to the specified ``location``.
+    read_fmt : {'csv', 'xls', 'xlsx'}
+        File format of previously downloaded data. Ignored if ``location``
+        points to a SQL object.
+    save_fmt : {'csv', 'xls', 'xlsx'}
+        File format for saving. Ignored if ``location`` points to a SQL object.
+    read_header : {'included', 'separate', None}
+        Location of dataset metadata headers. 'included' means they are in the
+        first 9 rows of the dataset. 'separate' means they are in a separate
+        Excel sheet (if ``read_fmt='csv'``, headers are discarded).
+        None means there are no metadata headers.
+    save_header : {'included', 'separate', None}
+        Location of dataset metadata headers. 'included' means they will be set
+        as the first 9 rows of the dataset. 'separate' means they will be saved
+        in a separate Excel sheet (if ``save_fmt='csv'``, headers are
+        discarded). None discards any headers.
+    errors : {'raise', 'coerce', 'ignore'}
+        How to handle errors that arise from transformations. ``raise`` will
+        raise a ValueError, ``coerce`` will force the data into ``np.nan`` and
+        ``ignore`` will leave the input data as is.
     log : {str, 0, 1, 2}
         Controls how logging works. ``0``: don't log; ``1``: log to console;
         ``2``: log to console and file with default file; ``str``: log to
@@ -45,10 +63,6 @@ class Session(object):
     logger : logging.Logger, default None
         Logger object. For most cases this attribute should be ``None``,
         allowing :attr:`log` to control how logging works.
-    errors : {'raise', 'coerce', 'ignore'}
-        How to handle errors that arise from transformations. ``raise`` will
-        raise a ValueError, ``coerce`` will force the data into ``np.nan`` and
-        ``ignore`` will leave the input data as is.
     max_retries : int, default 3
         Number of retries for :mod:`~econuy.session.Session.get` and
         :mod:`~econuy.session.Session.get_custom` in case any of the selected
@@ -57,33 +71,44 @@ class Session(object):
     """
 
     def __init__(self,
+                 retriever: Optional[Retriever] = None,
                  location: Union[str, PathLike,
                                  Connection, Engine, None] = None,
-                 revise_rows: Union[int, str] = "nodup",
-                 only_get: bool = False,
+                 download: bool = True,
+                 always_save: bool = True,
+                 read_fmt: str = "csv",
+                 read_header: Optional[str] = "included",
+                 save_fmt: str = "csv",
+                 save_header: Optional[str] = "included",
                  log: Union[int, str] = 1,
                  logger: Optional[logging.Logger] = None,
                  errors: str = "raise",
                  max_retries: int = 3):
-        self.location = location
-        self.revise_rows = revise_rows
-        self.only_get = only_get
+        if retriever is None:
+            self.location = location
+            self.download = download
+            self.always_save = always_save
+            self.read_fmt = read_fmt
+            self.read_header = read_header
+            self.save_fmt = save_fmt
+            self.save_header = save_header
+            self.errors = errors
+            self.retriever = Retriever(location=location, download=download,
+                                       always_save=always_save, read_fmt=read_fmt,
+                                       read_header=read_header, save_fmt=save_fmt,
+                                       save_header=save_header, errors=errors)
+        else:
+            self.retriever = retriever
+
         self.log = log
         self.logger = logger
-        self.errors = errors
         self.max_retries = max_retries
 
-        self._datasets = {}
-        self._retries = 1
-
-        if isinstance(location, (str, PathLike)):
-            if not path.exists(self.location):
-                makedirs(self.location)
-            loc_text = location
-        elif isinstance(location, (Engine, Connection)):
-            loc_text = location.engine.url
+        if self.retriever.dataset.empty:
+            self._datasets = {}
         else:
-            loc_text = "none set."
+            self._datasets = {retriever.name: retriever.dataset}
+        self._retries = 1
 
         if logger is not None:
             self.log = "custom"
@@ -96,30 +121,14 @@ class Session(object):
             elif log == 2:
                 logfile = Path(self.location) / "info.log"
                 log_obj = logutil.setup(file=logfile)
-                log_method = f"console and file ({logfile.as_posix()})"
             elif isinstance(log, str) and log != "custom":
                 logfile = (Path(self.location) / log).with_suffix(".log")
                 log_obj = logutil.setup(file=logfile)
-                log_method = f"console and file ({logfile.as_posix()})"
             elif log == 1:
                 log_obj = logutil.setup(file=None)
-                log_method = "console"
             else:
                 log_obj = logutil.setup(null=True)
-                log_method = "no logging"
             self.logger = log_obj
-
-            if isinstance(revise_rows, int):
-                revise_method = f"{revise_rows} rows to replace"
-            else:
-                revise_method = revise_rows
-            log_obj.info(f"Created Session object with the "
-                         f"following attributes:\n"
-                         f"Location for downloads and updates: {loc_text}\n"
-                         f"Offline: {only_get}\n"
-                         f"Update method: '{revise_method}'\n"
-                         f"Logging method: {log_method}\n"
-                         f"Error handling: {errors}")
 
     @staticmethod
     def available_datasets(functions: bool = False) -> Dict[str, Dict]:
@@ -129,18 +138,25 @@ class Session(object):
 
         Returns
         -------
-        Dataset : Dict[str, str]
+        Dataset : Dict[str, Dict]
         """
-        if functions:
-            return {"original": {k: v
-                                 for k, v in datasets.original().items()},
-                    "custom": {k: v
-                               for k, v in datasets.custom().items()}}
-        else:
-            return {"original": {k: v["description"]
-                                 for k, v in datasets.original().items()},
-                    "custom": {k: v["description"]
-                               for k, v in datasets.custom().items()}}
+        original = datasets.original()
+        custom = datasets.custom()
+
+        original_final, custom_final = {}, {}
+        for d, f in zip([original, custom], [original_final, custom_final]):
+            for k, v in d.items():
+                if not functions:
+                    f.update({k: v["description"]})
+                else:
+                    f.update({k: v})
+
+        output = {"original": original_final, "custom": custom_final}
+        aux = copy.deepcopy(output)
+        for k in aux["custom"].keys():
+            if k.startswith("_"):
+                output["custom"].pop(k, None)
+        return output
 
     @property
     def datasets(self) -> Dict[str, pd.DataFrame]:
@@ -169,31 +185,6 @@ class Session(object):
             return copy.deepcopy(self)
         else:
             return copy.copy(self)
-
-    @staticmethod
-    def _download(original: bool, dataset: str, **kwargs) -> pd.DataFrame:
-        """Helper method to handle parameters passed to retrieval functions.
-
-        Parameters
-        ----------
-        original : bool
-            Whether to retrieve original or custom datasets.
-        dataset : str
-            Name of dataset to retrieve.
-
-        Returns
-        -------
-        Downloaded dataset : pd.DataFrame
-
-        """
-        if original is True:
-            function = datasets.original[dataset]["function"]
-        else:
-            function = datasets.custom[dataset]["function"]
-        accepted_params = dict(signature(function).parameters)
-        new_kwargs = {k: v for k, v in kwargs.items()
-                      if k in accepted_params.keys()}
-        return function(**new_kwargs)
 
     def _select_datasets(self, select: Union[str, int, Sequence[str],
                                              Sequence[int]]) -> List[str]:
@@ -252,17 +243,7 @@ class Session(object):
 
         return output
 
-    def _parse_location(self, process: bool) -> Union[Path, str, None]:
-        if process is True:
-            if isinstance(self.location, (str, PathLike)):
-                return Path(self.location)
-            else:
-                return self.location
-        else:
-            return None
-
-    def get(self, dataset: Union[str, Sequence[str]], update: bool = True,
-            save: bool = True, **kwargs) -> Session:
+    def get(self, dataset: Union[str, Sequence[str]]):
         """
         Main download method.
 
@@ -273,12 +254,6 @@ class Session(object):
             or in :mod:`available_datasets`. Either a string representing
             a dataset name or a sequence of strings in order to download
             several datasets.
-        update : bool, default True
-            Whether to update an existing dataset.
-        save : bool, default True
-            Whether to save the dataset.
-        **kwargs
-            Keyword arguments.
 
         Returns
         -------
@@ -294,33 +269,28 @@ class Session(object):
         """
         if isinstance(dataset, str):
             dataset = [dataset]
-        if any(name not in datasets.original.keys() for name in dataset):
+        if any(name not in (list(self.available_datasets()["original"].keys())
+                            + list(self.available_datasets()["custom"].keys()))
+               for name in dataset):
             raise ValueError("Invalid dataset selected.")
 
-        update_loc = self._parse_location(process=update)
-        save_loc = self._parse_location(process=save)
         failed = []
         not_failed = []
         for name in dataset:
             try:
-                retrieved = self._download(original=True, dataset=name,
-                                           update_loc=update_loc,
-                                           save_loc=save_loc,
-                                           revise_rows=self.revise_rows,
-                                           only_get=self.only_get, **kwargs)
-                self._datasets.update({name: retrieved})
+                self.retriever.get(dataset=name)
+                self._datasets.update({name: self.retriever.dataset})
                 not_failed.append(name)
-            except:
+            except BaseException as e:
+                print(repr(e))
                 failed.append(name)
                 continue
-        if len(not_failed) > 0:
-            self.logger.info(f"Retrieved {', '.join(not_failed)}")
         if len(failed) > 0:
             if self._retries < self.max_retries:
                 self._retries += 1
                 self.logger.info(f"Failed to retrieve {', '.join(failed)}. "
                                  f"Retrying (run {self._retries}).")
-                self.get(dataset=failed, update=update, save=save, **kwargs)
+                self.get(dataset=failed)
             else:
                 self.logger.info(f"Could not retrieve {', '.join(failed)}")
                 self._retries = 1
@@ -331,80 +301,7 @@ class Session(object):
         self._retries = 1
         return
 
-    def get_custom(self, dataset: Union[str, Sequence[str]],
-                   update: bool = True, save: bool = True,
-                   **kwargs) -> Session:
-        """
-        Get custom datasets.
-
-        Parameters
-        ----------
-        dataset : Union[str, Sequence[str]]
-            Type of data to download, see available options in datasets.py
-            or in :mod:`available_datasets`. Either a string representing a
-            dataset name or a sequence of strings in order to download several
-            datasets.
-        update : bool, default True
-            Whether to update an existing dataset.
-        save : bool, default  True
-            Whether to save the dataset.
-        **kwargs
-            Keyword arguments.
-
-        Returns
-        -------
-        :class:`~econuy.session.Session`
-            Loads the downloaded dataframes into the :attr:`datasets`
-            attribute.
-
-        Raises
-        ------
-        ValueError
-            If an invalid string is given to the ``dataset`` argument.
-
-        """
-        if isinstance(dataset, str):
-            dataset = [dataset]
-        if any(name not in datasets.custom.keys() for name in dataset):
-            raise ValueError("Invalid dataset selected.")
-
-        update_loc = self._parse_location(process=update)
-        save_loc = self._parse_location(process=save)
-        failed = []
-        not_failed = []
-        for name in dataset:
-            try:
-                retrieved = self._download(original=False, dataset=name,
-                                           update_loc=update_loc,
-                                           save_loc=save_loc,
-                                           revise_rows=self.revise_rows,
-                                           only_get=self.only_get, **kwargs)
-                self._datasets.update({name: retrieved})
-                not_failed.append(name)
-            except:
-                failed.append(name)
-                continue
-        if len(not_failed) > 0:
-            self.logger.info(f"Retrieved {', '.join(not_failed)}")
-        if len(failed) > 0:
-            if self._retries < self.max_retries:
-                self._retries += 1
-                self.logger.info(f"Failed to retrieve {', '.join(failed)}. "
-                                 f"Retrying (run {self._retries}).")
-                self.get_custom(dataset=failed, update=update,
-                                save=save, **kwargs)
-            else:
-                self.logger.info(f"Could not retrieve {', '.join(failed)}")
-                self._retries = 1
-                raise RetryLimitError(f"Maximum retries ({self.max_retries})"
-                                      f" reached.")
-            self._retries = 1
-            return
-        self._retries = 1
-        return
-
-    def get_bulk(self, dataset: str, update: bool = True,
-                 save: bool = True, **kwargs) -> Session:
+    def get_bulk(self, dataset: str):
         """
         Get datasets in bulk.
 
@@ -417,12 +314,6 @@ class Session(object):
             `original` gets all original datatsets and `custom` gets all
             custom datasets. The remaining options get all datasets for that
             area.
-        update : bool, default True
-            Whether to update an existing dataset.
-        save : bool, default  True
-            Whether to save the dataset.
-        **kwargs
-            Keyword arguments.
 
         Returns
         -------
@@ -446,19 +337,13 @@ class Session(object):
         available_datasets = self.available_datasets(functions=True)
         original_datasets = list(available_datasets["original"].keys())
         custom_datasets = list(available_datasets["custom"].keys())
-        new_session = self.copy(deep=True)
 
         if dataset == "original":
-            new_session.get(dataset=original_datasets, update=update,
-                            save=save, **kwargs)
+            self.get(dataset=original_datasets)
         elif dataset == "custom":
-            new_session.get_custom(dataset=custom_datasets, update=update,
-                                   save=save, **kwargs)
+            self.get(dataset=custom_datasets)
         elif dataset == "all":
-            new_session.get(dataset=original_datasets, update=update,
-                            save=save, **kwargs)
-            new_session.get_custom(dataset=custom_datasets, update=update,
-                                   save=save, **kwargs)
+            self.get(dataset=original_datasets+custom_datasets)
         else:
             original_area_datasets = []
             for k, v in available_datasets["original"].items():
@@ -468,21 +353,15 @@ class Session(object):
             for k, v in available_datasets["custom"].items():
                 if dataset in getmodule(v["function"]).__name__:
                     custom_area_datasets.append(k)
-            if len(original_area_datasets) > 0:
-                new_session.get(dataset=original_area_datasets,
-                                update=update, save=save, **kwargs)
-            if len(custom_area_datasets) > 0:
-                new_session.get_custom(dataset=custom_area_datasets,
-                                       update=update, save=save, **kwargs)
+            self.get(dataset=original_area_datasets+custom_area_datasets)
 
-        self._datasets.update(new_session.datasets)
         return
 
     def resample(self, rule: Union[pd.DateOffset, pd.Timedelta, str, List],
                  operation: Union[str, List] = "sum",
                  interpolation: Union[str, List] = "linear",
                  select: Union[str, int, Sequence[str],
-                               Sequence[int]] = "all") -> Session:
+                               Sequence[int]] = "all"):
         """
         Resample to target frequencies.
 
@@ -496,15 +375,14 @@ class Session(object):
                                             rule=rule,
                                             operation=operation,
                                             interpolation=interpolation)
-        self.logger.info(f"Applied 'resample' transformation with '{rule}' "
-                         f"and '{operation}' operation.")
+
         self._datasets = output
         return
 
     def chg_diff(self, operation: Union[str, List] = "chg",
                  period: Union[str, List] = "last",
                  select: Union[str, int, Sequence[str],
-                               Sequence[int]] = "all") -> Session:
+                               Sequence[int]] = "all"):
         """
         Calculate pct change or difference.
 
@@ -516,8 +394,7 @@ class Session(object):
         output = self._apply_transformation(select=select,
                                             transformation=transform.chg_diff,
                                             operation=operation, period=period)
-        self.logger.info(f"Applied 'chg_diff' transformation with "
-                         f"'{operation}' operation and '{period}' period.")
+
         self._datasets = output
         return
 
@@ -533,7 +410,7 @@ class Session(object):
                   errors: Union[str, List, None] = None,
                   select: Union[str, int, Sequence[str],
                                 Sequence[int]] = "all",
-                  **kwargs) -> Session:
+                  **kwargs):
         """
         Apply seasonal decomposition.
 
@@ -579,20 +456,15 @@ class Session(object):
                                             ignore_warnings=ignore_warnings,
                                             errors=errors,
                                             **kwargs)
-        self.logger.info(f"Applied 'decompose' transformation with "
-                         f"'{method}' method and '{component}' component.")
+
         self._datasets = output
         return
 
     def convert(self, flavor: Union[str, List],
-                update: Union[bool, List] = True,
-                save: Union[bool, List] = True,
-                only_get: Union[bool, List] = True,
-                errors: Union[str, None, List] = None,
                 start_date: Union[str, datetime, None, List] = None,
                 end_date: Union[str, datetime, None, List] = None,
                 select: Union[str, int, Sequence[str],
-                              Sequence[int]] = "all") -> Session:
+                              Sequence[int]] = "all"):
         """
         Convert to other units.
 
@@ -612,38 +484,24 @@ class Session(object):
             raise ValueError("'flavor' can be one of 'usd', 'real', "
                              "or 'gdp'.")
 
-        if errors is None:
-            errors = self.errors
-
-        update_loc = self._parse_location(process=update)
-        save_loc = self._parse_location(process=save)
-
         if flavor == "usd":
             output = self._apply_transformation(select=select,
                                                 transformation=transform.convert_usd,
-                                                update_loc=update_loc,
-                                                save_loc=save_loc,
-                                                only_get=only_get,
-                                                errors=errors)
+                                                retriever=self.retriever,
+                                                errors=self.errors)
         elif flavor == "real":
             output = self._apply_transformation(select=select,
                                                 transformation=transform.convert_real,
-                                                update_loc=update_loc,
-                                                save_loc=save_loc,
-                                                only_get=only_get,
-                                                errors=errors,
+                                                retriever=self.retriever,
+                                                errors=self.errors,
                                                 start_date=start_date,
                                                 end_date=end_date)
         else:
             output = self._apply_transformation(select=select,
                                                 transformation=transform.convert_gdp,
-                                                update_loc=update_loc,
-                                                save_loc=save_loc,
-                                                only_get=only_get,
-                                                errors=errors)
+                                                retriever=self.retriever,
+                                                errors=self.errors)
 
-        self.logger.info(f"Applied 'convert' transformation "
-                         f"with '{flavor}' flavor.")
         self._datasets = output
         return
 
@@ -651,7 +509,7 @@ class Session(object):
                end_date: Union[str, datetime, None, List] = None,
                base: Union[float, List] = 100.0,
                select: Union[str, int, Sequence[str],
-                             Sequence[int]] = "all") -> Session:
+                             Sequence[int]] = "all"):
         """
         Scale to a period or range of periods.
 
@@ -664,14 +522,13 @@ class Session(object):
                                             transformation=transform.rebase,
                                             start_date=start_date,
                                             end_date=end_date, base=base)
-        self.logger.info("Applied 'rebase' transformation.")
         self._datasets = output
         return
 
     def rolling(self, window: Union[int, List, None] = None,
                 operation: Union[str, List] = "sum",
                 select: Union[str, int, Sequence[str],
-                              Sequence[int]] = "all") -> Session:
+                              Sequence[int]] = "all"):
         """
         Calculate rolling averages or sums.
 
@@ -684,15 +541,13 @@ class Session(object):
                                             transformation=transform.rolling,
                                             window=window,
                                             operation=operation)
-        self.logger.info(f"Applied 'rolling' transformation with "
-                         f"{window} periods and '{operation}' operation.")
         self._datasets = output
         return
 
     def concat(self, select: Union[str, int, Sequence[str],
                                    Sequence[int]] = "all",
                name: Optional[str] = None,
-               force_suffix: bool = False) -> Session:
+               force_suffix: bool = False):
         """
         Concatenate datasets in :attr:`datasets` and add as a new dataset.
 
@@ -727,9 +582,9 @@ class Session(object):
                 or force_suffix is True):
             for n, d in zip(proc_select, selected_datasets):
                 try:
-                    full_name = datasets.original[n]["description"]
+                    full_name = self.available_datasets()["original"][n]
                 except KeyError:
-                    full_name = datasets.custom[n]["description"]
+                    full_name = self.available_datasets()["custom"][n]
                 d.columns = d.columns.set_levels(
                     f"{full_name}_" + d.columns.get_level_values(0),
                     level=0
@@ -768,25 +623,21 @@ class Session(object):
                     continue
         if name is None:
             name = "com_" + "_".join(proc_select)
+        elif not name.startswith("com_"):
+            name = "com_" + name
+        else:
+            pass
         self._datasets.update({name: combined})
         return
 
     def save(self,
-             select: Union[str, int, Sequence[str], Sequence[int]] = "all",
-             file_fmt: str = "csv", multiindex: Optional[str] = "included"):
+             select: Union[str, int, Sequence[str], Sequence[int]] = "all"):
         """Save :attr:`datasets` attribute to CSV or SQL.
 
         Parameters
         ----------
         select : str, int, Sequence[str] or Sequence[int], default "all"
             Datasets to save.
-        file_fmt : {'csv', 'xlsx'}
-            File format. Ignored if ``self.location`` refers to a SQL object.
-        multiindex : {'included', 'separate', None}
-            How to handle multiindexes for metadata. ``None`` keeps only the
-            first level, ``included`` keeps as DataFrame columns and
-            ``separate`` saves it to another sheet (only valid for Excel-type
-            formats).
 
         Raises
         ------
@@ -801,12 +652,10 @@ class Session(object):
         for name, dataset in self.datasets.items():
             if name in proc_select:
                 ops._io(operation="save", data_loc=self.location,
-                        data=dataset, name=name, file_fmt=file_fmt,
-                        multiindex=multiindex)
+                        data=dataset, name=name,
+                        file_fmt=self.save_fmt,
+                        multiindex=self.save_header)
             else:
                 continue
-
-        self.logger.info(f"Saved {', '.join(proc_select)} "
-                         f"to '{self.location}'.")
 
         return
