@@ -207,7 +207,7 @@ class Session(object):
 
     def _apply_transformation(self, select: Union[str, int, Sequence[str],
                                                   Sequence[int]],
-                              transformation: Callable,
+                              transformation: str,
                               **kwargs) -> Dict[str, pd.DataFrame]:
         """Helper method to apply transformations on :attr:`datasets`.
 
@@ -215,14 +215,22 @@ class Session(object):
         ----------
         select : str, int, Sequence[str] or Sequence[int], default "all"
             Datasets in :attr:`datasets` to apply transformation on.
-        transformation : Callable
-            Function representing the transformation to apply.
+        transformation : str
+            String representing transformation methods in
+            :class:`~econuy.retrieval.core.Retriever`.
 
         Returns
         -------
         Transformed datasets : Dict[str, pd.DataFrame]
 
         """
+        methods = {"resample": self.retriever.resample,
+                   "chg_diff": self.retriever.chg_diff,
+                   "convert": self.retriever.convert,
+                   "decompose": self.retriever.decompose,
+                   "rolling": self.retriever.rolling,
+                   "rebase": self.retriever.rebase}
+
         proc_select = self._select_datasets(select=select)
 
         new_kwargs = {}
@@ -237,8 +245,9 @@ class Session(object):
         output = self.datasets.copy()
         for i, name in enumerate(proc_select):
             current_kwargs = {k: v[i] for k, v in new_kwargs.items()}
-            data = self.datasets[name]
-            transformed = transformation(data, **current_kwargs)
+            self.retriever._dataset = self.datasets[name]
+            methods[transformation](**current_kwargs)
+            transformed = self.retriever.dataset
             output.update({name: transformed})
 
         return output
@@ -371,7 +380,7 @@ class Session(object):
 
         """
         output = self._apply_transformation(select=select,
-                                            transformation=transform.resample,
+                                            transformation="resample",
                                             rule=rule,
                                             operation=operation,
                                             interpolation=interpolation)
@@ -392,7 +401,7 @@ class Session(object):
 
         """
         output = self._apply_transformation(select=select,
-                                            transformation=transform.chg_diff,
+                                            transformation="chg_diff",
                                             operation=operation, period=period)
 
         self._datasets = output
@@ -444,7 +453,7 @@ class Session(object):
             errors = self.errors
 
         output = self._apply_transformation(select=select,
-                                            transformation=transform.decompose,
+                                            transformation="decompose",
                                             component=component,
                                             method=method,
                                             force_x13=force_x13,
@@ -484,23 +493,16 @@ class Session(object):
             raise ValueError("'flavor' can be one of 'usd', 'real', "
                              "or 'gdp'.")
 
-        if flavor == "usd":
+        if flavor == "real":
             output = self._apply_transformation(select=select,
-                                                transformation=transform.convert_usd,
-                                                retriever=self.retriever,
-                                                errors=self.errors)
-        elif flavor == "real":
-            output = self._apply_transformation(select=select,
-                                                transformation=transform.convert_real,
-                                                retriever=self.retriever,
-                                                errors=self.errors,
+                                                transformation="convert",
+                                                flavor=flavor,
                                                 start_date=start_date,
                                                 end_date=end_date)
         else:
             output = self._apply_transformation(select=select,
-                                                transformation=transform.convert_gdp,
-                                                retriever=self.retriever,
-                                                errors=self.errors)
+                                                transformation="convert",
+                                                flavor=flavor)
 
         self._datasets = output
         return
@@ -519,7 +521,7 @@ class Session(object):
 
         """
         output = self._apply_transformation(select=select,
-                                            transformation=transform.rebase,
+                                            transformation="rebase",
                                             start_date=start_date,
                                             end_date=end_date, base=base)
         self._datasets = output
@@ -538,7 +540,7 @@ class Session(object):
 
         """
         output = self._apply_transformation(select=select,
-                                            transformation=transform.rolling,
+                                            transformation="rolling",
                                             window=window,
                                             operation=operation)
         self._datasets = output
