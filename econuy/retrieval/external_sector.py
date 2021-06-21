@@ -271,7 +271,7 @@ def trade_balance(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     pipeline.get("trade_x_dest_val")
     exports = pipeline.dataset.rename(columns={"Total exportaciones": "Total"})
     pipeline.get("trade_m_orig_val")
-    imports = pipeline.dataset.rename(columns={"Total exportaciones": "Total"})
+    imports = pipeline.dataset.rename(columns={"Total importaciones": "Total"})
     net = exports - imports
 
     return net
