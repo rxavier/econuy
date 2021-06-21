@@ -290,10 +290,6 @@ class Session(object):
         """
         if isinstance(names, str):
             names = [names]
-        if any(name not in (list(self.available_datasets()["original"].keys())
-                            + list(self.available_datasets()["custom"].keys()))
-               for name in names):
-            raise ValueError("Invalid dataset selected.")
 
         failed = []
         not_failed = []
