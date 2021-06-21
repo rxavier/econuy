@@ -715,7 +715,8 @@ def reserves_changes(pipeline: Optional[Pipeline] = None,
     links = [fixed_may14 if x == wrong_may14 else x for x in links]
 
     if not previous_data.empty:
-        previous_data.columns.set_levels(["-"], level=2, inplace=True)
+        previous_data.columns = previous_data.columns.set_levels(["-"],
+                                                                 level=2)
         previous_data.columns = reserves_cols[1:46]
         previous_data.index = (pd.to_datetime(previous_data.index)
                                 .normalize())
@@ -752,6 +753,6 @@ def reserves_changes(pipeline: Optional[Pipeline] = None,
     metadata._set(reserves, area="Sector externo",
                   currency="USD", inf_adj="No", unit="Millones",
                   seas_adj="NSA", ts_type="Flujo", cumperiods=1)
-    reserves.columns.set_levels(["-"], level=2, inplace=True)
+    reserves.columns = reserves.columns.set_levels(["-"], level=2)
 
     return reserves
