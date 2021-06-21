@@ -341,15 +341,23 @@ def _commodity_weights(location: Union[str, PathLike, Engine,
         if not output.equals(pd.DataFrame()):
             return output
 
-    base_url = "http://comtrade.un.org/api/get?max=1000&type=C&freq=A&px=S3&ps"
+    base_url = "http://comtrade.un.org/api/get?max=10000&type=C&freq=A&px=S3&ps"
     prods = "%2C".join(["0011", "011", "01251", "01252", "0176", "022", "041",
                         "042", "043", "2222", "24", "25", "268", "97"])
-    raw = []
-    for year in range(1992, dt.datetime.now().year - 1):
-        full_url = f"{base_url}={year}&r=all&p=858&rg=1&cc={prods}"
+    start = 1992
+    year_pairs = []
+    while start < dt.datetime.now().year - 5:
+        stop = start + 4
+        year_pairs.append(range(start, stop))
+        start = stop
+    year_pairs.append(range(year_pairs[-1].stop, dt.datetime.now().year - 1))
+    reqs = []
+    for pair in year_pairs:
+        years = "%2C".join(str(x) for x in pair)
+        full_url = f"{base_url}={years}&r=all&p=858&rg=1&cc={prods}"
         un_r = requests.get(full_url)
-        raw.append(pd.DataFrame(un_r.json()["dataset"]))
-    raw = pd.concat(raw, axis=0)
+        reqs.append(pd.DataFrame(un_r.json()["dataset"]))
+    raw = pd.concat(reqs, axis=0)
 
     table = raw.groupby(["period", "cmdDescE"]).sum().reset_index()
     table = table.pivot(index="period", columns="cmdDescE",
@@ -373,13 +381,14 @@ def _commodity_weights(location: Union[str, PathLike, Engine,
     if location is not None:
         previous_data = ops._io(operation="read",
                                 data_loc=location,
-                                name="commodity_weights")
+                                name="commodity_weights",
+                                multiindex=None)
         output = ops._revise(new_data=output, prev_data=previous_data,
                              revise_rows="nodup")
 
     if location is not None:
         ops._io(operation="save", data_loc=location,
-                data=output, name="commodity_weights")
+                data=output, name="commodity_weights", multiindex=None)
 
     return output
 
