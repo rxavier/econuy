@@ -141,7 +141,8 @@ class Pipeline(object):
                            "commodity_index", "cpi_measures", "_lin_gdp",
                            "net_public_debt", "balance_summary",
                            "core_industrial", "regional_embi_yields",
-                           "regional_rxr", "real_wages", "labor_rates_people"]:
+                           "regional_rxr", "regional_stocks",
+                           "real_wages", "labor_rates_people"]:
                 # Some datasets require retrieving other datasets. Passing the
                 # class instance allows running these retrieval operations
                 # with the same parameters (for example, save file formats).
