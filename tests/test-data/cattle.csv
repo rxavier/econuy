@@ -1,6 +1,6 @@
 Indicador,Novillos,Vacas,Vaquillonas,Terneros,Toros,Total
 Área,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica
-Frecuencia,-,-,-,-,-,-
+Frecuencia,W-SUN,W-SUN,W-SUN,W-SUN,W-SUN,W-SUN
 Moneda,-,-,-,-,-,-
 Inf. adj.,No,No,No,No,No,No
 Unidad,Cabezas,Cabezas,Cabezas,Cabezas,Cabezas,Cabezas
@@ -851,8 +851,7 @@ Acum. períodos,1,1,1,1,1,1
 2021-02-14,23176,14386,6473,133,455,44623
 2021-02-21,27870,12938,5925,63,569,47365
 2021-02-28,26400,15580,8457,78,703,51218
-2021-02-07,28442,19325,5697,211,735,54410
-2021-02-14,27598,23713,5225,272,924,57732
+2021-03-07,28442,19325,5697,211,735,54410
+2021-03-14,27598,23713,5225,272,924,57732
 2021-03-21,23335,20969,4428,519,756,50007
-2021-03-29,15151,12833,3733,150,639,32506
-2021-04-04,19436,15818,4102,704,759,40819
+2021-03-28,15151,12833,3733,150,639,32506
