@@ -3,7 +3,7 @@ import logging
 import copy
 import traceback
 from datetime import datetime
-from inspect import signature, getmodule
+from inspect import getmodule
 from os import PathLike
 from pathlib import Path
 from typing import Optional, Union, Sequence, Dict, List
