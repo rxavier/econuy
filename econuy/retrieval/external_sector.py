@@ -21,7 +21,7 @@ from sqlalchemy.engine.base import Engine, Connection
 
 from econuy import transform
 from econuy.retrieval import regional
-from econuy.retrieval.core import Retriever
+from econuy.core import Pipeline
 from econuy.utils import ops, metadata
 from econuy.utils.sources import urls
 from econuy.utils.extras import trade_metadata, reserves_cols
@@ -252,51 +252,51 @@ def trade_m_orig_pri() -> pd.DataFrame:
     return _trade_retriever(name="trade_m_orig_pri")
 
 
-def trade_balance(retriever: Optional[Retriever] = None) -> pd.DataFrame:
+def trade_balance(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """
     Get net trade balance data by country/region.
 
     Parameters
     ----------
-    retriever : econuy.retrieval.base.Retriever or None, default None
-        An instance of the econuy Retriever class.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
 
     Returns
     -------
     Net trade balance value by region/country : pd.DataFrame
 
     """
-    if retriever is None:
-        retriever = Retriever()
-    retriever.get("trade_x_dest_val")
-    exports = retriever.dataset.rename(columns={"Total exportaciones": "Total"})
-    retriever.get("trade_m_orig_val")
-    imports = retriever.dataset.rename(columns={"Total exportaciones": "Total"})
+    if pipeline is None:
+        pipeline = Pipeline()
+    pipeline.get("trade_x_dest_val")
+    exports = pipeline.dataset.rename(columns={"Total exportaciones": "Total"})
+    pipeline.get("trade_m_orig_val")
+    imports = pipeline.dataset.rename(columns={"Total exportaciones": "Total"})
     net = exports - imports
 
     return net
 
 
-def terms_of_trade(retriever: Optional[Retriever] = None) -> pd.DataFrame:
+def terms_of_trade(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """
     Get terms of trade.
 
     Parameters
     ----------
-    retriever : econuy.retrieval.base.Retriever or None, default None
-        An instance of the econuy Retriever class.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
 
     Returns
     -------
     Terms of trade (exports/imports) : pd.DataFrame
 
     """
-    if retriever is None:
-        retriever = Retriever()
-    retriever.get("trade_x_dest_pri")
-    exports = retriever.dataset.rename(columns={"Total exportaciones": "Total"})
-    retriever.get("trade_m_orig_pri")
-    imports = retriever.dataset.rename(columns={"Total importaciones": "Total"})
+    if pipeline is None:
+        pipeline = Pipeline()
+    pipeline.get("trade_x_dest_pri")
+    exports = pipeline.dataset.rename(columns={"Total exportaciones": "Total"})
+    pipeline.get("trade_m_orig_pri")
+    imports = pipeline.dataset.rename(columns={"Total importaciones": "Total"})
 
     tot = exports / imports
     tot = tot.loc[:, ["Total"]]
@@ -512,13 +512,13 @@ def commodity_prices() -> pd.DataFrame:
     return complete
 
 
-def commodity_index(retriever: Optional[Retriever] = None) -> pd.DataFrame:
+def commodity_index(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """Get export-weighted commodity price index for Uruguay.
 
     Parameters
     ----------
-    retriever : econuy.retrieval.base.Retriever or None, default None
-        An instance of the econuy Retriever class.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
 
     Returns
     -------
@@ -526,15 +526,15 @@ def commodity_index(retriever: Optional[Retriever] = None) -> pd.DataFrame:
         Export-weighted average of commodity prices relevant to Uruguay.
 
     """
-    if retriever is None:
-        retriever = Retriever()
-    retriever.get("commodity_prices")
-    prices = retriever.dataset
+    if pipeline is None:
+        pipeline = Pipeline()
+    pipeline.get("commodity_prices")
+    prices = pipeline.dataset
     prices.columns = prices.columns.get_level_values(0)
     prices = prices.interpolate(method="linear", limit=1).dropna(how="any")
     prices = prices.pct_change(periods=1)
-    weights = _commodity_weights(location=retriever.location,
-                                 download=retriever._download_commodity_weights)
+    weights = _commodity_weights(location=pipeline.location,
+                                 download=pipeline._download_commodity_weights)
     weights = weights[prices.columns]
     weights = weights.reindex(prices.index, method="ffill")
 
@@ -584,13 +584,13 @@ def rxr_official() -> pd.DataFrame:
     max_calls_total=10,
     retry_window_after_first_call_in_seconds=90,
 )
-def rxr_custom(retriever: Optional[Retriever] = None) -> pd.DataFrame:
+def rxr_custom(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """Get custom real exchange rates vis-à-vis the US, Argentina and Brazil.
 
     Parameters
     ----------
-    retriever : econuy.retrieval.base.Retriever or None, default None
-        An instance of the econuy Retriever class.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
 
     Returns
     -------
@@ -598,14 +598,14 @@ def rxr_custom(retriever: Optional[Retriever] = None) -> pd.DataFrame:
         Available: Argentina, Brazil, US.
 
     """
-    if retriever is None:
-        retriever = Retriever()
+    if pipeline is None:
+        pipeline = Pipeline()
 
-    ifs = regional._ifs(retriever=retriever)
-    retriever.get("cpi")
-    uy_cpi = retriever.dataset
-    retriever.get("nxr_monthly")
-    uy_e = retriever.dataset.iloc[:, [1]]
+    ifs = regional._ifs(pipeline=pipeline)
+    pipeline.get("cpi")
+    uy_cpi = pipeline.dataset
+    pipeline.get("nxr_monthly")
+    uy_e = pipeline.dataset.iloc[:, [1]]
     proc = pd.concat([ifs, uy_cpi, uy_e], axis=1)
     proc = proc.interpolate(method="linear", limit_area="inside")
     proc = proc.dropna(how="all")
@@ -676,14 +676,14 @@ def reserves() -> pd.DataFrame:
     max_calls_total=10,
     retry_window_after_first_call_in_seconds=90,
 )
-def reserves_changes(retriever: Optional[Retriever] = None,
+def reserves_changes(pipeline: Optional[Pipeline] = None,
                      previous_data: pd.DataFrame = pd.DataFrame()) -> pd.DataFrame:
     """Get international reserves changes data.
 
     Parameters
     ----------
-    retriever : econuy.retrieval.base.Retriever or None, default None
-        An instance of the econuy Retriever class.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
     previous_data : pd.DataFrame
         A DataFrame representing this dataset used to extract last
         available dates.
@@ -695,8 +695,8 @@ def reserves_changes(retriever: Optional[Retriever] = None,
     """
     name = "reserves_changes"
 
-    if retriever is None:
-        retriever = Retriever()
+    if pipeline is None:
+        pipeline = Pipeline()
     if previous_data.empty:
         first_year = 2013
     else:

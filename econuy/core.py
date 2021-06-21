@@ -1,3 +1,4 @@
+from __future__ import annotations
 import copy
 from typing import Union, Optional, Dict
 from os import PathLike
@@ -10,7 +11,7 @@ from econuy.utils import ops, datasets
 from econuy import transform
 
 
-class Retriever(object):
+class Pipeline(object):
     """
     Main class to access download and transformation methods.
 
@@ -89,8 +90,8 @@ class Retriever(object):
         all.update(datasets.custom())
         return all
 
-    def copy(self, deep: bool = True):
-        """Copy or deepcopy a Retriever object.
+    def copy(self, deep: bool = True) -> Pipeline:
+        """Copy or deepcopy a Pipeline object.
 
         Parameters
         ----------
@@ -99,7 +100,7 @@ class Retriever(object):
 
         Returns
         -------
-        :class:`~econuy.retrieval.core.Retriever`
+        :class:`~econuy.core.Pipeline`
 
         """
         if deep:
@@ -107,18 +108,36 @@ class Retriever(object):
         else:
             return copy.copy(self)
 
-    def get(self, dataset: str):
+    def get(self, name: str):
+        """
+        Main download method.
+
+        Parameters
+        ----------
+        name : str
+            Dataset to download, see available options in
+            :mod:`available_datasets`.
+
+        Raises
+        ------
+        ValueError
+            If an invalid string is given to the ``dataset`` argument.
+
+        """
+        if name not in self.available_datasets().keys():
+            raise ValueError("Invalid dataset selected.")
+
         if self.location is None:
             prev_data = pd.DataFrame()
         else:
             prev_data = ops._io(operation="read", data_loc=self.location,
-                                name=dataset, file_fmt=self.read_fmt,
+                                name=name, file_fmt=self.read_fmt,
                                 multiindex=self.read_header)
         if not self.download and not prev_data.empty:
             self._dataset = prev_data
         else:
-            selection = self.available_datasets()[dataset]
-            if dataset in ["trade_balance", "terms_of_trade", "rxr_custom",
+            selection = self.available_datasets()[name]
+            if name in ["trade_balance", "terms_of_trade", "rxr_custom",
                            "commodity_index", "cpi_measures", "_lin_gdp",
                            "net_public_debt", "balance_summary",
                            "core_industrial", "regional_embi_yields",
@@ -126,19 +145,19 @@ class Retriever(object):
                 # Some datasets require retrieving other datasets. Passing the
                 # class instance allows running these retrieval operations
                 # with the same parameters (for example, save file formats).
-                new_data = selection["function"](retriever=self)
-            elif dataset in ["reserves_changes", "nxr_daily"]:
+                new_data = selection["function"](pipeline=self)
+            elif name in ["reserves_changes", "nxr_daily"]:
                 # Datasets that require many requests (mostly daily data) benefit
                 # from having previous data, so they can start requests
                 # from the last available date.
-                new_data = selection["function"](retriever=self,
+                new_data = selection["function"](pipeline=self,
                                                  previous_data=prev_data)
             else:
                 new_data = selection["function"]()
             data = ops._revise(new_data=new_data, prev_data=prev_data,
                                revise_rows="nodup")
             self._dataset = data
-        self._name = dataset
+        self._name = name
         if self.always_save:
             self.save()
         return
@@ -254,15 +273,15 @@ class Retriever(object):
         if flavor == "usd":
             output = transform.convert_usd(self.dataset,
                                            errors=self.errors,
-                                           retriever=self)
+                                           pipeline=self)
         elif flavor == "real":
             output = transform.convert_real(self.dataset, start_date=start_date,
                                             end_date=end_date,
                                             errors=self.errors,
-                                            retriever=self)
+                                            pipeline=self)
         else:
             output = transform.convert_gdp(self.dataset, errors=self.errors,
-                                           retriever=self)
+                                           pipeline=self)
 
         self._dataset = output
         return

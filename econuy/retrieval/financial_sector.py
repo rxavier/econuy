@@ -16,7 +16,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from econuy.utils import metadata
 from econuy.utils.chromedriver import _build
 from econuy.utils.sources import urls
-from econuy.retrieval.core import Retriever
+from econuy.core import Pipeline
 
 
 @retry(

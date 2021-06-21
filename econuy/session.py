@@ -1,30 +1,31 @@
 from __future__ import annotations
 import logging
 import copy
+import traceback
 from datetime import datetime
 from inspect import signature, getmodule
 from os import PathLike
 from pathlib import Path
-from typing import Callable, Optional, Union, Sequence, Dict, List
+from typing import Optional, Union, Sequence, Dict, List
 
 import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
-from econuy.retrieval.core import Retriever
+from econuy.core import Pipeline
 from econuy.utils import datasets, logutil, ops
 from econuy.utils.exceptions import RetryLimitError
 
 
 class Session(object):
     """
-    A download and transformation session based on a Retriever object that
+    A download and transformation session based on a Pipeline object that
     simplifies working with multiple datasets.
 
     Attributes
     ----------
-    retriever : econuy.retrieval.base.Retriever or None, default None
-        An instance of the econuy Retriever class. If this attribute is not
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class. If this attribute is not
         ``None``, ``location``, ``download``, ``always_save``, ``read_fmt``,
         ``save_fmt``, ``read_header``, ``save_header`` and ``errors`` will be
         ignored.
@@ -71,7 +72,7 @@ class Session(object):
     """
 
     def __init__(self,
-                 retriever: Optional[Retriever] = None,
+                 pipeline: Optional[Pipeline] = None,
                  location: Union[str, PathLike,
                                  Connection, Engine, None] = None,
                  download: bool = True,
@@ -84,7 +85,7 @@ class Session(object):
                  logger: Optional[logging.Logger] = None,
                  errors: str = "raise",
                  max_retries: int = 3):
-        if retriever is None:
+        if pipeline is None:
             self.location = location
             self.download = download
             self.always_save = always_save
@@ -93,21 +94,21 @@ class Session(object):
             self.save_fmt = save_fmt
             self.save_header = save_header
             self.errors = errors
-            self.retriever = Retriever(location=location, download=download,
+            self.pipeline = Pipeline(location=location, download=download,
                                        always_save=always_save, read_fmt=read_fmt,
                                        read_header=read_header, save_fmt=save_fmt,
                                        save_header=save_header, errors=errors)
         else:
-            self.retriever = retriever
+            self.pipeline = pipeline
 
         self.log = log
         self.logger = logger
         self.max_retries = max_retries
 
-        if self.retriever.dataset.empty:
+        if self.pipeline.dataset.empty:
             self._datasets = {}
         else:
-            self._datasets = {retriever.name: retriever.dataset}
+            self._datasets = {pipeline.name: pipeline.dataset}
         self._retries = 1
 
         if logger is not None:
@@ -133,8 +134,7 @@ class Session(object):
     @staticmethod
     def available_datasets(functions: bool = False) -> Dict[str, Dict]:
         """Return available ``dataset`` arguments for use in
-        :mod:`~econuy.session.Session.get` and
-        :mod:`~econuy.session.Session.get_custom`.
+        :mod:`~econuy.session.Session.get`.
 
         Returns
         -------
@@ -168,7 +168,7 @@ class Session(object):
         """
         return self._datasets
 
-    def copy(self, deep: bool = True):
+    def copy(self, deep: bool = True) -> Session:
         """Copy or deepcopy a Session object.
 
         Parameters
@@ -188,6 +188,24 @@ class Session(object):
 
     def _select_datasets(self, select: Union[str, int, Sequence[str],
                                              Sequence[int]]) -> List[str]:
+        """Generate list of dataset names based on selection.
+
+        Parameters
+        ----------
+        select : str, int, Sequence[str] or Sequence[int], default "all"
+            Datasets in :attr:`datasets` to apply transformation on. Can be
+            defined with their names or index position.
+
+        Returns
+        -------
+        List[str]
+            List of dataset names.
+
+        Raises
+        ------
+        ValueError
+            If names and indexes are combined.
+        """
         keys = list(self.datasets.keys())
         if isinstance(select, Sequence) and not isinstance(select, str):
             if not all(type(select[i]) == type(select[0])
@@ -214,22 +232,22 @@ class Session(object):
         Parameters
         ----------
         select : str, int, Sequence[str] or Sequence[int], default "all"
-            Datasets in :attr:`datasets` to apply transformation on.
+            Datasets in :attr:`datasets` to apply transformations on.
         transformation : str
             String representing transformation methods in
-            :class:`~econuy.retrieval.core.Retriever`.
+            :class:`~econuy.retrieval.core.Pipeline`.
 
         Returns
         -------
         Transformed datasets : Dict[str, pd.DataFrame]
 
         """
-        methods = {"resample": self.retriever.resample,
-                   "chg_diff": self.retriever.chg_diff,
-                   "convert": self.retriever.convert,
-                   "decompose": self.retriever.decompose,
-                   "rolling": self.retriever.rolling,
-                   "rebase": self.retriever.rebase}
+        methods = {"resample": self.pipeline.resample,
+                   "chg_diff": self.pipeline.chg_diff,
+                   "convert": self.pipeline.convert,
+                   "decompose": self.pipeline.decompose,
+                   "rolling": self.pipeline.rolling,
+                   "rebase": self.pipeline.rebase}
 
         proc_select = self._select_datasets(select=select)
 
@@ -245,53 +263,47 @@ class Session(object):
         output = self.datasets.copy()
         for i, name in enumerate(proc_select):
             current_kwargs = {k: v[i] for k, v in new_kwargs.items()}
-            self.retriever._dataset = self.datasets[name]
+            self.pipeline._dataset = self.datasets[name]
             methods[transformation](**current_kwargs)
-            transformed = self.retriever.dataset
+            transformed = self.pipeline.dataset
             output.update({name: transformed})
 
         return output
 
-    def get(self, dataset: Union[str, Sequence[str]]):
+    def get(self, names: Union[str, Sequence[str]]):
         """
         Main download method.
 
         Parameters
         ----------
-        dataset : Union[str, Sequence[str]]
-            Type of data to download, see available options in datasets.py
-            or in :mod:`available_datasets`. Either a string representing
+        names : Union[str, Sequence[str]]
+            Dataset to download, see available options in
+            :mod:`available_datasets`. Either a string representing
             a dataset name or a sequence of strings in order to download
             several datasets.
-
-        Returns
-        -------
-        :class:`~econuy.session.Session`
-            Loads the downloaded dataframes into the :attr:`datasets`
-            attribute.
 
         Raises
         ------
         ValueError
-            If an invalid string is given to the ``dataset`` argument.
+            If an invalid string is given to the ``names`` argument.
 
         """
-        if isinstance(dataset, str):
-            dataset = [dataset]
+        if isinstance(names, str):
+            names = [names]
         if any(name not in (list(self.available_datasets()["original"].keys())
                             + list(self.available_datasets()["custom"].keys()))
-               for name in dataset):
+               for name in names):
             raise ValueError("Invalid dataset selected.")
 
         failed = []
         not_failed = []
-        for name in dataset:
+        for name in names:
             try:
-                self.retriever.get(dataset=name)
-                self._datasets.update({name: self.retriever.dataset})
+                self.pipeline.get(name=name)
+                self._datasets.update({name: self.pipeline.dataset})
                 not_failed.append(name)
-            except BaseException as e:
-                print(repr(e))
+            except BaseException:
+                traceback.print_exc()
                 failed.append(name)
                 continue
         if len(failed) > 0:
@@ -299,7 +311,7 @@ class Session(object):
                 self._retries += 1
                 self.logger.info(f"Failed to retrieve {', '.join(failed)}. "
                                  f"Retrying (run {self._retries}).")
-                self.get(dataset=failed)
+                self.get(names=failed)
             else:
                 self.logger.info(f"Could not retrieve {', '.join(failed)}")
                 self._retries = 1
@@ -310,13 +322,13 @@ class Session(object):
         self._retries = 1
         return
 
-    def get_bulk(self, dataset: str):
+    def get_bulk(self, names: str):
         """
         Get datasets in bulk.
 
         Parameters
         ----------
-        dataset : {'all', 'original', 'custom', 'economic_activity', \
+        names : {'all', 'original', 'custom', 'economic_activity', \
                  'prices', 'fiscal_accounts', 'labor', 'external_sector', \
                  'financial_sector', 'income', 'international', 'regional'}
             Type of data to download. `all` gets all available datasets,
@@ -324,45 +336,39 @@ class Session(object):
             custom datasets. The remaining options get all datasets for that
             area.
 
-        Returns
-        -------
-        :class:`~econuy.session.Session`
-            Loads the downloaded dataframes into the :attr:`datasets`
-            attribute.
-
         Raises
         ------
         ValueError
-            If an invalid string is given to the ``dataset`` argument.
+            If an invalid string is given to the ``names`` argument.
 
         """
         valid_datasets = ["all", "original", "custom", "economic_activity",
                           "prices", "fiscal_accounts", "labor", "external_sector",
                           "financial_sector", "income", "international",
                           "regional"]
-        if dataset not in valid_datasets:
-            raise ValueError(f"'dataset' can only be one of "
+        if names not in valid_datasets:
+            raise ValueError(f"'names' can only be one of "
                              f"{', '.join(valid_datasets)}.")
         available_datasets = self.available_datasets(functions=True)
         original_datasets = list(available_datasets["original"].keys())
         custom_datasets = list(available_datasets["custom"].keys())
 
-        if dataset == "original":
-            self.get(dataset=original_datasets)
-        elif dataset == "custom":
-            self.get(dataset=custom_datasets)
-        elif dataset == "all":
-            self.get(dataset=original_datasets+custom_datasets)
+        if names == "original":
+            self.get(names=original_datasets)
+        elif names == "custom":
+            self.get(names=custom_datasets)
+        elif names == "all":
+            self.get(names=original_datasets+custom_datasets)
         else:
             original_area_datasets = []
             for k, v in available_datasets["original"].items():
-                if dataset in getmodule(v["function"]).__name__:
+                if names in getmodule(v["function"]).__name__:
                     original_area_datasets.append(k)
             custom_area_datasets = []
             for k, v in available_datasets["custom"].items():
-                if dataset in getmodule(v["function"]).__name__:
+                if names in getmodule(v["function"]).__name__:
                     custom_area_datasets.append(k)
-            self.get(dataset=original_area_datasets+custom_area_datasets)
+            self.get(names=original_area_datasets+custom_area_datasets)
 
         return
 
@@ -548,7 +554,7 @@ class Session(object):
 
     def concat(self, select: Union[str, int, Sequence[str],
                                    Sequence[int]] = "all",
-               name: Optional[str] = None,
+               concat_name: Optional[str] = None,
                force_suffix: bool = False):
         """
         Concatenate datasets in :attr:`datasets` and add as a new dataset.
@@ -559,22 +565,16 @@ class Session(object):
         ----------
         select : str, int, Sequence[str] or Sequence[int], default "all"
             Datasets to concatenate.
-        name : Optional[str], default None
+        concat_name : Optional[str], default None
             Name used as a key for the output dataset. The default None sets
-            the name to "com_{dataset_1_name}_..._{dataset_n_name}".
+            the name to "concat_{dataset_1_name}_..._{dataset_n_name}".
         force_suffix : bool, default False
             Whether to include each dataset's full name as a prefix in all
             indicator columns.
 
-        Returns
-        -------
-        :class:`~econuy.session.Session`
-            Loads the concatenated dataframes into the :attr:`datasets`
-            attribute.
-
         """
         proc_select = self._select_datasets(select=select)
-        proc_select = [x for x in proc_select if "com_" not in x]
+        proc_select = [x for x in proc_select if "concat_" not in x]
         selected_datasets = [d for n, d in self.datasets.items()
                              if n in proc_select]
 
@@ -623,13 +623,13 @@ class Session(object):
                     break
                 else:
                     continue
-        if name is None:
-            name = "com_" + "_".join(proc_select)
-        elif not name.startswith("com_"):
-            name = "com_" + name
+        if concat_name is None:
+            concat_name = "concat_" + "_".join(proc_select)
+        elif not concat_name.startswith("concat_"):
+            concat_name = "concat_" + concat_name
         else:
             pass
-        self._datasets.update({name: combined})
+        self._datasets.update({concat_name: combined})
         return
 
     def save(self,

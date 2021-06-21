@@ -18,7 +18,7 @@ from requests.exceptions import ConnectionError
 
 from econuy.retrieval.external_sector import reserves
 from econuy import transform
-from econuy.retrieval.core import Retriever
+from econuy.core import Pipeline
 from econuy.utils import metadata
 from econuy.utils.sources import urls
 from econuy.utils.extras import fiscal_sheets, taxes_columns
@@ -366,32 +366,32 @@ def public_assets() -> pd.DataFrame:
     return _public_debt_retriever()["assets"]
 
 
-def net_public_debt(retriever: Optional[Retriever] = None) -> pd.DataFrame:
+def net_public_debt(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """
     Get net public debt excluding deposits at the central bank.
 
     Parameters
     ----------
-    retriever : econuy.retrieval.base.Retriever or None, default None
-        An instance of the econuy Retriever class.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
 
     Returns
     -------
     Net public debt excl. deposits at the central bank : pd.DataFrame
 
     """
-    if retriever is None:
-        retriever = Retriever()
+    if pipeline is None:
+        pipeline = Pipeline()
 
-    retriever.get("public_debt_gps")
-    gross_debt = retriever.dataset.loc[:, ["Total deuda"]]
-    retriever.get("public_assets")
-    assets = retriever.dataset.loc[:, ["Total activos"]]
+    pipeline.get("public_debt_gps")
+    gross_debt = pipeline.dataset.loc[:, ["Total deuda"]]
+    pipeline.get("public_assets")
+    assets = pipeline.dataset.loc[:, ["Total activos"]]
     gross_debt.columns = ["Deuda neta del sector"
                           " público global excl. encajes"]
     assets.columns = gross_debt.columns
-    retriever.get("reserves")
-    deposits = retriever.dataset.loc[:,
+    pipeline.get("reserves")
+    deposits = pipeline.dataset.loc[:,
                                      ["Obligaciones en ME con el sector financiero"]]
     deposits = (transform.resample(deposits, rule="Q-DEC", operation="last")
                 .reindex(gross_debt.index).squeeze())
@@ -404,7 +404,7 @@ def net_public_debt(retriever: Optional[Retriever] = None) -> pd.DataFrame:
     return output
 
 
-def balance_summary(retriever: Optional[Retriever] = None) -> pd.DataFrame:
+def balance_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """
     Get the summary fiscal balance table found in the `Budget Law
     <https://www.gub.uy/contaduria-general-nacion/sites/
@@ -415,29 +415,29 @@ def balance_summary(retriever: Optional[Retriever] = None) -> pd.DataFrame:
 
     Parameters
     ----------
-    retriever : econuy.retrieval.base.Retriever or None, default None
-        An instance of the econuy Retriever class.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
 
     Returns
     -------
     Summary fiscal balance table : pd.DataFrame
 
     """
-    if retriever is None or retriever.download is True:
+    if pipeline is None or pipeline.download is True:
         data = _balance_retriever()
         gps = data["gps"]
         nfps = data["nfps"]
         gc = data["cg-bps"]
         pe = data["pe"]
     else:
-        retriever.get("balance_gps")
-        gps = retriever.dataset
-        retriever.get("balance_nfps")
-        nfps = retriever.dataset
-        retriever.get("balance_cg-bps")
-        gc = retriever.dataset
-        retriever.get("balance_pe")
-        pe = retriever.dataset
+        pipeline.get("balance_gps")
+        gps = pipeline.dataset
+        pipeline.get("balance_nfps")
+        nfps = pipeline.dataset
+        pipeline.get("balance_cg-bps")
+        gc = pipeline.dataset
+        pipeline.get("balance_pe")
+        pe = pipeline.dataset
 
     proc = pd.DataFrame(index=gps.index)
 

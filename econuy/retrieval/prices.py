@@ -15,7 +15,7 @@ from scipy.stats import stats
 from scipy.stats.mstats_basic import winsorize
 
 from econuy import transform
-from econuy.retrieval.core import Retriever
+from econuy.core import Pipeline
 from econuy.utils import metadata, get_project_root
 from econuy.utils.sources import urls
 from econuy.utils.extras import cpi_details
@@ -110,14 +110,14 @@ def nxr_monthly() -> pd.DataFrame:
     max_calls_total=10,
     retry_window_after_first_call_in_seconds=60,
 )
-def nxr_daily(retriever: Optional[Retriever] = None,
+def nxr_daily(pipeline: Optional[Pipeline] = None,
               previous_data: pd.DataFrame = pd.DataFrame()) -> pd.DataFrame:
     """Get daily nominal exchange rate data.
 
     Parameters
     ----------
-    retriever : econuy.retrieval.base.Retriever or None, default None
-        An instance of the econuy Retriever class.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
     previous_data : pd.DataFrame
         A DataFrame representing this dataset used to extract last
         available dates.
@@ -128,8 +128,8 @@ def nxr_daily(retriever: Optional[Retriever] = None,
         Sell rate, monthly average and end of period.
 
     """
-    if retriever is not None:
-        retriever = Retriever()
+    if pipeline is not None:
+        pipeline = Pipeline()
     if previous_data.empty:
         start_date = dt.datetime(1999, 12, 31)
     else:
@@ -216,23 +216,23 @@ stats._contains_nan = _new_contains_nan
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def cpi_measures(retriever: Optional[Retriever] = None) -> pd.DataFrame:
+def cpi_measures(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """
     Get core CPI, Winsorized CPI, tradabe CPI, non-tradable CPI and residual
     CPI.
 
     Parameters
     ----------
-    retriever : econuy.retrieval.base.Retriever or None, default None
-        An instance of the econuy Retriever class.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
 
     Returns
     -------
     Monthly CPI measures : pd.DataFrame
 
     """
-    if retriever is None:
-        retriever = Retriever()
+    if pipeline is None:
+        pipeline = Pipeline()
 
     name = "cpi_measures"
 
@@ -349,8 +349,8 @@ def cpi_measures(retriever: Optional[Retriever] = None) -> pd.DataFrame:
                          x.pct_change().loc[x.index > "2011-01-01"]])
         output.append(aux.fillna(0).add(1).cumprod().mul(100))
 
-    retriever.get("cpi")
-    cpi_re = retriever.dataset
+    pipeline.get("cpi")
+    cpi_re = pipeline.dataset
     cpi_re = cpi_re.loc[cpi_re.index >= "1997-03-31"]
     output = pd.concat([cpi_re] + output + [cpi_win], axis=1)
     output.columns = ["Índice de precios al consumo: total",

@@ -19,7 +19,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from sqlalchemy.engine.base import Engine, Connection
 
 from econuy.retrieval.international import long_rates
-from econuy.retrieval.core import Retriever
+from econuy.core import Pipeline
 from econuy.transform import rebase, resample
 from econuy.utils import metadata, ops
 from econuy.utils.chromedriver import _build
@@ -233,7 +233,7 @@ def embi_spreads() -> pd.DataFrame:
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def embi_yields(retriever: Optional[Retriever] = None) -> pd.DataFrame:
+def embi_yields(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """Get EMBI yields for Argentina, Brazil and the EMBI Global.
 
     Yields are calculated by adding EMBI spreads to the 10-year US Treasury
@@ -241,8 +241,8 @@ def embi_yields(retriever: Optional[Retriever] = None) -> pd.DataFrame:
 
     Parameters
     ----------
-    retriever : econuy.retrieval.base.Retriever or None, default None
-        An instance of the econuy Retriever class.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
 
     Returns
     -------
@@ -251,13 +251,13 @@ def embi_yields(retriever: Optional[Retriever] = None) -> pd.DataFrame:
     """
     name = "regional_embi_yields"
 
-    if retriever is None:
-        retriever = Retriever()
+    if pipeline is None:
+        pipeline = Pipeline()
 
-    retriever.get("global_long_rates")
-    treasuries = retriever.dataset["Estados Unidos"]
-    retriever.get("regional_embi_spreads")
-    spreads = retriever.dataset
+    pipeline.get("global_long_rates")
+    treasuries = pipeline.dataset["Estados Unidos"]
+    pipeline.get("regional_embi_spreads")
+    spreads = pipeline.dataset
 
     treasuries = (treasuries.reindex(spreads.index)
                   .interpolate(method="linear", limit_direction="forward"))
@@ -365,15 +365,15 @@ def policy_rates() -> pd.DataFrame:
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def stocks(retriever: Optional[Retriever] = None) -> pd.DataFrame:
+def stocks(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """Get stock market index data in USD terms.
 
     Indexes selected are MERVAL and BOVESPA.
 
     Parameters
     ----------
-    retriever : econuy.retrieval.base.Retriever or None, default None
-        An instance of the econuy Retriever class.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
 
     Returns
     -------
@@ -409,8 +409,8 @@ def stocks(retriever: Optional[Retriever] = None) -> pd.DataFrame:
                       parse_dates=True)[["Close"]]
     bra = bra.loc[bra.index >= "2000-01-01"]
 
-    retriever.get("regional_nxr")
-    converters = retriever.dataset
+    pipeline.get("regional_nxr")
+    converters = pipeline.dataset
     converters.columns = converters.columns.get_level_values(0)
     arg = pd.merge_asof(arg, converters[["Argentina - informal"]],
                         left_index=True, right_index=True)
@@ -436,7 +436,7 @@ def stocks(retriever: Optional[Retriever] = None) -> pd.DataFrame:
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def rxr(retriever: Optional[Retriever] = None) -> pd.DataFrame:
+def rxr(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """Get real exchange rates vis-á-vis the US dollar for Argentina and Brasil .
 
     Returns
@@ -444,10 +444,10 @@ def rxr(retriever: Optional[Retriever] = None) -> pd.DataFrame:
     Monthly real exchange rate : pd.DataFrame
 
     """
-    if retriever is None:
-        retriever = Retriever()
+    if pipeline is None:
+        pipeline = Pipeline()
 
-    proc = _ifs(retriever=retriever)
+    proc = _ifs(pipeline=pipeline)
 
     output = pd.DataFrame()
     output["Argentina"] = (proc["Argentina - oficial"] * proc["US.PCPI_IX"]
@@ -469,13 +469,13 @@ def rxr(retriever: Optional[Retriever] = None) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=30,
 )
-def _ifs(retriever: Retriever = None) -> pd.DataFrame:
+def _ifs(pipeline: Pipeline = None) -> pd.DataFrame:
     """Get extra CPI and exchange rate data from the IMF IFS.
 
     Parameters
     ----------
-    retriever : econuy.retrieval.base.Retriever or None, default None
-        An instance of the econuy Retriever class.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
 
     Returns
     -------
@@ -483,8 +483,8 @@ def _ifs(retriever: Retriever = None) -> pd.DataFrame:
         CPI and XR for the US, Brazil and Argentina.
 
     """
-    if retriever is None:
-        retriever = Retriever()
+    if pipeline is None:
+        pipeline = Pipeline()
 
     url_ = "http://dataservices.imf.org/REST/SDMX_JSON.svc/CompactData/IFS/M."
     url_extra = ".?startPeriod=1970&endPeriod="
@@ -512,12 +512,12 @@ def _ifs(retriever: Retriever = None) -> pd.DataFrame:
             ifs.append(data)
     ifs = pd.concat(ifs, axis=1, sort=True).apply(pd.to_numeric)
 
-    retriever.get("regional_nxr")
-    xr = retriever.dataset
+    pipeline.get("regional_nxr")
+    xr = pipeline.dataset
     xr = resample(xr, rule="M", operation="mean")
     xr.columns = xr.columns.get_level_values(0)
-    retriever.get("regional_cpi")
-    prices = retriever.dataset
+    pipeline.get("regional_cpi")
+    prices = pipeline.dataset
     prices.columns = ["ARG CPI", "BRA CPI"]
 
     proc = pd.concat([xr, prices, ifs], axis=1)

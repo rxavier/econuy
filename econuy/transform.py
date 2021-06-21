@@ -14,11 +14,11 @@ from statsmodels.tsa.seasonal import STL, seasonal_decompose
 
 from econuy.retrieval import prices, economic_activity
 from econuy.utils import metadata
-from econuy.retrieval.core import Retriever
+from econuy.core import Pipeline
 
 
 def convert_usd(df: pd.DataFrame,
-                retriever: Optional[Retriever],
+                pipeline: Optional[Pipeline],
                 errors: str = "raise") -> pd.DataFrame:
     """
     Convert dataframe from UYU to USD.
@@ -36,8 +36,8 @@ def convert_usd(df: pd.DataFrame,
 
     Parameters
     ----------
-    retriever : econuy.retrieval.base.Retriever or None, default None
-        An instance of the econuy Retriever class.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
     errors : {'raise', 'coerce', 'ignore'}
         What to do when a column in the input dataframe is not expressed in
         Uruguayan pesos. ``raise`` will raise a ValueError, ``coerce`` will
@@ -63,8 +63,8 @@ def convert_usd(df: pd.DataFrame,
         raise ValueError("Input dataframe's multiindex requires the "
                          "'Moneda' level.")
 
-    if retriever is None:
-        retriever = Retriever()
+    if pipeline is None:
+        pipeline = Pipeline()
 
     checks = [x == "UYU" for x in df.columns.get_level_values("Moneda")]
     if any(checks):
@@ -73,8 +73,8 @@ def convert_usd(df: pd.DataFrame,
             msg = (f"{error_df.columns[0][0]} does not have the "
                    f"appropiate metadata.")
             return error_handler(df=df, errors=errors, msg=msg)
-        retriever.get(dataset="nxr_monthly")
-        nxr_data = retriever.dataset
+        pipeline.get(name="nxr_monthly")
+        nxr_data = pipeline.dataset
         all_metadata = df.columns.droplevel("Indicador")
         if all(x == all_metadata[0] for x in all_metadata):
             return _convert_usd(df=df, nxr=nxr_data)
@@ -130,7 +130,7 @@ def _convert_usd(df: pd.DataFrame,
 def convert_real(df: pd.DataFrame,
                  start_date: Union[str, datetime, None] = None,
                  end_date: Union[str, datetime, None] = None,
-                 retriever: Retriever = None,
+                 pipeline: Optional[Pipeline] = None,
                  errors: str = "raise") -> pd.DataFrame:
     """
     Convert dataframe to real prices.
@@ -155,8 +155,8 @@ def convert_real(df: pd.DataFrame,
     end_date : str, datetime.date or None, default None
         If ``start_date`` is set, calculate so that the data is in constant
         prices of ``start_date-end_date``.
-    retriever : econuy.retrieval.base.Retriever or None, default None
-        An instance of the econuy Retriever class.
+    pipeline : econuy.retrieval.base.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
     errors : {'raise', 'coerce', 'ignore'}
         What to do when a column in the input dataframe is not expressed in
         nominal Uruguayan pesos. ``raise`` will raise a ValueError, ``coerce``
@@ -182,8 +182,8 @@ def convert_real(df: pd.DataFrame,
         raise ValueError("Input dataframe's multiindex requires the "
                          "'Inf. adj.' level.")
 
-    if retriever is None:
-        retriever = Retriever()
+    if pipeline is None:
+        pipeline = Pipeline()
 
     checks = [x == "UYU" and "Const." not in y
               for x, y in zip(df.columns.get_level_values("Moneda"),
@@ -194,8 +194,8 @@ def convert_real(df: pd.DataFrame,
             msg = (f"{error_df.columns[0][0]} does not have the "
                    f"appropiate metadata.")
             return error_handler(df=df, errors=errors, msg=msg)
-        retriever.get(dataset="cpi")
-        cpi_data = retriever.dataset
+        pipeline.get(name="cpi")
+        cpi_data = pipeline.dataset
         all_metadata = df.columns.droplevel("Indicador")
         if all(x == all_metadata[0] for x in all_metadata):
             return _convert_real(df=df, start_date=start_date,
@@ -266,7 +266,7 @@ def _convert_real(df: pd.DataFrame,
 
 
 def convert_gdp(df: pd.DataFrame,
-                retriever: Retriever = None,
+                pipeline: Optional[Pipeline] = None,
                 errors: str = "raise") -> pd.DataFrame:
     """
     Calculate dataframe as percentage of GDP.
@@ -288,8 +288,8 @@ def convert_gdp(df: pd.DataFrame,
     ----------
     df : pd.DataFrame
         Input dataframe.
-    retriever : econuy.retrieval.base.Retriever or None, default None
-        An instance of the econuy Retriever class.
+    pipeline : econuy.retrieval.base.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
     errors : {'raise', 'coerce', 'ignore'}
         What to do when a column in the input dataframe does not refer to
         Uruguayan data or is already in % of GDP. ``raise`` will raise a
@@ -315,8 +315,8 @@ def convert_gdp(df: pd.DataFrame,
         raise ValueError("Input dataframe's multiindex requires the 'Área' "
                          "and 'Unidad' levels.")
 
-    if retriever is None:
-        retriever = Retriever()
+    if pipeline is None:
+        pipeline = Pipeline()
 
     checks = [x not in ["Regional", "Global"] and "%PBI" not in y
               for x, y in zip(df.columns.get_level_values("Área"),
@@ -327,8 +327,8 @@ def convert_gdp(df: pd.DataFrame,
             msg = (f"{error_df.columns[0][0]} does not have the "
                    f"appropiate metadata.")
             return error_handler(df=df, errors=errors, msg=msg)
-        retriever.get(dataset="_lin_gdp")
-        gdp_data = retriever.dataset
+        pipeline.get(name="_lin_gdp")
+        gdp_data = pipeline.dataset
         all_metadata = df.columns.droplevel("Indicador")
         if all(x == all_metadata[0] for x in all_metadata):
             return _convert_gdp(df=df, gdp=gdp_data)

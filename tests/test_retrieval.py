@@ -12,7 +12,7 @@ def test_retrieval():
     """
     location = Path(get_project_root().parent, "tests/test-data")
     s = Session(location=location)
-    s.get_bulk(dataset="all", save=False)
+    s.get_bulk(names="all", save=False)
     for k, v in s.datasets.items():
         print(k)
         test_path = Path(location, f"{k}.csv")

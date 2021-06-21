@@ -15,7 +15,7 @@ from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 
 from econuy import transform
-from econuy.retrieval.core import Retriever
+from econuy.core import Pipeline
 from econuy.utils import metadata, get_project_root
 from econuy.utils.sources import urls
 
@@ -212,7 +212,7 @@ def natacc_gdp_cur_nsa() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def _lin_gdp(retriever: Optional[Retriever] = None):
+def _lin_gdp(pipeline: Optional[Pipeline] = None):
     """Get nominal GDP data in UYU and USD with forecasts.
 
     Update nominal GDP data for use in the `transform.convert_gdp()` function.
@@ -222,8 +222,8 @@ def _lin_gdp(retriever: Optional[Retriever] = None):
 
     Parameters
     ----------
-    retriever : econuy.retrieval.base.Retriever or None, default None
-        An instance of the econuy Retriever class.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
 
     Returns
     -------
@@ -231,14 +231,14 @@ def _lin_gdp(retriever: Optional[Retriever] = None):
         Quarterly GDP in UYU and USD with 1 year forecasts.
 
     """
-    if retriever is None:
-        retriever = Retriever()
+    if pipeline is None:
+        pipeline = Pipeline()
 
-    retriever.get(dataset="natacc_gdp_cur_nsa")
-    data_uyu = retriever.dataset
-    # TODO: use Retriever methods for these
+    pipeline.get(name="natacc_gdp_cur_nsa")
+    data_uyu = pipeline.dataset
+    # TODO: use Pipeline methods for these
     data_uyu = transform.rolling(data_uyu, window=4, operation="sum")
-    data_usd = transform.convert_usd(data_uyu, retriever=retriever)
+    data_usd = transform.convert_usd(data_uyu, pipeline=pipeline)
 
     data = [data_uyu, data_usd]
     last_year = data_uyu.index.max().year
@@ -346,15 +346,15 @@ def industrial_production() -> pd.DataFrame:
     return output
 
 
-def core_industrial(retriever: Optional[Retriever] = None) -> pd.DataFrame:
+def core_industrial(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """
     Get total industrial production, industrial production excluding oil
     refinery and core industrial production.
 
     Parameters
     ----------
-    retriever : econuy.retrieval.base.Retriever or None, default None
-        An instance of the econuy Retriever class.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
 
     Returns
     -------
@@ -363,11 +363,11 @@ def core_industrial(retriever: Optional[Retriever] = None) -> pd.DataFrame:
     """
     name = "core_industrial"
 
-    if retriever is None:
-        retriever = Retriever()
+    if pipeline is None:
+        pipeline = Pipeline()
 
-    retriever.get("industrial_production")
-    data = retriever.dataset
+    pipeline.get("industrial_production")
+    data = pipeline.dataset
 
     try:
         weights = pd.read_excel(

@@ -9,7 +9,7 @@ from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 
 from econuy import transform
-from econuy.retrieval.core import Retriever
+from econuy.core import Pipeline
 from econuy.utils import metadata, get_project_root
 from econuy.utils.sources import urls
 
@@ -185,15 +185,15 @@ def hours() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def rates_people(retriever: Optional[Retriever] = None) -> pd.DataFrame:
+def rates_people(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """
     Get labor data, both rates and persons. Extends national data between 1991
     and 2005 with data for jurisdictions with more than 5,000 inhabitants.
 
     Parameters
     ----------
-    retriever : econuy.retrieval.base.Retriever or None, default None
-        An instance of the econuy Retriever class.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
 
     Returns
     -------
@@ -201,11 +201,11 @@ def rates_people(retriever: Optional[Retriever] = None) -> pd.DataFrame:
 
     """
     name = "labor_rates_people"
-    if retriever is None:
-        retriever = Retriever()
+    if pipeline is None:
+        pipeline = Pipeline()
 
-    retriever.get("labor_rates")
-    rates = retriever.dataset
+    pipeline.get("labor_rates")
+    rates = pipeline.dataset
     rates = rates.loc[:, ["Tasa de actividad: total", "Tasa de empleo: total",
                           "Tasa de desempleo: total"]]
     try:
@@ -276,14 +276,14 @@ def rates_people(retriever: Optional[Retriever] = None) -> pd.DataFrame:
     return output
 
 
-def real_wages(retriever: Optional[Retriever] = None) -> pd.DataFrame:
+def real_wages(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """
     Get real wages.
 
     Parameters
     ----------
-    retriever : econuy.retrieval.base.Retriever or None, default None
-        An instance of the econuy Retriever class.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
 
     Returns
     -------
@@ -292,17 +292,17 @@ def real_wages(retriever: Optional[Retriever] = None) -> pd.DataFrame:
     """
     name = "real_wages"
 
-    if retriever is None:
-        retriever = Retriever()
+    if pipeline is None:
+        pipeline = Pipeline()
 
-    retriever.get("nominal_wages")
-    wages = retriever.dataset
+    pipeline.get("nominal_wages")
+    wages = pipeline.dataset
     wages.columns = ["Índice medio de salarios reales",
                      "Índice medio de salarios reales privados",
                      "Índice medio de salarios reales públicos"]
     metadata._set(wages, area="Mercado laboral", currency="UYU",
                   inf_adj="Sí", seas_adj="NSA", ts_type="-", cumperiods=1)
-    output = transform.convert_real(wages, retriever=retriever)
+    output = transform.convert_real(wages, pipeline=pipeline)
 
     output = transform.rebase(output, start_date="2008-07-31")
 
