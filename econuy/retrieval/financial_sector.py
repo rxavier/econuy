@@ -358,6 +358,7 @@ def bonds(driver: Optional[WebDriver] = None) -> pd.DataFrame:
     output = dfs[0].join(dfs[1], how="outer").join(dfs[2], how="outer")
     output.columns = ["Bonos soberanos en dólares", "Bonos soberanos en UI",
                       "Bonos soberanos en pesos"]
+    output = output.loc[~output.index.duplicated()]
 
     output = output.apply(pd.to_numeric, errors="coerce")
     metadata._set(output, area="Sector financiero", currency="-",
