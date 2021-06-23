@@ -56,7 +56,7 @@ def original():
                               "function": fiscal_accounts.balance_antel},
             "balance_ose": {"description": "Resultado fiscal de OSE",
                             "function": fiscal_accounts.balance_ose},
-            "taxes": {"description": "Recaudación impositiva",
+            "tax_revenue": {"description": "Recaudación impositiva",
                       "function": fiscal_accounts.tax_revenue},
             "public_debt_gps": {"description": "Deuda pública del sector público consolidad",
                                 "function": fiscal_accounts.public_debt_gps},

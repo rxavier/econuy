@@ -163,7 +163,7 @@ def tax_revenue() -> pd.DataFrame:
     Monthly tax revenues : pd.DataFrame
 
     """
-    raw = pd.read_excel(urls["taxes"]["dl"]["main"],
+    raw = pd.read_excel(urls["tax_revenue"]["dl"]["main"],
                         usecols="C:AO", index_col=0)
     raw.index = pd.to_datetime(raw.index, errors="coerce")
     output = raw.loc[~pd.isna(raw.index)]
@@ -193,7 +193,7 @@ def _get_taxes_from_pdf(excel_data: pd.DataFrame) -> pd.DataFrame:
         reports_year = [last_year, last_year + 1]
     data = []
     for year in reports_year:
-        url = f"{urls['taxes']['dl']['report']}{year}{extra_url}"
+        url = f"{urls['tax_revenue']['dl']['report']}{year}{extra_url}"
         r = requests.get(url)
         pdf_urls = re.findall("afiledownload\?2,4,1851,O,S,0,[0-9]+"
                               "%[0-9A-z]{3}%[0-9A-z]{3}%3B108,", r.text)
