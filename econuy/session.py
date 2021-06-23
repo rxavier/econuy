@@ -6,7 +6,7 @@ from datetime import datetime
 from inspect import getmodule
 from os import PathLike
 from pathlib import Path
-from typing import Optional, Union, Sequence, Dict, List, Literal
+from typing import Optional, Union, Sequence, Dict, List
 
 import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
@@ -245,9 +245,7 @@ class Session(object):
         return proc_select
 
     def _apply_transformation(self,
-                              transformation: Literal["resample", "chg_diff",
-                                                      "convert", "decompose",
-                                                      "rolling", "rebase"],
+                              transformation: str,
                               select: Union[str, int, Sequence[str],
                                             Sequence[int]] = "all",
                               **kwargs) -> Dict[str, pd.DataFrame]:
