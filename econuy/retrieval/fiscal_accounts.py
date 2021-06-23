@@ -185,17 +185,18 @@ def tax_revenue() -> pd.DataFrame:
 
 def _get_taxes_from_pdf(excel_data: pd.DataFrame) -> pd.DataFrame:
     extra_url = ",O,es,0,"
-    last_month = excel_data.index[-1].month
+    #last_month = excel_data.index[-1].month
     last_year = excel_data.index[-1].year
-    if last_month == 12:
-        reports_year = [last_year + 1]
-    else:
-        reports_year = [last_year, last_year + 1]
+    #if last_month == 12:
+    #    reports_year = [last_year + 1]
+    #else:
+    #    reports_year = [last_year, last_year + 1]
+    reports_year = range(last_year, dt.date.today().year + 1)
     data = []
     for year in reports_year:
         url = f"{urls['tax_revenue']['dl']['report']}{year}{extra_url}"
         r = requests.get(url)
-        pdf_urls = re.findall("afiledownload\?2,4,1851,O,S,0,[0-9]+"
+        pdf_urls = re.findall("afiledownload\?2,4,[0-9]{4},O,S,0,[0-9]+"
                               "%[0-9A-z]{3}%[0-9A-z]{3}%3B108,", r.text)
         pdf_urls = list(dict.fromkeys(pdf_urls))
         if len(pdf_urls) == 0:
@@ -231,6 +232,10 @@ def _get_taxes_from_pdf(excel_data: pd.DataFrame) -> pd.DataFrame:
                                    "IRNR",
                                    "Impuesto de Primaria",
                                    "6) Total Bruto (suma de (1) a (5))"]]
+                # The may-21 table had hidden duplicate rows with different values
+                # See https://www.dgi.gub.uy/wdgi/afiledownload?2,4,1879,O,S,0,36556%3BS%3B1%3B108,
+                if table.shape[1] == 20:
+                    table = table.iloc[:, 0:table.shape[1]:2]
                 table.columns = [
                     'IVA - Valor Agregado',
                     'IMESI - Específico Interno',
