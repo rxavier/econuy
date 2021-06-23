@@ -168,6 +168,19 @@ class Session(object):
         """
         return self._datasets
 
+    @property
+    def datasets_flat(self) -> Dict[str, pd.DataFrame]:
+        """Holds retrieved datasets.
+
+        Returns
+        -------
+        Datasets : Dict[str, pd.DataFrame]
+        """
+        nometa = copy.deepcopy(self._datasets)
+        for v in nometa.values():
+            v.columns = v.columns.get_level_values(0)
+        return nometa
+
     def copy(self, deep: bool = True) -> Session:
         """Copy or deepcopy a Session object.
 

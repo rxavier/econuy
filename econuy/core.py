@@ -70,15 +70,21 @@ class Pipeline(object):
         self._download_commodity_weights = False
 
     @property
-    def dataset(self):
+    def dataset(self) -> pd.DataFrame:
         return self._dataset
 
     @property
-    def name(self):
+    def dataset_flat(self) -> pd.DataFrame:
+        nometa = self._dataset.copy(deep=True)
+        nometa.columns = nometa.columns.get_level_values(0)
+        return nometa
+
+    @property
+    def name(self) -> str:
         return self._name
 
     @property
-    def description(self):
+    def description(self) -> str:
         try:
             return self.available_datasets()[self.name]["description"]
         except KeyError:
