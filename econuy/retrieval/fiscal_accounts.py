@@ -171,6 +171,12 @@ def tax_revenue() -> pd.DataFrame:
     output.columns = taxes_columns
     output = output.div(1000000)
     latest = _get_taxes_from_pdf(output)
+    latest = latest.loc[[x not in output.index for x in latest.index]]
+    for col in latest.columns:
+        for date in latest.index:
+            prev_year = date  + MonthEnd(-12)
+            output.loc[date, col] = (output.loc[prev_year, col]
+                                     * (1 + latest.loc[date, col] / 100))
     output = pd.concat([output, latest], sort=False)
     output = output.loc[~output.index.duplicated(keep="first")]
 
@@ -215,10 +221,11 @@ def _get_taxes_from_pdf(excel_data: pd.DataFrame) -> pd.DataFrame:
                     warnings.filterwarnings("ignore", category=PdfReadWarning)
                     pages = pdf2.PdfFileReader(f.name).getNumPages()
                 tables = camelot.read_pdf(f.name, flavor="stream",
-                                          pages=str(pages), strip_text=".")
-                table = tables[0].df.iloc[2:, 0:2]
+                                          pages=str(pages), strip_text="%")
+                table = tables[0].df.iloc[2:, [0, 3]]
                 table.columns = ["Impuesto", date]
                 table.set_index("Impuesto", inplace=True)
+                table[date] = table[date].str.replace(",", ".", regex=False)
                 table = (table.apply(pd.to_numeric, errors="coerce")
                          .dropna(how="any").T)
                 table = table.loc[:,
