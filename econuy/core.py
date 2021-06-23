@@ -141,7 +141,10 @@ class Pipeline(object):
                                 multiindex=self.read_header)
         if not self.download and not prev_data.empty:
             self._dataset = prev_data
+            print(f"{name}: previous data found.")
         else:
+            if not self.download:
+                print(f"{name}: previous data not found, downloading.")
             selection = self.available_datasets()[name]
             if name in ["trade_balance", "terms_of_trade", "rxr_custom",
                            "commodity_index", "cpi_measures", "_lin_gdp",

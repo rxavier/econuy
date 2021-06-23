@@ -81,7 +81,6 @@ def _read(data_loc: Union[str, PathLike,
                                                      format=None)
 
     except (ProgrammingError, OperationalError, FileNotFoundError):
-        print("Previous data does not exist.")
         previous_data = pd.DataFrame()
 
     return previous_data
