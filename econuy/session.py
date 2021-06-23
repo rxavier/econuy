@@ -6,7 +6,7 @@ from datetime import datetime
 from inspect import getmodule
 from os import PathLike
 from pathlib import Path
-from typing import Optional, Union, Sequence, Dict, List
+from typing import Optional, Union, Sequence, Dict, List, Literal
 
 import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
@@ -19,16 +19,14 @@ from econuy.utils.exceptions import RetryLimitError
 
 class Session(object):
     """
-    A download and transformation session based on a Pipeline object that
+    A download and transformation session that creates a Pipeline object and
     simplifies working with multiple datasets.
+
+    Alternatively, can be created directly from a Pipeline by using the
+    :mod:`~econuy.session.Session.from_pipeline` class method.
 
     Attributes
     ----------
-    pipeline : econuy.core.Pipeline or None, default None
-        An instance of the econuy Pipeline class. If this attribute is not
-        ``None``, ``location``, ``download``, ``always_save``, ``read_fmt``,
-        ``save_fmt``, ``read_header``, ``save_header`` and ``errors`` will be
-        ignored.
     location : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                default None
         Either Path or path-like string pointing to a directory where to find
@@ -72,7 +70,6 @@ class Session(object):
     """
 
     def __init__(self,
-                 pipeline: Optional[Pipeline] = None,
                  location: Union[str, PathLike,
                                  Connection, Engine, None] = None,
                  download: bool = True,
@@ -81,34 +78,23 @@ class Session(object):
                  read_header: Optional[str] = "included",
                  save_fmt: str = "csv",
                  save_header: Optional[str] = "included",
+                 errors: str = "raise",
                  log: Union[int, str] = 1,
                  logger: Optional[logging.Logger] = None,
-                 errors: str = "raise",
                  max_retries: int = 3):
-        if pipeline is None:
-            self.location = location
-            self.download = download
-            self.always_save = always_save
-            self.read_fmt = read_fmt
-            self.read_header = read_header
-            self.save_fmt = save_fmt
-            self.save_header = save_header
-            self.errors = errors
-            self.pipeline = Pipeline(location=location, download=download,
-                                       always_save=always_save, read_fmt=read_fmt,
-                                       read_header=read_header, save_fmt=save_fmt,
-                                       save_header=save_header, errors=errors)
-        else:
-            self.pipeline = pipeline
-
+        self.location = location
+        self.download = download
+        self.always_save = always_save
+        self.read_fmt = read_fmt
+        self.read_header = read_header
+        self.save_fmt = save_fmt
+        self.save_header = save_header
+        self.errors = errors
         self.log = log
         self.logger = logger
         self.max_retries = max_retries
 
-        if self.pipeline.dataset.empty:
-            self._datasets = {}
-        else:
-            self._datasets = {pipeline.name: pipeline.dataset}
+        self._datasets = {}
         self._retries = 1
 
         if logger is not None:
@@ -131,32 +117,26 @@ class Session(object):
                 log_obj = logutil.setup(null=True)
             self.logger = log_obj
 
-    @staticmethod
-    def available_datasets(functions: bool = False) -> Dict[str, Dict]:
-        """Return available ``dataset`` arguments for use in
-        :mod:`~econuy.session.Session.get`.
+    @classmethod
+    def from_pipeline(cls, pipeline: Pipeline) -> Session:
+        # Alternative constructor
+        s = Session(location=pipeline.location, download=pipeline.download,
+                    always_save=pipeline.location, read_fmt=pipeline.read_fmt,
+                    read_header=pipeline.read_header, save_fmt=pipeline.read_fmt,
+                    save_header=pipeline.save_header, errors=pipeline.errors)
+        if not pipeline.dataset.empty:
+            s._datasets = {pipeline.name: pipeline.dataset}
+        return s
 
-        Returns
-        -------
-        Dataset : Dict[str, Dict]
-        """
-        original = datasets.original()
-        custom = datasets.custom()
-
-        original_final, custom_final = {}, {}
-        for d, f in zip([original, custom], [original_final, custom_final]):
-            for k, v in d.items():
-                if not functions:
-                    f.update({k: v["description"]})
-                else:
-                    f.update({k: v})
-
-        output = {"original": original_final, "custom": custom_final}
-        aux = copy.deepcopy(output)
-        for k in aux["custom"].keys():
-            if k.startswith("_"):
-                output["custom"].pop(k, None)
-        return output
+    @property
+    def pipeline(self) -> Pipeline:
+        # Define a property so that changes to Session attributes are passed
+        # down to the Pipeline and taken into account in get().
+        p = Pipeline(location=self.location, download=self.download,
+                     always_save=self.always_save, read_fmt=self.read_fmt,
+                     read_header=self.read_header, save_fmt=self.save_fmt,
+                     save_header=self.save_header, errors=self.errors)
+        return p
 
     @property
     def datasets(self) -> Dict[str, pd.DataFrame]:
@@ -199,6 +179,34 @@ class Session(object):
         else:
             return copy.copy(self)
 
+    @staticmethod
+    def available_datasets(functions: bool = False) -> Dict[str, Dict]:
+        """Return available ``dataset`` arguments for use in
+        :mod:`~econuy.session.Session.get`.
+
+        Returns
+        -------
+        Dataset : Dict[str, Dict]
+        """
+        original = datasets.original()
+        custom = datasets.custom()
+
+        original_final, custom_final = {}, {}
+        for d, f in zip([original, custom], [original_final, custom_final]):
+            for k, v in d.items():
+                if not functions:
+                    f.update({k: v["description"]})
+                else:
+                    f.update({k: v})
+
+        output = {"original": original_final, "custom": custom_final}
+        aux = copy.deepcopy(output)
+        for k in aux["custom"].keys():
+            # Avoid auxiliary datasets in Session methods (like _lin_gdp)
+            if k.startswith("_"):
+                output["custom"].pop(k, None)
+        return output
+
     def _select_datasets(self, select: Union[str, int, Sequence[str],
                                              Sequence[int]]) -> List[str]:
         """Generate list of dataset names based on selection.
@@ -236,31 +244,36 @@ class Session(object):
             proc_select = [select]
         return proc_select
 
-    def _apply_transformation(self, select: Union[str, int, Sequence[str],
-                                                  Sequence[int]],
-                              transformation: str,
+    def _apply_transformation(self,
+                              transformation: Literal["resample", "chg_diff",
+                                                      "convert", "decompose",
+                                                      "rolling", "rebase"],
+                              select: Union[str, int, Sequence[str],
+                                            Sequence[int]] = "all",
                               **kwargs) -> Dict[str, pd.DataFrame]:
         """Helper method to apply transformations on :attr:`datasets`.
 
         Parameters
         ----------
-        select : str, int, Sequence[str] or Sequence[int], default "all"
-            Datasets in :attr:`datasets` to apply transformations on.
-        transformation : str
+        transformation : {'resample', 'chg_diff', 'convert', 'decompose', \
+                          'rolling', 'rebase'}
             String representing transformation methods in
             :class:`~econuy.retrieval.core.Pipeline`.
+        select : str, int, Sequence[str] or Sequence[int], default "all"
+            Datasets in :attr:`datasets` to apply transformations on.
 
         Returns
         -------
         Transformed datasets : Dict[str, pd.DataFrame]
 
         """
-        methods = {"resample": self.pipeline.resample,
-                   "chg_diff": self.pipeline.chg_diff,
-                   "convert": self.pipeline.convert,
-                   "decompose": self.pipeline.decompose,
-                   "rolling": self.pipeline.rolling,
-                   "rebase": self.pipeline.rebase}
+        p = self.pipeline.copy(deep=True)
+        methods = {"resample": p.resample,
+                   "chg_diff": p.chg_diff,
+                   "convert": p.convert,
+                   "decompose": p.decompose,
+                   "rolling": p.rolling,
+                   "rebase": p.rebase}
 
         proc_select = self._select_datasets(select=select)
 
@@ -276,9 +289,9 @@ class Session(object):
         output = self.datasets.copy()
         for i, name in enumerate(proc_select):
             current_kwargs = {k: v[i] for k, v in new_kwargs.items()}
-            self.pipeline._dataset = self.datasets[name]
+            p._dataset = self.datasets[name]
             methods[transformation](**current_kwargs)
-            transformed = self.pipeline.dataset
+            transformed = p.dataset
             output.update({name: transformed})
 
         return output
@@ -303,13 +316,16 @@ class Session(object):
         """
         if isinstance(names, str):
             names = [names]
+        # Deepcopy the Pipeline so that its dataset attribute is not
+        # overwritten each time it's accessed within this method.
+        p = self.pipeline.copy(deep=True)
 
         failed = []
         not_failed = []
         for name in names:
             try:
-                self.pipeline.get(name=name)
-                self._datasets.update({name: self.pipeline.dataset})
+                p.get(name=name)
+                self._datasets.update({name: p.dataset})
                 not_failed.append(name)
             except BaseException:
                 traceback.print_exc()
