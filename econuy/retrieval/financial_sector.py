@@ -74,6 +74,7 @@ def credit() -> pd.DataFrame:
                       "Créditos: Resid. ME total- total"]
 
     output = output.apply(pd.to_numeric, errors="coerce")
+    output.rename_axis(None, inplace=True)
     metadata._set(output, area="Sector financiero", currency="USD",
                   inf_adj="No", unit="Millones", seas_adj="NSA",
                   ts_type="Stock", cumperiods=1)
@@ -120,6 +121,7 @@ def deposits() -> pd.DataFrame:
                       "Depósitos: S. privado - no residente"]
 
     output = output.apply(pd.to_numeric, errors="coerce")
+    output.rename_axis(None, inplace=True)
     metadata._set(output, area="Sector financiero", currency="USD",
                   inf_adj="No", unit="Millones", seas_adj="NSA",
                   ts_type="Stock", cumperiods=1)
@@ -180,6 +182,7 @@ def interest_rates() -> pd.DataFrame:
                       "Tasas pasivas: US$, promedio familias"]
 
     output = output.apply(pd.to_numeric, errors="coerce")
+    output.rename_axis(None, inplace=True)
     metadata._set(output, area="Sector financiero", currency="-",
                   inf_adj="-", unit="Tasa", seas_adj="NSA",
                   ts_type="Flujo", cumperiods=1)
@@ -239,6 +242,7 @@ def sovereign_risk() -> pd.DataFrame:
     output = output.loc[~output.index.duplicated(keep="last")]
     output.sort_index(inplace=True)
     output = output.apply(pd.to_numeric, errors="coerce")
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Sector financiero", currency="USD",
                   inf_adj="No", unit="PBS", seas_adj="NSA",
@@ -295,8 +299,9 @@ def call_rate(driver: Optional[WebDriver] = None) -> pd.DataFrame:
     call.columns = ["Tasa call a 1 día: Promedio",
                     "Tasa call a 1 día: Máximo",
                     "Tasa call a 1 día: Mínimo"]
-
     call = call.apply(pd.to_numeric, errors="coerce")
+    call.rename_axis(None, inplace=True)
+
     metadata._set(call, area="Sector financiero", currency="UYU",
                   inf_adj="No", unit="Tasa", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
@@ -361,6 +366,7 @@ def bonds(driver: Optional[WebDriver] = None) -> pd.DataFrame:
     output = output.loc[~output.index.duplicated()]
 
     output = output.apply(pd.to_numeric, errors="coerce")
+    output.rename_axis(None, inplace=True)
     metadata._set(output, area="Sector financiero", currency="-",
                   inf_adj="No", unit="PBS", seas_adj="NSA",
                   ts_type="-", cumperiods=1)

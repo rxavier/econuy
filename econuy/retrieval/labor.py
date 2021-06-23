@@ -57,8 +57,9 @@ def labor_rates() -> pd.DataFrame:
     missing.columns = labor.columns
     labor = labor.append(missing)
     labor = labor.loc[~labor.index.duplicated(keep="first")]
-
     labor = labor.apply(pd.to_numeric, errors="coerce")
+    labor.rename_axis(None, inplace=True)
+
     metadata._set(labor, area="Mercado laboral", currency="-",
                   inf_adj="No", unit="Tasa", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
@@ -108,8 +109,9 @@ def nominal_wages() -> pd.DataFrame:
     wages.columns = ["Índice medio de salarios",
                      "Índice medio de salarios privados",
                      "Índice medio de salarios públicos"]
-
     wages = wages.apply(pd.to_numeric, errors="coerce")
+    wages.rename_axis(None, inplace=True)
+
     metadata._set(wages, area="Mercado laboral", currency="UYU",
                   inf_adj="No", unit="2008-07=100", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
@@ -172,6 +174,7 @@ def hours() -> pd.DataFrame:
     prev_hours = prev_hours.loc[prev_hours.index < "2011-01-01"]
     prev_hours.columns = ["Total"]
     output = prev_hours.append(output, sort=False)
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Mercado laboral", currency="-",
                   inf_adj="No", unit="Horas por semana", seas_adj="NSA",
@@ -272,6 +275,7 @@ def rates_people(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
                   ts_type="-", cumperiods=1)
 
     output = pd.concat([rates, persons], axis=1)
+    output.rename_axis(None, inplace=True)
 
     return output
 
@@ -290,8 +294,6 @@ def real_wages(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     Real wages data : pd.DataFrame
 
     """
-    name = "real_wages"
-
     if pipeline is None:
         pipeline = Pipeline()
 
@@ -303,7 +305,7 @@ def real_wages(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     metadata._set(wages, area="Mercado laboral", currency="UYU",
                   inf_adj="Sí", seas_adj="NSA", ts_type="-", cumperiods=1)
     output = transform.convert_real(wages, pipeline=pipeline)
-
     output = transform.rebase(output, start_date="2008-07-31")
+    output.rename_axis(None, inplace=True)
 
     return output

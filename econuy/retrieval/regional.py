@@ -5,8 +5,8 @@ import zipfile
 import datetime as dt
 from random import randint
 from io import BytesIO
-from os import PathLike, path, listdir
-from typing import Union, Optional
+from os import path, listdir
+from typing import  Optional
 from urllib.error import HTTPError, URLError
 
 import pandas as pd
@@ -16,12 +16,10 @@ from pandas.tseries.offsets import MonthEnd
 from bs4 import BeautifulSoup
 from opnieuw import retry
 from selenium.webdriver.remote.webdriver import WebDriver
-from sqlalchemy.engine.base import Engine, Connection
 
-from econuy.retrieval.international import long_rates
 from econuy.core import Pipeline
 from econuy.transform import rebase, resample
-from econuy.utils import metadata, ops
+from econuy.utils import metadata
 from econuy.utils.chromedriver import _build
 from econuy.utils.sources import urls
 from econuy.utils.extras import investing_headers
@@ -85,6 +83,7 @@ def gdp(driver: WebDriver = None) -> pd.DataFrame:
 
     output = pd.concat([arg, bra], axis=1).div(1000)
     output.columns = ["Argentina", "Brasil"]
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Regional", currency="-",
                   inf_adj="Const.", seas_adj="SA", unit="Miles de millones",
@@ -122,6 +121,7 @@ def monthly_gdp() -> pd.DataFrame:
 
     output = pd.concat([arg, bra], axis=1)
     output.columns = ["Argentina", "Brasil"]
+    output.rename_axis(None, inplace=True)
     metadata._set(output, area="Regional", currency="-",
                   inf_adj="Const.", seas_adj="SA",
                   ts_type="Flujo", cumperiods=1)
@@ -175,6 +175,7 @@ def cpi() -> pd.DataFrame:
 
     output = pd.concat([arg, bra], axis=1)
     output.columns = ["Argentina", "Brasil"]
+    output.rename_axis(None, inplace=True)
     metadata._set(output, area="Regional", currency="-",
                   inf_adj="No", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
@@ -220,6 +221,7 @@ def embi_spreads() -> pd.DataFrame:
                                                           limit_area="inside")
     output.columns = ["Argentina", "Brasil", "EMBI Global"]
     output = output.apply(pd.to_numeric, errors="coerce")
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Regional", currency="USD",
                   inf_adj="No", seas_adj="NSA", unit="PBS",
@@ -262,6 +264,7 @@ def embi_yields(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     treasuries = (treasuries.reindex(spreads.index)
                   .interpolate(method="linear", limit_direction="forward"))
     output = spreads.div(100).add(treasuries.squeeze(), axis=0)
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Regional", currency="USD",
                   inf_adj="No", seas_adj="NSA", unit="Tasa",
@@ -310,6 +313,7 @@ def nxr() -> pd.DataFrame:
 
     output = arg.join(bra, how="left").interpolate(method="linear",
                                                    limit_area="inside")
+    output.rename_axis(None, inplace=True)
 
 
     metadata._set(output, area="Regional", currency="USD",
@@ -350,6 +354,7 @@ def policy_rates() -> pd.DataFrame:
     output = (raw.apply(pd.to_numeric, errors="coerce")
               .interpolate(method="linear", limit_area="inside"))
     output.columns = ["Argentina", "Brasil"]
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Regional", currency="-",
                   inf_adj="No", seas_adj="NSA", unit="Tasa",
@@ -423,6 +428,7 @@ def stocks(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
 
     output = arg.join(bra, how="left").interpolate(method="linear",
                                                    limit_area="inside")
+    output.rename_axis(None, inplace=True)
     metadata._set(output, area="Regional", currency="USD",
                   inf_adj="No", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
@@ -453,6 +459,7 @@ def rxr(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     output["Argentina"] = (proc["Argentina - oficial"] * proc["US.PCPI_IX"]
                            / proc["ARG CPI"])
     output["Brasil"] = proc["Brasil"] * proc["US.PCPI_IX"] / proc["BRA CPI"]
+    output.rename_axis(None, inplace=True)
     metadata._set(output, area="Regional", currency="-",
                   inf_adj="-", seas_adj="NSA",
                   ts_type="-", cumperiods=1)

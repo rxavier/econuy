@@ -54,8 +54,9 @@ def cpi() -> pd.DataFrame:
     cpi.columns = ["Índice de precios al consumo"]
     cpi.rename_axis(None, inplace=True)
     cpi.index = cpi.index + MonthEnd(1)
-
     cpi = cpi.apply(pd.to_numeric, errors="coerce")
+    cpi.rename_axis(None, inplace=True)
+
     metadata._set(cpi, area="Precios", currency="-",
                   inf_adj="No", unit="2010-10=100", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
@@ -97,6 +98,7 @@ def nxr_monthly() -> pd.DataFrame:
                    "Tipo de cambio venta, promedio"]
     nxr.index = nxr.index + MonthEnd(1)
     nxr = nxr.apply(pd.to_numeric, errors="coerce")
+    nxr.rename_axis(None, inplace=True)
 
     metadata._set(nxr, area="Precios", currency="UYU/USD",
                   inf_adj="No", unit="-", seas_adj="NSA",
@@ -173,6 +175,7 @@ def nxr_daily(pipeline: Optional[Pipeline] = None,
                       inf_adj="No", unit="-", seas_adj="NSA",
                       ts_type="-", cumperiods=1)
         output.columns = output.columns.set_levels(["-"], level=2)
+        output.rename_axis(None, inplace=True)
 
     except ValueError as e:
         if str(e) == "No objects to concatenate":
@@ -365,5 +368,6 @@ def cpi_measures(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
                   ts_type="-", cumperiods=1)
     output = transform.rebase(output, start_date="2010-12-01",
                               end_date="2010-12-31")
+    output.rename_axis(None, inplace=True)
 
     return output

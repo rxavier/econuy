@@ -46,6 +46,7 @@ def _balance_retriever() -> Dict[str, pd.DataFrame]:
         data.index = data.index + MonthEnd(1)
         data.columns = meta["colnames"]
         data = data.apply(pd.to_numeric, errors="coerce")
+        data.rename_axis(None, inplace=True)
         metadata._set(
             data, area="Sector público", currency="UYU",
             inf_adj="No", unit="Millones", seas_adj="NSA",
@@ -174,6 +175,7 @@ def tax_revenue() -> pd.DataFrame:
     output = output.loc[~output.index.duplicated(keep="first")]
 
     output = output.apply(pd.to_numeric, errors="coerce")
+    output.rename_axis(None, inplace=True)
     metadata._set(output, area="Sector público", currency="UYU",
                   inf_adj="No", unit="Millones", seas_adj="NSA",
                   ts_type="Flujo", cumperiods=1)
@@ -313,6 +315,7 @@ def _public_debt_retriever() -> Dict[str, pd.DataFrame]:
     output = {"gps": gps, "nfps": nfps, "cb": cb, "assets": assets}
 
     for meta, data in output.items():
+        data.rename_axis(None, inplace=True)
         metadata._set(data, area="Sector público", currency="USD",
                       inf_adj="No", unit="Millones", seas_adj="NSA",
                       ts_type="Stock", cumperiods=1)
@@ -396,6 +399,7 @@ def net_public_debt(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     deposits = (transform.resample(deposits, rule="Q-DEC", operation="last")
                 .reindex(gross_debt.index).squeeze())
     output = gross_debt.add(assets).add(deposits, axis=0).dropna()
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Sector público",
                   currency="USD", inf_adj="No", unit="Millones",
@@ -528,6 +532,7 @@ def balance_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     proc["Resultado: Global SPC ex FSS"] = (proc["Resultado: Global SPNF ex FSS"]
                                             + proc["Resultado: Global BCU"])
     output = proc
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Sector público",
                   currency="UYU", inf_adj="No", unit="Millones",

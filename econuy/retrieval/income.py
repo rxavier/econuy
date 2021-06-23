@@ -77,6 +77,7 @@ def income_household() -> pd.DataFrame:
     missing.columns = output.columns[:3]
     output = output.append(missing, sort=False)
     output = output.apply(pd.to_numeric, errors="coerce")
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Ingresos", currency="UYU",
                   inf_adj="No", unit="Pesos", seas_adj="NSA",
@@ -158,6 +159,7 @@ def income_capita(update_loc: Union[str, PathLike,
                             index_col=0, header=0).iloc[:, 13:16]
     missing.columns = output.columns[:3]
     output = output.append(missing, sort=False)
+    output.rename_axis(None, inplace=True)
 
     if update_loc is not None:
         previous_data = ops._io(operation="read",
@@ -233,6 +235,7 @@ def consumer_confidence(
                       "Subíndice: Predisposición a la Compra de Durables",
                       "Índice de Confianza del Consumidor"]
     output = output.apply(pd.to_numeric, errors="coerce")
+    output.rename_axis(None, inplace=True)
 
     if update_loc is not None:
         previous_data = ops._io(operation="read", data_loc=update_loc,

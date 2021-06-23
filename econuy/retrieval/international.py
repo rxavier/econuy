@@ -95,6 +95,7 @@ def gdp() -> pd.DataFrame:
 
     output = pd.concat([gdps, chn], axis=1)
     output.columns = ["Estados Unidos", "Unión Europea", "Japón", "China"]
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Global", currency="USD",
                   inf_adj="Const.", unit="Miles de millones", seas_adj="SA",
@@ -133,6 +134,7 @@ def stocks() -> pd.DataFrame:
                                                   limit_area="inside")
     output.columns = ["S&P 500", "Euronext 100", "Nikkei 225",
                       "Shanghai Stock Exchange Composite"]
+    output.rename_axis(None, inplace=True)
     metadata._set(output, area="Global", currency="USD",
                   inf_adj="No", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
@@ -172,6 +174,7 @@ def policy_rates() -> pd.DataFrame:
               .interpolate(method="linear", limit_area="inside"))
     output.columns = ["China", "Japón", "Estados Unidos", "Eurozona"]
     output = output[["Estados Unidos", "Eurozona", "Japón", "China"]]
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Global", currency="USD",
                   inf_adj="No", seas_adj="NSA", unit="Tasa",
@@ -244,6 +247,7 @@ def long_rates() -> pd.DataFrame:
     output = output.interpolate(method="linear", limit_area="inside")
     output.columns = ["Estados Unidos", "Alemania", "Francia", "Italia",
                       "España", "Reino Unido", "Japón", "China"]
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Global", currency="USD",
                   inf_adj="No", seas_adj="NSA", unit="Tasa",
@@ -283,7 +287,8 @@ def nxr() -> pd.DataFrame:
     output = output[0].join(output[1:]).interpolate(method="linear",
                                                     limit_area="inside")
     output.columns = ["Índice Dólar", "Euro", "Yen", "Renminbi"]
-
+    output.rename_axis(None, inplace=True)
+    
     metadata._set(output, area="Global", currency="USD",
                   inf_adj="No", seas_adj="NSA",
                   ts_type="-", cumperiods=1)

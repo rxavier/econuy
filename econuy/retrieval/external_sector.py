@@ -52,6 +52,7 @@ def _trade_retriever(name: str) -> pd.DataFrame:
     output = output.apply(pd.to_numeric, errors="coerce")
     if meta["unit"] == "Millones":
         output = output.div(1000)
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Sector externo", currency=meta["currency"],
                   inf_adj="No", unit=meta["unit"], seas_adj="NSA",
@@ -273,6 +274,7 @@ def trade_balance(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     pipeline.get("trade_m_orig_val")
     imports = pipeline.dataset.rename(columns={"Total importaciones": "Total"})
     net = exports - imports
+    net.rename_axis(None, inplace=True)
 
     return net
 
@@ -303,6 +305,7 @@ def terms_of_trade(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     tot.rename(columns={"Total": "Términos de intercambio"}, inplace=True)
     tot = transform.rebase(tot, start_date="2005-01-01",
                            end_date="2005-12-31")
+    tot.rename_axis(None, inplace=True)
     metadata._set(tot, ts_type="-")
 
     return tot
@@ -507,6 +510,7 @@ def commodity_prices() -> pd.DataFrame:
     complete.columns = ["Carne bovina", "Pulpa de celulosa", "Soja", "Leche",
                         "Arroz", "Madera", "Lana", "Cebada", "Oro", "Trigo"]
     complete = complete.apply(pd.to_numeric, errors="coerce")
+    complete.rename_axis(None, inplace=True)
 
     metadata._set(complete, area="Sector externo", currency="USD",
                   inf_adj="No", unit="2002-01=100", seas_adj="NSA",
@@ -551,6 +555,7 @@ def commodity_index(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
                            columns=prices.columns, index=prices.index)
     product = product.sum(axis=1).add(1).to_frame().cumprod().multiply(100)
     product.columns = ["Índice de precios de productos primarios"]
+    product.rename_axis(None, inplace=True)
 
     metadata._set(product, area="Sector externo", currency="USD",
                   inf_adj="No", unit="2002-01=100", seas_adj="NSA",
@@ -580,6 +585,7 @@ def rxr_official() -> pd.DataFrame:
                     "Argentina", "Brasil", "EE.UU.", "México", "Alemania",
                     "España", "Reino Unido", "Italia", "China"]
     proc.index = pd.to_datetime(proc.index) + MonthEnd(1)
+    proc.rename_axis(None, inplace=True)
 
     metadata._set(proc, area="Sector externo", currency="UYU/Otro",
                   inf_adj="No", unit="2017=100", seas_adj="NSA",
@@ -633,6 +639,7 @@ def rxr_custom(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
         "US_P"]
     output.drop("UY_E_P", axis=1, inplace=True)
     output = output.loc[output.index >= "1979-12-01"]
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Sector externo", currency="-",
                   inf_adj="No", unit="-", seas_adj="NSA",
@@ -671,6 +678,7 @@ def reserves() -> pd.DataFrame:
                         "Posición en ME del BCU"]
     reserves = reserves.apply(pd.to_numeric, errors="coerce")
     reserves = reserves.loc[~reserves.index.duplicated(keep="first")]
+    reserves.rename_axis(None, inplace=True)
     reserves.rename_axis(None, inplace=True)
 
     metadata._set(reserves, area="Sector externo", currency="USD",
@@ -759,6 +767,7 @@ def reserves_changes(pipeline: Optional[Pipeline] = None,
     reserves = reserves.loc[~reserves.index.duplicated(keep="last")].sort_index()
 
     reserves = reserves.apply(pd.to_numeric, errors="coerce")
+    reserves.rename_axis(None, inplace=True)
     metadata._set(reserves, area="Sector externo",
                   currency="USD", inf_adj="No", unit="Millones",
                   seas_adj="NSA", ts_type="Flujo", cumperiods=1)

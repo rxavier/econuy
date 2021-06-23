@@ -38,6 +38,7 @@ def _natacc_retriever(url: str, nrows: int, inf_adj: str,
     output = raw.apply(pd.to_numeric, errors="coerce")
     if unit == "Millones":
         output = output.div(1000)
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Actividad económica", currency="UYU",
                   inf_adj=inf_adj, unit=unit, seas_adj=seas_adj,
@@ -269,6 +270,8 @@ def _lin_gdp(pipeline: Optional[Pipeline] = None):
 
     output = pd.concat(results, axis=1)
     output = output.resample("Q-DEC").interpolate("linear").dropna(how="all")
+    output.rename_axis(None, inplace=True)
+
     metadata._modify_multiindex(output, levels=[0],
                                 new_arrays=[["PBI UYU", "PBI USD"]])
 
@@ -337,8 +340,9 @@ def industrial_production() -> pd.DataFrame:
     output.columns = (["Industrias manufactureras",
                        "Industrias manufactureras sin refinería"]
                       + column_names)
-
     output = output.apply(pd.to_numeric, errors="coerce")
+    output.rename_axis(None, inplace=True)
+
     metadata._set(output, area="Actividad económica", currency="-",
                   inf_adj="No", unit="2006=100", seas_adj="NSA",
                   ts_type="Flujo", cumperiods=1)
@@ -411,6 +415,7 @@ def core_industrial(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     output = pd.concat([output, core], axis=1)
     output = transform.rebase(output, start_date="2006-01-01",
                               end_date="2006-12-31")
+    output.rename_axis(None, inplace=True)
 
     return output
 
@@ -437,6 +442,7 @@ def cattle() -> pd.DataFrame:
     output = pd.read_excel(temp, skiprows=8, usecols="C:H")
     output.index = pd.date_range(start="2005-01-02", freq="W",
                                  periods=len(output))
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Actividad económica", currency="-",
                   inf_adj="No", unit="Cabezas", seas_adj="NSA",
@@ -470,6 +476,7 @@ def milk() -> pd.DataFrame:
                                  periods=len(output))
     output = output.apply(pd.to_numeric)
     output.columns = ["Remisión de leche a planta"]
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Actividad económica", currency="-",
                   inf_adj="No", unit="Miles de litros", seas_adj="NSA",
@@ -497,6 +504,7 @@ def cement() -> pd.DataFrame:
                            usecols="B:E", index_col=0, skipfooter=1)
     output.index = output.index + MonthEnd(0)
     output.columns = ["Exportaciones", "Mercado interno", "Total"]
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Actividad económica", currency="-",
                   inf_adj="No", unit="Toneladas", seas_adj="NSA",
@@ -539,6 +547,7 @@ def diesel() -> pd.DataFrame:
                                   periods=len(raw))
         raw.columns = list(raw.columns.str.replace("\n", " "))[:-1] + ["Total"]
         output = raw
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Actividad económica", currency="-",
                   inf_adj="No", unit="m3", seas_adj="NSA",
@@ -582,6 +591,7 @@ def gasoline() -> pd.DataFrame:
                                   periods=len(raw))
         raw.columns = list(raw.columns.str.replace("\n", " "))[:-1] + ["Total"]
         output = raw
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Actividad económica", currency="-",
                   inf_adj="No", unit="m3", seas_adj="NSA",
@@ -626,6 +636,7 @@ def electricity() -> pd.DataFrame:
                                   periods=len(raw))
         raw.columns = raw.columns.str.capitalize()
         output = raw
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Actividad económica", currency="-",
                   inf_adj="No", unit="MWh", seas_adj="NSA",
