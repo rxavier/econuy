@@ -405,7 +405,7 @@ class Session(object):
 
         See Also
         --------
-        :func:`~econuy.transform.resample`
+        :mod:`~econuy.core.Pipeline.resample`
 
         """
         output = self._apply_transformation(select=select,
@@ -427,7 +427,7 @@ class Session(object):
 
         See Also
         --------
-        :func:`~econuy.transform.chg_diff`
+        :mod:`~econuy.core.Pipeline.chg_diff`.
 
         """
         output = self._apply_transformation(select=select,
@@ -453,25 +453,9 @@ class Session(object):
         """
         Apply seasonal decomposition.
 
-        For ``component`` only 'seas' and 'trend' are allowed. Use
-        :func:`~econuy.transform.decompose` if you want to get both components
-        in a single function call.
-
-        Raises
-        ------
-        ValueError
-            If the ``method`` parameter does not have a valid argument.
-        ValueError
-            If the ``fallback`` parameter does not have a valid argument.
-        ValueError
-            If the ``component`` parameter does not have a valid argument.
-        ValueError
-            If the path provided for the X13 binary does not point to a file
-            and ``method='x13'``.
-
         See Also
         --------
-        :func:`~econuy.transform.decompose`
+        :mod:`~econuy.core.Pipeline.decompose`.
 
         """
         valid_component = ["seas", "trend"]
@@ -504,19 +488,11 @@ class Session(object):
                 end_date: Union[str, datetime, None, List] = None,
                 select: Union[str, int, Sequence[str],
                               Sequence[int]] = "all"):
-        """
-        Convert to other units.
-
-        Raises
-        ------
-        ValueError
-            If an invalid string is given to the ``flavor`` argument.
+        """Convert to other units.
 
         See Also
         --------
-        :func:`~econuy.transform.convert_usd`,
-        :func:`~econuy.transform.convert_real`,
-        :func:`~econuy.transform.convert_gdp`
+        :mod:`~econuy.core.Pipeline.convert`.
 
         """
         if flavor not in ["usd", "real", "gdp", "pcgdp"]:
@@ -547,7 +523,7 @@ class Session(object):
 
         See Also
         --------
-        :func:`~econuy.transform.rebase`
+        :mod:`~econuy.core.Pipeline.rebase`.
 
         """
         output = self._apply_transformation(select=select,
@@ -566,7 +542,7 @@ class Session(object):
 
         See Also
         --------
-        :func:`~econuy.transform.rolling`
+        :mod:`~econuy.core.Pipeline.rolling`.
 
         """
         output = self._apply_transformation(select=select,
