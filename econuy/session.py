@@ -23,7 +23,7 @@ class Session(object):
     simplifies working with multiple datasets.
 
     Alternatively, can be created directly from a Pipeline by using the
-    :mod:`~econuy.session.Session.from_pipeline` class method.
+    :mod:`from_pipeline` class method.
 
     Attributes
     ----------
@@ -63,8 +63,7 @@ class Session(object):
         Logger object. For most cases this attribute should be ``None``,
         allowing :attr:`log` to control how logging works.
     max_retries : int, default 3
-        Number of retries for :mod:`~econuy.session.Session.get` and
-        :mod:`~econuy.session.Session.get_custom` in case any of the selected
+        Number of retries for :mod:`get` in case any of the selected
         datasets cannot be retrieved.
 
     """
@@ -182,7 +181,7 @@ class Session(object):
     @staticmethod
     def available_datasets(functions: bool = False) -> Dict[str, Dict]:
         """Return available ``dataset`` arguments for use in
-        :mod:`~econuy.session.Session.get`.
+        :mod:`get`.
 
         Returns
         -------
@@ -309,7 +308,7 @@ class Session(object):
         Raises
         ------
         ValueError
-            If an invalid string is given to the ``names`` argument.
+            If an invalid string is found in the ``names`` argument.
 
         """
         if isinstance(names, str):
