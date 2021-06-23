@@ -19,16 +19,14 @@ from econuy.utils.exceptions import RetryLimitError
 
 class Session(object):
     """
-    A download and transformation session based on a Pipeline object that
+    A download and transformation session that creates a Pipeline object and
     simplifies working with multiple datasets.
+
+    Alternatively, can be created directly from a Pipeline by using the
+    :mod:`~econuy.session.Session.from_pipeline` class method.
 
     Attributes
     ----------
-    pipeline : econuy.core.Pipeline or None, default None
-        An instance of the econuy Pipeline class. If this attribute is not
-        ``None``, ``location``, ``download``, ``always_save``, ``read_fmt``,
-        ``save_fmt``, ``read_header``, ``save_header`` and ``errors`` will be
-        ignored.
     location : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
                default None
         Either Path or path-like string pointing to a directory where to find
@@ -72,7 +70,6 @@ class Session(object):
     """
 
     def __init__(self,
-                 pipeline: Optional[Pipeline] = None,
                  location: Union[str, PathLike,
                                  Connection, Engine, None] = None,
                  download: bool = True,
@@ -81,34 +78,23 @@ class Session(object):
                  read_header: Optional[str] = "included",
                  save_fmt: str = "csv",
                  save_header: Optional[str] = "included",
+                 errors: str = "raise",
                  log: Union[int, str] = 1,
                  logger: Optional[logging.Logger] = None,
-                 errors: str = "raise",
                  max_retries: int = 3):
-        if pipeline is None:
-            self.location = location
-            self.download = download
-            self.always_save = always_save
-            self.read_fmt = read_fmt
-            self.read_header = read_header
-            self.save_fmt = save_fmt
-            self.save_header = save_header
-            self.errors = errors
-            self.pipeline = Pipeline(location=location, download=download,
-                                       always_save=always_save, read_fmt=read_fmt,
-                                       read_header=read_header, save_fmt=save_fmt,
-                                       save_header=save_header, errors=errors)
-        else:
-            self.pipeline = pipeline
-
+        self.location = location
+        self.download = download
+        self.always_save = always_save
+        self.read_fmt = read_fmt
+        self.read_header = read_header
+        self.save_fmt = save_fmt
+        self.save_header = save_header
+        self.errors = errors
         self.log = log
         self.logger = logger
         self.max_retries = max_retries
 
-        if self.pipeline.dataset.empty:
-            self._datasets = {}
-        else:
-            self._datasets = {pipeline.name: pipeline.dataset}
+        self._datasets = {}
         self._retries = 1
 
         if logger is not None:
@@ -131,32 +117,27 @@ class Session(object):
                 log_obj = logutil.setup(null=True)
             self.logger = log_obj
 
-    @staticmethod
-    def available_datasets(functions: bool = False) -> Dict[str, Dict]:
-        """Return available ``dataset`` arguments for use in
-        :mod:`~econuy.session.Session.get`.
+    @classmethod
+    def from_pipeline(cls, pipeline: Pipeline) -> Session:
+        s = Session(location=pipeline.location, download=pipeline.download,
+                    always_save=pipeline.location, read_fmt=pipeline.read_fmt,
+                    read_header=pipeline.read_header, save_fmt=pipeline.read_fmt,
+                    save_header=pipeline.save_header, errors=pipeline.errors)
+        if not pipeline.dataset.empty:
+            s._datasets = {pipeline.name: pipeline.dataset}
+        return s
 
-        Returns
-        -------
-        Dataset : Dict[str, Dict]
-        """
-        original = datasets.original()
-        custom = datasets.custom()
-
-        original_final, custom_final = {}, {}
-        for d, f in zip([original, custom], [original_final, custom_final]):
-            for k, v in d.items():
-                if not functions:
-                    f.update({k: v["description"]})
-                else:
-                    f.update({k: v})
-
-        output = {"original": original_final, "custom": custom_final}
-        aux = copy.deepcopy(output)
-        for k in aux["custom"].keys():
-            if k.startswith("_"):
-                output["custom"].pop(k, None)
-        return output
+    @property
+    def pipeline(self) -> Pipeline:
+        dataset = self.pipeline.dataset
+        name = self.pipeline.name
+        p = Pipeline(location=self.location, download=self.download,
+                     always_save=self.always_save, read_fmt=self.read_fmt,
+                     read_header=self.read_header, save_fmt=self.save_fmt,
+                     save_header=self.save_header, errors=self.errors)
+        p._dataset = dataset
+        p._name = name
+        return p
 
     @property
     def datasets(self) -> Dict[str, pd.DataFrame]:
@@ -198,6 +179,33 @@ class Session(object):
             return copy.deepcopy(self)
         else:
             return copy.copy(self)
+
+    @staticmethod
+    def available_datasets(functions: bool = False) -> Dict[str, Dict]:
+        """Return available ``dataset`` arguments for use in
+        :mod:`~econuy.session.Session.get`.
+
+        Returns
+        -------
+        Dataset : Dict[str, Dict]
+        """
+        original = datasets.original()
+        custom = datasets.custom()
+
+        original_final, custom_final = {}, {}
+        for d, f in zip([original, custom], [original_final, custom_final]):
+            for k, v in d.items():
+                if not functions:
+                    f.update({k: v["description"]})
+                else:
+                    f.update({k: v})
+
+        output = {"original": original_final, "custom": custom_final}
+        aux = copy.deepcopy(output)
+        for k in aux["custom"].keys():
+            if k.startswith("_"):
+                output["custom"].pop(k, None)
+        return output
 
     def _select_datasets(self, select: Union[str, int, Sequence[str],
                                              Sequence[int]]) -> List[str]:
