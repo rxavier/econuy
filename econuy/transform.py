@@ -12,13 +12,12 @@ from statsmodels.tsa import x13
 from statsmodels.tsa.x13 import x13_arima_analysis as x13a
 from statsmodels.tsa.seasonal import STL, seasonal_decompose
 
-from econuy.retrieval import prices, economic_activity
 from econuy.utils import metadata
-from econuy.core import Pipeline
+
 
 
 def convert_usd(df: pd.DataFrame,
-                pipeline: Optional[Pipeline],
+                pipeline = None,
                 errors: str = "raise") -> pd.DataFrame:
     """
     Convert dataframe from UYU to USD.
@@ -64,6 +63,7 @@ def convert_usd(df: pd.DataFrame,
                          "'Moneda' level.")
 
     if pipeline is None:
+        from econuy.core import Pipeline
         pipeline = Pipeline()
 
     checks = [x == "UYU" for x in df.columns.get_level_values("Moneda")]
@@ -98,7 +98,10 @@ def convert_usd(df: pd.DataFrame,
 def _convert_usd(df: pd.DataFrame,
                  nxr: Optional[pd.DataFrame] = None) -> pd.DataFrame:
     if nxr is None:
-        nxr = prices.nxr_monthly()
+        from econuy.core import Pipeline
+        pipeline = Pipeline()
+        pipeline.get("nxr_monthly")
+        nxr = pipeline.dataset
 
     inferred_freq = pd.infer_freq(df.index)
     if inferred_freq in ["D", "B", "C", "W", None]:
@@ -130,7 +133,7 @@ def _convert_usd(df: pd.DataFrame,
 def convert_real(df: pd.DataFrame,
                  start_date: Union[str, datetime, None] = None,
                  end_date: Union[str, datetime, None] = None,
-                 pipeline: Optional[Pipeline] = None,
+                 pipeline = None,
                  errors: str = "raise") -> pd.DataFrame:
     """
     Convert dataframe to real prices.
@@ -183,6 +186,7 @@ def convert_real(df: pd.DataFrame,
                          "'Inf. adj.' level.")
 
     if pipeline is None:
+        from econuy.core import Pipeline
         pipeline = Pipeline()
 
     checks = [x == "UYU" and "Const." not in y
@@ -224,7 +228,10 @@ def _convert_real(df: pd.DataFrame,
                   end_date: Union[str, datetime, None] = None,
                   cpi: Optional[pd.DataFrame] = None) -> pd.DataFrame:
     if cpi is None:
-        cpi = prices.cpi()
+        from econuy.core import Pipeline
+        pipeline = Pipeline()
+        pipeline.get("cpi")
+        cpi = pipeline.dataset
 
     inferred_freq = pd.infer_freq(df.index)
     if inferred_freq in ["D", "B", "C", "W", None]:
@@ -266,7 +273,7 @@ def _convert_real(df: pd.DataFrame,
 
 
 def convert_gdp(df: pd.DataFrame,
-                pipeline: Optional[Pipeline] = None,
+                pipeline = None,
                 errors: str = "raise") -> pd.DataFrame:
     """
     Calculate dataframe as percentage of GDP.
@@ -316,6 +323,7 @@ def convert_gdp(df: pd.DataFrame,
                          "and 'Unidad' levels.")
 
     if pipeline is None:
+        from econuy.core import Pipeline
         pipeline = Pipeline()
 
     checks = [x not in ["Regional", "Global"] and "%PBI" not in y
@@ -352,7 +360,10 @@ def convert_gdp(df: pd.DataFrame,
 def _convert_gdp(df: pd.DataFrame,
                  gdp: Optional[pd.DataFrame] = None) -> pd.DataFrame:
     if gdp is None:
-        gdp = economic_activity._lin_gdp()
+        from econuy.core import Pipeline
+        pipeline = Pipeline()
+        pipeline.get("_lin_gdp")
+        gdp = pipeline.dataset
 
     inferred_freq = pd.infer_freq(df.index)
     cum = df.columns.get_level_values("Acum. períodos")[0]
