@@ -400,6 +400,7 @@ class Session(object):
     def resample(self, rule: Union[pd.DateOffset, pd.Timedelta, str, List],
                  operation: Union[str, List] = "sum",
                  interpolation: Union[str, List] = "linear",
+                 warn: Union[bool, List] = False,
                  select: Union[str, int, Sequence[str],
                                Sequence[int]] = "all"):
         """
@@ -414,7 +415,8 @@ class Session(object):
                                             transformation="resample",
                                             rule=rule,
                                             operation=operation,
-                                            interpolation=interpolation)
+                                            interpolation=interpolation,
+                                            warn=warn)
 
         self._datasets = output
         return

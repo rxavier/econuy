@@ -406,7 +406,8 @@ def _convert_gdp(df: pd.DataFrame,
 
 def resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
              operation: str = "sum",
-             interpolation: str = "linear") -> pd.DataFrame:
+             interpolation: str = "linear",
+             warn: bool = False) -> pd.DataFrame:
     """
     Wrapper for the `resample method <https://pandas.pydata.org/pandas-docs
     stable/reference/api/pandas.DataFrame.resample.html>`_ in Pandas that
@@ -431,6 +432,8 @@ def resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
         resampling, for example when upsampling to a higher frequency. See
         `Pandas interpolation methods <https://pandas.pydata.org/pandas-docs
         /stable/reference/api/pandas.Series.interpolate.html>`_
+    warn : bool, default False
+        If False, don't raise warnings with incomplete time-range bins.
 
     Returns
     -------
@@ -459,20 +462,21 @@ def resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
     all_metadata = df.columns.droplevel("Indicador")
     if all(x == all_metadata[0] for x in all_metadata):
         return _resample(df=df, rule=rule, operation=operation,
-                         interpolation=interpolation)
+                         interpolation=interpolation, warn=warn)
     else:
         columns = []
         for column_name in df.columns:
             df_column = df[[column_name]]
             converted = _resample(df=df_column, rule=rule, operation=operation,
-                                  interpolation=interpolation)
+                                  interpolation=interpolation, warn=warn)
             columns.append(converted)
         return pd.concat(columns, axis=1)
 
 
 def _resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
               operation: str = "sum",
-              interpolation: str = "linear") -> pd.DataFrame:
+              interpolation: str = "linear",
+              warn: bool = False) -> pd.DataFrame:
     pd_frequencies = {"A": 1,
                       "A-DEC": 1,
                       "Q": 4,
@@ -514,8 +518,10 @@ def _resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
                 antimask = np.where(proc >= count, False, True)
                 resampled_df = resampled_df.mask(antimask, np.nan)
         except KeyError:
-            warnings.warn("No bin trimming performed because frequencies "
-                          "could not be assigned a numeric value", UserWarning)
+            if warn:
+                warnings.warn("No bin trimming performed because frequencies "
+                              "could not be assigned a numeric value",
+                              UserWarning)
 
     metadata._set(resampled_df)
     resampled_df = resampled_df.dropna(how="all")

@@ -170,8 +170,8 @@ class Pipeline(object):
         return
 
     def resample(self, rule: Union[pd.DateOffset, pd.Timedelta, str],
-                 operation: str = "sum",
-                 interpolation: str = "linear"):
+                 operation: str = "sum",  interpolation: str = "linear",
+                 warn: bool = False):
         """
         Resample to target frequencies.
 
@@ -180,10 +180,9 @@ class Pipeline(object):
         :func:`~econuy.transform.resample`
 
         """
-        output = transform.resample(self.dataset,
-                                    rule=rule,
+        output = transform.resample(self.dataset, rule=rule,
                                     operation=operation,
-                                    interpolation=interpolation)
+                                    interpolation=interpolation, warn=warn)
         self._dataset = output
         return
 
