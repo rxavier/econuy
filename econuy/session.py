@@ -264,7 +264,7 @@ class Session(object):
         Transformed datasets : Dict[str, pd.DataFrame]
 
         """
-        p = self.pipeline.copy(deep=True)
+        p = self.pipeline.copy()
         methods = {"resample": p.resample,
                    "chg_diff": p.chg_diff,
                    "convert": p.convert,

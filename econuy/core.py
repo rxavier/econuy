@@ -106,7 +106,7 @@ class Pipeline(object):
         all.update(datasets.custom())
         return all
 
-    def copy(self, deep: bool = True) -> Pipeline:
+    def copy(self, deep: bool = False) -> Pipeline:
         """Copy or deepcopy a Pipeline object.
 
         Parameters
