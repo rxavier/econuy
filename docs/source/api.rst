@@ -1,6 +1,13 @@
 API documentation
 =================
 
+Pipeline class
+------------------------
+.. autoclass:: econuy.core.Pipeline
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Session class
 ------------------------
 .. autoclass:: econuy.session.Session
@@ -59,10 +66,6 @@ Transformation functions
 
 Utility functions
 ------------------------
-.. automodule:: econuy.utils.logutil
-   :members:
-   :undoc-members:
-   :show-inheritance:
 .. automodule:: econuy.utils.metadata
    :members:
    :undoc-members:
@@ -72,10 +75,6 @@ Utility functions
    :undoc-members:
    :show-inheritance:
 .. automodule:: econuy.utils.sqlutil
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. automodule:: econuy.utils.chromedriver
    :members:
    :undoc-members:
    :show-inheritance:
