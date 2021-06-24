@@ -313,9 +313,13 @@ class Session(object):
         """
         if isinstance(names, str):
             names = [names]
+        if any(x not in self.pipeline.available_datasets().keys()
+               for x in names):
+            raise ValueError("Invalid dataset selected.")
+
         # Deepcopy the Pipeline so that its dataset attribute is not
         # overwritten each time it's accessed within this method.
-        p = self.pipeline.copy(deep=True)
+        p = self.pipeline.copy()
 
         failed = []
         not_failed = []
