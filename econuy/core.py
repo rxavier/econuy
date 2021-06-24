@@ -178,7 +178,7 @@ class Pipeline(object):
                                revise_rows="nodup")
             self._dataset = data
         self._name = name
-        if self.always_save and self.download:
+        if self.always_save and (self.download or prev_data.empty):
             self.save()
         return
 
