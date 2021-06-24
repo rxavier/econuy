@@ -93,7 +93,7 @@ def read(con: sqla.engine.base.Connection,
 
 
 def df_to_sql(df: pd.DataFrame, name: str,
-              con: sqla.engine.base.Connection, 
+              con: sqla.engine.base.Connection,
               if_exists: str = "replace") -> None:
     """Flatten MultiIndex index columns before creating SQL table
     from dataframe."""
@@ -119,10 +119,10 @@ def insert_csvs(con: sqla.engine.base.Connection,
         try:
             data = pd.read_csv(full_path, index_col=0,
                                header=list(range(9)), float_precision="high",
-                               parse_dates=True)
+                               parse_dates=True, encoding="latin1")
         except ParserError:
             data = pd.read_csv(full_path, index_col=0, float_precision="high",
-                               parse_dates=True)
+                               parse_dates=True, encoding="latin1")
         df_to_sql(df=data, name=Path(file).with_suffix("").as_posix(),
                   con=con, if_exists="replace")
         print(f"Inserted {file} into {con.engine.url}.")
