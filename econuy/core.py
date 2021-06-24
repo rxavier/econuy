@@ -132,7 +132,7 @@ class Pipeline(object):
         ----------
         name : str
             Dataset to download, see available options in
-            :mod:`available_datasets`.
+            :mod:`~econuy.core.Pipeline.available_datasets`.
 
         Raises
         ------
@@ -380,7 +380,7 @@ class Pipeline(object):
         from UYU/USD to % GDP.
 
         ``flavor=usd``: Convert a dataframe's columns from Uruguayan pesos to US dollars. Call the
-        :mod:`get` function to obtain nominal
+        :mod:`~econuy.core.Pipeline.get` function to obtain nominal
         exchange rates, and take into account whether the input dataframe's
         ``Type``, as defined by its multiindex, is flow or stock, in order to `
         choose end of period or monthly average NXR. Also take into account the
@@ -388,14 +388,14 @@ class Pipeline(object):
         or sums.
 
         ``flavor=real``: Convert a dataframe's columns to real prices. Call the
-        :mod:`get` method to obtain the consumer price
+        :mod:`~econuy.core.Pipeline.get` method to obtain the consumer price
         index. take into account the input dataframe's frequency and whether
         columns represent rolling averages or sums. Allow choosing a single period,
         a range of dates or no period as a base (i.e., period for which the
         average/sum of input dataframe and output dataframe is the same).
 
         ``flavor=gdp``: Convert a dataframe's columns to percentage of GDP. Call the
-        the :mod:`get` method to obtain UYU and USD quarterly GDP series.
+        the :mod:`~econuy.core.Pipeline.get` method to obtain UYU and USD quarterly GDP series.
         Take into account the input dataframe's
         currency for chossing UYU or USD GDP. If frequency of input dataframe is
         higher than quarterly, GDP will be upsampled and linear interpolation will

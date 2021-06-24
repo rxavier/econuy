@@ -23,7 +23,7 @@ class Session(object):
     simplifies working with multiple datasets.
 
     Alternatively, can be created directly from a Pipeline by using the
-    :mod:`from_pipeline` class method.
+    :mod:`~econuy.session.Session.from_pipeline` class method.
 
     Attributes
     ----------
@@ -181,7 +181,7 @@ class Session(object):
     @staticmethod
     def available_datasets(functions: bool = False) -> Dict[str, Dict]:
         """Return available ``dataset`` arguments for use in
-        :mod:`get`.
+        :mod:`~econuy.session.Session.get`.
 
         Returns
         -------
@@ -301,7 +301,7 @@ class Session(object):
         ----------
         names : Union[str, Sequence[str]]
             Dataset to download, see available options in
-            :mod:`available_datasets`. Either a string representing
+            :mod:`~econuy.session.Session.available_datasets`. Either a string representing
             a dataset name or a sequence of strings in order to download
             several datasets.
 
