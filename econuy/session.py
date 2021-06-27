@@ -160,7 +160,7 @@ class Session(object):
             v.columns = v.columns.get_level_values(0)
         return nometa
 
-    def copy(self, deep: bool = True) -> Session:
+    def copy(self, deep: bool = False) -> Session:
         """Copy or deepcopy a Session object.
 
         Parameters
@@ -450,7 +450,6 @@ class Session(object):
                   x13_binary: Union[str, PathLike, List] = "search",
                   search_parents: Union[int, List] = 1,
                   ignore_warnings: Union[bool, List] = True,
-                  errors: Union[str, List, None] = None,
                   select: Union[str, int, Sequence[str],
                                 Sequence[int]] = "all",
                   **kwargs):
@@ -467,9 +466,6 @@ class Session(object):
             raise ValueError(f"Only {', '.join(valid_component)} are allowed."
                              f"See underlying 'decompose'.")
 
-        if errors is None:
-            errors = self.errors
-
         output = self._apply_transformation(select=select,
                                             transformation="decompose",
                                             component=component,
@@ -481,7 +477,6 @@ class Session(object):
                                             x13_binary=x13_binary,
                                             search_parents=search_parents,
                                             ignore_warnings=ignore_warnings,
-                                            errors=errors,
                                             **kwargs)
 
         self._datasets = output
