@@ -75,17 +75,17 @@ def _convert_usd(df: pd.DataFrame,
         nxr = pipeline.dataset
 
     inferred_freq = pd.infer_freq(df.index)
-    if inferred_freq in ["D", "B", "C", "W", None]:
+    if inferred_freq in ["D", "B", "C", "W", "W-SUN", None]:
         if df.columns.get_level_values("Tipo")[0] == "Flujo":
             df = df.resample("M").sum()
         else:
-            df = df.resample("M").mean()
+            df = df.resample("M").last()
         inferred_freq = pd.infer_freq(df.index)
 
     if df.columns.get_level_values("Tipo")[0] == "Stock":
         metadata._set(nxr, ts_type="Stock")
         nxr_freq = resample(nxr, rule=inferred_freq,
-                            operation="mean").iloc[:, [1]]
+                            operation="last").iloc[:, [1]]
     else:
         metadata._set(nxr, ts_type="Flujo")
         nxr_freq = resample(nxr, rule=inferred_freq,
