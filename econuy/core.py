@@ -232,6 +232,9 @@ class Pipeline(object):
             incomplete bin trimming.
 
         """
+        if self.dataset.empty:
+            raise ValueError("Can't use transformation methods without "
+                             "retrieving a dataset first.")
         output = transform.resample(self.dataset, rule=rule,
                                     operation=operation,
                                     interpolation=interpolation, warn=warn)
@@ -280,6 +283,9 @@ class Pipeline(object):
             If the input dataframe's columns do not have the appropiate levels.
 
         """
+        if self.dataset.empty:
+            raise ValueError("Can't use transformation methods without "
+                             "retrieving a dataset first.")
         output = transform.chg_diff(
             self.dataset, operation=operation, period=period)
         self._dataset = output
@@ -358,6 +364,9 @@ class Pipeline(object):
             ``method='x13'``.
 
         """
+        if self.dataset.empty:
+            raise ValueError("Can't use transformation methods without "
+                             "retrieving a dataset first.")
         valid_component = ["seas", "trend"]
         if component not in valid_component:
             raise ValueError(f"Only {', '.join(valid_component)} are allowed."
@@ -439,6 +448,9 @@ class Pipeline(object):
             If the input dataframe's columns do not have the appropiate levels.
 
         """
+        if self.dataset.empty:
+            raise ValueError("Can't use transformation methods without "
+                             "retrieving a dataset first.")
         if flavor not in ["usd", "real", "gdp", "pcgdp"]:
             raise ValueError("'flavor' can be one of 'usd', 'real', "
                              "or 'gdp'.")
@@ -480,6 +492,9 @@ class Pipeline(object):
         ``None``
 
         """
+        if self.dataset.empty:
+            raise ValueError("Can't use transformation methods without "
+                             "retrieving a dataset first.")
         output = transform.rebase(self.dataset, start_date=start_date,
                                   end_date=end_date, base=base)
         self._dataset = output
@@ -521,14 +536,20 @@ class Pipeline(object):
             operations are not recommended.
 
         """
+        if self.dataset.empty:
+            raise ValueError("Can't use transformation methods without "
+                             "retrieving a dataset first.")
         output = transform.rolling(self.dataset, window=window,
                                    operation=operation)
         self._dataset = output
         return
 
     def save(self):
+        if self.dataset.empty:
+            raise ValueError("Can't save without "
+                             "retrieving a dataset first.")
         if self.location is None:
-            return
+            raise ValueError("No save location defined.")
         else:
             ops._io(operation="save", data_loc=self.location,
                     name=self.name, file_fmt=self.save_fmt,
