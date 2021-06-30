@@ -435,11 +435,7 @@ def cattle() -> pd.DataFrame:
     """
     name = "cattle"
 
-    temp = tempfile.NamedTemporaryFile(suffix=".xlsx").name
-    with open(temp, "wb") as f:
-        r = requests.get(urls[name]["dl"]["main"])
-        f.write(r.content)
-    output = pd.read_excel(temp, skiprows=8, usecols="C:H")
+    output = pd.read_excel(urls[name]["dl"]["main"], skiprows=8, usecols="C:H")
     output.index = pd.date_range(start="2005-01-02", freq="W",
                                  periods=len(output))
     output.rename_axis(None, inplace=True)
