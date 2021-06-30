@@ -169,7 +169,7 @@ def _convert_real(df: pd.DataFrame,
         cpi = pipeline.dataset
 
     inferred_freq = pd.infer_freq(df.index)
-    if inferred_freq in ["D", "B", "C", "W", None]:
+    if inferred_freq in ["D", "B", "C", "W", "W-SUN", None]:
         if df.columns.get_level_values("Tipo")[0] == "Flujo":
             df = df.resample("M").sum()
         else:
@@ -282,7 +282,7 @@ def _convert_gdp(df: pd.DataFrame,
             df = rolling(df, window=converter, operation="sum")
     elif inferred_freq in ["A", "A-DEC"]:
         gdp = gdp.resample(inferred_freq, convention="end").asfreq()
-    elif inferred_freq in ["D", "B", "C", "W", None]:
+    elif inferred_freq in ["D", "B", "C", "W", "W-SUN", None]:
         if df.columns.get_level_values("Tipo")[0] == "Flujo":
             df = df.resample("M").sum()
         else:
