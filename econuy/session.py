@@ -160,6 +160,10 @@ class Session(object):
             v.columns = v.columns.get_level_values(0)
         return nometa
 
+    def __repr__(self):
+        return (f"Session(location={self.location})\n"
+                f"Current dataset(s): {list(self.datasets.keys())}")
+
     def copy(self, deep: bool = False) -> Session:
         """Copy or deepcopy a Session object.
 

@@ -106,6 +106,10 @@ class Pipeline(object):
         all.update(datasets.custom())
         return all
 
+    def __repr__(self):
+        return (f"Pipeline(location={self.location})\n"
+                f"Current dataset: {self.name}")
+
     def copy(self, deep: bool = False) -> Pipeline:
         """Copy or deepcopy a Pipeline object.
 
