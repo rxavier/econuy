@@ -258,4 +258,6 @@ def test_convert_gdp(freq, ts_type, periods, cumperiods, currency):
     gdp = gdp.reindex(df.index).iloc[:, 0]
     df = df.div(gdp, axis=0).multiply(100)
     compare.index, compare.columns = df.index, df.columns
-    assert df.equals(compare)
+    div = df / compare
+    final = div[((div > 1.01) | (div < 0.99)).any(1)]
+    assert len(final) == 0
