@@ -18,20 +18,6 @@ TEST_CON = create_engine("sqlite://").connect()
 sqlutil.insert_csvs(con=TEST_CON, directory=TEST_DIR)
 
 
-def test_revise():
-    remove_temporary_files_folders()
-    price = prices.cpi(save_loc=TEST_DIR)
-    price_alt = prices.cpi(update_loc=TEST_DIR, revise_rows=6)
-    assert price.round(4).equals(price_alt.round(4))
-    price_alt = prices.cpi(update_loc=TEST_DIR, revise_rows="nodup")
-    assert price.round(4).equals(price_alt.round(4))
-    price_alt = prices.cpi(update_loc=TEST_DIR, revise_rows="auto")
-    assert price.round(4).equals(price_alt.round(4))
-    with pytest.raises(ValueError):
-        prices.cpi(update_loc=TEST_DIR, revise_rows="wrong")
-    remove_temporary_files_folders()
-
-
 def test_sqlutil():
     remove_temporary_files_folders()
     sqlutil.read(con=TEST_CON, command='SELECT * FROM nxr_daily')
