@@ -637,7 +637,7 @@ class Session(object):
 
     def save(self,
              select: Union[str, int, Sequence[str], Sequence[int]] = "all"):
-        """Save :attr:`datasets` attribute to CSV or SQL.
+        """Write datasets.
 
         Parameters
         ----------

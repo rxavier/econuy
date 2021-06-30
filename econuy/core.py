@@ -545,6 +545,14 @@ class Pipeline(object):
         return
 
     def save(self):
+        """Write held dataset.
+
+        Raises
+        -------
+        ValueError
+            If `dataset` is an empty DataFrame or `self.location` is None.
+
+        """
         if self.dataset.empty:
             raise ValueError("Can't save without "
                              "retrieving a dataset first.")
