@@ -7,12 +7,22 @@
   <a href="https://econuy.readthedocs.io/en/latest/?badge=latest"><img src="https://readthedocs.org/projects/econuy/badge/?version=latest"></a>
   <a href="https://codecov.io/gh/rxavier/econuy"><img src="https://codecov.io/gh/rxavier/econuy/branch/master/graph/badge.svg"></a>
 
+# Overview
 
-This project simplifies gathering and processing of Uruguayan economic statistics. Data is retrieved from (mostly) government sources and can be transformed in several ways (converting to dollars, calculating rolling averages, resampling to other frequencies, etc.).
+This project simplifies gathering and processing of Uruguayan economic statistics. Data is retrieved from (mostly) government sources, processed into a familiar tabular format, tagged with useful metadata and can be transformed in several ways (converting to dollars, calculating rolling averages, resampling to other frequencies, etc.).
 
 If [this screenshot](https://i.imgur.com/Ku5OR0y.jpg) gives you anxiety, this package should be of interest.
 
 A webapp with a limited but interactive version of econuy is available at [econ.uy](https://econ.uy). Check out the [repo](https://github.com/rxavier/econuy-web) as well.
+
+The most basic econuy workflow goes like this:
+
+```python
+from econuy.core import Pipeline
+
+p = Pipeline()
+p.get("labor_rates")
+```
 
 # Installation
 
@@ -34,102 +44,116 @@ python setup.py install
 
 **[Full API documentation available at RTD](https://econuy.readthedocs.io/en/latest/api.html)**
 
-## The `Session()` class
+## The `Pipeline()` class
 
 This is the recommended entry point for the package. It allows setting up the common behavior for downloads, and holds the current working dataset.
 
 ```python
-from econuy.session import Session
+from econuy.core import Pipeline
 
-sess = Session(location="your/directory", revise_rows="nodup", only_get=False, log=1, inplace=True, errors="raise")
+p = Pipeline(location="your_directory")
 ```
 
-The `Session()` object is initialized with the `location`, `revise_rows`,  `only_get`, `dataset`, `log`, `logger`, `inplace` and `errors` attributes.
+### The `Pipeline.get()` method
 
-* `location` controls where data will be saved and where it will be looked for when updating. It defaults to "econuy-data", and will create the directory if it doesn't exist. It can also be a SQLAlchemy Connection or Engine object.
-* `revise_rows` controls the updating mechanism. It can be an integer, denoting how many rows from the data held on disk to replace with new data, or a string. In the latter case, `auto` indicates that the amount of rows to be replaced will be determined from the inferred data frequency, while `nodup` replaces existing data with new data for each time period found in both.
-* `only_get` controls whether to get data from local sources or attempt to download it.
-* `dataset` holds the current working dataset(s) and by default is initialized with an empty Pandas dataframe.
-* `log` controls how logging works. `0`, don't log; `1`, log to console; `2`, log to console and file with default file; `str`, log to console and file with filename=str.
-* `logger` holds the current logger object from the logging module. Generally, the end user shouldn't set this manually.
-* `inplace` controls whether transformation methods modify the current Session object inplace or whether they create a new instance with the same attributes (except `dataset`, of course).
-* `errors` controls how errors produced by transformation methods (for example, trying to convert data expressed in USD to USD) are dealt with, in a fashion similar to Pandas' implementation.
+Retrieves datasets (generally downloads them, unless the `download` attribute is `False` and the requested dataset exists at the `location`) and loads them into the `dataset` attribute as a Pandas DataFrame.
 
-### Session retrieval methods
+The `Pipeline.available_datasets()` method returns a `dict` with the available options.
 
-#### `get()`
-
-Downloads the basic datasets. These are generally as provided by official sources, except various Pandas transformations are performed to render nice looking dataframes with appropiate column names, time indexes and properly defined values. In select cases, I drop columns that I feel don't add relevant information for the target audience of this package, or that are inconsistent with other datasets.
-
-Available options for the `dataset` argument can be found in [the datasets file](https://github.com/rxavier/econuy/blob/master/econuy/utils/datasets.py) or they can be accessed through the `available_datasets` method of `Session` objects. English descriptions for these will be added in the future.
-
-If you wanted CPI data:
 ```python
-from econuy.session import Session
-
-sess = Session(location="your/directory")
-sess.get(dataset="cpi")
-df = sess.datasets["cpi"]
-```
-Note that the previous code block accessed the `datasets` attribute in order to get a dataframe.
-
-#### `get_custom()`
-
-Gives access to predefined data pipelines that output frequently used data not provided officially or require the combination of available official sources. These are based on the datasets provided by `get()`, but are transformed to render data that you might find more immediately useful. As with `get()`, available options for the `dataset` argument can be found in [the datasets file](https://github.com/rxavier/econuy/blob/master/econuy/utils/datasets.py) or they can be accessed through the `available_datasets` method of `Session` objects.
-
-For example, the following calculates tradable CPI, non-tradable CPI, core CPI, residual CPI and Winsorized CPI. Also, it uses a SQL database for data updating and saving.
-```python
+from econuy.core import Pipeline
 from sqlalchemy import create_engine
-
-from econuy.session import Session
 
 eng = create_engine("dialect+driver://user:pwd@host:port/database")
 
-sess = Session(location=eng)
-sess.get_custom(dataset=["cpi_measures", "commodity_index"])
-cpi = sess.datasets["cpi_measures"]
-commodity_index = sess.datasets["commodity_index"]
+p = Pipeline(location=eng)
+p.get("industrial_production")
 ```
 
-### Session transformation methods
+Which also shows that econuy supports SQLAlchemy `Engine` or `Connection` objects.
 
-These class methods take a `Session()` object and perform transformations. For example:
+Note that every time a dataset is retrieved, `Pipeline` will
+1. Check if a previous version exists at `location`. If it does, it will read it and combine it with the new data (unless `download=False`, in which case only existing data will be retrieved)
+2. Save the dataset to `location`, unless the `always_save` attribute is set to `False` or no new data is available.
 
-```python
-from econuy.session import Session
+Data can be written and read to and from CSV or Excel files (controlled by the `read_fmt` and `save_fmt` attributes) or SQL (automatically determined from `location`).
 
-sess = Session()
-sess.get(dataset="nxr_monthly").decompose(component="trend", method="x13", fallback="loess")
-```
-will return the Session object, with the dataset attribute holding the trend component of the monthly nominal exchange rate.
+### Dataset metadata
 
-Note that by default transformation methods will be applied to every dataframe in the `datasets` attribute. The `select` argument in all transformation methods allows choosing, either by dataset name or index, which dataset to transform.
+Metadata for each dataset is held in Pandas MultiIndexes with the following:
 
-Available transformation methods are
+1. Indicator name
+2. Topic or area
+3. Frequency
+4. Currency
+5. Inflation adjustment
+6. Unit
+7. Seasonal adjustment
+8. Type (stock or flow)
+9. Cumulative periods
+
+When writing, metadata can be included as dataset headers (Pandas MultiIndex columns), placed on another sheet if writing to Excel, or dropped. This is controlled by `read_header` and `save_header`.
+
+### Pipeline transformation methods
+
+`Pipeline` objects with a valid dataset can access 6 transformation methods that modify the held dataset.
+
 * `resample()` - resample data to a different frequency, taking into account whether data is of stock or flow type.
 * `chg_diff()` - calculate percent changes or differences for same period last year, last period or at annual rate.
-* `decompose()` - seasonally decompose series into trend and seasonally adjusted components.
+* `decompose()` - seasonally decompose series into trend or seasonally adjusted components.
 * `convert()` - convert to US dollars, constant prices or percent of GDP.
 * `rebase()` - set a period or window as 100, scale rest accordingly
 * `rolling()` - calculate rolling windows, either average or sum.
 
-## Retrieval functions
+```python
+from econuy.core import Pipeline
 
-If you don't want to go the `Session()` way, you can simply get your data from the functions under `econuy.retrieval`, for example `econuy.retrieval.fiscal_accounts.balance_gps()`. While creating a Session object is recommended, this can be easier if you only plan on retrieving a single dataset.
+p = Pipeline()
+p.get("balance_nfps")
+p.convert(flavor="usd")
+p.resample(rule="A-DEC", operation="sum")
+```
 
-## Dataframe/CSV headers
+### Saving the current dataset
 
-Metadata for each dataset is held in Pandas MultiIndexes with the following:
+While `Pipeline.get()` will generally save the retrieved dataset to `location`, transformation methods won't automatically write data.
 
-1) Indicator name
-2) Topic or area
-3) Frequency
-4) Currency
-5) Inflation adjustment
-6) Unit
-7) Seasonal adjustment
-8) Type (stock or flow)
-9) Cumulative periods
+However, `Pipeline.save()` can be used, which will overwrite the file on disk (or SQL table) with the contents in `dataset`.
+
+## The `Session()` class
+
+Like a `Pipeline`, except it can hold several datasets.
+
+The `datasets` attribute is a `dict` of name-DataFrame pairs. Additionally, `Session.get()` accepts a sequence of strings representing several datasets.
+
+Transformation and saving methods support a `select` parameter that determines which held datasets are considered.
+
+```python
+from econuy.session import Session
+
+s = Session(location="your/directory")
+s.get(["cpi", "nxr_monthly"])
+s.get("commodity_index")
+s.rolling(window=12, operation="mean", select=["nxr_monthly", "commodity_index"])
+```
+
+`Session.get_bulk()` makes it easy to get several datasets in one line.
+
+```python
+from econuy.session import Session
+
+s = Session()
+s.get_bulk("all")
+```
+
+```python
+from econuy.session import Session
+
+s = Session()
+s.get_bulk("fiscal_accounts")
+```
+
+`Session.concat()` combines selected datasets into a single DataFrame with a common frequency, and adds it as a new key-pair in `datasets`.
 
 ## External binaries and libraries
 
@@ -160,6 +184,6 @@ This project is heavily based on getting data from online sources that could cha
 ## Plans
 
 * Implement a CLI.
-* Provide methods to make keeping an updated database easy.
+* ~~Provide methods to make keeping an updated database easy~~. `Session.get_bulk()` mostly covers this.
 * ~~Visualization.~~ (I have decided that visualization should be up to the end-user. However, the [webapp](https://econ.uy) is available for this purpose).
 * Translations for dataset descriptions and metadata.
