@@ -434,8 +434,20 @@ def cattle() -> pd.DataFrame:
 
     """
     name = "cattle"
+    try:
+        output = pd.read_excel(urls[name]["dl"]["main"],
+                               skiprows=8, usecols="C:H")
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certificate = Path(get_project_root(), "utils", "files",
+                               "inac_certs.pem")
+            r = requests.get(urls[name]["dl"]["main"],
+                             verify=certificate)
+            output = pd.read_excel(BytesIO(r.content),
+                                   skiprows=8, usecols="C:H")
+        else:
+            raise err
 
-    output = pd.read_excel(urls[name]["dl"]["main"], skiprows=8, usecols="C:H")
     output.index = pd.date_range(start="2005-01-02", freq="W",
                                  periods=len(output))
     output.rename_axis(None, inplace=True)

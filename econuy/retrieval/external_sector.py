@@ -3,6 +3,7 @@ import re
 import tempfile
 import urllib
 import zipfile
+from pathlib import Path
 from io import BytesIO
 from json import JSONDecodeError
 from os import PathLike, path
@@ -22,7 +23,7 @@ from sqlalchemy.engine.base import Engine, Connection
 from econuy import transform
 from econuy.retrieval import regional
 from econuy.core import Pipeline
-from econuy.utils import ops, metadata
+from econuy.utils import ops, metadata, get_project_root
 from econuy.utils.sources import urls
 from econuy.utils.extras import trade_metadata, reserves_cols
 
@@ -414,8 +415,20 @@ def commodity_prices() -> pd.DataFrame:
     bushel_conv = 36.74 / 100
 
     url = urls["commodity_prices"]["dl"]
-    raw_beef = (pd.read_excel(url["beef"], header=4, index_col=0)
-                .dropna(how="all"))
+    try:
+        raw_beef = pd.read_excel(url["beef"], header=4,
+                                 index_col=0).dropna(how="all")
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certificate = Path(get_project_root(), "utils", "files",
+                               "inac_certs.pem")
+            r = requests.get(url["beef"],
+                             verify=certificate)
+            raw_beef = pd.read_excel(BytesIO(r.content), header=4,
+                                     index_col=0).dropna(how="all")
+        else:
+            raise err
+
     raw_beef.columns = raw_beef.columns.str.strip()
     proc_beef = raw_beef["Ing. Prom./Ton."].to_frame()
     proc_beef.index = pd.date_range(start="2002-01-04",
