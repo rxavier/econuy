@@ -1,2 +1,4 @@
 include Pipfile.lock
-include econuy/utils/files/ine_certs.pem
+include econuy/utils/files/*
+include econuy/tests/test-data/*
+include econuy/.env

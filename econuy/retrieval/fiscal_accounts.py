@@ -2,9 +2,8 @@ import sys
 import datetime as dt
 import re
 import warnings
-from os import PathLike
 from tempfile import NamedTemporaryFile
-from typing import Union, Dict
+from typing import Dict, Optional
 from urllib.error import HTTPError, URLError
 
 import camelot
@@ -16,11 +15,11 @@ from bs4 import BeautifulSoup
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from requests.exceptions import ConnectionError
-from sqlalchemy.engine.base import Connection, Engine
 
-import econuy.retrieval.external_sector
+from econuy.retrieval.external_sector import reserves
 from econuy import transform
-from econuy.utils import ops, metadata
+from econuy.core import Pipeline
+from econuy.utils import metadata
 from econuy.utils.sources import urls
 from econuy.utils.extras import fiscal_sheets, taxes_columns
 
@@ -30,21 +29,8 @@ from econuy.utils.extras import fiscal_sheets, taxes_columns
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def _balance_retriever(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-                       revise_rows: Union[str, int] = "nodup",
-                       save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-                       only_get: bool = False) -> Dict[str, pd.DataFrame]:
+def _balance_retriever() -> Dict[str, pd.DataFrame]:
     """Helper function. See any of the `balance_...()` functions."""
-    if only_get is True and update_loc is not None:
-        output = {}
-        for dataset in fiscal_sheets.keys():
-            data = ops._io(
-                operation="update", data_loc=update_loc,
-                name=f"balance_{dataset}")
-            output.update({dataset: data})
-        if all(not value.equals(pd.DataFrame()) for value in output.values()):
-            return output
-
     response = requests.get(urls["balance_gps"]["dl"]["main"])
     soup = BeautifulSoup(response.content, "html.parser")
     links = soup.find_all(href=re.compile("\\.xlsx$"))
@@ -60,322 +46,104 @@ def _balance_retriever(update_loc: Union[str, PathLike, Engine, Connection, None
         data.index = data.index + MonthEnd(1)
         data.columns = meta["colnames"]
         data = data.apply(pd.to_numeric, errors="coerce")
+        data.rename_axis(None, inplace=True)
         metadata._set(
             data, area="Sector público", currency="UYU",
             inf_adj="No", unit="Millones", seas_adj="NSA",
             ts_type="Flujo", cumperiods=1
         )
 
-        if update_loc is not None:
-            previous_data = ops._io(operation="update", data_loc=update_loc,
-                                    name=f"balance_{dataset}")
-            data = ops._revise(new_data=data,
-                               prev_data=previous_data,
-                               revise_rows=revise_rows)
-
-        if save_loc is not None:
-            ops._io(operation="save", data_loc=save_loc, data=data,
-                    name=f"balance_{dataset}")
-
         output.update({dataset: data})
 
     return output
 
 
-def balance_gps(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-                revise_rows: Union[str, int] = "nodup",
-                save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-                only_get: bool = False) -> pd.DataFrame:
+def balance_gps() -> pd.DataFrame:
     """Get fiscal balance data for the consolidated public sector.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
     Monthly fiscal balance for the consolidated public sector : pd.DataFrame
 
     """
-    return _balance_retriever(update_loc=update_loc, revise_rows=revise_rows,
-                              save_loc=save_loc, only_get=only_get)["gps"]
+    return _balance_retriever()["gps"]
 
 
-def balance_nfps(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-                 revise_rows: Union[str, int] = "nodup",
-                 save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-                 only_get: bool = False) -> pd.DataFrame:
+def balance_nfps() -> pd.DataFrame:
     """Get fiscal balance data for the non-financial public sector.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
     Monthly fiscal balance for the non-financial public sector : pd.DataFrame
 
     """
-    return _balance_retriever(update_loc=update_loc, revise_rows=revise_rows,
-                              save_loc=save_loc, only_get=only_get)["nfps"]
+    return _balance_retriever()["nfps"]
 
 
-def balance_cg_bps(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-                   revise_rows: Union[str, int] = "nodup",
-                   save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-                   only_get: bool = False) -> pd.DataFrame:
+def balance_cg_bps() -> pd.DataFrame:
     """Get fiscal balance data for the central government + BPS.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
     Monthly fiscal balance for the central government + BPS : pd.DataFrame
 
     """
-    return _balance_retriever(update_loc=update_loc, revise_rows=revise_rows,
-                              save_loc=save_loc, only_get=only_get)["cg-bps"]
+    return _balance_retriever()["cg-bps"]
 
 
-def balance_pe(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-               revise_rows: Union[str, int] = "nodup",
-               save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-               only_get: bool = False) -> pd.DataFrame:
+def balance_pe() -> pd.DataFrame:
     """Get fiscal balance data for public enterprises.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
     Monthly fiscal balance for public enterprises : pd.DataFrame
 
     """
-    return _balance_retriever(update_loc=update_loc, revise_rows=revise_rows,
-                              save_loc=save_loc, only_get=only_get)["pe"]
+    return _balance_retriever()["pe"]
 
 
-def balance_ancap(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-                  revise_rows: Union[str, int] = "nodup",
-                  save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-                  only_get: bool = False) -> pd.DataFrame:
+def balance_ancap() -> pd.DataFrame:
     """Get fiscal balance data for ANCAP.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
     Monthly fiscal balance for ANCAP : pd.DataFrame
 
     """
-    return _balance_retriever(update_loc=update_loc, revise_rows=revise_rows,
-                              save_loc=save_loc, only_get=only_get)["ancap"]
+    return _balance_retriever()["ancap"]
 
 
-def balance_ute(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-                revise_rows: Union[str, int] = "nodup",
-                save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-                only_get: bool = False) -> pd.DataFrame:
+def balance_ute() -> pd.DataFrame:
     """Get fiscal balance data for UTE.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
     Monthly fiscal balance for UTE : pd.DataFrame
 
     """
-    return _balance_retriever(update_loc=update_loc, revise_rows=revise_rows,
-                              save_loc=save_loc, only_get=only_get)["ute"]
+    return _balance_retriever()["ute"]
 
 
-def balance_antel(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-                  revise_rows: Union[str, int] = "nodup",
-                  save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-                  only_get: bool = False) -> pd.DataFrame:
+def balance_antel() -> pd.DataFrame:
     """Get fiscal balance data for ANTEL.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
     Monthly fiscal balance for ANTEL : pd.DataFrame
 
     """
-    return _balance_retriever(update_loc=update_loc, revise_rows=revise_rows,
-                              save_loc=save_loc, only_get=only_get)["antel"]
+    return _balance_retriever()["antel"]
 
 
-def balance_ose(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-                revise_rows: Union[str, int] = "nodup",
-                save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-                only_get: bool = False) -> pd.DataFrame:
+def balance_ose() -> pd.DataFrame:
     """Get fiscal balance data for OSE.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
     Monthly fiscal balance for OSE : pd.DataFrame
 
     """
-    return _balance_retriever(update_loc=update_loc, revise_rows=revise_rows,
-                              save_loc=save_loc, only_get=only_get)["ose"]
+    return _balance_retriever()["ose"]
 
 
 @retry(
@@ -383,53 +151,19 @@ def balance_ose(update_loc: Union[str, PathLike, Engine, Connection, None] = Non
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def tax_revenue(
-        update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        revise_rows: Union[str, int] = "nodup",
-        save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        only_get: bool = False) -> pd.DataFrame:
+def tax_revenue() -> pd.DataFrame:
     """
     Get tax revenues data.
 
     This retrieval function requires that Ghostscript and Tkinter be found in
     your system.
 
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
-
     Returns
     -------
     Monthly tax revenues : pd.DataFrame
 
     """
-    name = "taxes"
-
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
-
-    raw = pd.read_excel(urls[name]["dl"]["main"],
+    raw = pd.read_excel(urls["tax_revenue"]["dl"]["main"],
                         usecols="C:AO", index_col=0)
     raw.index = pd.to_datetime(raw.index, errors="coerce")
     output = raw.loc[~pd.isna(raw.index)]
@@ -437,41 +171,38 @@ def tax_revenue(
     output.columns = taxes_columns
     output = output.div(1000000)
     latest = _get_taxes_from_pdf(output)
+    latest = latest.loc[[x not in output.index for x in latest.index]]
+    for col in latest.columns:
+        for date in latest.index:
+            prev_year = date  + MonthEnd(-12)
+            output.loc[date, col] = (output.loc[prev_year, col]
+                                     * (1 + latest.loc[date, col] / 100))
     output = pd.concat([output, latest], sort=False)
     output = output.loc[~output.index.duplicated(keep="first")]
 
-    if update_loc is not None:
-        previous_data = ops._io(operation="update",
-                                data_loc=update_loc,
-                                name=name)
-        output = ops._revise(new_data=output, prev_data=previous_data,
-                             revise_rows=revise_rows)
-
     output = output.apply(pd.to_numeric, errors="coerce")
+    output.rename_axis(None, inplace=True)
     metadata._set(output, area="Sector público", currency="UYU",
                   inf_adj="No", unit="Millones", seas_adj="NSA",
                   ts_type="Flujo", cumperiods=1)
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
 
     return output
 
 
 def _get_taxes_from_pdf(excel_data: pd.DataFrame) -> pd.DataFrame:
     extra_url = ",O,es,0,"
-    last_month = excel_data.index[-1].month
+    #last_month = excel_data.index[-1].month
     last_year = excel_data.index[-1].year
-    if last_month == 12:
-        reports_year = [last_year + 1]
-    else:
-        reports_year = [last_year, last_year + 1]
+    #if last_month == 12:
+    #    reports_year = [last_year + 1]
+    #else:
+    #    reports_year = [last_year, last_year + 1]
+    reports_year = range(last_year, dt.date.today().year + 1)
     data = []
     for year in reports_year:
-        url = f"{urls['taxes']['dl']['report']}{year}{extra_url}"
+        url = f"{urls['tax_revenue']['dl']['report']}{year}{extra_url}"
         r = requests.get(url)
-        pdf_urls = re.findall("afiledownload\?2,4,1851,O,S,0,[0-9]+"
+        pdf_urls = re.findall("afiledownload\?2,4,[0-9]{4},O,S,0,[0-9]+"
                               "%[0-9A-z]{3}%[0-9A-z]{3}%3B108,", r.text)
         pdf_urls = list(dict.fromkeys(pdf_urls))
         if len(pdf_urls) == 0:
@@ -490,10 +221,11 @@ def _get_taxes_from_pdf(excel_data: pd.DataFrame) -> pd.DataFrame:
                     warnings.filterwarnings("ignore", category=PdfReadWarning)
                     pages = pdf2.PdfFileReader(f.name).getNumPages()
                 tables = camelot.read_pdf(f.name, flavor="stream",
-                                          pages=str(pages), strip_text=".")
-                table = tables[0].df.iloc[2:, 0:2]
+                                          pages=str(pages), strip_text="%")
+                table = tables[0].df.iloc[2:, [0, 3]]
                 table.columns = ["Impuesto", date]
                 table.set_index("Impuesto", inplace=True)
+                table[date] = table[date].str.replace(",", ".", regex=False)
                 table = (table.apply(pd.to_numeric, errors="coerce")
                          .dropna(how="any").T)
                 table = table.loc[:,
@@ -507,6 +239,10 @@ def _get_taxes_from_pdf(excel_data: pd.DataFrame) -> pd.DataFrame:
                                    "IRNR",
                                    "Impuesto de Primaria",
                                    "6) Total Bruto (suma de (1) a (5))"]]
+                # The may-21 table had hidden duplicate rows with different values
+                # See https://www.dgi.gub.uy/wdgi/afiledownload?2,4,1879,O,S,0,36556%3BS%3B1%3B108,
+                if table.shape[1] == 20:
+                    table = table.iloc[:, 0:table.shape[1]:2]
                 table.columns = [
                     'IVA - Valor Agregado',
                     'IMESI - Específico Interno',
@@ -529,22 +265,8 @@ def _get_taxes_from_pdf(excel_data: pd.DataFrame) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=30,
 )
-def _public_debt_retriever(update_loc: Union[str, PathLike,
-                                             Engine, Connection, None] = None,
-                           revise_rows: Union[str, int] = "nodup",
-                           save_loc: Union[str, PathLike,
-                                           Engine, Connection, None] = None,
-                           only_get: bool = False) -> Dict[str, pd.DataFrame]:
+def _public_debt_retriever() -> Dict[str, pd.DataFrame]:
     """Helper function. See any of the `public_debt_...()` functions."""
-    if only_get is True and update_loc is not None:
-        output = {}
-        for meta in ["gps", "nfps", "cb", "assets"]:
-            data = ops._io(operation="update", data_loc=update_loc,
-                           name=f"public_debt_{meta}")
-            output.update({meta: data})
-        if all(not value.equals(pd.DataFrame()) for value in output.values()):
-            return output
-
     colnames = ["Total deuda", "Plazo contractual: hasta 1 año",
                 "Plazo contractual: entre 1 y 5 años",
                 "Plazo contractual: más de 5 años",
@@ -605,204 +327,100 @@ def _public_debt_retriever(update_loc: Union[str, PathLike,
     output = {"gps": gps, "nfps": nfps, "cb": cb, "assets": assets}
 
     for meta, data in output.items():
-        if update_loc is not None:
-            previous_data = ops._io(operation="update", data_loc=update_loc,
-                                    name=f"public_debt_{meta}")
-            data = ops._revise(new_data=data,
-                               prev_data=previous_data,
-                               revise_rows=revise_rows)
+        data.rename_axis(None, inplace=True)
         metadata._set(data, area="Sector público", currency="USD",
                       inf_adj="No", unit="Millones", seas_adj="NSA",
                       ts_type="Stock", cumperiods=1)
-
-        if save_loc is not None:
-            ops._io(operation="save", data_loc=save_loc,
-                    data=data, name=f"public_debt_{meta}")
 
         output.update({meta: data})
 
     return output
 
 
-def public_debt_gps(update_loc: Union[str, PathLike,
-                                      Engine, Connection, None] = None,
-                    revise_rows: Union[str, int] = "nodup",
-                    save_loc: Union[str, PathLike,
-                                    Engine, Connection, None] = None,
-                    only_get: bool = False) -> Dict[str, pd.DataFrame]:
+def public_debt_gps() -> pd.DataFrame:
     """Get public debt data for the consolidated public sector.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
     Quarterly public debt data for the consolidated public sector: pd.DataFrame
 
     """
-    return _public_debt_retriever(update_loc=update_loc, revise_rows=revise_rows,
-                                  save_loc=save_loc, only_get=only_get)["gps"]
+    return _public_debt_retriever()["gps"]
 
 
-def public_debt_nfps(update_loc: Union[str, PathLike,
-                                       Engine, Connection, None] = None,
-                     revise_rows: Union[str, int] = "nodup",
-                     save_loc: Union[str, PathLike,
-                                     Engine, Connection, None] = None,
-                     only_get: bool = False) -> Dict[str, pd.DataFrame]:
+def public_debt_nfps() -> pd.DataFrame:
     """Get public debt data for the non-financial public sector.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
     Quarterly public debt data for the non-financial public sector: pd.DataFrame
 
     """
-    return _public_debt_retriever(update_loc=update_loc, revise_rows=revise_rows,
-                                  save_loc=save_loc, only_get=only_get)["nfps"]
+    return _public_debt_retriever()["nfps"]
 
 
-def public_debt_cb(update_loc: Union[str, PathLike,
-                                     Engine, Connection, None] = None,
-                   revise_rows: Union[str, int] = "nodup",
-                   save_loc: Union[str, PathLike,
-                                   Engine, Connection, None] = None,
-                   only_get: bool = False) -> Dict[str, pd.DataFrame]:
+def public_debt_cb() -> pd.DataFrame:
     """Get public debt data for the central bank
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
     Quarterly public debt data for the central bank : pd.DataFrame
 
     """
-    return _public_debt_retriever(update_loc=update_loc, revise_rows=revise_rows,
-                                  save_loc=save_loc, only_get=only_get)["cb"]
+    return _public_debt_retriever()["cb"]
 
 
-def net_public_debt(update_loc: Union[str, PathLike, Engine,
-                                      Connection, None] = None,
-                    save_loc: Union[str, PathLike, Engine,
-                                    Connection, None] = None,
-                    only_get: bool = True) -> pd.DataFrame:
+def public_assets() -> pd.DataFrame:
+    """Get public sector assets data.
+
+    Returns
+    -------
+    Quarterly public sector assets: pd.DataFrame
+
+    """
+    return _public_debt_retriever()["assets"]
+
+
+def net_public_debt(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """
     Get net public debt excluding deposits at the central bank.
 
     Parameters
     ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default True
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
 
     Returns
     -------
     Net public debt excl. deposits at the central bank : pd.DataFrame
 
     """
-    name = "net_public_debt"
+    if pipeline is None:
+        pipeline = Pipeline()
 
-    data = _public_debt_retriever(update_loc=update_loc,
-                                  save_loc=save_loc, only_get=only_get)
-    gross_debt = data["gps"].loc[:, ["Total deuda"]]
-    assets = data["assets"].loc[:, ["Total activos"]]
+    pipeline.get("public_debt_gps")
+    gross_debt = pipeline.dataset.loc[:, ["Total deuda"]]
+    pipeline.get("public_assets")
+    assets = pipeline.dataset.loc[:, ["Total activos"]]
     gross_debt.columns = ["Deuda neta del sector"
                           " público global excl. encajes"]
     assets.columns = gross_debt.columns
-    deposits = econuy.retrieval.external_sector.reserves(
-        update_loc=update_loc, save_loc=save_loc,
-        only_get=only_get).loc[:,
-                               ["Obligaciones en ME con el sector financiero"]]
+    pipeline.get("reserves")
+    deposits = pipeline.dataset.loc[:,
+                                     ["Obligaciones en ME con el sector financiero"]]
     deposits = (transform.resample(deposits, rule="Q-DEC", operation="last")
                 .reindex(gross_debt.index).squeeze())
     output = gross_debt.add(assets).add(deposits, axis=0).dropna()
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Sector público",
                   currency="USD", inf_adj="No", unit="Millones",
                   seas_adj="NSA", ts_type="Stock", cumperiods=1)
 
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
-
     return output
 
 
-def balance_summary(update_loc: Union[str, PathLike, Engine,
-                                      Connection, None] = None,
-                    save_loc: Union[str, PathLike, Engine,
-                                    Connection, None] = None,
-                    only_get: bool = True) -> pd.DataFrame:
+def balance_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """
     Get the summary fiscal balance table found in the `Budget Law
     <https://www.gub.uy/contaduria-general-nacion/sites/
@@ -813,33 +431,29 @@ def balance_summary(update_loc: Union[str, PathLike, Engine,
 
     Parameters
     ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default True
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
 
     Returns
     -------
     Summary fiscal balance table : pd.DataFrame
 
     """
-    name = "balance_summary"
-
-    data = _balance_retriever(update_loc=update_loc,
-                              save_loc=save_loc, only_get=only_get)
-    gps = data["gps"]
-    nfps = data["nfps"]
-    gc = data["cg-bps"]
-    pe = data["pe"]
+    if pipeline is None or pipeline.download is True:
+        data = _balance_retriever()
+        gps = data["gps"]
+        nfps = data["nfps"]
+        gc = data["cg-bps"]
+        pe = data["pe"]
+    else:
+        pipeline.get("balance_gps")
+        gps = pipeline.dataset
+        pipeline.get("balance_nfps")
+        nfps = pipeline.dataset
+        pipeline.get("balance_cg-bps")
+        gc = pipeline.dataset
+        pipeline.get("balance_pe")
+        pe = pipeline.dataset
 
     proc = pd.DataFrame(index=gps.index)
 
@@ -930,13 +544,10 @@ def balance_summary(update_loc: Union[str, PathLike, Engine,
     proc["Resultado: Global SPC ex FSS"] = (proc["Resultado: Global SPNF ex FSS"]
                                             + proc["Resultado: Global BCU"])
     output = proc
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Sector público",
                   currency="UYU", inf_adj="No", unit="Millones",
                   seas_adj="NSA", ts_type="Flujo", cumperiods=1)
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
 
     return output

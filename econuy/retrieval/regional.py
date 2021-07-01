@@ -5,8 +5,8 @@ import zipfile
 import datetime as dt
 from random import randint
 from io import BytesIO
-from os import PathLike, path, listdir
-from typing import Union
+from os import path, listdir
+from typing import  Optional
 from urllib.error import HTTPError, URLError
 
 import pandas as pd
@@ -16,11 +16,10 @@ from pandas.tseries.offsets import MonthEnd
 from bs4 import BeautifulSoup
 from opnieuw import retry
 from selenium.webdriver.remote.webdriver import WebDriver
-from sqlalchemy.engine.base import Engine, Connection
 
-from econuy.retrieval.international import long_rates
+from econuy.core import Pipeline
 from econuy.transform import rebase, resample
-from econuy.utils import metadata, ops
+from econuy.utils import metadata
 from econuy.utils.chromedriver import _build
 from econuy.utils.sources import urls
 from econuy.utils.extras import investing_headers
@@ -31,11 +30,7 @@ from econuy.utils.extras import investing_headers
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        revise_rows: Union[str, int] = "nodup",
-        save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        only_get: bool = False,
-        driver: WebDriver = None) -> pd.DataFrame:
+def gdp(driver: WebDriver = None) -> pd.DataFrame:
     """Get seasonally adjusted real GDP for Argentina and Brazil.
 
     This function requires a Selenium webdriver. It can be provided in the
@@ -43,25 +38,6 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     Parameters
     ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
     driver : selenium.webdriver.chrome.webdriver.WebDriver, default None
         Selenium webdriver for scraping. If None, build a Chrome webdriver.
 
@@ -71,12 +47,6 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     """
     name = "regional_gdp"
-
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
 
     if driver is None:
         driver = _build()
@@ -113,22 +83,13 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     output = pd.concat([arg, bra], axis=1).div(1000)
     output.columns = ["Argentina", "Brasil"]
-
-    if update_loc is not None:
-        previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name)
-        output = ops._revise(new_data=output, prev_data=previous_data,
-                             revise_rows=revise_rows)
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Regional", currency="-",
                   inf_adj="Const.", seas_adj="SA", unit="Miles de millones",
                   ts_type="Flujo", cumperiods=1)
     metadata._modify_multiindex(output, levels=[3],
                                 new_arrays=[["ARS", "BRL"]])
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
 
     return output
 
@@ -138,36 +99,10 @@ def gdp(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def monthly_gdp(
-        update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        revise_rows: Union[str, int] = "nodup",
-        save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        only_get: bool = False) -> pd.DataFrame:
+def monthly_gdp() -> pd.DataFrame:
     """Get monthly GDP data.
 
     Countries/aggregates selected are Argentina and Brazil.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
@@ -175,12 +110,6 @@ def monthly_gdp(
 
     """
     name = "regional_monthly_gdp"
-
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
 
     arg = pd.read_excel(urls[name]["dl"]["arg"], usecols="D",
                         skiprows=4).dropna(how="all")
@@ -192,22 +121,13 @@ def monthly_gdp(
 
     output = pd.concat([arg, bra], axis=1)
     output.columns = ["Argentina", "Brasil"]
+    output.rename_axis(None, inplace=True)
     metadata._set(output, area="Regional", currency="-",
                   inf_adj="Const.", seas_adj="SA",
                   ts_type="Flujo", cumperiods=1)
     metadata._modify_multiindex(output, levels=[3],
                                 new_arrays=[["ARS", "BRL"]])
     output = rebase(output, start_date="2010-01-01", end_date="2010-12-31")
-
-    if update_loc is not None:
-        previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name)
-        output = ops._revise(new_data=output, prev_data=previous_data,
-                             revise_rows=revise_rows)
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
 
     return output
 
@@ -217,33 +137,8 @@ def monthly_gdp(
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        revise_rows: Union[str, int] = "nodup",
-        save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        only_get: bool = False) -> pd.DataFrame:
+def cpi() -> pd.DataFrame:
     """Get consumer price index for Argentina and Brazil.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
@@ -251,12 +146,6 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     """
     name = "regional_cpi"
-
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
 
     arg = requests.get(urls[name]["dl"]["ar"],
                        params=urls[name]["dl"]["ar_payload"])
@@ -286,22 +175,13 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     output = pd.concat([arg, bra], axis=1)
     output.columns = ["Argentina", "Brasil"]
+    output.rename_axis(None, inplace=True)
     metadata._set(output, area="Regional", currency="-",
                   inf_adj="No", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
     metadata._modify_multiindex(output, levels=[3],
                                 new_arrays=[["ARS", "BRL"]])
     output = rebase(output, start_date="2010-10-01", end_date="2010-10-31")
-
-    if update_loc is not None:
-        previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name)
-        output = ops._revise(new_data=output, prev_data=previous_data,
-                             revise_rows=revise_rows)
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
 
     return output
 
@@ -311,34 +191,8 @@ def cpi(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def embi_spreads(
-        update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        revise_rows: Union[str, int] = "nodup",
-        save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        only_get: bool = False) -> pd.DataFrame:
+def embi_spreads() -> pd.DataFrame:
     """Get EMBI spread for Argentina, Brazil and the EMBI Global.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
@@ -346,12 +200,6 @@ def embi_spreads(
 
     """
     name = "regional_embi_spreads"
-
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
 
     global_ = pd.read_excel(urls[name]["dl"]["global"],
                             usecols="A:B", skiprows=1, index_col=0,
@@ -373,20 +221,11 @@ def embi_spreads(
                                                           limit_area="inside")
     output.columns = ["Argentina", "Brasil", "EMBI Global"]
     output = output.apply(pd.to_numeric, errors="coerce")
-
-    if update_loc is not None:
-        previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name)
-        output = ops._revise(new_data=output, prev_data=previous_data,
-                             revise_rows=revise_rows)
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Regional", currency="USD",
                   inf_adj="No", seas_adj="NSA", unit="PBS",
                   ts_type="-", cumperiods=1)
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
 
     return output
 
@@ -396,11 +235,7 @@ def embi_spreads(
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def embi_yields(
-        update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        revise_rows: Union[str, int] = "nodup",
-        save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        only_get: bool = False) -> pd.DataFrame:
+def embi_yields(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """Get EMBI yields for Argentina, Brazil and the EMBI Global.
 
     Yields are calculated by adding EMBI spreads to the 10-year US Treasury
@@ -408,25 +243,8 @@ def embi_yields(
 
     Parameters
     ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
 
     Returns
     -------
@@ -435,33 +253,22 @@ def embi_yields(
     """
     name = "regional_embi_yields"
 
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
+    if pipeline is None:
+        pipeline = Pipeline()
 
-    treasuries = long_rates(update_loc=update_loc, save_loc=save_loc,
-                            only_get=only_get)["Estados Unidos"]
-    spreads = embi_spreads(update_loc=update_loc, save_loc=save_loc,
-                           only_get=only_get)
+    pipeline.get("global_long_rates")
+    treasuries = pipeline.dataset["Estados Unidos"]
+    pipeline.get("regional_embi_spreads")
+    spreads = pipeline.dataset
+
     treasuries = (treasuries.reindex(spreads.index)
                   .interpolate(method="linear", limit_direction="forward"))
     output = spreads.div(100).add(treasuries.squeeze(), axis=0)
-
-    if update_loc is not None:
-        previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name)
-        output = ops._revise(new_data=output, prev_data=previous_data,
-                             revise_rows=revise_rows)
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Regional", currency="USD",
                   inf_adj="No", seas_adj="NSA", unit="Tasa",
                   ts_type="-", cumperiods=1)
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
 
     return output
 
@@ -471,34 +278,8 @@ def embi_yields(
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def nxr(
-        update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        revise_rows: Union[str, int] = "nodup",
-        save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        only_get: bool = False) -> pd.DataFrame:
+def nxr() -> pd.DataFrame:
     """Get USDARS and USDBRL.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
@@ -506,12 +287,6 @@ def nxr(
 
     """
     name = "regional_nxr"
-
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
 
     arg = []
     for dollar in ["ar", "ar_unofficial"]:
@@ -538,12 +313,8 @@ def nxr(
 
     output = arg.join(bra, how="left").interpolate(method="linear",
                                                    limit_area="inside")
+    output.rename_axis(None, inplace=True)
 
-    if update_loc is not None:
-        previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name)
-        output = ops._revise(new_data=output, prev_data=previous_data,
-                             revise_rows=revise_rows)
 
     metadata._set(output, area="Regional", currency="USD",
                   inf_adj="No", seas_adj="NSA", unit="Tasa",
@@ -551,10 +322,6 @@ def nxr(
     metadata._modify_multiindex(output, levels=[3, 5],
                                 new_arrays=[["ARS", "ARS", "BRL"],
                                             ["ARS/USD", "ARS/USD", "BRL/USD"]])
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
 
     return output
 
@@ -564,36 +331,10 @@ def nxr(
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def policy_rates(
-        update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        revise_rows: Union[str, int] = "nodup",
-        save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        only_get: bool = False) -> pd.DataFrame:
+def policy_rates() -> pd.DataFrame:
     """Get central bank policy interest rates data.
 
     Countries/aggregates selected are Argentina and Brazil.
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
@@ -601,12 +342,6 @@ def policy_rates(
 
     """
     name = "regional_policy_rates"
-
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
 
     r = requests.get(urls[name]["dl"]["main"])
     temp_dir = tempfile.TemporaryDirectory()
@@ -619,22 +354,13 @@ def policy_rates(
     output = (raw.apply(pd.to_numeric, errors="coerce")
               .interpolate(method="linear", limit_area="inside"))
     output.columns = ["Argentina", "Brasil"]
-
-    if update_loc is not None:
-        previous_data = ops._io(operation="update", data_loc=update_loc,
-                                name=name)
-        output = ops._revise(new_data=output, prev_data=previous_data,
-                             revise_rows=revise_rows)
+    output.rename_axis(None, inplace=True)
 
     metadata._set(output, area="Regional", currency="-",
                   inf_adj="No", seas_adj="NSA", unit="Tasa",
                   ts_type="-", cumperiods=1)
     metadata._modify_multiindex(output, levels=[3],
                                 new_arrays=[["ARS", "BRL"]])
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
 
     return output
 
@@ -644,35 +370,15 @@ def policy_rates(
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-           revise_rows: Union[str, int] = "nodup",
-           save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-           only_get: bool = False) -> pd.DataFrame:
+def stocks(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """Get stock market index data in USD terms.
 
     Indexes selected are MERVAL and BOVESPA.
 
     Parameters
     ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
 
     Returns
     -------
@@ -680,12 +386,6 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     """
     name = "regional_stocks"
-
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
 
     end_date_dt = dt.datetime(2000, 1, 1)
     start_date_dt = dt.datetime(2000, 1, 1)
@@ -714,7 +414,8 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                       parse_dates=True)[["Close"]]
     bra = bra.loc[bra.index >= "2000-01-01"]
 
-    converters = nxr(update_loc=update_loc, only_get=only_get)
+    pipeline.get("regional_nxr")
+    converters = pipeline.dataset
     converters.columns = converters.columns.get_level_values(0)
     arg = pd.merge_asof(arg, converters[["Argentina - informal"]],
                         left_index=True, right_index=True)
@@ -727,21 +428,11 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
 
     output = arg.join(bra, how="left").interpolate(method="linear",
                                                    limit_area="inside")
+    output.rename_axis(None, inplace=True)
     metadata._set(output, area="Regional", currency="USD",
                   inf_adj="No", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
     output = rebase(output, start_date="2019-01-02").dropna(how="all")
-
-    if update_loc is not None:
-        previous_data = ops._io(operation="update",
-                                data_loc=update_loc,
-                                name=name)
-        output = ops._revise(new_data=output, prev_data=previous_data,
-                             revise_rows=revise_rows)
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
 
     return output
 
@@ -751,53 +442,24 @@ def stocks(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def rxr(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        revise_rows: Union[str, int] = "nodup",
-        save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-        only_get: bool = False) -> pd.DataFrame:
+def rxr(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """Get real exchange rates vis-á-vis the US dollar for Argentina and Brasil .
-
-    Parameters
-    ----------
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    revise_rows : {'nodup', 'auto', int}
-        Defines how to process data updates. An integer indicates how many rows
-        to remove from the tail of the dataframe and replace with new data.
-        String can either be ``auto``, which automatically determines number of
-        rows to replace from the inferred data frequency, or ``nodup``,
-        which replaces existing periods with new data.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default False
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
 
     Returns
     -------
     Monthly real exchange rate : pd.DataFrame
 
     """
-    name = "regional_rxr"
+    if pipeline is None:
+        pipeline = Pipeline()
 
-    if only_get is True and update_loc is not None:
-        output = ops._io(operation="update", data_loc=update_loc,
-                         name=name)
-        if not output.equals(pd.DataFrame()):
-            return output
-
-    proc = _ifs(update_loc=update_loc, save_loc=save_loc, only_get=only_get)
+    proc = _ifs(pipeline=pipeline)
 
     output = pd.DataFrame()
     output["Argentina"] = (proc["Argentina - oficial"] * proc["US.PCPI_IX"]
                            / proc["ARG CPI"])
     output["Brasil"] = proc["Brasil"] * proc["US.PCPI_IX"] / proc["BRA CPI"]
+    output.rename_axis(None, inplace=True)
     metadata._set(output, area="Regional", currency="-",
                   inf_adj="-", seas_adj="NSA",
                   ts_type="-", cumperiods=1)
@@ -805,17 +467,6 @@ def rxr(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
                                 new_arrays=[["ARS/USD", "BRL/USD"]])
     output = rebase(output, start_date="2019-01-01",
                     end_date="2019-01-31").dropna(how="all")
-
-    if update_loc is not None:
-        previous_data = ops._io(operation="update",
-                                data_loc=update_loc,
-                                name=name)
-        output = ops._revise(new_data=output, prev_data=previous_data,
-                             revise_rows=revise_rows)
-
-    if save_loc is not None:
-        ops._io(operation="save", data_loc=save_loc,
-                data=output, name=name)
 
     return output
 
@@ -825,10 +476,23 @@ def rxr(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=30,
 )
-def _ifs(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
-         save_loc: Union[str, PathLike, Engine, Connection, None] = None,
-         only_get: bool = False) -> pd.DataFrame:
-    """Get extra data from the IMF IFS."""
+def _ifs(pipeline: Pipeline = None) -> pd.DataFrame:
+    """Get extra CPI and exchange rate data from the IMF IFS.
+
+    Parameters
+    ----------
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
+
+    Returns
+    -------
+    IMF data : pd.DataFrame
+        CPI and XR for the US, Brazil and Argentina.
+
+    """
+    if pipeline is None:
+        pipeline = Pipeline()
+
     url_ = "http://dataservices.imf.org/REST/SDMX_JSON.svc/CompactData/IFS/M."
     url_extra = ".?startPeriod=1970&endPeriod="
     ifs = []
@@ -855,12 +519,12 @@ def _ifs(update_loc: Union[str, PathLike, Engine, Connection, None] = None,
             ifs.append(data)
     ifs = pd.concat(ifs, axis=1, sort=True).apply(pd.to_numeric)
 
-    xr = nxr(update_loc=update_loc, save_loc=save_loc,
-             only_get=only_get)
+    pipeline.get("regional_nxr")
+    xr = pipeline.dataset
     xr = resample(xr, rule="M", operation="mean")
     xr.columns = xr.columns.get_level_values(0)
-    prices = cpi(update_loc=update_loc, save_loc=save_loc,
-                 only_get=only_get)
+    pipeline.get("regional_cpi")
+    prices = pipeline.dataset
     prices.columns = ["ARG CPI", "BRA CPI"]
 
     proc = pd.concat([xr, prices, ifs], axis=1)

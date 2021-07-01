@@ -10,7 +10,8 @@ def _set(
         df: pd.DataFrame, area: Optional[str] = None,
         currency: Optional[str] = None, inf_adj: Optional[str] = None,
         unit: Optional[str] = None, seas_adj: Optional[str] = None,
-        ts_type: Optional[str] = None, cumperiods: Optional[int] = None
+        ts_type: Optional[str] = None, cumperiods: Optional[int] = None,
+        warn: bool = False
 ):
     """Add a multiindex to a dataframe's columns.
 
@@ -34,6 +35,8 @@ def _set(
         Time series type, generally 'Stock' or 'Flujo'.
     cumperiods : int or None (default is None)
         Number of periods accumulated per period.
+    warn : bool, default False
+        If False, don't raise warnings.
 
     Returns
     -------
@@ -48,12 +51,14 @@ def _set(
     try:
         inferred_freq = pd.infer_freq(df.index)
     except ValueError:
-        warnings.warn("ValueError: Need at least 3 dates to infer frequency. "
+        if warn:
+            warnings.warn("ValueError: Need at least 3 dates to infer frequency. "
                       "Setting to '-'.", UserWarning)
         inferred_freq = "-"
     if inferred_freq is None:
-        warnings.warn("Metadata: frequency could not be inferred "
-                      "from the index. Setting to '-'.", UserWarning)
+        if warn:
+            warnings.warn("Metadata: frequency could not be inferred "
+                        "from the index. Setting to '-'.", UserWarning)
         inferred_freq = "-"
     names = [
         "Indicador", "Área", "Frecuencia", "Moneda",
