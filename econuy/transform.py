@@ -268,7 +268,7 @@ def _convert_gdp(df: pd.DataFrame,
         gdp = pipeline.dataset
 
     inferred_freq = pd.infer_freq(df.index)
-    cum = df.columns.get_level_values("Acum. períodos")[0]
+    cum = int(df.columns.get_level_values("Acum. períodos")[0])
     if inferred_freq in ["M", "MS"]:
         gdp = resample(gdp, rule=inferred_freq,
                        operation="upsample", interpolation="linear")
