@@ -23,7 +23,7 @@ pandas = "==1.2.3"
 openpyxl = "==3.0.5"
 matplotlib = "==3.1.1"
 statsmodels = "==0.11.0"
-requests = "==2.22.0"
+requests = "==2.25.1"
 beautifulsoup4 = "==4.8.1"
 numpy = "==1.17.4"
 lxml = "==4.6.3"
@@ -40,6 +40,7 @@ camelot-py = {extras = ["cv"], version = "==0.8.2"}
 pypdf2 = "==1.26.0"
 patool = "==1.12"
 xlrd = "==2.0.1"
+urllib3 = "==1.26.5"
 
 [requires]
 python_version = "3.7"

@@ -7,9 +7,9 @@ from econuy.utils.metadata import _get_sources
 from econuy.retrieval import prices
 from econuy.utils import sqlutil
 try:
-    from tests.test_session import remove_clutter
+    from tests.test_session import remove_temporary_files_folders
 except ImportError:
-    from .test_session import remove_clutter
+    from .test_session import remove_temporary_files_folders
 
 
 CUR_DIR = path.abspath(path.dirname(__file__))
@@ -18,22 +18,8 @@ TEST_CON = create_engine("sqlite://").connect()
 sqlutil.insert_csvs(con=TEST_CON, directory=TEST_DIR)
 
 
-def test_revise():
-    remove_clutter()
-    price = prices.cpi(save_loc=TEST_DIR)
-    price_alt = prices.cpi(update_loc=TEST_DIR, revise_rows=6)
-    assert price.round(4).equals(price_alt.round(4))
-    price_alt = prices.cpi(update_loc=TEST_DIR, revise_rows="nodup")
-    assert price.round(4).equals(price_alt.round(4))
-    price_alt = prices.cpi(update_loc=TEST_DIR, revise_rows="auto")
-    assert price.round(4).equals(price_alt.round(4))
-    with pytest.raises(ValueError):
-        prices.cpi(update_loc=TEST_DIR, revise_rows="wrong")
-    remove_clutter()
-
-
 def test_sqlutil():
-    remove_clutter()
+    remove_temporary_files_folders()
     sqlutil.read(con=TEST_CON, command='SELECT * FROM nxr_daily')
     sqlutil.read(con=TEST_CON, table_name="nxr_daily",
                  start_date="2011-01-14",

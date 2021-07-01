@@ -7,69 +7,23 @@ from typing import Union, Optional, Tuple, Dict
 
 import numpy as np
 import pandas as pd
-from sqlalchemy.engine.base import Connection, Engine
 from statsmodels.tools.sm_exceptions import X13Error, X13Warning
 from statsmodels.tsa import x13
 from statsmodels.tsa.x13 import x13_arima_analysis as x13a
 from statsmodels.tsa.seasonal import STL, seasonal_decompose
 
-from econuy.retrieval import prices, economic_activity
 from econuy.utils import metadata
 
 
+
 def convert_usd(df: pd.DataFrame,
-                update_loc: Union[str, PathLike, Engine,
-                                  Connection, None] = None,
-                save_loc: Union[str, PathLike, Engine,
-                                Connection, None] = None,
-                only_get: bool = True, errors: str = "raise") -> pd.DataFrame:
-    """
-    Convert dataframe from UYU to USD.
+                pipeline = None,
+                errors: str = "raise") -> pd.DataFrame:
+    """Convert to other units.
 
-    Convert a dataframe's columns from Uruguayan pesos to US dollars. Call the
-    :func:`econuy.retrieval.nxr.get_monthly` function to obtain nominal
-    exchange rates, and take into account whether the input dataframe's
-    ``Type``, as defined by its multiindex, is flow or stock, in order to `
-    choose end of period or monthly average NXR. Also take into account the
-    input dataframe's frequency and whether columns represent rolling averages
-    or sums.
-
-    If input dataframe's frequency is higher than monthly (daily, business,
-    etc.), resample to monthly frequency.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Input dataframe.
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default True
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
-    errors : {'raise', 'coerce', 'ignore'}
-        What to do when a column in the input dataframe is not expressed in
-        Uruguayan pesos. ``raise`` will raise a ValueError, ``coerce`` will
-        force the entire column into ``np.nan`` and ``ignore`` will leave the
-        input column as is.
-
-    Returns
-    -------
-    Input dataframe measured in US dollars : pd.DataFrame
-
-    Raises
-    ------
-    ValueError
-        If the ``errors`` parameter does not have a valid argument.
-    ValueError
-        If the input dataframe's columns do not have the appropiate levels.
+    See Also
+    --------
+    :mod:`~econuy.core.Pipeline.convert`.
 
     """
     if errors not in ["raise", "coerce", "ignore"]:
@@ -79,6 +33,10 @@ def convert_usd(df: pd.DataFrame,
         raise ValueError("Input dataframe's multiindex requires the "
                          "'Moneda' level.")
 
+    if pipeline is None:
+        from econuy.core import Pipeline
+        pipeline = Pipeline()
+
     checks = [x == "UYU" for x in df.columns.get_level_values("Moneda")]
     if any(checks):
         if not all(checks) and errors == "raise":
@@ -86,8 +44,8 @@ def convert_usd(df: pd.DataFrame,
             msg = (f"{error_df.columns[0][0]} does not have the "
                    f"appropiate metadata.")
             return error_handler(df=df, errors=errors, msg=msg)
-        nxr_data = prices.nxr_monthly(update_loc=update_loc, save_loc=save_loc,
-                                      only_get=only_get)
+        pipeline.get(name="nxr_monthly")
+        nxr_data = pipeline.dataset
         all_metadata = df.columns.droplevel("Indicador")
         if all(x == all_metadata[0] for x in all_metadata):
             return _convert_usd(df=df, nxr=nxr_data)
@@ -111,20 +69,23 @@ def convert_usd(df: pd.DataFrame,
 def _convert_usd(df: pd.DataFrame,
                  nxr: Optional[pd.DataFrame] = None) -> pd.DataFrame:
     if nxr is None:
-        nxr = prices.nxr_monthly()
+        from econuy.core import Pipeline
+        pipeline = Pipeline()
+        pipeline.get("nxr_monthly")
+        nxr = pipeline.dataset
 
     inferred_freq = pd.infer_freq(df.index)
-    if inferred_freq in ["D", "B", "C", "W", None]:
+    if inferred_freq in ["D", "B", "C", "W", "W-SUN", None]:
         if df.columns.get_level_values("Tipo")[0] == "Flujo":
             df = df.resample("M").sum()
         else:
-            df = df.resample("M").mean()
+            df = df.resample("M").last()
         inferred_freq = pd.infer_freq(df.index)
 
     if df.columns.get_level_values("Tipo")[0] == "Stock":
         metadata._set(nxr, ts_type="Stock")
         nxr_freq = resample(nxr, rule=inferred_freq,
-                            operation="mean").iloc[:, [1]]
+                            operation="last").iloc[:, [1]]
     else:
         metadata._set(nxr, ts_type="Flujo")
         nxr_freq = resample(nxr, rule=inferred_freq,
@@ -143,64 +104,13 @@ def _convert_usd(df: pd.DataFrame,
 def convert_real(df: pd.DataFrame,
                  start_date: Union[str, datetime, None] = None,
                  end_date: Union[str, datetime, None] = None,
-                 update_loc: Union[str, PathLike, Engine,
-                                   Connection, None] = None,
-                 save_loc: Union[str, PathLike, Engine,
-                                 Connection, None] = None,
-                 only_get: bool = True,
+                 pipeline = None,
                  errors: str = "raise") -> pd.DataFrame:
-    """
-    Convert dataframe to real prices.
+    """Convert to other units.
 
-    Convert a dataframe's columns to real prices. Call the
-    :func:`econuy.retrieval.cpi.get` function to obtain the consumer price
-    index. take into account the input dataframe's frequency and whether
-    columns represent rolling averages or sums. Allow choosing a single period,
-    a range of dates or no period as a base (i.e., period for which the
-    average/sum of input dataframe and output dataframe is the same).
-
-    If input dataframe's frequency is higher than monthly (daily, business,
-    etc.), resample to monthly frequency.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Input dataframe.
-    start_date : str, datetime.date or None, default None
-        If set to a date-like string or a date, and ``end_date`` is None, the
-        base period will be ``start_date``.
-    end_date : str, datetime.date or None, default None
-        If ``start_date`` is set, calculate so that the data is in constant
-        prices of ``start_date-end_date``.
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default True
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
-    errors : {'raise', 'coerce', 'ignore'}
-        What to do when a column in the input dataframe is not expressed in
-        nominal Uruguayan pesos. ``raise`` will raise a ValueError, ``coerce``
-        will force the entire column into ``np.nan`` and ``ignore`` will leave
-        the input column as is.
-
-    Returns
-    -------
-    Input dataframe measured at constant prices : pd.DataFrame
-
-    Raises
-    ------
-    ValueError
-        If the ``errors`` parameter does not have a valid argument.
-    ValueError
-        If the input dataframe's columns do not have the appropiate levels.
+    See Also
+    --------
+    :mod:`~econuy.core.Pipeline.convert`.
 
     """
     if errors not in ["raise", "coerce", "ignore"]:
@@ -209,6 +119,10 @@ def convert_real(df: pd.DataFrame,
     if "Inf. adj." not in df.columns.names:
         raise ValueError("Input dataframe's multiindex requires the "
                          "'Inf. adj.' level.")
+
+    if pipeline is None:
+        from econuy.core import Pipeline
+        pipeline = Pipeline()
 
     checks = [x == "UYU" and "Const." not in y
               for x, y in zip(df.columns.get_level_values("Moneda"),
@@ -219,8 +133,8 @@ def convert_real(df: pd.DataFrame,
             msg = (f"{error_df.columns[0][0]} does not have the "
                    f"appropiate metadata.")
             return error_handler(df=df, errors=errors, msg=msg)
-        cpi_data = prices.cpi(update_loc=update_loc, save_loc=save_loc,
-                              only_get=only_get)
+        pipeline.get(name="cpi")
+        cpi_data = pipeline.dataset
         all_metadata = df.columns.droplevel("Indicador")
         if all(x == all_metadata[0] for x in all_metadata):
             return _convert_real(df=df, start_date=start_date,
@@ -249,10 +163,13 @@ def _convert_real(df: pd.DataFrame,
                   end_date: Union[str, datetime, None] = None,
                   cpi: Optional[pd.DataFrame] = None) -> pd.DataFrame:
     if cpi is None:
-        cpi = prices.cpi()
+        from econuy.core import Pipeline
+        pipeline = Pipeline()
+        pipeline.get("cpi")
+        cpi = pipeline.dataset
 
     inferred_freq = pd.infer_freq(df.index)
-    if inferred_freq in ["D", "B", "C", "W", None]:
+    if inferred_freq in ["D", "B", "C", "W", "W-SUN", None]:
         if df.columns.get_level_values("Tipo")[0] == "Flujo":
             df = df.resample("M").sum()
         else:
@@ -291,61 +208,13 @@ def _convert_real(df: pd.DataFrame,
 
 
 def convert_gdp(df: pd.DataFrame,
-                update_loc: Union[str, PathLike, Engine,
-                                  Connection, None] = None,
-                save_loc: Union[str, PathLike, Engine,
-                                Connection, None] = None,
-                only_get: bool = True,
+                pipeline = None,
                 errors: str = "raise") -> pd.DataFrame:
-    """
-    Calculate dataframe as percentage of GDP.
+    """Convert to other units.
 
-    Convert a dataframe's columns to percentage of GDP. Call the
-    :func:`econuy.retrieval.national_accounts._lin_gdp` function to obtain UYU
-    and USD quarterly GDP series. Take into account the input dataframe's
-    currency for chossing UYU or USD GDP. If frequency of input dataframe is
-    higher than quarterly, GDP will be upsampled and linear interpolation will
-    be performed to complete missing data.
-
-    If input dataframe's "Acum." level is not 12 for monthly frequency or 4
-    for quarterly frequency, calculate rolling input dataframe.
-
-    If input dataframe's frequency is higher than monthly (daily, business,
-    etc.), resample to monthly frequency.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Input dataframe.
-    update_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                  default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    save_loc : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-                default None
-        Either Path or path-like string pointing to a directory where to save
-        the CSV, SQL Alchemy connection or engine object, or ``None``,
-        don't save.
-    only_get : bool, default True
-        If True, don't download data, retrieve what is available from
-        ``update_loc``.
-    errors : {'raise', 'coerce', 'ignore'}
-        What to do when a column in the input dataframe does not refer to
-        Uruguayan data or is already in % of GDP. ``raise`` will raise a
-        ValueError, ``coerce`` will force the entire column into ``np.nan`` and
-        ``ignore`` will leave the input column as is.
-
-    Returns
-    -------
-    Input dataframe as a percentage of GDP : pd.DataFrame
-
-    Raises
-    ------
-    ValueError
-        If the ``method`` parameter does not have a valid argument.
-    ValueError
-        If the input dataframe's columns do not have the appropiate levels.
+    See Also
+    --------
+    :mod:`~econuy.core.Pipeline.convert`.
 
     """
     if errors not in ["raise", "coerce", "ignore"]:
@@ -354,6 +223,10 @@ def convert_gdp(df: pd.DataFrame,
     if any(x not in df.columns.names for x in ["Área", "Unidad"]):
         raise ValueError("Input dataframe's multiindex requires the 'Área' "
                          "and 'Unidad' levels.")
+
+    if pipeline is None:
+        from econuy.core import Pipeline
+        pipeline = Pipeline()
 
     checks = [x not in ["Regional", "Global"] and "%PBI" not in y
               for x, y in zip(df.columns.get_level_values("Área"),
@@ -364,9 +237,8 @@ def convert_gdp(df: pd.DataFrame,
             msg = (f"{error_df.columns[0][0]} does not have the "
                    f"appropiate metadata.")
             return error_handler(df=df, errors=errors, msg=msg)
-        gdp_data = economic_activity._lin_gdp(update_loc=update_loc,
-                                              save_loc=save_loc,
-                                              only_get=only_get)
+        pipeline.get(name="_lin_gdp")
+        gdp_data = pipeline.dataset
         all_metadata = df.columns.droplevel("Indicador")
         if all(x == all_metadata[0] for x in all_metadata):
             return _convert_gdp(df=df, gdp=gdp_data)
@@ -390,7 +262,10 @@ def convert_gdp(df: pd.DataFrame,
 def _convert_gdp(df: pd.DataFrame,
                  gdp: Optional[pd.DataFrame] = None) -> pd.DataFrame:
     if gdp is None:
-        gdp = economic_activity._lin_gdp()
+        from econuy.core import Pipeline
+        pipeline = Pipeline()
+        pipeline.get("_lin_gdp")
+        gdp = pipeline.dataset
 
     inferred_freq = pd.infer_freq(df.index)
     cum = df.columns.get_level_values("Acum. períodos")[0]
@@ -407,7 +282,7 @@ def _convert_gdp(df: pd.DataFrame,
             df = rolling(df, window=converter, operation="sum")
     elif inferred_freq in ["A", "A-DEC"]:
         gdp = gdp.resample(inferred_freq, convention="end").asfreq()
-    elif inferred_freq in ["D", "B", "C", "W", None]:
+    elif inferred_freq in ["D", "B", "C", "W", "W-SUN", None]:
         if df.columns.get_level_values("Tipo")[0] == "Flujo":
             df = df.resample("M").sum()
         else:
@@ -433,48 +308,14 @@ def _convert_gdp(df: pd.DataFrame,
 
 def resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
              operation: str = "sum",
-             interpolation: str = "linear") -> pd.DataFrame:
+             interpolation: str = "linear",
+             warn: bool = False) -> pd.DataFrame:
     """
-    Wrapper for the `resample method <https://pandas.pydata.org/pandas-docs
-    stable/reference/api/pandas.DataFrame.resample.html>`_ in Pandas that
-    integrates with econuy dataframes' metadata.
+    Resample to target frequencies.
 
-    Trim partial bins, i.e. do not calculate the resampled
-    period if it is not complete, unless the input dataframe has no defined
-    frequency, in which case no trimming is done.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Input dataframe.
-    rule : pd.DateOffset, pd.Timedelta or str
-        Target frequency to resample to. See
-        `Pandas offset aliases <https://pandas.pydata.org/pandas-docs/stable/
-        user_guide/timeseries.html#offset-aliases>`_
-    operation : {'sum', 'mean', 'last', 'upsample'}
-        Operation to use for resampling.
-    interpolation : str, default 'linear'
-        Method to use when missing data are produced as a result of
-        resampling, for example when upsampling to a higher frequency. See
-        `Pandas interpolation methods <https://pandas.pydata.org/pandas-docs
-        /stable/reference/api/pandas.Series.interpolate.html>`_
-
-    Returns
-    -------
-    Input dataframe at the frequency defined in ``rule`` : pd.DataFrame
-
-    Raises
-    ------
-    ValueError
-        If ``operation`` is not one of available options.
-    ValueError
-        If the input dataframe's columns do not have the appropiate levels.
-
-    Warns
-    -----
-    UserWarning
-        If input frequencies cannot be assigned a numeric value, preventing
-        incomplete bin trimming.
+    See Also
+    --------
+    :mod:`~econuy.core.Pipeline.resample`
 
     """
     if operation not in ["sum", "mean", "upsample", "last"]:
@@ -486,20 +327,21 @@ def resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
     all_metadata = df.columns.droplevel("Indicador")
     if all(x == all_metadata[0] for x in all_metadata):
         return _resample(df=df, rule=rule, operation=operation,
-                         interpolation=interpolation)
+                         interpolation=interpolation, warn=warn)
     else:
         columns = []
         for column_name in df.columns:
             df_column = df[[column_name]]
             converted = _resample(df=df_column, rule=rule, operation=operation,
-                                  interpolation=interpolation)
+                                  interpolation=interpolation, warn=warn)
             columns.append(converted)
         return pd.concat(columns, axis=1)
 
 
 def _resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
               operation: str = "sum",
-              interpolation: str = "linear") -> pd.DataFrame:
+              interpolation: str = "linear",
+              warn: bool = False) -> pd.DataFrame:
     pd_frequencies = {"A": 1,
                       "A-DEC": 1,
                       "Q": 4,
@@ -541,8 +383,10 @@ def _resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
                 antimask = np.where(proc >= count, False, True)
                 resampled_df = resampled_df.mask(antimask, np.nan)
         except KeyError:
-            warnings.warn("No bin trimming performed because frequencies "
-                          "could not be assigned a numeric value", UserWarning)
+            if warn:
+                warnings.warn("No bin trimming performed because frequencies "
+                              "could not be assigned a numeric value",
+                              UserWarning)
 
     metadata._set(resampled_df)
     resampled_df = resampled_df.dropna(how="all")
@@ -553,39 +397,11 @@ def _resample(df: pd.DataFrame, rule: Union[pd.DateOffset, pd.Timedelta, str],
 def rolling(df: pd.DataFrame, window: Optional[int] = None,
             operation: str = "sum") -> pd.DataFrame:
     """
-    Wrapper for the `rolling method <https://pandas.pydata.org/pandas-docs/
-    stable/reference/api/pandas.DataFrame.rolling.html>`_ in Pandas that
-    integrates with econuy dataframes' metadata.
+    Calculate rolling averages or sums.
 
-    If ``periods`` is ``None``, try to infer the frequency and set ``periods``
-    according to the following logic: ``{'A': 1, 'Q-DEC': 4, 'M': 12}``, that
-    is, each period will be calculated as the sum or mean of the last year.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Input dataframe.
-    window : int, default None
-        How many periods the window should cover.
-    operation : {'sum', 'mean'}
-        Operation used to calculate rolling windows.
-
-    Returns
-    -------
-    Input dataframe with rolling windows : pd.DataFrame
-
-    Raises
-    ------
-    ValueError
-        If ``operation`` is not one of available options.
-    ValueError
-        If the input dataframe's columns do not have the appropiate levels.
-
-    Warns
-    -----
-    UserWarning
-        If the input dataframe is a stock time series, for which rolling
-        operations are not recommended.
+    See Also
+    --------
+    :mod:`~econuy.core.Pipeline.rolling`.
 
     """
     if operation not in ["sum", "mean"]:
@@ -644,25 +460,13 @@ def _rolling(df: pd.DataFrame, window: Optional[int] = None,
 
 def rebase(df: pd.DataFrame, start_date: Union[str, datetime],
            end_date: Union[str, datetime, None] = None,
-           base: float = 100.0) -> pd.DataFrame:
-    """Rebase all dataframe columns to a date or range of dates.
+           base: Union[int, float] = 100.0) -> pd.DataFrame:
+    """
+    Scale to a period or range of periods.
 
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Input dataframe.
-    start_date : string or datetime.datetime
-        Date to which series will be rebased.
-    end_date : string or datetime.datetime, default None
-        If specified, series will be rebased to the average between
-        ``start_date`` and ``end_date``.
-    base : float, default 100
-        Float for which ``start_date`` == ``base`` or average between
-        ``start_date`` and ``end_date`` == ``base``.
-
-    Returns
-    -------
-    Input dataframe with a base period index : pd.DataFrame
+    See Also
+    --------
+    :mod:`~econuy.core.Pipeline.rebase`.
 
     """
     all_metadata = df.columns.droplevel("Indicador")
@@ -735,75 +539,12 @@ def decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
     """
     Apply seasonal decomposition.
 
-    Decompose the series in a Pandas dataframe using either X13 ARIMA, Loess
-    or moving averages. X13 can be forced in case of failure by alternating
-    the underlying function's parameters. If not, it will fall back to one of
-    the other methods. If the X13 method is chosen, the X13 binary has to be
-    provided. Please refer to the README for instructions on where to get this
-    binary.
+    By default returns both trend and seasonally adjusted components,
+    unlike the class method referred below.
 
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Input dataframe.
-    component : {'both', 'seas', 'trend'}
-        Return both seasonally adjusted and trend dataframes or choose between
-        them.
-    method : {'x13', 'loess', 'ma'}
-        Decomposition method. ``X13`` refers to X13 ARIMA from the US Census,
-        ``loess`` refers to Loess decomposition and ``ma`` refers to moving
-        average decomposition, in all cases as implemented by
-        `statsmodels <https://www.statsmodels.org/dev/tsa.html>`_.
-    force_x13 : bool, default False
-        Whether to try different ``outlier`` and ``trading`` parameters
-        in statsmodels' `x13 arima analysis <https://www.statsmodels.org/dev/
-        generated/statsmodels.tsa.x13.x13_arima_analysis.html>`_ for each
-        series that fails. If ``False``, jump to the ``fallback`` method for
-        the whole dataframe at the first error.
-    fallback : {'loess', 'ma'}
-        Decomposition method to fall back to if ``method="x13"`` fails and
-        ``force_x13=False``.
-    trading : bool, default True
-        Whether to automatically detect trading days in X13 ARIMA.
-    outlier : bool, default True
-        Whether to automatically detect outliers in X13 ARIMA.
-    x13_binary: str, os.PathLike or None, default 'search'
-        Location of the X13 binary. If ``search`` is used, will attempt to find
-        the binary in the project structure. If ``None``, statsmodels will
-        handle it.
-    search_parents: int, default 1
-        If ``x13_binary=search``, this parameter controls how many parent
-        directories to go up before recursively searching for the binary.
-    ignore_warnings : bool, default True
-        Whether to suppress X13Warnings from statsmodels.
-    errors : {'raise', 'coerce', 'ignore'}
-        What to do when a column in the input dataframe is already seasonally
-        adjusted. ``raise`` will raise a ValueError, ``coerce`` will force the
-        entire column into ``np.nan`` and ``ignore`` will leave the input
-        column as is.
-    kwargs
-        Keyword arguments passed to statsmodels' ``x13_arima_analysis``,
-        ``STL`` and ``seasonal_decompose``.
-
-    Returns
-    -------
-    Decomposed dataframes : Dict[str, pd.DataFrame] or pd.DataFrame
-        Dictionary containing the trend component and the seasonally adjusted
-        series, or Pandas dataframe containing the chosen component.
-
-    Raises
-    ------
-    ValueError
-        If the ``method`` parameter does not have a valid argument.
-    ValueError
-        If the ``component`` parameter does not have a valid argument.
-    ValueError
-        If the ``fallback`` parameter does not have a valid argument.
-    ValueError
-        If the ``errors`` parameter does not have a valid argument.
-    FileNotFoundError
-        If the path provided for the X13 binary does not point to a file and
-        ``method='x13'``.
+    See Also
+    --------
+    :mod:`~econuy.core.Pipeline.decompose`.
 
     """
     if errors not in ["raise", "coerce", "ignore"]:
@@ -1025,44 +766,11 @@ def _rsearch(dir_file: Union[str, PathLike], search_term: str, n: int = 2):
 def chg_diff(df: pd.DataFrame, operation: str = "chg",
              period: str = "last") -> pd.DataFrame:
     """
-    Wrapper for the `pct_change <https://pandas.pydata.org/pandas-docs/stable/
-    reference/api/pandas.DataFrame.pct_change.html>`_ and `diff <https://pandas
-    .pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.diff.html>`_
-    Pandas methods.
+    Calculate pct change or difference.
 
-    Calculate percentage change or difference for dataframes. The ``period``
-    argument takes into account the frequency of the dataframe, i.e.,
-    ``inter`` (for interannual) will calculate pct change/differences with
-    ``periods=4`` for quarterly frequency, but ``periods=12`` for monthly
-    frequency.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Input dataframe.
-    operation : {'chg', 'diff'}
-        ``chg`` for percent change or ``diff`` for differences.
-    period : {'last', 'inter', 'annual'}
-        Period with which to calculate change or difference. ``last`` for
-        previous period (last month for monthly data), ``inter`` for same
-        period last year, ``annual`` for same period last year but taking
-        annual sums.
-
-    Returns
-    -------
-    Percent change or differences dataframe : pd.DataFrame
-
-    Raises
-    ------
-    ValueError
-        If the dataframe is not of frequency ``M`` (month), ``Q`` or
-        ``Q-DEC`` (quarter), or ``A`` or ``A-DEC`` (year).
-    ValueError
-        If the ``operation`` parameter does not have a valid argument.
-    ValueError
-        If the ``period`` parameter does not have a valid argument.
-    ValueError
-        If the input dataframe's columns do not have the appropiate levels.
+    See Also
+    --------
+    :mod:`~econuy.core.Pipeline.chg_diff`.
 
     """
     if operation not in ["chg", "diff"]:

@@ -32,3 +32,5 @@ docs/Makefile
 pytest.ini
 
 econuy/.env
+
+orig-data/
