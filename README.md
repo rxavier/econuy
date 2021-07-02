@@ -159,19 +159,15 @@ s.get_bulk("fiscal_accounts")
 
 ### unrar libraries
 
-The [patool](https://github.com/wummel/patool) library is used in order to access data provided in `.rar` format. This library requires that you have the unrar binaries in your system, which you can get from [here](https://www.rarlab.com/rar_add.htm).
+The [patool](https://github.com/wummel/patool) package is used in order to access data provided in `.rar` format. This package requires that you have the `unrar` binaries in your system, which in most cases you should already have. You can can get them from [here](https://www.rarlab.com/rar_add.htm) if you don't.
 
 ### X13 ARIMA binary
 
-If you want to use the `decompose()` functions with ``method="x13"``  you will need to supply the X13 binary (or place it somewhere reasonable and set `x13_binary="search"`). You can get it [from here](https://www.census.gov/srd/www/x13as/x13down_pc.html) for Windows or [from here](https://www.census.gov/srd/www/x13as/x13down_unix.html) for UNIX systems. For macOS you can compile it using the instructions found [here](https://github.com/christophsax/seasonal/wiki/Compiling-X-13ARIMA-SEATS-from-Source-for-OS-X) (choose the non-html version) or use my version (working under macOS Catalina) from [here](https://drive.google.com/open?id=1HxFoi57TWaBMV90NoOAbM8hWdZS9uoz_).
+If you want to use the `decompose()` methods with ``method="x13"``  you will need to supply the X13 binary (or place it somewhere reasonable and set `x13_binary="search"`). You can get it [from here](https://www.census.gov/srd/www/x13as/x13down_pc.html) for Windows or [from here](https://www.census.gov/srd/www/x13as/x13down_unix.html) for UNIX systems. For macOS you can compile it using the instructions found [here](https://github.com/christophsax/seasonal/wiki/Compiling-X-13ARIMA-SEATS-from-Source-for-OS-X) (choose the non-html version) or use my version (working under macOS Catalina) from [here](https://drive.google.com/open?id=1HxFoi57TWaBMV90NoOAbM8hWdZS9uoz_).
 
 ### Selenium webdrivers
 
-Some retrieval functions need Selenium to be configured in order to scrape data. These functions include a `driver` parameter in which a Selenium Webdriver can be passed, or they will attempt to configure a Chrome webdriver, even downloading the chromedriver binary if needed (which still needs a Chrome installation).
-
-### Ghostscript and Tkinter
-
-This project uses [Camelot](https://github.com/camelot-dev/camelot) to extract data from PDF tables, which relies on these two dependencies. Installation instructions for these can be found [here](https://camelot-py.readthedocs.io/en/master/user/install-deps.html).
+Some retrieval functions need Selenium to be configured in order to scrape data. These functions include a `driver` parameter in which a Selenium Webdriver can be passed, or they will attempt to configure a Chrome webdriver, even downloading the chromedriver binary if needed. This still requires an existing Chrome installation.
 
 ----
 
