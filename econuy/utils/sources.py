@@ -168,7 +168,7 @@ urls = {"call":
                        "provider": ["MEF"]}},
         "tax_revenue": {"dl": {
             "main": "https://www.dgi.gub.uy/wdgi/afiledownload?2,4,865,O,S,0,19353%3BS%3B100%3B108,",
-            "report": "https://www.dgi.gub.uy/wdgi/page?2,principal,dgi--datos-y-series-estadisticas--informes-mensuales-de-la-recaudacion-"},
+            "pdfs": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/retrieval/taxes_pdf.csv"},
             "source": {"direct": ["https://www.dgi.gub.uy/wdgi/afiledownload?2,4,865,O,S,0,19353%3BS%3B100%3B108,"],
                        "indirect": [
                        "https://www.dgi.gub.uy/wdgi/page?2,principal,dgi--datos-y-series-estadisticas--serie-de-datos--recaudacion-anual-y-mensual-por-impuesto,O,es,0,",

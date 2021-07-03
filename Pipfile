@@ -36,8 +36,6 @@ scipy = "==1.5.0"
 selenium = "==3.141.0"
 chromedriver-autoinstaller = "==0.2.2"
 python-dotenv = "==0.14.0"
-camelot-py = {extras = ["cv"], version = "==0.8.2"}
-pypdf2 = "==1.26.0"
 patool = "==1.12"
 xlrd = "==2.0.1"
 urllib3 = "==1.26.5"

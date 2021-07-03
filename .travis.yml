@@ -5,7 +5,6 @@ cache: pip
 before_install:
 - sudo apt-get install python-dev
 - sudo apt-get install -y libpq-dev
-- sudo apt-get install python3-tk ghostscript
 - sudo apt-get install unrar
 install:
 - pip install pipenv
