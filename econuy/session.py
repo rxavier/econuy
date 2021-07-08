@@ -445,7 +445,7 @@ class Session(object):
         self._datasets = output
         return
 
-    def decompose(self, component: Union[str, List] = "both",
+    def decompose(self, component: Union[str, List] = "seas",
                   method: Union[str, List] = "x13",
                   force_x13: Union[bool, List] = False,
                   fallback: Union[str, List] = "loess",
