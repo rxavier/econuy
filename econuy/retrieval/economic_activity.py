@@ -451,11 +451,83 @@ def gdp_con_idx_sa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
+def gdp_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
+    """Get GDP data in NSA constant prices, 1988-.
+
+    Four datasets with three different base years, 1983, 2005 and 2016, are
+    spliced in order to get to the result DataFrame. It uses the BCU's working
+    paper for retropolated GDP in current and constant prices for 2012-2015.
+
+    Returns
+    -------
+    GDP, constant prices, NSA : pd.DataFrame
+
+    """
+    if pipeline is None:
+        pipeline = Pipeline()
+    pipeline.get("natacc_ind_con_nsa")
+    data_16 = pipeline.dataset.copy()
+    data_16.columns = data_16.columns.get_level_values(0)
+    data_16 = data_16[["Producto bruto interno"]]
+
+    data_12 = pd.read_csv(urls["gdp_con_nsa_long"]["dl"]["2012"],
+                          index_col=0, parse_dates=True)
+    data_12 = data_12[["real"]]
+    data_12.columns = data_16.columns
+
+    aux = pd.concat([data_12, data_16], axis=0)
+
+    colnames = ["Producto bruto interno"]
+    data_05 = _natacc_retriever(url=urls["gdp_con_nsa_long"]["dl"]["2005"],
+                                nrows=2, skiprows=9, inf_adj="Const. 2005", unit="Millones",
+                                seas_adj="NSA", colnames=colnames)
+    data_05.columns = data_05.columns.get_level_values(0)
+    aux_index = list(dict.fromkeys(list(data_05.index)
+                                   + list(aux.index)))
+    reaux = aux.reindex(aux_index)
+    for quarter in reversed(aux_index):
+        if reaux.loc[quarter, :].isna().all():
+            next_quarter = quarter + MonthEnd(3)
+            reaux.loc[quarter, :] = (reaux.loc[next_quarter, :]
+                                     * data_05.loc[quarter, :]
+                                     / data_05.loc[next_quarter, :])
+
+    data_83 = pd.read_excel(urls["gdp_con_nsa_long"]["dl"]["1983"],
+                            skiprows=10, nrows=8, usecols="B:AAA",
+                            index_col=0).T
+    data_83.index = pd.date_range(start="1988-03-31", freq="Q-DEC",
+                                  periods=len(data_83))
+    data_83 = data_83[["PRODUCTO INTERNO BRUTO"]]
+    data_83.columns = ["Producto bruto interno"]
+
+    reaux_index = list(dict.fromkeys(list(data_83.index)
+                                     + list(reaux.index)))
+    output = reaux.reindex(reaux_index)
+    for quarter in reversed(reaux_index):
+        if output.loc[quarter, :].isna().all():
+            next_quarter = quarter + MonthEnd(3)
+            output.loc[quarter, :] = (output.loc[next_quarter, :]
+                                      * data_83.loc[quarter, :]
+                                      / data_83.loc[next_quarter, :])
+
+    metadata._set(output, area="Actividad económica", currency="UYU",
+                  inf_adj="Const. 2016", unit="Millones", seas_adj="NSA",
+                  ts_type="Flujo", cumperiods=1)
+
+    return output
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
 def gdp_cur_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     """Get GDP data in NSA current prices, 1997-.
 
-    Three datasets with different base years, 2005 and 2016, are spliced
-    in order to get to the result DataFrame.
+    Three datasets with two different base years, 2005 and 2016, are
+    spliced in order to get to the result DataFrame. It uses the BCU's working
+    paper for retropolated GDP in current and constant prices for 2012-2015.
 
     Returns
     -------
@@ -478,7 +550,7 @@ def gdp_cur_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
 
     colnames = ["Producto bruto interno"]
     data_05 = _natacc_retriever(url=urls["gdp_cur_nsa_long"]["dl"]["2005"],
-                                nrows=2, skiprows=9, inf_adj="Const. 2005", unit="Millones",
+                                nrows=2, skiprows=9, inf_adj="No", unit="Millones",
                                 seas_adj="NSA", colnames=colnames)
     data_05.columns = data_05.columns.get_level_values(0)
     aux_index = list(dict.fromkeys(list(data_05.index)
