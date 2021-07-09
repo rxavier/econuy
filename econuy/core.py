@@ -293,7 +293,7 @@ class Pipeline(object):
         self._dataset = output
         return
 
-    def decompose(self, component: str = "both",
+    def decompose(self, component: str = "seas",
                   method: str = "x13",
                   force_x13: bool = False,
                   fallback: str = "loess",

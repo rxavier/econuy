@@ -265,40 +265,78 @@ urls = {"call":
                 "http://www.ine.gub.uy/web/guest/gastos-e-ingresos-de-las-personas-y-los-hogares"],
             "provider": ["INE"]}},
         "natacc_ind_con_nsa": {
-            "dl": {"main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_101t.xls"},
-            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_101t.xls"],
+            "dl": {"main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/1.%20Actividades_K.xlsx"},
+            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/1.%20Actividades_K.xlsx"],
                        "indirect": [
-                       "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm"],
+                       "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"],
                        "provider": ["BCU"]}},
         "natacc_ind_cur_nsa": {
-            "dl": {"main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_100t.xls"},
-            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_100t.xls"],
+            "dl": {"main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/2.%20Actividades_C.xlsx"},
+            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/2.%20Actividades_C.xlsx"],
                        "indirect": [
-                       "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm"],
+                       "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"],
                        "provider": ["BCU"]}},
         "natacc_gas_con_nsa": {
-            "dl": {"main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_104t.xls"},
-            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_104t.xls"],
+            "dl": {"main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/1.%20Gasto_K.xlsx"},
+            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/1.%20Gasto_K.xlsx"],
                        "indirect": [
-                       "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm"],
+                       "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-Componente-del-gasto.aspx"],
                        "provider": ["BCU"]}},
-        "natacc_ind_con_idx_nsa": {
-            "dl": {"main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_132t.xls"},
-            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_132t.xls"],
+        "natacc_gas_cur_nsa": {
+            "dl": {"main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/2.%20Gasto_C.xlsx"},
+            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/2.%20Gasto_C.xlsx"],
                        "indirect": [
-                       "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm"],
+                       "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-Componente-del-gasto.aspx"],
                        "provider": ["BCU"]}},
-        "natacc_ind_con_idx_sa": {
-            "dl": {"main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_133t.xls"},
-            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_133t.xls"],
+        "gdp_con_idx_sa": {
+            "dl": {"main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/5.%20Desestacionalizado.xlsx"},
+            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/5.%20Desestacionalizado.xlsx"],
                        "indirect": [
-                       "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm"],
+                       "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"],
                        "provider": ["BCU"]}},
-        "natacc_gdp_cur_nsa": {
-            "dl": {"main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_130t.xls"},
-            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_130t.xls"],
+        "natacc_ind_con_nsa_long": {
+            "dl": {"2005": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_132t.xls",
+                   "1983": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/cuadro_42t83.xls"},
+            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_132t.xls",
+                                  "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/cuadro_42t83.xls"
+                                  "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/1.%20Actividades_K.xlsx"],
                        "indirect": [
-                       "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm"],
+                       "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm",
+                       "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/PRESENTACION83t.HTM",
+                       "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"],
+                       "provider": ["BCU"]}},
+        "natacc_gas_con_nsa_long": {
+            "dl": {"2005": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_104t.xls",
+                   "1983": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/cuadro_45t83.xls"},
+            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_104t.xls",
+                                  "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/cuadro_45t83.xls"
+                                  "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/1.%20Gasto_K.xlsx"],
+                       "indirect": [
+                       "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm",
+                       "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/PRESENTACION83t.HTM",
+                       "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-Componente-del-gasto.aspx"],
+                       "provider": ["BCU"]}},
+        "gdp_con_idx_sa_long": {
+            "dl": {"2005": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_133t.xls",
+                   "1983": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/cuadro_55t83.xls"},
+            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_133t.xls",
+                                  "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/cuadro_55t83.xls",
+                                  "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/5.%20Desestacionalizado.xlsx"],
+                       "indirect": [
+                        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm",
+                        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/PRESENTACION83t.HTM",
+                       "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"],
+                       "provider": ["BCU"]}},
+        "gdp_cur_nsa_long": {
+            "dl": {"2012": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/gdp_paper.csv",
+                   "2005": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_130t.xls"},
+            "source": {"direct": ["https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_133t.xls",
+                                  "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/cuadro_55t83.xls",
+                                  "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/5.%20Desestacionalizado.xlsx"],
+                       "indirect": [
+                        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm",
+                        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/PRESENTACION83t.HTM",
+                       "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"],
                        "provider": ["BCU"]}},
         "reserves": {"dl": {
             "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/MonedayCredito/Activos-de-Reserva/reservas.xls"},
