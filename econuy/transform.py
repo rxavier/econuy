@@ -15,7 +15,6 @@ from statsmodels.tsa.seasonal import STL, seasonal_decompose
 from econuy.utils import metadata
 
 
-
 def convert_usd(df: pd.DataFrame,
                 pipeline = None,
                 errors: str = "raise") -> pd.DataFrame:

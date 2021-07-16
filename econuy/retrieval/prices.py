@@ -158,8 +158,9 @@ def nxr_daily(pipeline: Optional[Pipeline] = None,
     url = f"{base_url}{dates}%22,%22Grupo%22:%222%22}}" + "}"
     try:
         data.append(pd.read_excel(url))
-    except (TypeError, BadZipFile):
-        pass
+    except ValueError as e:
+        if "File is not a recognized excel file" in str(e):
+            pass
     try:
         output = pd.concat(data, axis=0)
         output = output.pivot(index="Fecha", columns="Moneda",
