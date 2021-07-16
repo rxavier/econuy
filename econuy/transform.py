@@ -1,4 +1,3 @@
-import platform
 import warnings
 from datetime import datetime
 from os import PathLike, getcwd, path
@@ -12,7 +11,7 @@ from statsmodels.tsa import x13
 from statsmodels.tsa.x13 import x13_arima_analysis as x13a
 from statsmodels.tsa.seasonal import STL, seasonal_decompose
 
-from econuy.utils import metadata
+from econuy.utils import metadata, x13util
 
 
 def convert_usd(df: pd.DataFrame,
@@ -531,7 +530,7 @@ def decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
               force_x13: bool = False, fallback: str = "loess",
               outlier: bool = True, trading: bool = True,
               x13_binary: Union[str, PathLike, None] = "search",
-              search_parents: int = 1, ignore_warnings: bool = True,
+              search_parents: int = 0, ignore_warnings: bool = True,
               errors: str = "raise",
               **kwargs) -> Union[Dict[str, pd.DataFrame],
                                  pd.DataFrame]:
@@ -561,11 +560,8 @@ def decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
     binary_path = None
     if method == "x13":
         if x13_binary == "search":
-            search_term = "x13as"
-            if platform.system() == "Windows":
-                search_term += ".exe"
-            binary_path = _rsearch(dir_file=getcwd(), n=search_parents,
-                                   search_term=search_term)
+            binary_path = x13util._search_binary(start_path=getcwd(),
+                                                 n=search_parents)
         elif isinstance(x13_binary, str):
             binary_path = x13_binary
         elif isinstance(x13_binary, PathLike):
@@ -575,10 +571,7 @@ def decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
         if isinstance(binary_path, str) and path.isfile(
                 binary_path) is False:
             raise FileNotFoundError(
-                "X13 binary missing. Please refer to the README "
-                "for instructions on where to get binaries for "
-                "Windows and Unix, and how to compile it for "
-                "macOS.")
+                "X13 binary missing. Try using 'x13_binary=search'.")
 
     checks = [x not in ["Tendencia", "SA"]
               for x in df.columns.get_level_values("Seas. Adj.")]
@@ -745,21 +738,6 @@ def _decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
         output = trends
 
     return output
-
-
-def _rsearch(dir_file: Union[str, PathLike], search_term: str, n: int = 2):
-    """Recursively search for a file starting from the n-parent folder of
-    a supplied path."""
-    i = 0
-    while i < n:
-        i += 1
-        dir_file = path.dirname(dir_file)
-    try:
-        final_path = ([x for x in Path(dir_file).rglob(search_term)][0]
-                      .absolute().as_posix())
-    except IndexError:
-        final_path = True
-    return final_path
 
 
 def chg_diff(df: pd.DataFrame, operation: str = "chg",

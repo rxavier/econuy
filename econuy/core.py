@@ -300,7 +300,7 @@ class Pipeline(object):
                   trading: bool = True,
                   outlier: bool = True,
                   x13_binary: Union[str, PathLike] = "search",
-                  search_parents: int = 1,
+                  search_parents: int = 0,
                   ignore_warnings: bool = True,
                   **kwargs):
         """Apply seasonal decomposition.
@@ -338,7 +338,7 @@ class Pipeline(object):
             Location of the X13 binary. If ``search`` is used, will attempt to find
             the binary in the project structure. If ``None``, statsmodels will
             handle it.
-        search_parents: int, default 1
+        search_parents: int, default 0
             If ``x13_binary=search``, this parameter controls how many parent
             directories to go up before recursively searching for the binary.
         ignore_warnings : bool, default True

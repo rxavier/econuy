@@ -452,7 +452,7 @@ class Session(object):
                   trading: Union[bool, List] = True,
                   outlier: Union[bool, List] = True,
                   x13_binary: Union[str, PathLike, List] = "search",
-                  search_parents: Union[int, List] = 1,
+                  search_parents: Union[int, List] = 0,
                   ignore_warnings: Union[bool, List] = True,
                   select: Union[str, int, Sequence[str],
                                 Sequence[int]] = "all",
