@@ -47,16 +47,18 @@ class Pipeline(object):
         ``ignore`` will leave the input data as is.
 
     """
-    def __init__(self,
-                 location: Union[str, PathLike, Engine,
-                                 Connection, None] = None,
-                 download: bool = True,
-                 always_save: bool = True,
-                 read_fmt: str = "csv",
-                 read_header: Optional[str] = "included",
-                 save_fmt: str = "csv",
-                 save_header: Optional[str] = "included",
-                 errors: str = "raise"):
+
+    def __init__(
+        self,
+        location: Union[str, PathLike, Engine, Connection, None] = None,
+        download: bool = True,
+        always_save: bool = True,
+        read_fmt: str = "csv",
+        read_header: Optional[str] = "included",
+        save_fmt: str = "csv",
+        save_header: Optional[str] = "included",
+        errors: str = "raise",
+    ):
         self.location = location
         self.download = download
         self.always_save = always_save
@@ -107,8 +109,7 @@ class Pipeline(object):
         return all
 
     def __repr__(self):
-        return (f"Pipeline(location={self.location})\n"
-                f"Current dataset: {self.name}")
+        return f"Pipeline(location={self.location})\n" f"Current dataset: {self.name}"
 
     def copy(self, deep: bool = False) -> Pipeline:
         """Copy or deepcopy a Pipeline object.
@@ -150,9 +151,13 @@ class Pipeline(object):
         if self.location is None:
             prev_data = pd.DataFrame()
         else:
-            prev_data = ops._io(operation="read", data_loc=self.location,
-                                name=name, file_fmt=self.read_fmt,
-                                multiindex=self.read_header)
+            prev_data = ops._io(
+                operation="read",
+                data_loc=self.location,
+                name=name,
+                file_fmt=self.read_fmt,
+                multiindex=self.read_header,
+            )
         if not self.download and not prev_data.empty:
             self._dataset = prev_data
             print(f"{name}: previous data found.")
@@ -160,12 +165,22 @@ class Pipeline(object):
             if not self.download:
                 print(f"{name}: previous data not found, downloading.")
             selection = self.available_datasets()[name]
-            if name in ["trade_balance", "terms_of_trade", "rxr_custom",
-                           "commodity_index", "cpi_measures", "_lin_gdp",
-                           "net_public_debt", "balance_summary",
-                           "core_industrial", "regional_embi_yields",
-                           "regional_rxr", "regional_stocks",
-                           "real_wages", "labor_rates_people"]:
+            if name in [
+                "trade_balance",
+                "terms_of_trade",
+                "rxr_custom",
+                "commodity_index",
+                "cpi_measures",
+                "_lin_gdp",
+                "net_public_debt",
+                "balance_summary",
+                "core_industrial",
+                "regional_embi_yields",
+                "regional_rxr",
+                "regional_stocks",
+                "real_wages",
+                "labor_rates_people",
+            ]:
                 # Some datasets require retrieving other datasets. Passing the
                 # class instance allows running these retrieval operations
                 # with the same parameters (for example, save file formats).
@@ -174,23 +189,23 @@ class Pipeline(object):
                 # Datasets that require many requests (mostly daily data) benefit
                 # from having previous data, so they can start requests
                 # from the last available date.
-                new_data = selection["function"](pipeline=self,
-                                                 previous_data=prev_data)
+                new_data = selection["function"](pipeline=self, previous_data=prev_data)
             else:
                 new_data = selection["function"]()
-            data = ops._revise(new_data=new_data, prev_data=prev_data,
-                               revise_rows="nodup")
+            data = ops._revise(new_data=new_data, prev_data=prev_data, revise_rows="nodup")
             self._dataset = data
         self._name = name
-        if (self.always_save
-            and (self.download or prev_data.empty)
-            and self.location is not None):
+        if self.always_save and (self.download or prev_data.empty) and self.location is not None:
             self.save()
         return
 
-    def resample(self, rule: Union[pd.DateOffset, pd.Timedelta, str],
-                 operation: str = "sum",  interpolation: str = "linear",
-                 warn: bool = False):
+    def resample(
+        self,
+        rule: Union[pd.DateOffset, pd.Timedelta, str],
+        operation: str = "sum",
+        interpolation: str = "linear",
+        warn: bool = False,
+    ):
         """
         Wrapper for the `resample method <https://pandas.pydata.org/pandas-docs
         stable/reference/api/pandas.DataFrame.resample.html>`_ in Pandas that
@@ -235,16 +250,16 @@ class Pipeline(object):
 
         """
         if self.dataset.empty:
-            raise ValueError("Can't use transformation methods without "
-                             "retrieving a dataset first.")
-        output = transform.resample(self.dataset, rule=rule,
-                                    operation=operation,
-                                    interpolation=interpolation, warn=warn)
+            raise ValueError(
+                "Can't use transformation methods without " "retrieving a dataset first."
+            )
+        output = transform.resample(
+            self.dataset, rule=rule, operation=operation, interpolation=interpolation, warn=warn
+        )
         self._dataset = output
         return
 
-    def chg_diff(self, operation: str = "chg",
-                 period: str = "last"):
+    def chg_diff(self, operation: str = "chg", period: str = "last"):
         """Wrapper for the `pct_change <https://pandas.pydata.org/pandas-docs/stable/
         reference/api/pandas.DataFrame.pct_change.html>`_ and `diff <https://pandas
         .pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.diff.html>`_
@@ -286,23 +301,26 @@ class Pipeline(object):
 
         """
         if self.dataset.empty:
-            raise ValueError("Can't use transformation methods without "
-                             "retrieving a dataset first.")
-        output = transform.chg_diff(
-            self.dataset, operation=operation, period=period)
+            raise ValueError(
+                "Can't use transformation methods without " "retrieving a dataset first."
+            )
+        output = transform.chg_diff(self.dataset, operation=operation, period=period)
         self._dataset = output
         return
 
-    def decompose(self, component: str = "seas",
-                  method: str = "x13",
-                  force_x13: bool = False,
-                  fallback: str = "loess",
-                  trading: bool = True,
-                  outlier: bool = True,
-                  x13_binary: Union[str, PathLike] = "search",
-                  search_parents: int = 1,
-                  ignore_warnings: bool = True,
-                  **kwargs):
+    def decompose(
+        self,
+        component: str = "seas",
+        method: str = "x13",
+        force_x13: bool = False,
+        fallback: str = "loess",
+        trading: bool = True,
+        outlier: bool = True,
+        x13_binary: Union[str, PathLike] = "search",
+        search_parents: int = 0,
+        ignore_warnings: bool = True,
+        **kwargs,
+    ):
         """Apply seasonal decomposition.
 
         Decompose the series in a Pandas dataframe using either X13 ARIMA, Loess
@@ -338,7 +356,7 @@ class Pipeline(object):
             Location of the X13 binary. If ``search`` is used, will attempt to find
             the binary in the project structure. If ``None``, statsmodels will
             handle it.
-        search_parents: int, default 1
+        search_parents: int, default 0
             If ``x13_binary=search``, this parameter controls how many parent
             directories to go up before recursively searching for the binary.
         ignore_warnings : bool, default True
@@ -367,30 +385,38 @@ class Pipeline(object):
 
         """
         if self.dataset.empty:
-            raise ValueError("Can't use transformation methods without "
-                             "retrieving a dataset first.")
+            raise ValueError(
+                "Can't use transformation methods without " "retrieving a dataset first."
+            )
         valid_component = ["seas", "trend"]
         if component not in valid_component:
-            raise ValueError(f"Only {', '.join(valid_component)} are allowed."
-                             f"See underlying 'decompose'.")
+            raise ValueError(
+                f"Only {', '.join(valid_component)} are allowed." f"See underlying 'decompose'."
+            )
 
-        output = transform.decompose(self.dataset, component=component,
-                                     method=method,
-                                     force_x13=force_x13,
-                                     fallback=fallback,
-                                     trading=trading,
-                                     outlier=outlier,
-                                     x13_binary=x13_binary,
-                                     search_parents=search_parents,
-                                     ignore_warnings=ignore_warnings,
-                                     errors=self.errors,
-                                     **kwargs)
+        output = transform.decompose(
+            self.dataset,
+            component=component,
+            method=method,
+            force_x13=force_x13,
+            fallback=fallback,
+            trading=trading,
+            outlier=outlier,
+            x13_binary=x13_binary,
+            search_parents=search_parents,
+            ignore_warnings=ignore_warnings,
+            errors=self.errors,
+            **kwargs,
+        )
         self._dataset = output
         return
 
-    def convert(self, flavor: str,
-                start_date: Union[str, datetime, None] = None,
-                end_date: Union[str, datetime, None] = None):
+    def convert(
+        self,
+        flavor: str,
+        start_date: Union[str, datetime, None] = None,
+        end_date: Union[str, datetime, None] = None,
+    ):
         """Convert dataframe from UYU to USD, from UYU to real UYU or
         from UYU/USD to % GDP.
 
@@ -451,31 +477,34 @@ class Pipeline(object):
 
         """
         if self.dataset.empty:
-            raise ValueError("Can't use transformation methods without "
-                             "retrieving a dataset first.")
+            raise ValueError(
+                "Can't use transformation methods without " "retrieving a dataset first."
+            )
         if flavor not in ["usd", "real", "gdp", "pcgdp"]:
-            raise ValueError("'flavor' can be one of 'usd', 'real', "
-                             "or 'gdp'.")
+            raise ValueError("'flavor' can be one of 'usd', 'real', " "or 'gdp'.")
 
         if flavor == "usd":
-            output = transform.convert_usd(self.dataset,
-                                           errors=self.errors,
-                                           pipeline=self)
+            output = transform.convert_usd(self.dataset, errors=self.errors, pipeline=self)
         elif flavor == "real":
-            output = transform.convert_real(self.dataset, start_date=start_date,
-                                            end_date=end_date,
-                                            errors=self.errors,
-                                            pipeline=self)
+            output = transform.convert_real(
+                self.dataset,
+                start_date=start_date,
+                end_date=end_date,
+                errors=self.errors,
+                pipeline=self,
+            )
         else:
-            output = transform.convert_gdp(self.dataset, errors=self.errors,
-                                           pipeline=self)
+            output = transform.convert_gdp(self.dataset, errors=self.errors, pipeline=self)
 
         self._dataset = output
         return
 
-    def rebase(self, start_date: Union[str, datetime],
-               end_date: Union[str, datetime, None] = None,
-               base: Union[float, int] = 100.0):
+    def rebase(
+        self,
+        start_date: Union[str, datetime],
+        end_date: Union[str, datetime, None] = None,
+        base: Union[float, int] = 100.0,
+    ):
         """Rebase all dataframe columns to a date or range of dates.
 
         Parameters
@@ -495,15 +524,16 @@ class Pipeline(object):
 
         """
         if self.dataset.empty:
-            raise ValueError("Can't use transformation methods without "
-                             "retrieving a dataset first.")
-        output = transform.rebase(self.dataset, start_date=start_date,
-                                  end_date=end_date, base=base)
+            raise ValueError(
+                "Can't use transformation methods without " "retrieving a dataset first."
+            )
+        output = transform.rebase(
+            self.dataset, start_date=start_date, end_date=end_date, base=base
+        )
         self._dataset = output
         return
 
-    def rolling(self, window: Optional[int] = None,
-                operation: str = "sum"):
+    def rolling(self, window: Optional[int] = None, operation: str = "sum"):
         """
         Wrapper for the `rolling method <https://pandas.pydata.org/pandas-docs/
         stable/reference/api/pandas.DataFrame.rolling.html>`_ in Pandas that
@@ -539,10 +569,10 @@ class Pipeline(object):
 
         """
         if self.dataset.empty:
-            raise ValueError("Can't use transformation methods without "
-                             "retrieving a dataset first.")
-        output = transform.rolling(self.dataset, window=window,
-                                   operation=operation)
+            raise ValueError(
+                "Can't use transformation methods without " "retrieving a dataset first."
+            )
+        output = transform.rolling(self.dataset, window=window, operation=operation)
         self._dataset = output
         return
 
@@ -556,12 +586,16 @@ class Pipeline(object):
 
         """
         if self.dataset.empty:
-            raise ValueError("Can't save without "
-                             "retrieving a dataset first.")
+            raise ValueError("Can't save without " "retrieving a dataset first.")
         if self.location is None:
             raise ValueError("No save location defined.")
         else:
-            ops._io(operation="save", data_loc=self.location,
-                    name=self.name, file_fmt=self.save_fmt,
-                    multiindex=self.save_header, data=self.dataset)
+            ops._io(
+                operation="save",
+                data_loc=self.location,
+                name=self.name,
+                file_fmt=self.save_fmt,
+                multiindex=self.save_header,
+                data=self.dataset,
+            )
         return

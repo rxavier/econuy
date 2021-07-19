@@ -20,8 +20,8 @@ def _build():
         load_dotenv(Path(get_project_root(), ".env"))
         chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_PATH")
         return webdriver.Chrome(
-            executable_path=os.environ.get("CHROMEDRIVER_PATH"),
-            options=chrome_options)
+            executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=chrome_options
+        )
     except (WebDriverException, TypeError):
         chromedriver_autoinstaller.install()
         return webdriver.Chrome(options=chrome_options)

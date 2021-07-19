@@ -68,19 +68,20 @@ class Session(object):
 
     """
 
-    def __init__(self,
-                 location: Union[str, PathLike,
-                                 Connection, Engine, None] = None,
-                 download: bool = True,
-                 always_save: bool = True,
-                 read_fmt: str = "csv",
-                 read_header: Optional[str] = "included",
-                 save_fmt: str = "csv",
-                 save_header: Optional[str] = "included",
-                 errors: str = "raise",
-                 log: Union[int, str] = 1,
-                 logger: Optional[logging.Logger] = None,
-                 max_retries: int = 3):
+    def __init__(
+        self,
+        location: Union[str, PathLike, Connection, Engine, None] = None,
+        download: bool = True,
+        always_save: bool = True,
+        read_fmt: str = "csv",
+        read_header: Optional[str] = "included",
+        save_fmt: str = "csv",
+        save_header: Optional[str] = "included",
+        errors: str = "raise",
+        log: Union[int, str] = 1,
+        logger: Optional[logging.Logger] = None,
+        max_retries: int = 3,
+    ):
         self.location = location
         self.download = download
         self.always_save = always_save
@@ -100,10 +101,12 @@ class Session(object):
             self.log = "custom"
         else:
             if isinstance(log, int) and (log < 0 or log > 2):
-                raise ValueError("'log' takes either 0 (don't log info),"
-                                 " 1 (log to console), 2 (log to console and"
-                                 " default file), or str (log to console and "
-                                 "file with filename=str).")
+                raise ValueError(
+                    "'log' takes either 0 (don't log info),"
+                    " 1 (log to console), 2 (log to console and"
+                    " default file), or str (log to console and "
+                    "file with filename=str)."
+                )
             elif log == 2:
                 logfile = Path(self.location) / "info.log"
                 log_obj = logutil.setup(file=logfile)
@@ -119,10 +122,16 @@ class Session(object):
     @classmethod
     def from_pipeline(cls, pipeline: Pipeline) -> Session:
         # Alternative constructor
-        s = Session(location=pipeline.location, download=pipeline.download,
-                    always_save=pipeline.location, read_fmt=pipeline.read_fmt,
-                    read_header=pipeline.read_header, save_fmt=pipeline.read_fmt,
-                    save_header=pipeline.save_header, errors=pipeline.errors)
+        s = Session(
+            location=pipeline.location,
+            download=pipeline.download,
+            always_save=pipeline.location,
+            read_fmt=pipeline.read_fmt,
+            read_header=pipeline.read_header,
+            save_fmt=pipeline.read_fmt,
+            save_header=pipeline.save_header,
+            errors=pipeline.errors,
+        )
         if not pipeline.dataset.empty:
             s._datasets = {pipeline.name: pipeline.dataset}
         return s
@@ -131,10 +140,16 @@ class Session(object):
     def pipeline(self) -> Pipeline:
         # Define a property so that changes to Session attributes are passed
         # down to the Pipeline and taken into account in get().
-        p = Pipeline(location=self.location, download=self.download,
-                     always_save=self.always_save, read_fmt=self.read_fmt,
-                     read_header=self.read_header, save_fmt=self.save_fmt,
-                     save_header=self.save_header, errors=self.errors)
+        p = Pipeline(
+            location=self.location,
+            download=self.download,
+            always_save=self.always_save,
+            read_fmt=self.read_fmt,
+            read_header=self.read_header,
+            save_fmt=self.save_fmt,
+            save_header=self.save_header,
+            errors=self.errors,
+        )
         return p
 
     @property
@@ -161,8 +176,10 @@ class Session(object):
         return nometa
 
     def __repr__(self):
-        return (f"Session(location={self.location})\n"
-                f"Current dataset(s): {list(self.datasets.keys())}")
+        return (
+            f"Session(location={self.location})\n"
+            f"Current dataset(s): {list(self.datasets.keys())}"
+        )
 
     def copy(self, deep: bool = False) -> Session:
         """Copy or deepcopy a Session object.
@@ -210,8 +227,7 @@ class Session(object):
                 output["custom"].pop(k, None)
         return output
 
-    def _select_datasets(self, select: Union[str, int, Sequence[str],
-                                             Sequence[int]]) -> List[str]:
+    def _select_datasets(self, select: Union[str, int, Sequence[str], Sequence[int]]) -> List[str]:
         """Generate list of dataset names based on selection.
 
         Parameters
@@ -232,8 +248,7 @@ class Session(object):
         """
         keys = list(self.datasets.keys())
         if isinstance(select, Sequence) and not isinstance(select, str):
-            if not all(type(select[i]) == type(select[0])
-                       for i in range(len(select))):
+            if not all(isinstance(select[i], type(select[0])) for i in range(len(select))):
                 raise ValueError("`select` must be all `int` or all `str`")
             if isinstance(select[0], int):
                 proc_select = [keys[i] for i in select]
@@ -247,11 +262,12 @@ class Session(object):
             proc_select = [select]
         return proc_select
 
-    def _apply_transformation(self,
-                              transformation: str,
-                              select: Union[str, int, Sequence[str],
-                                            Sequence[int]] = "all",
-                              **kwargs) -> Dict[str, pd.DataFrame]:
+    def _apply_transformation(
+        self,
+        transformation: str,
+        select: Union[str, int, Sequence[str], Sequence[int]] = "all",
+        **kwargs,
+    ) -> Dict[str, pd.DataFrame]:
         """Helper method to apply transformations on :attr:`datasets`.
 
         Parameters
@@ -269,12 +285,14 @@ class Session(object):
 
         """
         p = self.pipeline.copy()
-        methods = {"resample": p.resample,
-                   "chg_diff": p.chg_diff,
-                   "convert": p.convert,
-                   "decompose": p.decompose,
-                   "rolling": p.rolling,
-                   "rebase": p.rebase}
+        methods = {
+            "resample": p.resample,
+            "chg_diff": p.chg_diff,
+            "convert": p.convert,
+            "decompose": p.decompose,
+            "rolling": p.rolling,
+            "rebase": p.rebase,
+        }
 
         proc_select = self._select_datasets(select=select)
 
@@ -317,8 +335,7 @@ class Session(object):
         """
         if isinstance(names, str):
             names = [names]
-        if any(x not in self.pipeline.available_datasets().keys()
-               for x in names):
+        if any(x not in self.pipeline.available_datasets().keys() for x in names):
             raise ValueError("Invalid dataset selected.")
 
         # Deepcopy the Pipeline so that its dataset attribute is not
@@ -339,14 +356,14 @@ class Session(object):
         if len(failed) > 0:
             if self._retries < self.max_retries:
                 self._retries += 1
-                self.logger.info(f"Failed to retrieve {', '.join(failed)}. "
-                                 f"Retrying (run {self._retries}).")
+                self.logger.info(
+                    f"Failed to retrieve {', '.join(failed)}. " f"Retrying (run {self._retries})."
+                )
                 self.get(names=failed)
             else:
                 self.logger.info(f"Could not retrieve {', '.join(failed)}")
                 self._retries = 1
-                raise RetryLimitError(f"Maximum retries ({self.max_retries})"
-                                      f" reached.")
+                raise RetryLimitError(f"Maximum retries ({self.max_retries})" f" reached.")
             self._retries = 1
             return
         self._retries = 1
@@ -372,13 +389,22 @@ class Session(object):
             If an invalid string is given to the ``names`` argument.
 
         """
-        valid_datasets = ["all", "original", "custom", "economic_activity",
-                          "prices", "fiscal_accounts", "labor", "external_sector",
-                          "financial_sector", "income", "international",
-                          "regional"]
+        valid_datasets = [
+            "all",
+            "original",
+            "custom",
+            "economic_activity",
+            "prices",
+            "fiscal_accounts",
+            "labor",
+            "external_sector",
+            "financial_sector",
+            "income",
+            "international",
+            "regional",
+        ]
         if names not in valid_datasets:
-            raise ValueError(f"'names' can only be one of "
-                             f"{', '.join(valid_datasets)}.")
+            raise ValueError(f"'names' can only be one of " f"{', '.join(valid_datasets)}.")
         available_datasets = self.available_datasets(functions=True)
         original_datasets = list(available_datasets["original"].keys())
         custom_datasets = list(available_datasets["custom"].keys())
@@ -388,7 +414,7 @@ class Session(object):
         elif names == "custom":
             self.get(names=custom_datasets)
         elif names == "all":
-            self.get(names=original_datasets+custom_datasets)
+            self.get(names=original_datasets + custom_datasets)
         else:
             original_area_datasets = []
             for k, v in available_datasets["original"].items():
@@ -398,16 +424,18 @@ class Session(object):
             for k, v in available_datasets["custom"].items():
                 if names in getmodule(v["function"]).__name__:
                     custom_area_datasets.append(k)
-            self.get(names=original_area_datasets+custom_area_datasets)
+            self.get(names=original_area_datasets + custom_area_datasets)
 
         return
 
-    def resample(self, rule: Union[pd.DateOffset, pd.Timedelta, str, List],
-                 operation: Union[str, List] = "sum",
-                 interpolation: Union[str, List] = "linear",
-                 warn: Union[bool, List] = False,
-                 select: Union[str, int, Sequence[str],
-                               Sequence[int]] = "all"):
+    def resample(
+        self,
+        rule: Union[pd.DateOffset, pd.Timedelta, str, List],
+        operation: Union[str, List] = "sum",
+        interpolation: Union[str, List] = "linear",
+        warn: Union[bool, List] = False,
+        select: Union[str, int, Sequence[str], Sequence[int]] = "all",
+    ):
         """
         Resample to target frequencies.
 
@@ -416,20 +444,24 @@ class Session(object):
         :mod:`~econuy.core.Pipeline.resample`
 
         """
-        output = self._apply_transformation(select=select,
-                                            transformation="resample",
-                                            rule=rule,
-                                            operation=operation,
-                                            interpolation=interpolation,
-                                            warn=warn)
+        output = self._apply_transformation(
+            select=select,
+            transformation="resample",
+            rule=rule,
+            operation=operation,
+            interpolation=interpolation,
+            warn=warn,
+        )
 
         self._datasets = output
         return
 
-    def chg_diff(self, operation: Union[str, List] = "chg",
-                 period: Union[str, List] = "last",
-                 select: Union[str, int, Sequence[str],
-                               Sequence[int]] = "all"):
+    def chg_diff(
+        self,
+        operation: Union[str, List] = "chg",
+        period: Union[str, List] = "last",
+        select: Union[str, int, Sequence[str], Sequence[int]] = "all",
+    ):
         """
         Calculate pct change or difference.
 
@@ -438,25 +470,27 @@ class Session(object):
         :mod:`~econuy.core.Pipeline.chg_diff`.
 
         """
-        output = self._apply_transformation(select=select,
-                                            transformation="chg_diff",
-                                            operation=operation, period=period)
+        output = self._apply_transformation(
+            select=select, transformation="chg_diff", operation=operation, period=period
+        )
 
         self._datasets = output
         return
 
-    def decompose(self, component: Union[str, List] = "seas",
-                  method: Union[str, List] = "x13",
-                  force_x13: Union[bool, List] = False,
-                  fallback: Union[str, List] = "loess",
-                  trading: Union[bool, List] = True,
-                  outlier: Union[bool, List] = True,
-                  x13_binary: Union[str, PathLike, List] = "search",
-                  search_parents: Union[int, List] = 1,
-                  ignore_warnings: Union[bool, List] = True,
-                  select: Union[str, int, Sequence[str],
-                                Sequence[int]] = "all",
-                  **kwargs):
+    def decompose(
+        self,
+        component: Union[str, List] = "seas",
+        method: Union[str, List] = "x13",
+        force_x13: Union[bool, List] = False,
+        fallback: Union[str, List] = "loess",
+        trading: Union[bool, List] = True,
+        outlier: Union[bool, List] = True,
+        x13_binary: Union[str, PathLike, List] = "search",
+        search_parents: Union[int, List] = 0,
+        ignore_warnings: Union[bool, List] = True,
+        select: Union[str, int, Sequence[str], Sequence[int]] = "all",
+        **kwargs,
+    ):
         """
         Apply seasonal decomposition.
 
@@ -467,30 +501,35 @@ class Session(object):
         """
         valid_component = ["seas", "trend"]
         if component not in valid_component:
-            raise ValueError(f"Only {', '.join(valid_component)} are allowed."
-                             f"See underlying 'decompose'.")
+            raise ValueError(
+                f"Only {', '.join(valid_component)} are allowed." f"See underlying 'decompose'."
+            )
 
-        output = self._apply_transformation(select=select,
-                                            transformation="decompose",
-                                            component=component,
-                                            method=method,
-                                            force_x13=force_x13,
-                                            fallback=fallback,
-                                            trading=trading,
-                                            outlier=outlier,
-                                            x13_binary=x13_binary,
-                                            search_parents=search_parents,
-                                            ignore_warnings=ignore_warnings,
-                                            **kwargs)
+        output = self._apply_transformation(
+            select=select,
+            transformation="decompose",
+            component=component,
+            method=method,
+            force_x13=force_x13,
+            fallback=fallback,
+            trading=trading,
+            outlier=outlier,
+            x13_binary=x13_binary,
+            search_parents=search_parents,
+            ignore_warnings=ignore_warnings,
+            **kwargs,
+        )
 
         self._datasets = output
         return
 
-    def convert(self, flavor: Union[str, List],
-                start_date: Union[str, datetime, None, List] = None,
-                end_date: Union[str, datetime, None, List] = None,
-                select: Union[str, int, Sequence[str],
-                              Sequence[int]] = "all"):
+    def convert(
+        self,
+        flavor: Union[str, List],
+        start_date: Union[str, datetime, None, List] = None,
+        end_date: Union[str, datetime, None, List] = None,
+        select: Union[str, int, Sequence[str], Sequence[int]] = "all",
+    ):
         """Convert to other units.
 
         See Also
@@ -499,28 +538,31 @@ class Session(object):
 
         """
         if flavor not in ["usd", "real", "gdp", "pcgdp"]:
-            raise ValueError("'flavor' can be one of 'usd', 'real', "
-                             "or 'gdp'.")
+            raise ValueError("'flavor' can be one of 'usd', 'real', " "or 'gdp'.")
 
         if flavor == "real":
-            output = self._apply_transformation(select=select,
-                                                transformation="convert",
-                                                flavor=flavor,
-                                                start_date=start_date,
-                                                end_date=end_date)
+            output = self._apply_transformation(
+                select=select,
+                transformation="convert",
+                flavor=flavor,
+                start_date=start_date,
+                end_date=end_date,
+            )
         else:
-            output = self._apply_transformation(select=select,
-                                                transformation="convert",
-                                                flavor=flavor)
+            output = self._apply_transformation(
+                select=select, transformation="convert", flavor=flavor
+            )
 
         self._datasets = output
         return
 
-    def rebase(self, start_date: Union[str, datetime, List],
-               end_date: Union[str, datetime, None, List] = None,
-               base: Union[float, List] = 100.0,
-               select: Union[str, int, Sequence[str],
-                             Sequence[int]] = "all"):
+    def rebase(
+        self,
+        start_date: Union[str, datetime, List],
+        end_date: Union[str, datetime, None, List] = None,
+        base: Union[float, List] = 100.0,
+        select: Union[str, int, Sequence[str], Sequence[int]] = "all",
+    ):
         """
         Scale to a period or range of periods.
 
@@ -529,17 +571,22 @@ class Session(object):
         :mod:`~econuy.core.Pipeline.rebase`.
 
         """
-        output = self._apply_transformation(select=select,
-                                            transformation="rebase",
-                                            start_date=start_date,
-                                            end_date=end_date, base=base)
+        output = self._apply_transformation(
+            select=select,
+            transformation="rebase",
+            start_date=start_date,
+            end_date=end_date,
+            base=base,
+        )
         self._datasets = output
         return
 
-    def rolling(self, window: Union[int, List, None] = None,
-                operation: Union[str, List] = "sum",
-                select: Union[str, int, Sequence[str],
-                              Sequence[int]] = "all"):
+    def rolling(
+        self,
+        window: Union[int, List, None] = None,
+        operation: Union[str, List] = "sum",
+        select: Union[str, int, Sequence[str], Sequence[int]] = "all",
+    ):
         """
         Calculate rolling averages or sums.
 
@@ -548,17 +595,18 @@ class Session(object):
         :mod:`~econuy.core.Pipeline.rolling`.
 
         """
-        output = self._apply_transformation(select=select,
-                                            transformation="rolling",
-                                            window=window,
-                                            operation=operation)
+        output = self._apply_transformation(
+            select=select, transformation="rolling", window=window, operation=operation
+        )
         self._datasets = output
         return
 
-    def concat(self, select: Union[str, int, Sequence[str],
-                                   Sequence[int]] = "all",
-               concat_name: Optional[str] = None,
-               force_suffix: bool = False):
+    def concat(
+        self,
+        select: Union[str, int, Sequence[str], Sequence[int]] = "all",
+        concat_name: Optional[str] = None,
+        force_suffix: bool = False,
+    ):
         """
         Concatenate datasets in :attr:`datasets` and add as a new dataset.
 
@@ -578,29 +626,26 @@ class Session(object):
         """
         proc_select = self._select_datasets(select=select)
         proc_select = [x for x in proc_select if "concat_" not in x]
-        selected_datasets = [d for n, d in self.datasets.items()
-                             if n in proc_select]
+        selected_datasets = [d for n, d in self.datasets.items() if n in proc_select]
 
-        indicator_names = [col for df in selected_datasets
-                           for col in df.columns.get_level_values(0)]
-        if (len(indicator_names) > len(set(indicator_names))
-                or force_suffix is True):
+        indicator_names = [
+            col for df in selected_datasets for col in df.columns.get_level_values(0)
+        ]
+        if len(indicator_names) > len(set(indicator_names)) or force_suffix is True:
             for n, d in zip(proc_select, selected_datasets):
                 try:
                     full_name = self.available_datasets()["original"][n]
                 except KeyError:
                     full_name = self.available_datasets()["custom"][n]
                 d.columns = d.columns.set_levels(
-                    f"{full_name}_" + d.columns.get_level_values(0),
-                    level=0
+                    f"{full_name}_" + d.columns.get_level_values(0), level=0
                 )
 
         freqs = [pd.infer_freq(df.index) for df in selected_datasets]
         if all(freq == freqs[0] for freq in freqs):
             combined = pd.concat(selected_datasets, axis=1)
         else:
-            for freq_opt in ["A-DEC", "A", "Q-DEC", "Q",
-                             "M", "2W-SUN", "W-SUN"]:
+            for freq_opt in ["A-DEC", "A", "Q-DEC", "Q", "M", "2W-SUN", "W-SUN"]:
                 if freq_opt in freqs:
                     output = []
                     for df in selected_datasets:
@@ -611,16 +656,13 @@ class Session(object):
                             type_df = df.columns.get_level_values("Tipo")[0]
                             unit_df = df.columns.get_level_values("Unidad")[0]
                             if type_df == "Stock":
-                                df_match = transform.resample(df, rule=freq_opt,
-                                                              operation="last")
-                            elif (type_df == "Flujo" and
-                                  not any(x in unit_df for
-                                          x in ["%", "=", "Cambio"])):
-                                df_match = transform.resample(df, rule=freq_opt,
-                                                              operation="sum")
+                                df_match = transform.resample(df, rule=freq_opt, operation="last")
+                            elif type_df == "Flujo" and not any(
+                                x in unit_df for x in ["%", "=", "Cambio"]
+                            ):
+                                df_match = transform.resample(df, rule=freq_opt, operation="sum")
                             else:
-                                df_match = transform.resample(df, rule=freq_opt,
-                                                              operation="mean")
+                                df_match = transform.resample(df, rule=freq_opt, operation="mean")
                         output.append(df_match)
                     combined = pd.concat(output, axis=1)
                     break
@@ -635,8 +677,7 @@ class Session(object):
         self._datasets.update({concat_name: combined})
         return
 
-    def save(self,
-             select: Union[str, int, Sequence[str], Sequence[int]] = "all"):
+    def save(self, select: Union[str, int, Sequence[str], Sequence[int]] = "all"):
         """Write datasets.
 
         Parameters
@@ -656,10 +697,14 @@ class Session(object):
 
         for name, dataset in self.datasets.items():
             if name in proc_select:
-                ops._io(operation="save", data_loc=self.location,
-                        data=dataset, name=name,
-                        file_fmt=self.save_fmt,
-                        multiindex=self.save_header)
+                ops._io(
+                    operation="save",
+                    data_loc=self.location,
+                    data=dataset,
+                    name=name,
+                    file_fmt=self.save_fmt,
+                    multiindex=self.save_header,
+                )
             else:
                 continue
 

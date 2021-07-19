@@ -10,16 +10,25 @@ from econuy.utils import get_project_root, metadata, ops
 def trim_rows(input: str, output: str, rows: int = 10):
     for f in os.listdir(input):
         if f.endswith(".csv") and "commodity_weights" not in f:
-            df = ops._read(Path(input, f), file_fmt="csv",
-                           multiindex="included")
+            df = ops._read(Path(input, f), file_fmt="csv", multiindex="included")
             df = df.reindex(df.index[:-rows])
             ops._save(df, Path(output, f))
 
 
-@pytest.mark.parametrize("area",
-                         ["economic_activity", "prices", "fiscal_accounts",
-                          "labor", "external_sector", "financial_sector",
-                          "income", "international", "regional"])
+@pytest.mark.parametrize(
+    "area",
+    [
+        "economic_activity",
+        "prices",
+        "fiscal_accounts",
+        "labor",
+        "external_sector",
+        "financial_sector",
+        "income",
+        "international",
+        "regional",
+    ],
+)
 def test_retrieval(area):
     """Download every available dataset and compare with a previous version.
 
