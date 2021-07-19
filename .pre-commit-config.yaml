@@ -12,3 +12,4 @@ repos:
     - id: flake8
       args:
         - "--max-line-length=99"
+        - "--ignore=E501,E402,W503,E203"

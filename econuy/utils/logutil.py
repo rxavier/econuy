@@ -7,7 +7,7 @@ from typing import Optional
 
 def setup(file: Optional[str] = None, null: bool = False):
     """Setup logging."""
-    name = ''.join(random.choice(ascii_letters) for i in range(10))
+    name = "".join(random.choice(ascii_letters) for i in range(10))
     log_obj = logging.getLogger(name)
 
     if null is True:
@@ -16,8 +16,7 @@ def setup(file: Optional[str] = None, null: bool = False):
 
     log_obj.setLevel(logging.INFO)
     ch = logging.StreamHandler()
-    formatter = logging.Formatter('%(asctime)s - %(message)s',
-                                  datefmt="%d-%b %T")
+    formatter = logging.Formatter("%(asctime)s - %(message)s", datefmt="%d-%b %T")
     ch.setFormatter(formatter)
     log_obj.addHandler(ch)
 

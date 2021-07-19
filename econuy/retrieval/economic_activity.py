@@ -21,14 +21,23 @@ from econuy.utils import metadata, get_project_root
 from econuy.utils.sources import urls
 
 
-def _natacc_retriever(url: str, nrows: int, skiprows: int, inf_adj: str,
-                      unit: str, seas_adj: str,
-                      colnames: List[str]) -> pd.DataFrame:
+def _natacc_retriever(
+    url: str,
+    nrows: int,
+    skiprows: int,
+    inf_adj: str,
+    unit: str,
+    seas_adj: str,
+    colnames: List[str],
+) -> pd.DataFrame:
     """Helper function. See any of the `natacc_...()` functions."""
 
-    raw = (pd.read_excel(url, skiprows=skiprows, nrows=nrows, usecols="B:AAA",
-                         index_col=0)
-           .dropna(how="all", axis=1).dropna(how="all", axis=0).T)
+    raw = (
+        pd.read_excel(url, skiprows=skiprows, nrows=nrows, usecols="B:AAA", index_col=0)
+        .dropna(how="all", axis=1)
+        .dropna(how="all", axis=0)
+        .T
+    )
     raw.index = raw.index.str.replace("*", "", regex=True)
     raw.index = raw.index.str.replace(r"\bI \b", "3-", regex=True)
     raw.index = raw.index.str.replace(r"\bII \b", "6-", regex=True)
@@ -44,9 +53,16 @@ def _natacc_retriever(url: str, nrows: int, skiprows: int, inf_adj: str,
         if "Importaciones" in col and all(output[col] < 0):
             output[col] = output[col] * -1
 
-    metadata._set(output, area="Actividad económica", currency="UYU",
-                  inf_adj=inf_adj, unit=unit, seas_adj=seas_adj,
-                  ts_type="Flujo", cumperiods=1)
+    metadata._set(
+        output,
+        area="Actividad económica",
+        currency="UYU",
+        inf_adj=inf_adj,
+        unit=unit,
+        seas_adj=seas_adj,
+        ts_type="Flujo",
+        cumperiods=1,
+    )
 
     return output
 
@@ -64,22 +80,30 @@ def natacc_ind_con_nsa() -> pd.DataFrame:
     National accounts, supply side, constant prices, NSA : pd.DataFrame
 
     """
-    colnames = ["Agropecuario, pesca y minería",
-                "Industrias manufactureras",
-                "Energía eléctrica, gas y agua",
-                "Construcción",
-                "Comercio, alojamiento y suministro de comidas y bebidas",
-                "Transporte y almacenamiento, información y comunicaciones",
-                "Servicios financieros",
-                "Actividades profesionales y arrendamiento",
-                "Actividades de administración pública",
-                "Salud, educación, act. inmobiliarias y otros servicios",
-                "Valor agregado a precios básicos",
-                "Impuestos menos subvenciones",
-                "Producto bruto interno"]
-    return _natacc_retriever(url=urls["natacc_ind_con_nsa"]["dl"]["main"],
-                             nrows=13, skiprows=7, inf_adj="Const. 2016", unit="Millones",
-                             seas_adj="NSA", colnames=colnames)
+    colnames = [
+        "Agropecuario, pesca y minería",
+        "Industrias manufactureras",
+        "Energía eléctrica, gas y agua",
+        "Construcción",
+        "Comercio, alojamiento y suministro de comidas y bebidas",
+        "Transporte y almacenamiento, información y comunicaciones",
+        "Servicios financieros",
+        "Actividades profesionales y arrendamiento",
+        "Actividades de administración pública",
+        "Salud, educación, act. inmobiliarias y otros servicios",
+        "Valor agregado a precios básicos",
+        "Impuestos menos subvenciones",
+        "Producto bruto interno",
+    ]
+    return _natacc_retriever(
+        url=urls["natacc_ind_con_nsa"]["dl"]["main"],
+        nrows=13,
+        skiprows=7,
+        inf_adj="Const. 2016",
+        unit="Millones",
+        seas_adj="NSA",
+        colnames=colnames,
+    )
 
 
 @retry(
@@ -95,17 +119,26 @@ def natacc_gas_con_nsa() -> pd.DataFrame:
     National accounts, demand side, constant prices, NSA : pd.DataFrame
 
     """
-    colnames = ["Gasto de consumo: total", "Gasto de consumo: hogares",
-                "Gasto de consumo: gobierno y ISFLH",
-                "Formación bruta de capital",
-                "Formación bruta de capital: fijo",
-                "Variación de existencias",
-                "Exportaciones de bienes y servicios",
-                "Importaciones de bienes y servicios",
-                "Producto bruto interno"]
-    return _natacc_retriever(url=urls["natacc_gas_con_nsa"]["dl"]["main"],
-                             nrows=9, skiprows=7, inf_adj="Const. 2016", unit="Millones",
-                             seas_adj="NSA", colnames=colnames)
+    colnames = [
+        "Gasto de consumo: total",
+        "Gasto de consumo: hogares",
+        "Gasto de consumo: gobierno y ISFLH",
+        "Formación bruta de capital",
+        "Formación bruta de capital: fijo",
+        "Variación de existencias",
+        "Exportaciones de bienes y servicios",
+        "Importaciones de bienes y servicios",
+        "Producto bruto interno",
+    ]
+    return _natacc_retriever(
+        url=urls["natacc_gas_con_nsa"]["dl"]["main"],
+        nrows=9,
+        skiprows=7,
+        inf_adj="Const. 2016",
+        unit="Millones",
+        seas_adj="NSA",
+        colnames=colnames,
+    )
 
 
 @retry(
@@ -121,17 +154,26 @@ def natacc_gas_cur_nsa() -> pd.DataFrame:
     National accounts, demand side, current prices, NSA : pd.DataFrame
 
     """
-    colnames = ["Gasto de consumo: total", "Gasto de consumo: hogares",
-                "Gasto de consumo: gobierno y ISFLH",
-                "Formación bruta de capital",
-                "Formación bruta de capital: fijo",
-                "Variación de existencias",
-                "Exportaciones de bienes y servicios",
-                "Importaciones de bienes y servicios",
-                "Producto bruto interno"]
-    return _natacc_retriever(url=urls["natacc_gas_cur_nsa"]["dl"]["main"],
-                             nrows=9, skiprows=7, inf_adj="No", unit="Millones",
-                             seas_adj="NSA", colnames=colnames)
+    colnames = [
+        "Gasto de consumo: total",
+        "Gasto de consumo: hogares",
+        "Gasto de consumo: gobierno y ISFLH",
+        "Formación bruta de capital",
+        "Formación bruta de capital: fijo",
+        "Variación de existencias",
+        "Exportaciones de bienes y servicios",
+        "Importaciones de bienes y servicios",
+        "Producto bruto interno",
+    ]
+    return _natacc_retriever(
+        url=urls["natacc_gas_cur_nsa"]["dl"]["main"],
+        nrows=9,
+        skiprows=7,
+        inf_adj="No",
+        unit="Millones",
+        seas_adj="NSA",
+        colnames=colnames,
+    )
 
 
 @retry(
@@ -147,22 +189,30 @@ def natacc_ind_cur_nsa() -> pd.DataFrame:
     National accounts, supply side, current prices, NSA : pd.DataFrame
 
     """
-    colnames = ["Agropecuario, pesca y minería",
-                "Industrias manufactureras",
-                "Energía eléctrica, gas y agua",
-                "Construcción",
-                "Comercio, alojamiento y suministro de comidas y bebidas",
-                "Transporte y almacenamiento, información y comunicaciones",
-                "Servicios financieros",
-                "Actividades profesionales y arrendamiento",
-                "Actividades de administración pública",
-                "Salud, educación, act. inmobiliarias y otros servicios",
-                "Valor agregado a precios básicos",
-                "Impuestos menos subvenciones",
-                "Producto bruto interno"]
-    return _natacc_retriever(url=urls["natacc_ind_cur_nsa"]["dl"]["main"],
-                             nrows=13, skiprows=7, inf_adj="No", unit="Millones",
-                             seas_adj="NSA", colnames=colnames)
+    colnames = [
+        "Agropecuario, pesca y minería",
+        "Industrias manufactureras",
+        "Energía eléctrica, gas y agua",
+        "Construcción",
+        "Comercio, alojamiento y suministro de comidas y bebidas",
+        "Transporte y almacenamiento, información y comunicaciones",
+        "Servicios financieros",
+        "Actividades profesionales y arrendamiento",
+        "Actividades de administración pública",
+        "Salud, educación, act. inmobiliarias y otros servicios",
+        "Valor agregado a precios básicos",
+        "Impuestos menos subvenciones",
+        "Producto bruto interno",
+    ]
+    return _natacc_retriever(
+        url=urls["natacc_ind_cur_nsa"]["dl"]["main"],
+        nrows=13,
+        skiprows=7,
+        inf_adj="No",
+        unit="Millones",
+        seas_adj="NSA",
+        colnames=colnames,
+    )
 
 
 @retry(
@@ -179,9 +229,15 @@ def gdp_con_idx_sa() -> pd.DataFrame:
 
     """
     colnames = ["Producto bruto interno"]
-    return _natacc_retriever(url=urls["gdp_con_idx_sa"]["dl"]["main"],
-                             nrows=1, skiprows=7, inf_adj="Const. 2016", unit="2016=100",
-                             seas_adj="SA", colnames=colnames)
+    return _natacc_retriever(
+        url=urls["gdp_con_idx_sa"]["dl"]["main"],
+        nrows=1,
+        skiprows=7,
+        inf_adj="Const. 2016",
+        unit="2016=100",
+        seas_adj="SA",
+        colnames=colnames,
+    )
 
 
 @retry(
@@ -211,28 +267,41 @@ def natacc_ind_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
         + data_16["Actividades de administración pública"]
         + data_16["Salud, educación, act. inmobiliarias y otros servicios"]
     )
-    data_16.drop(["Valor agregado a precios básicos",
-                  "Servicios financieros",
-                  "Actividades profesionales y arrendamiento",
-                  "Actividades de administración pública",
-                  "Salud, educación, act. inmobiliarias y otros servicios",
-                  "Valor agregado a precios básicos"],
-                 axis=1, inplace=True)
+    data_16.drop(
+        [
+            "Valor agregado a precios básicos",
+            "Servicios financieros",
+            "Actividades profesionales y arrendamiento",
+            "Actividades de administración pública",
+            "Salud, educación, act. inmobiliarias y otros servicios",
+            "Valor agregado a precios básicos",
+        ],
+        axis=1,
+        inplace=True,
+    )
 
-    colnames = ["Actividades primarias",
-                "Act. prim.: Agricultura, ganadería, caza y silvicultura",
-                "Industrias manufactureras",
-                "Suministro de electricidad, gas y agua",
-                "Construcción",
-                "Comercio, reparaciones, restaurantes y hoteles",
-                "Transporte, almacenamiento y comunicaciones",
-                "Otras actividades",
-                "Otras actividades: SIFMI",
-                "Impuestos menos subvenciones",
-                "Producto bruto interno"]
-    data_05 = _natacc_retriever(url=urls["natacc_ind_con_nsa_long"]["dl"]["2005"],
-                                nrows=12, skiprows=9, inf_adj="Const. 2005", unit="Millones",
-                                seas_adj="NSA", colnames=colnames)
+    colnames = [
+        "Actividades primarias",
+        "Act. prim.: Agricultura, ganadería, caza y silvicultura",
+        "Industrias manufactureras",
+        "Suministro de electricidad, gas y agua",
+        "Construcción",
+        "Comercio, reparaciones, restaurantes y hoteles",
+        "Transporte, almacenamiento y comunicaciones",
+        "Otras actividades",
+        "Otras actividades: SIFMI",
+        "Impuestos menos subvenciones",
+        "Producto bruto interno",
+    ]
+    data_05 = _natacc_retriever(
+        url=urls["natacc_ind_con_nsa_long"]["dl"]["2005"],
+        nrows=12,
+        skiprows=9,
+        inf_adj="Const. 2005",
+        unit="Millones",
+        seas_adj="NSA",
+        colnames=colnames,
+    )
     data_05.columns = data_05.columns.get_level_values(0)
 
     # In the following lines I rename and reorder the Other activities
@@ -242,57 +311,83 @@ def natacc_ind_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     # assuming that the share of SIFMI in each sector over time doesn't change,
     # which shouldn't affect growth rates.
     data_05["Otros servicios"] = data_05["Otras actividades"]
-    data_05.drop(["Act. prim.: Agricultura, ganadería, caza y silvicultura",
-                  "Otras actividades", "Otras actividades: SIFMI"],
-                 axis=1, inplace=True)
+    data_05.drop(
+        [
+            "Act. prim.: Agricultura, ganadería, caza y silvicultura",
+            "Otras actividades",
+            "Otras actividades: SIFMI",
+        ],
+        axis=1,
+        inplace=True,
+    )
     data_05.columns = data_16.columns
-    aux_index = list(dict.fromkeys(list(data_05.index)
-                                   + list(data_16.index)))
+    aux_index = list(dict.fromkeys(list(data_05.index) + list(data_16.index)))
     aux = data_16.reindex(aux_index)
     for quarter in reversed(aux_index):
         if aux.loc[quarter, :].isna().all():
             next_quarter = quarter + MonthEnd(3)
-            aux.loc[quarter, :] = (aux.loc[next_quarter, :]
-                                   * data_05.loc[quarter, :]
-                                   / data_05.loc[next_quarter, :])
-    aux = aux[["Agropecuario, pesca y minería",
-               "Industrias manufactureras",
-               "Energía eléctrica, gas y agua",
-               "Construcción",
-               "Comercio, alojamiento y suministro de comidas y bebidas",
-               "Transporte y almacenamiento, información y comunicaciones",
-               "Otros servicios",
-               "Impuestos menos subvenciones",
-               "Producto bruto interno"]]
+            aux.loc[quarter, :] = (
+                aux.loc[next_quarter, :] * data_05.loc[quarter, :] / data_05.loc[next_quarter, :]
+            )
+    aux = aux[
+        [
+            "Agropecuario, pesca y minería",
+            "Industrias manufactureras",
+            "Energía eléctrica, gas y agua",
+            "Construcción",
+            "Comercio, alojamiento y suministro de comidas y bebidas",
+            "Transporte y almacenamiento, información y comunicaciones",
+            "Otros servicios",
+            "Impuestos menos subvenciones",
+            "Producto bruto interno",
+        ]
+    ]
 
-    data_83 = pd.read_excel(urls["natacc_ind_con_nsa_long"]["dl"]["1983"],
-                            skiprows=10, nrows=8, usecols="B:AAA",
-                            index_col=0).T
-    data_83.index = pd.date_range(start="1988-03-31", freq="Q-DEC",
-                                  periods=len(data_83))
+    data_83 = pd.read_excel(
+        urls["natacc_ind_con_nsa_long"]["dl"]["1983"],
+        skiprows=10,
+        nrows=8,
+        usecols="B:AAA",
+        index_col=0,
+    ).T
+    data_83.index = pd.date_range(start="1988-03-31", freq="Q-DEC", periods=len(data_83))
     data_83["Impuestos menos subvenciones"] = np.nan
-    data_83 = data_83[["AGROPECUARIA", "INDUSTRIAS MANUFACTURERAS",
-                       "SUMINISTRO DE ELECTRICIDAD, GAS Y AGUA",
-                       "CONSTRUCCION",
-                       "COMERCIO, REPARACIONES, RESTAURANTES Y HOTELES",
-                       "TRANSPORTE, ALMACENAMIENTO Y COMUNICACIONES",
-                       "OTRAS (1)", "Impuestos menos subvenciones",
-                       "PRODUCTO INTERNO BRUTO"]]
+    data_83 = data_83[
+        [
+            "AGROPECUARIA",
+            "INDUSTRIAS MANUFACTURERAS",
+            "SUMINISTRO DE ELECTRICIDAD, GAS Y AGUA",
+            "CONSTRUCCION",
+            "COMERCIO, REPARACIONES, RESTAURANTES Y HOTELES",
+            "TRANSPORTE, ALMACENAMIENTO Y COMUNICACIONES",
+            "OTRAS (1)",
+            "Impuestos menos subvenciones",
+            "PRODUCTO INTERNO BRUTO",
+        ]
+    ]
     data_83.columns = aux.columns
 
-    complete_index = list(dict.fromkeys(list(data_83.index)
-                                        + list(aux.index)))
+    complete_index = list(dict.fromkeys(list(data_83.index) + list(aux.index)))
     output = aux.reindex(complete_index)
     for quarter in reversed(complete_index):
         if output.loc[quarter, :].isna().all():
             next_quarter = quarter + MonthEnd(3)
-            output.loc[quarter, :] = (output.loc[next_quarter, :]
-                                      * data_83.loc[quarter, :]
-                                      / data_83.loc[next_quarter, :])
+            output.loc[quarter, :] = (
+                output.loc[next_quarter, :]
+                * data_83.loc[quarter, :]
+                / data_83.loc[next_quarter, :]
+            )
 
-    metadata._set(output, area="Actividad económica", currency="UYU",
-                  inf_adj="Const. 2016", unit="Millones", seas_adj="NSA",
-                  ts_type="Flujo", cumperiods=1)
+    metadata._set(
+        output,
+        area="Actividad económica",
+        currency="UYU",
+        inf_adj="Const. 2016",
+        unit="Millones",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
+    )
 
     return output
 
@@ -320,55 +415,73 @@ def natacc_gas_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     data_16.columns = data_16.columns.get_level_values(0)
     data_16.drop(["Variación de existencias"], axis=1, inplace=True)
 
-    colnames = ["Gasto de consumo final",
-                "Gasto de consumo final de hogares",
-                "Gasto de consumo final del gobierno general",
-                "Formación bruta de capital",
-                "Formación bruta de capital fijo",
-                "Sector público",
-                "Sector privado",
-                "Exportaciones",
-                "Importaciones",
-                "Producto bruto interno"]
-    data_05 = _natacc_retriever(url=urls["natacc_gas_con_nsa_long"]["dl"]["2005"],
-                                nrows=10, skiprows=9, inf_adj="Const. 2005", unit="Millones",
-                                seas_adj="NSA", colnames=colnames)
+    colnames = [
+        "Gasto de consumo final",
+        "Gasto de consumo final de hogares",
+        "Gasto de consumo final del gobierno general",
+        "Formación bruta de capital",
+        "Formación bruta de capital fijo",
+        "Sector público",
+        "Sector privado",
+        "Exportaciones",
+        "Importaciones",
+        "Producto bruto interno",
+    ]
+    data_05 = _natacc_retriever(
+        url=urls["natacc_gas_con_nsa_long"]["dl"]["2005"],
+        nrows=10,
+        skiprows=9,
+        inf_adj="Const. 2005",
+        unit="Millones",
+        seas_adj="NSA",
+        colnames=colnames,
+    )
     data_05.columns = data_05.columns.get_level_values(0)
-    data_05.drop(["Sector público", "Sector privado"],
-                 axis=1, inplace=True)
+    data_05.drop(["Sector público", "Sector privado"], axis=1, inplace=True)
     data_05.columns = data_16.columns
-    aux_index = list(dict.fromkeys(list(data_05.index)
-                                   + list(data_16.index)))
+    aux_index = list(dict.fromkeys(list(data_05.index) + list(data_16.index)))
     aux = data_16.reindex(aux_index)
     for quarter in reversed(aux_index):
         if aux.loc[quarter, :].isna().all():
             next_quarter = quarter + MonthEnd(3)
-            aux.loc[quarter, :] = (aux.loc[next_quarter, :]
-                                   * data_05.loc[quarter, :]
-                                   / data_05.loc[next_quarter, :])
+            aux.loc[quarter, :] = (
+                aux.loc[next_quarter, :] * data_05.loc[quarter, :] / data_05.loc[next_quarter, :]
+            )
 
-    data_83 = pd.read_excel(urls["natacc_gas_con_nsa_long"]["dl"]["1983"],
-                            skiprows=10, nrows=11, usecols="B:AAA",
-                            index_col=0).T
-    data_83.index = pd.date_range(start="1988-03-31", freq="Q-DEC",
-                                  periods=len(data_83))
-    data_83.drop(["Sector público", "Sector privado",
-                  "Variación de existencias"], axis=1, inplace=True)
+    data_83 = pd.read_excel(
+        urls["natacc_gas_con_nsa_long"]["dl"]["1983"],
+        skiprows=10,
+        nrows=11,
+        usecols="B:AAA",
+        index_col=0,
+    ).T
+    data_83.index = pd.date_range(start="1988-03-31", freq="Q-DEC", periods=len(data_83))
+    data_83.drop(
+        ["Sector público", "Sector privado", "Variación de existencias"], axis=1, inplace=True
+    )
     data_83.columns = aux.columns
 
-    complete_index = list(dict.fromkeys(list(data_83.index)
-                                        + list(aux.index)))
+    complete_index = list(dict.fromkeys(list(data_83.index) + list(aux.index)))
     output = aux.reindex(complete_index)
     for quarter in reversed(complete_index):
         if output.loc[quarter, :].isna().all():
             next_quarter = quarter + MonthEnd(3)
-            output.loc[quarter, :] = (output.loc[next_quarter, :]
-                                      * data_83.loc[quarter, :]
-                                      / data_83.loc[next_quarter, :])
+            output.loc[quarter, :] = (
+                output.loc[next_quarter, :]
+                * data_83.loc[quarter, :]
+                / data_83.loc[next_quarter, :]
+            )
 
-    metadata._set(output, area="Actividad económica", currency="UYU",
-                  inf_adj="Const. 2016", unit="Millones", seas_adj="NSA",
-                  ts_type="Flujo", cumperiods=1)
+    metadata._set(
+        output,
+        area="Actividad económica",
+        currency="UYU",
+        inf_adj="Const. 2016",
+        unit="Millones",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
+    )
 
     return output
 
@@ -395,53 +508,71 @@ def gdp_con_idx_sa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     data_16 = pipeline.dataset.copy()
     data_16.columns = data_16.columns.get_level_values(0)
 
-    colnames = ["Actividades primarias",
-                "Act. prim.: Agricultura, ganadería, caza y silvicultura",
-                "Industrias manufactureras",
-                "Suministro de electricidad, gas y agua",
-                "Construcción",
-                "Comercio, reparaciones, restaurantes y hoteles",
-                "Transporte, almacenamiento y comunicaciones",
-                "Otras actividades",
-                "Otras actividades: SIFMI",
-                "Impuestos menos subvenciones",
-                "Producto bruto interno"]
-    data_05 = _natacc_retriever(url=urls["gdp_con_idx_sa_long"]["dl"]["2005"],
-                                nrows=12, skiprows=9, inf_adj="Const. 2005", unit="Millones",
-                                seas_adj="SA", colnames=colnames)
+    colnames = [
+        "Actividades primarias",
+        "Act. prim.: Agricultura, ganadería, caza y silvicultura",
+        "Industrias manufactureras",
+        "Suministro de electricidad, gas y agua",
+        "Construcción",
+        "Comercio, reparaciones, restaurantes y hoteles",
+        "Transporte, almacenamiento y comunicaciones",
+        "Otras actividades",
+        "Otras actividades: SIFMI",
+        "Impuestos menos subvenciones",
+        "Producto bruto interno",
+    ]
+    data_05 = _natacc_retriever(
+        url=urls["gdp_con_idx_sa_long"]["dl"]["2005"],
+        nrows=12,
+        skiprows=9,
+        inf_adj="Const. 2005",
+        unit="Millones",
+        seas_adj="SA",
+        colnames=colnames,
+    )
     data_05.columns = data_05.columns.get_level_values(0)
     data_05 = data_05[["Producto bruto interno"]]
-    aux_index = list(dict.fromkeys(list(data_05.index)
-                                   + list(data_16.index)))
+    aux_index = list(dict.fromkeys(list(data_05.index) + list(data_16.index)))
     aux = data_16.reindex(aux_index)
     for quarter in reversed(aux_index):
         if aux.loc[quarter, :].isna().all():
             next_quarter = quarter + MonthEnd(3)
-            aux.loc[quarter, :] = (aux.loc[next_quarter, :]
-                                   * data_05.loc[quarter, :]
-                                   / data_05.loc[next_quarter, :])
+            aux.loc[quarter, :] = (
+                aux.loc[next_quarter, :] * data_05.loc[quarter, :] / data_05.loc[next_quarter, :]
+            )
 
-    data_83 = pd.read_excel(urls["gdp_con_idx_sa_long"]["dl"]["1983"],
-                            skiprows=10, nrows=8, usecols="B:AAA",
-                            index_col=0).T
-    data_83.index = pd.date_range(start="1988-03-31", freq="Q-DEC",
-                                  periods=len(data_83))
+    data_83 = pd.read_excel(
+        urls["gdp_con_idx_sa_long"]["dl"]["1983"],
+        skiprows=10,
+        nrows=8,
+        usecols="B:AAA",
+        index_col=0,
+    ).T
+    data_83.index = pd.date_range(start="1988-03-31", freq="Q-DEC", periods=len(data_83))
     data_83 = data_83[["PRODUCTO INTERNO BRUTO"]]
     data_83.columns = aux.columns
 
-    complete_index = list(dict.fromkeys(list(data_83.index)
-                                        + list(aux.index)))
+    complete_index = list(dict.fromkeys(list(data_83.index) + list(aux.index)))
     output = aux.reindex(complete_index)
     for quarter in reversed(complete_index):
         if output.loc[quarter, :].isna().all():
             next_quarter = quarter + MonthEnd(3)
-            output.loc[quarter, :] = (output.loc[next_quarter, :]
-                                      * data_83.loc[quarter, :]
-                                      / data_83.loc[next_quarter, :])
+            output.loc[quarter, :] = (
+                output.loc[next_quarter, :]
+                * data_83.loc[quarter, :]
+                / data_83.loc[next_quarter, :]
+            )
 
-    metadata._set(output, area="Actividad económica", currency="UYU",
-                  inf_adj="Const. 2016", unit="Millones", seas_adj="SA",
-                  ts_type="Flujo", cumperiods=1)
+    metadata._set(
+        output,
+        area="Actividad económica",
+        currency="UYU",
+        inf_adj="Const. 2016",
+        unit="Millones",
+        seas_adj="SA",
+        ts_type="Flujo",
+        cumperiods=1,
+    )
 
     return output
 
@@ -470,49 +601,60 @@ def gdp_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     data_16.columns = data_16.columns.get_level_values(0)
     data_16 = data_16[["Producto bruto interno"]]
 
-    data_12 = pd.read_csv(urls["gdp_con_nsa_long"]["dl"]["2012"],
-                          index_col=0, parse_dates=True)
+    data_12 = pd.read_csv(urls["gdp_con_nsa_long"]["dl"]["2012"], index_col=0, parse_dates=True)
     data_12 = data_12[["real"]]
     data_12.columns = data_16.columns
 
     aux = pd.concat([data_12, data_16], axis=0)
 
     colnames = ["Producto bruto interno"]
-    data_05 = _natacc_retriever(url=urls["gdp_con_nsa_long"]["dl"]["2005"],
-                                nrows=2, skiprows=9, inf_adj="Const. 2005", unit="Millones",
-                                seas_adj="NSA", colnames=colnames)
+    data_05 = _natacc_retriever(
+        url=urls["gdp_con_nsa_long"]["dl"]["2005"],
+        nrows=2,
+        skiprows=9,
+        inf_adj="Const. 2005",
+        unit="Millones",
+        seas_adj="NSA",
+        colnames=colnames,
+    )
     data_05.columns = data_05.columns.get_level_values(0)
-    aux_index = list(dict.fromkeys(list(data_05.index)
-                                   + list(aux.index)))
+    aux_index = list(dict.fromkeys(list(data_05.index) + list(aux.index)))
     reaux = aux.reindex(aux_index)
     for quarter in reversed(aux_index):
         if reaux.loc[quarter, :].isna().all():
             next_quarter = quarter + MonthEnd(3)
-            reaux.loc[quarter, :] = (reaux.loc[next_quarter, :]
-                                     * data_05.loc[quarter, :]
-                                     / data_05.loc[next_quarter, :])
+            reaux.loc[quarter, :] = (
+                reaux.loc[next_quarter, :] * data_05.loc[quarter, :] / data_05.loc[next_quarter, :]
+            )
 
-    data_83 = pd.read_excel(urls["gdp_con_nsa_long"]["dl"]["1983"],
-                            skiprows=10, nrows=8, usecols="B:AAA",
-                            index_col=0).T
-    data_83.index = pd.date_range(start="1988-03-31", freq="Q-DEC",
-                                  periods=len(data_83))
+    data_83 = pd.read_excel(
+        urls["gdp_con_nsa_long"]["dl"]["1983"], skiprows=10, nrows=8, usecols="B:AAA", index_col=0
+    ).T
+    data_83.index = pd.date_range(start="1988-03-31", freq="Q-DEC", periods=len(data_83))
     data_83 = data_83[["PRODUCTO INTERNO BRUTO"]]
     data_83.columns = ["Producto bruto interno"]
 
-    reaux_index = list(dict.fromkeys(list(data_83.index)
-                                     + list(reaux.index)))
+    reaux_index = list(dict.fromkeys(list(data_83.index) + list(reaux.index)))
     output = reaux.reindex(reaux_index)
     for quarter in reversed(reaux_index):
         if output.loc[quarter, :].isna().all():
             next_quarter = quarter + MonthEnd(3)
-            output.loc[quarter, :] = (output.loc[next_quarter, :]
-                                      * data_83.loc[quarter, :]
-                                      / data_83.loc[next_quarter, :])
+            output.loc[quarter, :] = (
+                output.loc[next_quarter, :]
+                * data_83.loc[quarter, :]
+                / data_83.loc[next_quarter, :]
+            )
 
-    metadata._set(output, area="Actividad económica", currency="UYU",
-                  inf_adj="Const. 2016", unit="Millones", seas_adj="NSA",
-                  ts_type="Flujo", cumperiods=1)
+    metadata._set(
+        output,
+        area="Actividad económica",
+        currency="UYU",
+        inf_adj="Const. 2016",
+        unit="Millones",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
+    )
 
     return output
 
@@ -541,31 +683,44 @@ def gdp_cur_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     data_16.columns = data_16.columns.get_level_values(0)
     data_16 = data_16[["Producto bruto interno"]]
 
-    data_12 = pd.read_csv(urls["gdp_cur_nsa_long"]["dl"]["2012"],
-                          index_col=0, parse_dates=True)
+    data_12 = pd.read_csv(urls["gdp_cur_nsa_long"]["dl"]["2012"], index_col=0, parse_dates=True)
     data_12 = data_12[["current"]]
     data_12.columns = data_16.columns
 
     aux = pd.concat([data_12, data_16], axis=0)
 
     colnames = ["Producto bruto interno"]
-    data_05 = _natacc_retriever(url=urls["gdp_cur_nsa_long"]["dl"]["2005"],
-                                nrows=2, skiprows=9, inf_adj="No", unit="Millones",
-                                seas_adj="NSA", colnames=colnames)
+    data_05 = _natacc_retriever(
+        url=urls["gdp_cur_nsa_long"]["dl"]["2005"],
+        nrows=2,
+        skiprows=9,
+        inf_adj="No",
+        unit="Millones",
+        seas_adj="NSA",
+        colnames=colnames,
+    )
     data_05.columns = data_05.columns.get_level_values(0)
-    aux_index = list(dict.fromkeys(list(data_05.index)
-                                   + list(aux.index)))
+    aux_index = list(dict.fromkeys(list(data_05.index) + list(aux.index)))
     output = aux.reindex(aux_index)
     for quarter in reversed(aux_index):
         if output.loc[quarter, :].isna().all():
             next_quarter = quarter + MonthEnd(3)
-            output.loc[quarter, :] = (output.loc[next_quarter, :]
-                                      * data_05.loc[quarter, :]
-                                      / data_05.loc[next_quarter, :])
+            output.loc[quarter, :] = (
+                output.loc[next_quarter, :]
+                * data_05.loc[quarter, :]
+                / data_05.loc[next_quarter, :]
+            )
 
-    metadata._set(output, area="Actividad económica", currency="UYU",
-                  inf_adj="No", unit="Millones", seas_adj="NSA",
-                  ts_type="Flujo", cumperiods=1)
+    metadata._set(
+        output,
+        area="Actividad económica",
+        currency="UYU",
+        inf_adj="No",
+        unit="Millones",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
+    )
 
     return output
 
@@ -610,21 +765,29 @@ def _lin_gdp(pipeline: Optional[Pipeline] = None):
 
     results = []
     for table, gdp in zip(["NGDP", "NGDPD"], data):
-        table_url = (f"https://www.imf.org/en/Publications/WEO/weo-database/"
-                     f"2020/October/weo-report?c=298,&s={table},&sy="
-                     f"{last_year - 1}&ey={last_year + 1}&ssm=0&scsm=1&scc=0&"
-                     f"ssd=1&ssc=0&sic=0&sort=country&ds=.&br=1")
+        table_url = (
+            f"https://www.imf.org/en/Publications/WEO/weo-database/"
+            f"2020/October/weo-report?c=298,&s={table},&sy="
+            f"{last_year - 1}&ey={last_year + 1}&ssm=0&scsm=1&scc=0&"
+            f"ssd=1&ssc=0&sic=0&sort=country&ds=.&br=1"
+        )
         imf_data = pd.to_numeric(pd.read_html(table_url)[0].iloc[0, [5, 6, 7]])
         imf_data = imf_data.reset_index(drop=True)
-        fcast = (gdp.loc[[dt.datetime(last_year - 1, 12, 31)]].
-                 multiply(imf_data.iloc[1]).divide(imf_data.iloc[0]))
-        fcast = fcast.rename(index={dt.datetime(last_year - 1, 12, 31):
-                                    dt.datetime(last_year, 12, 31)})
-        next_fcast = (gdp.loc[[dt.datetime(last_year - 1, 12, 31)]].
-                      multiply(imf_data.iloc[2]).divide(imf_data.iloc[0]))
+        fcast = (
+            gdp.loc[[dt.datetime(last_year - 1, 12, 31)]]
+            .multiply(imf_data.iloc[1])
+            .divide(imf_data.iloc[0])
+        )
+        fcast = fcast.rename(
+            index={dt.datetime(last_year - 1, 12, 31): dt.datetime(last_year, 12, 31)}
+        )
+        next_fcast = (
+            gdp.loc[[dt.datetime(last_year - 1, 12, 31)]]
+            .multiply(imf_data.iloc[2])
+            .divide(imf_data.iloc[0])
+        )
         next_fcast = next_fcast.rename(
-            index={dt.datetime(last_year - 1, 12, 31):
-                   dt.datetime(last_year + 1, 12, 31)}
+            index={dt.datetime(last_year - 1, 12, 31): dt.datetime(last_year + 1, 12, 31)}
         )
         fcast = fcast.append(next_fcast)
         gdp = gdp.append(fcast)
@@ -634,8 +797,7 @@ def _lin_gdp(pipeline: Optional[Pipeline] = None):
     output = output.resample("Q-DEC").interpolate("linear").dropna(how="all")
     output.rename_axis(None, inplace=True)
 
-    metadata._modify_multiindex(output, levels=[0],
-                                new_arrays=[["PBI UYU", "PBI USD"]])
+    metadata._modify_multiindex(output, levels=[0], new_arrays=[["PBI UYU", "PBI USD"]])
 
     return output
 
@@ -656,29 +818,24 @@ def industrial_production() -> pd.DataFrame:
     name = "industrial_production"
 
     try:
-        raw = pd.read_excel(urls[name]["dl"]["main"],
-                            skiprows=4, usecols="B:EM")
-        weights = pd.read_excel(urls[name]["dl"]["weights"],
-                                skiprows=3, usecols="B:E").dropna(how="all")
+        raw = pd.read_excel(urls[name]["dl"]["main"], skiprows=4, usecols="B:EM")
+        weights = pd.read_excel(urls[name]["dl"]["weights"], skiprows=3, usecols="B:E").dropna(
+            how="all"
+        )
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certificate = Path(get_project_root(), "utils", "files",
-                               "ine_certs.pem")
-            r = requests.get(urls[name]["dl"]["main"],
-                             verify=certificate)
-            raw = pd.read_excel(BytesIO(r.content),
-                                skiprows=4, usecols="B:EM")
-            r = requests.get(urls[name]["dl"]["weights"],
-                             verify=certificate)
-            weights = pd.read_excel(BytesIO(r.content),
-                                    skiprows=3, usecols="B:E").dropna(how="all")
+            certificate = Path(get_project_root(), "utils", "files", "ine_certs.pem")
+            r = requests.get(urls[name]["dl"]["main"], verify=certificate)
+            raw = pd.read_excel(BytesIO(r.content), skiprows=4, usecols="B:EM")
+            r = requests.get(urls[name]["dl"]["weights"], verify=certificate)
+            weights = pd.read_excel(BytesIO(r.content), skiprows=3, usecols="B:E").dropna(
+                how="all"
+            )
         else:
             raise err
     proc = raw.dropna(how="any", subset=["Mes"]).dropna(thresh=100, axis=1)
-    output = proc[~proc["Mes"].str.contains("PROM|Prom",
-                                            regex=True)].drop("Mes", axis=1)
-    output.index = pd.date_range(start="2002-01-31", freq="M",
-                                 periods=len(output))
+    output = proc[~proc["Mes"].str.contains("PROM|Prom", regex=True)].drop("Mes", axis=1)
+    output.index = pd.date_range(start="2002-01-31", freq="M", periods=len(output))
 
     column_names = []
     for c in output.columns[2:]:
@@ -699,15 +856,23 @@ def industrial_production() -> pd.DataFrame:
         if len(match) > 60:
             match = match[:58] + "..."
         column_names.append(match)
-    output.columns = (["Industrias manufactureras",
-                       "Industrias manufactureras sin refinería"]
-                      + column_names)
+    output.columns = [
+        "Industrias manufactureras",
+        "Industrias manufactureras sin refinería",
+    ] + column_names
     output = output.apply(pd.to_numeric, errors="coerce")
     output.rename_axis(None, inplace=True)
 
-    metadata._set(output, area="Actividad económica", currency="-",
-                  inf_adj="No", unit="2006=100", seas_adj="NSA",
-                  ts_type="Flujo", cumperiods=1)
+    metadata._set(
+        output,
+        area="Actividad económica",
+        currency="-",
+        inf_adj="No",
+        unit="2006=100",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
+    )
 
     return output
 
@@ -736,47 +901,47 @@ def core_industrial(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     data = pipeline.dataset
 
     try:
-        weights = pd.read_excel(
-            urls[name]["dl"]["weights"],
-            skiprows=3).dropna(
-            how="all")
+        weights = pd.read_excel(urls[name]["dl"]["weights"], skiprows=3).dropna(how="all")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certificate = Path(get_project_root(), "utils", "files",
-                               "ine_certs.pem")
-            r = requests.get(urls[name]["dl"]["weights"],
-                             verify=certificate)
-            weights = pd.read_excel(BytesIO(r.content),
-                                    skiprows=3).dropna(how="all")
+            certificate = Path(get_project_root(), "utils", "files", "ine_certs.pem")
+            r = requests.get(urls[name]["dl"]["weights"], verify=certificate)
+            weights = pd.read_excel(BytesIO(r.content), skiprows=3).dropna(how="all")
         else:
             raise err
-    weights = weights.rename(columns={"Unnamed: 5": "Pond. división",
-                                      "Unnamed: 6": "Pond. agrupación",
-                                      "Unnamed: 7": "Pond. clase"})
+    weights = weights.rename(
+        columns={
+            "Unnamed: 5": "Pond. división",
+            "Unnamed: 6": "Pond. agrupación",
+            "Unnamed: 7": "Pond. clase",
+        }
+    )
     other_foods = (
         weights.loc[weights["clase"] == 1549]["Pond. clase"].values[0]
-        * weights.loc[(weights["agrupacion"] == 154) &
-                      (weights["clase"] == 0)][
-            "Pond. agrupación"].values[0]
-        * weights.loc[(weights["division"] == 15) &
-                          (weights["agrupacion"] == 0)][
-                "Pond. división"].values[0]
-        / 1000000)
-    pulp = (weights.loc[weights["clase"] == 2101]["Pond. clase"].values[0]
-            * weights.loc[(weights["division"] == 21) &
-                          (weights["agrupacion"] == 0)][
-                "Pond. división"].values[0]
-            / 10000)
-    output = data.loc[:, ["Industrias manufactureras",
-                          "Industrias manufactureras sin refinería"]]
-    exclude = (data.loc[:, "Cls_Elaboración de productos alimenticios n.c.p"] * other_foods
-               + data.loc[:, "Cls_Pulpa de madera, papel y cartón"] * pulp)
+        * weights.loc[(weights["agrupacion"] == 154) & (weights["clase"] == 0)][
+            "Pond. agrupación"
+        ].values[0]
+        * weights.loc[(weights["division"] == 15) & (weights["agrupacion"] == 0)][
+            "Pond. división"
+        ].values[0]
+        / 1000000
+    )
+    pulp = (
+        weights.loc[weights["clase"] == 2101]["Pond. clase"].values[0]
+        * weights.loc[(weights["division"] == 21) & (weights["agrupacion"] == 0)][
+            "Pond. división"
+        ].values[0]
+        / 10000
+    )
+    output = data.loc[:, ["Industrias manufactureras", "Industrias manufactureras sin refinería"]]
+    exclude = (
+        data.loc[:, "Cls_Elaboración de productos alimenticios n.c.p"] * other_foods
+        + data.loc[:, "Cls_Pulpa de madera, papel y cartón"] * pulp
+    )
     core = data["Industrias manufactureras sin refinería"] - exclude
-    core = pd.concat([core], keys=["Núcleo industrial"],
-                     names=["Indicador"], axis=1)
+    core = pd.concat([core], keys=["Núcleo industrial"], names=["Indicador"], axis=1)
     output = pd.concat([output, core], axis=1)
-    output = transform.rebase(output, start_date="2006-01-01",
-                              end_date="2006-12-31")
+    output = transform.rebase(output, start_date="2006-01-01", end_date="2006-12-31")
     output.rename_axis(None, inplace=True)
 
     return output
@@ -797,26 +962,28 @@ def cattle() -> pd.DataFrame:
     """
     name = "cattle"
     try:
-        output = pd.read_excel(urls[name]["dl"]["main"],
-                               skiprows=8, usecols="C:H")
+        output = pd.read_excel(urls[name]["dl"]["main"], skiprows=8, usecols="C:H")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certificate = Path(get_project_root(), "utils", "files",
-                               "inac_certs.pem")
-            r = requests.get(urls[name]["dl"]["main"],
-                             verify=certificate)
-            output = pd.read_excel(BytesIO(r.content),
-                                   skiprows=8, usecols="C:H")
+            certificate = Path(get_project_root(), "utils", "files", "inac_certs.pem")
+            r = requests.get(urls[name]["dl"]["main"], verify=certificate)
+            output = pd.read_excel(BytesIO(r.content), skiprows=8, usecols="C:H")
         else:
             raise err
 
-    output.index = pd.date_range(start="2005-01-02", freq="W",
-                                 periods=len(output))
+    output.index = pd.date_range(start="2005-01-02", freq="W", periods=len(output))
     output.rename_axis(None, inplace=True)
 
-    metadata._set(output, area="Actividad económica", currency="-",
-                  inf_adj="No", unit="Cabezas", seas_adj="NSA",
-                  ts_type="Flujo", cumperiods=1)
+    metadata._set(
+        output,
+        area="Actividad económica",
+        currency="-",
+        inf_adj="No",
+        unit="Cabezas",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
+    )
 
     return output
 
@@ -842,15 +1009,21 @@ def milk() -> pd.DataFrame:
     raw = pd.read_excel(link["href"], skiprows=11, skipfooter=4)
     output = raw.iloc[:, 2:].drop(0, axis=0)
     output = pd.melt(output, id_vars="Año/ Mes")[["value"]].dropna()
-    output.index = pd.date_range(start="2002-01-31", freq="M",
-                                 periods=len(output))
+    output.index = pd.date_range(start="2002-01-31", freq="M", periods=len(output))
     output = output.apply(pd.to_numeric)
     output.columns = ["Remisión de leche a planta"]
     output.rename_axis(None, inplace=True)
 
-    metadata._set(output, area="Actividad económica", currency="-",
-                  inf_adj="No", unit="Miles de litros", seas_adj="NSA",
-                  ts_type="Flujo", cumperiods=1)
+    metadata._set(
+        output,
+        area="Actividad económica",
+        currency="-",
+        inf_adj="No",
+        unit="Miles de litros",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
+    )
 
     return output
 
@@ -870,15 +1043,23 @@ def cement() -> pd.DataFrame:
     """
     name = "cement"
 
-    output = pd.read_excel(urls[name]["dl"]["main"], skiprows=2,
-                           usecols="B:E", index_col=0, skipfooter=1)
+    output = pd.read_excel(
+        urls[name]["dl"]["main"], skiprows=2, usecols="B:E", index_col=0, skipfooter=1
+    )
     output.index = output.index + MonthEnd(0)
     output.columns = ["Exportaciones", "Mercado interno", "Total"]
     output.rename_axis(None, inplace=True)
 
-    metadata._set(output, area="Actividad económica", currency="-",
-                  inf_adj="No", unit="Toneladas", seas_adj="NSA",
-                  ts_type="Flujo", cumperiods=1)
+    metadata._set(
+        output,
+        area="Actividad económica",
+        currency="-",
+        inf_adj="No",
+        unit="Toneladas",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
+    )
     return output
 
 
@@ -911,17 +1092,24 @@ def diesel() -> pd.DataFrame:
         patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
         xls = [x for x in listdir(temp_dir) if x.endswith(".xls")][0]
         path_temp = path.join(temp_dir, xls)
-        raw = pd.read_excel(path_temp, sheet_name="vta gas oil por depto",
-                            skiprows=2, usecols="C:W")
-        raw.index = pd.date_range(start="2004-01-31", freq="M",
-                                  periods=len(raw))
+        raw = pd.read_excel(
+            path_temp, sheet_name="vta gas oil por depto", skiprows=2, usecols="C:W"
+        )
+        raw.index = pd.date_range(start="2004-01-31", freq="M", periods=len(raw))
         raw.columns = list(raw.columns.str.replace("\n", " "))[:-1] + ["Total"]
         output = raw
     output.rename_axis(None, inplace=True)
 
-    metadata._set(output, area="Actividad económica", currency="-",
-                  inf_adj="No", unit="m3", seas_adj="NSA",
-                  ts_type="Flujo", cumperiods=1)
+    metadata._set(
+        output,
+        area="Actividad económica",
+        currency="-",
+        inf_adj="No",
+        unit="m3",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
+    )
 
     return output
 
@@ -955,17 +1143,24 @@ def gasoline() -> pd.DataFrame:
         patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
         xls = [x for x in listdir(temp_dir) if x.endswith(".xls")][0]
         path_temp = path.join(temp_dir, xls)
-        raw = pd.read_excel(path_temp, sheet_name="vta gasolinas por depto",
-                            skiprows=2, usecols="C:W")
-        raw.index = pd.date_range(start="2004-01-31", freq="M",
-                                  periods=len(raw))
+        raw = pd.read_excel(
+            path_temp, sheet_name="vta gasolinas por depto", skiprows=2, usecols="C:W"
+        )
+        raw.index = pd.date_range(start="2004-01-31", freq="M", periods=len(raw))
         raw.columns = list(raw.columns.str.replace("\n", " "))[:-1] + ["Total"]
         output = raw
     output.rename_axis(None, inplace=True)
 
-    metadata._set(output, area="Actividad económica", currency="-",
-                  inf_adj="No", unit="m3", seas_adj="NSA",
-                  ts_type="Flujo", cumperiods=1)
+    metadata._set(
+        output,
+        area="Actividad económica",
+        currency="-",
+        inf_adj="No",
+        unit="m3",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
+    )
 
     return output
 
@@ -993,23 +1188,27 @@ def electricity() -> pd.DataFrame:
     with open(temp_rar, "wb") as f:
         r = requests.get(urls[name]["dl"]["main"])
         soup = BeautifulSoup(r.content, features="lxml")
-        rar_url = soup.find_all(href=re.compile("Facturaci[%A-z0-9]+sector"))[
-            0]
+        rar_url = soup.find_all(href=re.compile("Facturaci[%A-z0-9]+sector"))[0]
         f.write(requests.get(rar_url["href"]).content)
     with tempfile.TemporaryDirectory() as temp_dir:
         patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
         xls = [x for x in listdir(temp_dir) if x.endswith(".xls")][0]
         path_temp = path.join(temp_dir, xls)
-        raw = pd.read_excel(path_temp, sheet_name="fact ee",
-                            skiprows=2, usecols="C:J")
-        raw.index = pd.date_range(start="2000-01-31", freq="M",
-                                  periods=len(raw))
+        raw = pd.read_excel(path_temp, sheet_name="fact ee", skiprows=2, usecols="C:J")
+        raw.index = pd.date_range(start="2000-01-31", freq="M", periods=len(raw))
         raw.columns = raw.columns.str.capitalize()
         output = raw
     output.rename_axis(None, inplace=True)
 
-    metadata._set(output, area="Actividad económica", currency="-",
-                  inf_adj="No", unit="MWh", seas_adj="NSA",
-                  ts_type="Flujo", cumperiods=1)
+    metadata._set(
+        output,
+        area="Actividad económica",
+        currency="-",
+        inf_adj="No",
+        unit="MWh",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
+    )
 
     return output

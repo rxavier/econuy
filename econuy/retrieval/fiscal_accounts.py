@@ -10,7 +10,6 @@ from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from requests.exceptions import ConnectionError
 
-from econuy.retrieval.external_sector import reserves
 from econuy import transform
 from econuy.core import Pipeline
 from econuy.utils import metadata
@@ -32,9 +31,13 @@ def _balance_retriever() -> Dict[str, pd.DataFrame]:
     xls = pd.ExcelFile(link)
     output = {}
     for dataset, meta in fiscal_sheets.items():
-        data = (pd.read_excel(xls, sheet_name=meta["sheet"]).
-                dropna(axis=0, thresh=4).dropna(axis=1, thresh=4).
-                transpose().set_index(2, drop=True))
+        data = (
+            pd.read_excel(xls, sheet_name=meta["sheet"])
+            .dropna(axis=0, thresh=4)
+            .dropna(axis=1, thresh=4)
+            .transpose()
+            .set_index(2, drop=True)
+        )
         data.columns = data.iloc[0]
         data = data[data.index.notnull()].rename_axis(None)
         data.index = data.index + MonthEnd(1)
@@ -42,9 +45,14 @@ def _balance_retriever() -> Dict[str, pd.DataFrame]:
         data = data.apply(pd.to_numeric, errors="coerce")
         data.rename_axis(None, inplace=True)
         metadata._set(
-            data, area="Sector público", currency="UYU",
-            inf_adj="No", unit="Millones", seas_adj="NSA",
-            ts_type="Flujo", cumperiods=1
+            data,
+            area="Sector público",
+            currency="UYU",
+            inf_adj="No",
+            unit="Millones",
+            seas_adj="NSA",
+            ts_type="Flujo",
+            cumperiods=1,
         )
 
         output.update({dataset: data})
@@ -157,29 +165,33 @@ def tax_revenue() -> pd.DataFrame:
     Monthly tax revenues : pd.DataFrame
 
     """
-    raw = pd.read_excel(urls["tax_revenue"]["dl"]["main"],
-                        usecols="C:AO", index_col=0)
+    raw = pd.read_excel(urls["tax_revenue"]["dl"]["main"], usecols="C:AO", index_col=0)
     raw.index = pd.to_datetime(raw.index, errors="coerce")
     output = raw.loc[~pd.isna(raw.index)]
     output.index = output.index + MonthEnd(0)
     output.columns = taxes_columns
     output = output.div(1000000)
-    latest = pd.read_csv(urls["tax_revenue"]["dl"]["pdfs"],
-                         index_col=0, parse_dates=True)
+    latest = pd.read_csv(urls["tax_revenue"]["dl"]["pdfs"], index_col=0, parse_dates=True)
     latest = latest.loc[[x not in output.index for x in latest.index]]
     for col in latest.columns:
         for date in latest.index:
-            prev_year = date  + MonthEnd(-12)
-            output.loc[date, col] = (output.loc[prev_year, col]
-                                     * (1 + latest.loc[date, col] / 100))
+            prev_year = date + MonthEnd(-12)
+            output.loc[date, col] = output.loc[prev_year, col] * (1 + latest.loc[date, col] / 100)
     output = pd.concat([output, latest], sort=False)
     output = output.loc[~output.index.duplicated(keep="first")]
 
     output = output.apply(pd.to_numeric, errors="coerce")
     output.rename_axis(None, inplace=True)
-    metadata._set(output, area="Sector público", currency="UYU",
-                  inf_adj="No", unit="Millones", seas_adj="NSA",
-                  ts_type="Flujo", cumperiods=1)
+    metadata._set(
+        output,
+        area="Sector público",
+        currency="UYU",
+        inf_adj="No",
+        unit="Millones",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
+    )
 
     return output
 
@@ -191,70 +203,102 @@ def tax_revenue() -> pd.DataFrame:
 )
 def _public_debt_retriever() -> Dict[str, pd.DataFrame]:
     """Helper function. See any of the `public_debt_...()` functions."""
-    colnames = ["Total deuda", "Plazo contractual: hasta 1 año",
-                "Plazo contractual: entre 1 y 5 años",
-                "Plazo contractual: más de 5 años",
-                "Plazo residual: hasta 1 año",
-                "Plazo residual: entre 1 y 5 años",
-                "Plazo residual: más de 5 años",
-                "Moneda: pesos", "Moneda: dólares", "Moneda: euros",
-                "Moneda: yenes", "Moneda: DEG", "Moneda: otras",
-                "Residencia: no residentes", "Residencia: residentes"]
+    colnames = [
+        "Total deuda",
+        "Plazo contractual: hasta 1 año",
+        "Plazo contractual: entre 1 y 5 años",
+        "Plazo contractual: más de 5 años",
+        "Plazo residual: hasta 1 año",
+        "Plazo residual: entre 1 y 5 años",
+        "Plazo residual: más de 5 años",
+        "Moneda: pesos",
+        "Moneda: dólares",
+        "Moneda: euros",
+        "Moneda: yenes",
+        "Moneda: DEG",
+        "Moneda: otras",
+        "Residencia: no residentes",
+        "Residencia: residentes",
+    ]
 
     xls = pd.ExcelFile(urls["public_debt_gps"]["dl"]["main"])
-    gps_raw = pd.read_excel(xls, sheet_name="SPG2",
-                            usecols="B:Q", index_col=0, skiprows=10,
-                            nrows=(dt.datetime.now().year - 1999) * 4)
+    gps_raw = pd.read_excel(
+        xls,
+        sheet_name="SPG2",
+        usecols="B:Q",
+        index_col=0,
+        skiprows=10,
+        nrows=(dt.datetime.now().year - 1999) * 4,
+    )
     gps = gps_raw.dropna(how="any", thresh=2)
-    gps.index = pd.date_range(start="1999-12-31", periods=len(gps),
-                              freq="Q-DEC")
+    gps.index = pd.date_range(start="1999-12-31", periods=len(gps), freq="Q-DEC")
     gps.columns = colnames
 
-    nfps_raw = pd.read_excel(xls, sheet_name="SPNM bruta",
-                             usecols="B:O", index_col=0)
-    loc = nfps_raw.index.get_loc("9. Deuda Bruta del Sector Público no "
-                                 "monetario por plazo y  moneda.")
-    nfps = nfps_raw.iloc[loc + 5:, :].dropna(how="any")
-    nfps.index = pd.date_range(start="1999-12-31", periods=len(nfps),
-                               freq="Q-DEC")
-    nfps_extra_raw = pd.read_excel(xls, sheet_name="SPNM bruta",
-                                   usecols="O:P", skiprows=11,
-                                   nrows=(dt.datetime.now().year - 1999) * 4)
+    nfps_raw = pd.read_excel(xls, sheet_name="SPNM bruta", usecols="B:O", index_col=0)
+    loc = nfps_raw.index.get_loc(
+        "9. Deuda Bruta del Sector Público no " "monetario por plazo y  moneda."
+    )
+    nfps = nfps_raw.iloc[loc + 5 :, :].dropna(how="any")
+    nfps.index = pd.date_range(start="1999-12-31", periods=len(nfps), freq="Q-DEC")
+    nfps_extra_raw = pd.read_excel(
+        xls,
+        sheet_name="SPNM bruta",
+        usecols="O:P",
+        skiprows=11,
+        nrows=(dt.datetime.now().year - 1999) * 4,
+    )
     nfps_extra = nfps_extra_raw.dropna(how="all")
     nfps_extra.index = nfps.index
     nfps = pd.concat([nfps, nfps_extra], axis=1)
     nfps.columns = colnames
 
-    cb_raw = pd.read_excel(xls, sheet_name="BCU bruta",
-                           usecols="B:O", index_col=0,
-                           skiprows=(dt.datetime.now().year - 1999) * 8 + 20)
+    cb_raw = pd.read_excel(
+        xls,
+        sheet_name="BCU bruta",
+        usecols="B:O",
+        index_col=0,
+        skiprows=(dt.datetime.now().year - 1999) * 8 + 20,
+    )
     cb = cb_raw.dropna(how="any")
-    cb.index = pd.date_range(start="1999-12-31", periods=len(cb),
-                             freq="Q-DEC")
-    cb_extra_raw = pd.read_excel(xls, sheet_name="BCU bruta",
-                                 usecols="O:P", skiprows=11,
-                                 nrows=(dt.datetime.now().year - 1999) * 4)
+    cb.index = pd.date_range(start="1999-12-31", periods=len(cb), freq="Q-DEC")
+    cb_extra_raw = pd.read_excel(
+        xls,
+        sheet_name="BCU bruta",
+        usecols="O:P",
+        skiprows=11,
+        nrows=(dt.datetime.now().year - 1999) * 4,
+    )
     bcu_extra = cb_extra_raw.dropna(how="all")
     bcu_extra.index = cb.index
     cb = pd.concat([cb, bcu_extra], axis=1)
     cb.columns = colnames
 
-    assets_raw = pd.read_excel(xls, sheet_name="Activos Neta",
-                               usecols="B,C,D,K", index_col=0, skiprows=13,
-                               nrows=(dt.datetime.now().year - 1999) * 4)
+    assets_raw = pd.read_excel(
+        xls,
+        sheet_name="Activos Neta",
+        usecols="B,C,D,K",
+        index_col=0,
+        skiprows=13,
+        nrows=(dt.datetime.now().year - 1999) * 4,
+    )
     assets = assets_raw.dropna(how="any")
-    assets.index = pd.date_range(start="1999-12-31", periods=len(assets),
-                                 freq="Q-DEC")
-    assets.columns = ["Total activos", "Sector público no monetario",
-                      "BCU"]
+    assets.index = pd.date_range(start="1999-12-31", periods=len(assets), freq="Q-DEC")
+    assets.columns = ["Total activos", "Sector público no monetario", "BCU"]
 
     output = {"gps": gps, "nfps": nfps, "cb": cb, "assets": assets}
 
     for meta, data in output.items():
         data.rename_axis(None, inplace=True)
-        metadata._set(data, area="Sector público", currency="USD",
-                      inf_adj="No", unit="Millones", seas_adj="NSA",
-                      ts_type="Stock", cumperiods=1)
+        metadata._set(
+            data,
+            area="Sector público",
+            currency="USD",
+            inf_adj="No",
+            unit="Millones",
+            seas_adj="NSA",
+            ts_type="Stock",
+            cumperiods=1,
+        )
 
         output.update({meta: data})
 
@@ -326,20 +370,28 @@ def net_public_debt(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     gross_debt = pipeline.dataset.loc[:, ["Total deuda"]]
     pipeline.get("public_assets")
     assets = pipeline.dataset.loc[:, ["Total activos"]]
-    gross_debt.columns = ["Deuda neta del sector"
-                          " público global excl. encajes"]
+    gross_debt.columns = ["Deuda neta del sector" " público global excl. encajes"]
     assets.columns = gross_debt.columns
     pipeline.get("reserves")
-    deposits = pipeline.dataset.loc[:,
-                                     ["Obligaciones en ME con el sector financiero"]]
-    deposits = (transform.resample(deposits, rule="Q-DEC", operation="last")
-                .reindex(gross_debt.index).squeeze())
+    deposits = pipeline.dataset.loc[:, ["Obligaciones en ME con el sector financiero"]]
+    deposits = (
+        transform.resample(deposits, rule="Q-DEC", operation="last")
+        .reindex(gross_debt.index)
+        .squeeze()
+    )
     output = gross_debt.add(assets).add(deposits, axis=0).dropna()
     output.rename_axis(None, inplace=True)
 
-    metadata._set(output, area="Sector público",
-                  currency="USD", inf_adj="No", unit="Millones",
-                  seas_adj="NSA", ts_type="Stock", cumperiods=1)
+    metadata._set(
+        output,
+        area="Sector público",
+        currency="USD",
+        inf_adj="No",
+        unit="Millones",
+        seas_adj="NSA",
+        ts_type="Stock",
+        cumperiods=1,
+    )
 
     return output
 
@@ -382,96 +434,113 @@ def balance_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     proc = pd.DataFrame(index=gps.index)
 
     proc["Ingresos: GC-BPS"] = gc["Ingresos: GC-BPS"]
-    proc["Ingresos: GC-BPS ex. FSS"] = (gc["Ingresos: GC-BPS"]
-                                        - gc["Ingresos: FSS - Cincuentones"])
+    proc["Ingresos: GC-BPS ex. FSS"] = gc["Ingresos: GC-BPS"] - gc["Ingresos: FSS - Cincuentones"]
     proc["Ingresos: GC"] = gc["Ingresos: GC"]
     proc["Ingresos: DGI"] = gc["Ingresos: DGI"]
     proc["Ingresos: Comercio ext."] = gc["Ingresos: Comercio ext."]
-    proc["Ingresos: Otros"] = (gc["Ingresos: GC"]
-                               - gc["Ingresos: DGI"]
-                               - gc["Ingresos: Comercio ext."])
+    proc["Ingresos: Otros"] = (
+        gc["Ingresos: GC"] - gc["Ingresos: DGI"] - gc["Ingresos: Comercio ext."]
+    )
     proc["Ingresos: BPS"] = gc["Ingresos: BPS neto"]
     proc["Ingresos: FSS - Cincuentones"] = gc["Ingresos: FSS - Cincuentones"]
-    proc["Ingresos: BPS ex FSS"] = (gc["Ingresos: BPS neto"]
-                                    - gc["Ingresos: FSS - Cincuentones"])
-    proc["Egresos: Primarios GC-BPS"] = (gc["Egresos: GC-BPS"]
-                                         - gc["Intereses: Total"])
-    proc["Egresos: Primarios corrientes GC-BPS"] = (proc["Egresos: Primarios GC-BPS"]
-                                                    - gc["Egresos: Inversión"].squeeze())
+    proc["Ingresos: BPS ex FSS"] = gc["Ingresos: BPS neto"] - gc["Ingresos: FSS - Cincuentones"]
+    proc["Egresos: Primarios GC-BPS"] = gc["Egresos: GC-BPS"] - gc["Intereses: Total"]
+    proc["Egresos: Primarios corrientes GC-BPS"] = (
+        proc["Egresos: Primarios GC-BPS"] - gc["Egresos: Inversión"].squeeze()
+    )
     proc["Egresos: Remuneraciones"] = gc["Egresos: Remuneraciones"]
     proc["Egresos: No personales"] = gc["Egresos: No personales"]
     proc["Egresos: Pasividades"] = gc["Egresos: Pasividades"]
     proc["Egresos: Transferencias"] = gc["Egresos: Transferencias"]
     proc["Egresos: Inversión"] = gc["Egresos: Inversión"]
-    proc["Resultado: Primario GC-BPS"] = (proc["Ingresos: GC-BPS"]
-                                          - proc["Egresos: Primarios GC-BPS"])
-    proc["Resultado: Primario GC-BPS ex FSS"] = (proc["Ingresos: GC-BPS ex. FSS"]
-                                                 - proc["Egresos: Primarios GC-BPS"])
+    proc["Resultado: Primario GC-BPS"] = (
+        proc["Ingresos: GC-BPS"] - proc["Egresos: Primarios GC-BPS"]
+    )
+    proc["Resultado: Primario GC-BPS ex FSS"] = (
+        proc["Ingresos: GC-BPS ex. FSS"] - proc["Egresos: Primarios GC-BPS"]
+    )
     proc["Intereses: GC-BPS"] = gc["Intereses: Total"]
     proc["Intereses: FSS - Cincuentones"] = gc["Intereses: FSS - Cincuentones"]
-    proc["Intereses: GC-BPS ex FSS"] = (proc["Intereses: GC-BPS"]
-                                        - proc["Intereses: FSS - Cincuentones"])
-    proc["Resultado: Global GC-BPS"] = (proc["Resultado: Primario GC-BPS"]
-                                        - proc["Intereses: GC-BPS"])
-    proc["Resultado: Global GC-BPS ex FSS"] = (proc["Resultado: Primario GC-BPS ex FSS"]
-                                               - proc["Intereses: GC-BPS ex FSS"])
+    proc["Intereses: GC-BPS ex FSS"] = (
+        proc["Intereses: GC-BPS"] - proc["Intereses: FSS - Cincuentones"]
+    )
+    proc["Resultado: Global GC-BPS"] = (
+        proc["Resultado: Primario GC-BPS"] - proc["Intereses: GC-BPS"]
+    )
+    proc["Resultado: Global GC-BPS ex FSS"] = (
+        proc["Resultado: Primario GC-BPS ex FSS"] - proc["Intereses: GC-BPS ex FSS"]
+    )
 
     proc["Resultado: Primario corriente EEPP"] = nfps["Ingresos: Res. primario corriente EEPP"]
     proc["Egresos: Inversiones EEPP"] = pe["Egresos: Inversiones"]
-    proc["Resultado: Primario EEPP"] = (proc["Resultado: Primario corriente EEPP"]
-                                        - proc["Egresos: Inversiones EEPP"])
+    proc["Resultado: Primario EEPP"] = (
+        proc["Resultado: Primario corriente EEPP"] - proc["Egresos: Inversiones EEPP"]
+    )
     proc["Intereses: EEPP"] = pe["Intereses"]
-    proc["Resultado: Global EEPP"] = (proc["Resultado: Primario EEPP"]
-                                      - proc["Intereses: EEPP"])
+    proc["Resultado: Global EEPP"] = proc["Resultado: Primario EEPP"] - proc["Intereses: EEPP"]
 
     proc["Resultado: Primario intendencias"] = nfps["Resultado: Primario intendencias"]
     proc["Intereses: Intendencias"] = nfps["Intereses: Intendencias"]
-    proc["Resultado: Global intendencias"] = (proc["Resultado: Primario intendencias"]
-                                              - proc["Intereses: Intendencias"])
+    proc["Resultado: Global intendencias"] = (
+        proc["Resultado: Primario intendencias"] - proc["Intereses: Intendencias"]
+    )
 
     proc["Resultado: Primario BSE"] = nfps["Resultado: Primario BSE"]
     proc["Intereses: BSE"] = nfps["Intereses: BSE"]
-    proc["Resultado: Global BSE"] = (proc["Resultado: Primario BSE"]
-                                     - proc["Intereses: BSE"])
+    proc["Resultado: Global BSE"] = proc["Resultado: Primario BSE"] - proc["Intereses: BSE"]
 
-    proc["Resultado: Primario resto SPNF"] = (proc["Resultado: Primario EEPP"]
-                                              + proc["Resultado: Primario intendencias"]
-                                              + proc["Resultado: Primario BSE"])
-    proc["Intereses: Resto SPNF"] = (proc["Intereses: EEPP"]
-                                     + proc["Intereses: Intendencias"]
-                                     + proc["Intereses: BSE"])
-    proc["Resultado: Global resto SPNF"] = (proc["Resultado: Global EEPP"]
-                                            + proc["Resultado: Global intendencias"]
-                                            + proc["Resultado: Global BSE"])
+    proc["Resultado: Primario resto SPNF"] = (
+        proc["Resultado: Primario EEPP"]
+        + proc["Resultado: Primario intendencias"]
+        + proc["Resultado: Primario BSE"]
+    )
+    proc["Intereses: Resto SPNF"] = (
+        proc["Intereses: EEPP"] + proc["Intereses: Intendencias"] + proc["Intereses: BSE"]
+    )
+    proc["Resultado: Global resto SPNF"] = (
+        proc["Resultado: Global EEPP"]
+        + proc["Resultado: Global intendencias"]
+        + proc["Resultado: Global BSE"]
+    )
     proc["Resultado: Primario SPNF"] = nfps["Resultado: Primario SPNF"]
-    proc["Resultado: Primario SPNF ex FSS"] = (proc["Resultado: Primario SPNF"]
-                                               - proc["Ingresos: FSS - Cincuentones"])
+    proc["Resultado: Primario SPNF ex FSS"] = (
+        proc["Resultado: Primario SPNF"] - proc["Ingresos: FSS - Cincuentones"]
+    )
     proc["Intereses: SPNF"] = nfps["Intereses: Totales"]
-    proc["Intereses: SPNF ex FSS"] = (proc["Intereses: SPNF"]
-                                      - proc["Intereses: FSS - Cincuentones"])
+    proc["Intereses: SPNF ex FSS"] = (
+        proc["Intereses: SPNF"] - proc["Intereses: FSS - Cincuentones"]
+    )
     proc["Resultado: Global SPNF"] = nfps["Resultado: Global SPNF"]
-    proc["Resultado: Global SPNF ex FSS"] = (proc["Resultado: Primario SPNF ex FSS"]
-                                             - proc["Intereses: SPNF ex FSS"])
+    proc["Resultado: Global SPNF ex FSS"] = (
+        proc["Resultado: Primario SPNF ex FSS"] - proc["Intereses: SPNF ex FSS"]
+    )
 
     proc["Resultado: Primario BCU"] = gps["Resultado: Primario BCU"]
     proc["Intereses: BCU"] = gps["Intereses: BCU"]
     proc["Resultado: Global BCU"] = gps["Resultado: Global BCU"]
 
     proc["Resultado: Primario SPC"] = gps["Resultado: Primario SPC"]
-    proc["Resultado: Primario SPC ex FSS"] = (proc["Resultado: Primario SPNF ex FSS"]
-                                              + proc["Resultado: Primario BCU"])
+    proc["Resultado: Primario SPC ex FSS"] = (
+        proc["Resultado: Primario SPNF ex FSS"] + proc["Resultado: Primario BCU"]
+    )
     proc["Intereses: SPC"] = proc["Intereses: SPNF"] + proc["Intereses: BCU"]
-    proc["Intereses: SPC ex FSS"] = (proc["Intereses: SPNF ex FSS"]
-                                     + proc["Intereses: BCU"])
-    proc["Resultado: Global SPC"] = (proc["Resultado: Global SPNF"]
-                                     + proc["Resultado: Global BCU"])
-    proc["Resultado: Global SPC ex FSS"] = (proc["Resultado: Global SPNF ex FSS"]
-                                            + proc["Resultado: Global BCU"])
+    proc["Intereses: SPC ex FSS"] = proc["Intereses: SPNF ex FSS"] + proc["Intereses: BCU"]
+    proc["Resultado: Global SPC"] = proc["Resultado: Global SPNF"] + proc["Resultado: Global BCU"]
+    proc["Resultado: Global SPC ex FSS"] = (
+        proc["Resultado: Global SPNF ex FSS"] + proc["Resultado: Global BCU"]
+    )
     output = proc
     output.rename_axis(None, inplace=True)
 
-    metadata._set(output, area="Sector público",
-                  currency="UYU", inf_adj="No", unit="Millones",
-                  seas_adj="NSA", ts_type="Flujo", cumperiods=1)
+    metadata._set(
+        output,
+        area="Sector público",
+        currency="UYU",
+        inf_adj="No",
+        unit="Millones",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
+    )
 
     return output

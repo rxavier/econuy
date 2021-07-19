@@ -18,7 +18,9 @@ sqlutil.insert_csvs(con=TEST_CON, directory=TEST_DIR)
 
 
 def remove_temporary_files_folders():
-    avoid = list(datasets.original().keys()) + list(datasets.custom().keys()) + ["commodity_weights"]
+    avoid = (
+        list(datasets.original().keys()) + list(datasets.custom().keys()) + ["commodity_weights"]
+    )
     avoid_csv = [f"{x}.csv" for x in avoid]
 
     for f in listdir(TEST_DIR):
@@ -49,9 +51,13 @@ def test_save_no_location():
         s.save()
 
 
-@pytest.mark.parametrize("names,fmt,files",
-                         [(["cpi"], "xlsx", ["cpi.xlsx"]),
-                          (["cpi", "nxr_monthly"], "csv", ["cpi.csv", "nxr_monthly.csv"])])
+@pytest.mark.parametrize(
+    "names,fmt,files",
+    [
+        (["cpi"], "xlsx", ["cpi.xlsx"]),
+        (["cpi", "nxr_monthly"], "csv", ["cpi.csv", "nxr_monthly.csv"]),
+    ],
+)
 def test_save(names, fmt, files, tmpdir):
     s = Session(tmpdir, always_save=False, save_fmt=fmt, read_fmt=fmt)
     s.get(names)
@@ -63,24 +69,30 @@ def test_save(names, fmt, files, tmpdir):
 
 
 def test_save_different_formats(tmpdir):
-    s = Session(tmpdir, read_fmt="xlsx", read_header="separate",
-                save_fmt="xlsx", save_header="separate", download=False)
-    s.get("cpi") # read: xlsx, separate; save: xlsx, separate
+    s = Session(
+        tmpdir,
+        read_fmt="xlsx",
+        read_header="separate",
+        save_fmt="xlsx",
+        save_header="separate",
+        download=False,
+    )
+    s.get("cpi")  # read: xlsx, separate; save: xlsx, separate
     first = s.datasets["cpi"].copy()
 
     s.save_fmt = "csv"
     s.save_header = "included"
-    s.get("cpi") # read: xlsx, separate; save: csv, included
+    s.get("cpi")  # read: xlsx, separate; save: csv, included
     second = s.datasets["cpi"].copy()
 
     s.read_fmt = "csv"
     s.read_header = "included"
     s.save_header = None
-    s.get("cpi") # read: csv, included; save: csv, None
+    s.get("cpi")  # read: csv, included; save: csv, None
     third = s.datasets["cpi"].copy()
 
     s.read_header = None
-    s.get("cpi") # read: csv, None; save: csv, None
+    s.get("cpi")  # read: csv, None; save: csv, None
     fourth = s.datasets["cpi"].copy()
 
     fifth = third.copy()
@@ -120,8 +132,10 @@ def test_concat(freq_resample, freq_result):
     s.resample(select="natacc_ind_con_nsa", rule=freq_resample)
     s.concat(select="all", concat_name="test")
     df = s.datasets["concat_test"]
-    combined_cols = (s.datasets["natacc_ind_con_nsa"].columns
-                     .append(s.datasets["public_debt_gps"].columns)
-                     .get_level_values(0))
+    combined_cols = (
+        s.datasets["natacc_ind_con_nsa"]
+        .columns.append(s.datasets["public_debt_gps"].columns)
+        .get_level_values(0)
+    )
     assert pd.infer_freq(df.index) == freq_result
     assert all(x in df.columns.get_level_values(0) for x in combined_cols)

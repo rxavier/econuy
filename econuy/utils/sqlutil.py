@@ -8,12 +8,15 @@ from pandas.errors import ParserError
 from sqlalchemy import select, table, column, and_
 
 
-def read(con: sqla.engine.base.Connection,
-         command: Optional[str] = None,
-         table_name: Optional[str] = None,
-         cols: Union[str, Iterable[str], None] = None,
-         start_date: Optional[str] = None, end_date: Optional[str] = None,
-         **kwargs) -> pd.DataFrame:
+def read(
+    con: sqla.engine.base.Connection,
+    command: Optional[str] = None,
+    table_name: Optional[str] = None,
+    cols: Union[str, Iterable[str], None] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    **kwargs,
+) -> pd.DataFrame:
     """
     Convenience wrapper around `pandas.read_sql_query <https://pandas.pydata.
     org/pandas-docs/stable/reference/api/pandas.read_sql_query.html>`_.
@@ -48,13 +51,12 @@ def read(con: sqla.engine.base.Connection,
 
     """
     if command is not None:
-        output = pd.read_sql_query(sql=command, con=con,
-                                   index_col="index", **kwargs)
+        output = pd.read_sql_query(sql=command, con=con, index_col="index", **kwargs)
     else:
         if all(v is None for v in [cols, start_date, end_date]):
-            output = pd.read_sql(sql=table_name, con=con,
-                                 index_col="index",
-                                 parse_dates="index", **kwargs)
+            output = pd.read_sql(
+                sql=table_name, con=con, index_col="index", parse_dates="index", **kwargs
+            )
         else:
             if isinstance(cols, Iterable) and not isinstance(cols, str):
                 cols_sql = [column(x) for x in cols]
@@ -68,18 +70,16 @@ def read(con: sqla.engine.base.Connection,
             dates = column("index")
             if start_date is not None:
                 if end_date is not None:
-                    command = command.where(and_(dates >= f"{start_date}",
-                                                 dates <= f"{end_date}"))
+                    command = command.where(and_(dates >= f"{start_date}", dates <= f"{end_date}"))
                 else:
                     command = command.where(dates >= f"{start_date}")
             elif end_date is not None:
                 command = command.where(dates <= f"{end_date}")
 
-            output = pd.read_sql(sql=command, con=con,
-                                 index_col="index",
-                                 parse_dates="index", **kwargs)
-        metadata = pd.read_sql(sql=f"{table_name}_metadata", con=con,
-                               index_col="index")
+            output = pd.read_sql(
+                sql=command, con=con, index_col="index", parse_dates="index", **kwargs
+            )
+        metadata = pd.read_sql(sql=f"{table_name}_metadata", con=con, index_col="index")
         if isinstance(cols, Iterable) and cols != "*":
             if isinstance(cols, str):
                 cols = [cols]
@@ -92,9 +92,9 @@ def read(con: sqla.engine.base.Connection,
     return output
 
 
-def df_to_sql(df: pd.DataFrame, name: str,
-              con: sqla.engine.base.Connection,
-              if_exists: str = "replace") -> None:
+def df_to_sql(
+    df: pd.DataFrame, name: str, con: sqla.engine.base.Connection, if_exists: str = "replace"
+) -> None:
     """Flatten MultiIndex index columns before creating SQL table
     from dataframe."""
     data = df.copy()
@@ -103,28 +103,33 @@ def df_to_sql(df: pd.DataFrame, name: str,
         metadata.to_sql(name=f"{name}_metadata", con=con, if_exists=if_exists)
         data.columns = data.columns.get_level_values(level=0)
 
-    data.to_sql(name=name, con=con, if_exists=if_exists,
-                index_label="index")
+    data.to_sql(name=name, con=con, if_exists=if_exists, index_label="index")
 
     return
 
 
-def insert_csvs(con: sqla.engine.base.Connection,
-                directory: Union[str, Path, PathLike]) -> None:
+def insert_csvs(con: sqla.engine.base.Connection, directory: Union[str, Path, PathLike]) -> None:
     """Insert all CSV files in data directory into a SQL database."""
     if path.isfile(directory):
         directory = path.dirname(directory)
     for file in [x for x in listdir(directory) if x.endswith(".csv")]:
         full_path = Path(directory) / file
         try:
-            data = pd.read_csv(full_path, index_col=0,
-                               header=list(range(9)), float_precision="high",
-                               parse_dates=True, encoding="latin1")
+            data = pd.read_csv(
+                full_path,
+                index_col=0,
+                header=list(range(9)),
+                float_precision="high",
+                parse_dates=True,
+                encoding="latin1",
+            )
         except ParserError:
-            data = pd.read_csv(full_path, index_col=0, float_precision="high",
-                               parse_dates=True, encoding="latin1")
-        df_to_sql(df=data, name=Path(file).with_suffix("").as_posix(),
-                  con=con, if_exists="replace")
+            data = pd.read_csv(
+                full_path, index_col=0, float_precision="high", parse_dates=True, encoding="latin1"
+            )
+        df_to_sql(
+            df=data, name=Path(file).with_suffix("").as_posix(), con=con, if_exists="replace"
+        )
         print(f"Inserted {file} into {con.engine.url}.")
 
     return

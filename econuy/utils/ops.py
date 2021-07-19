@@ -9,11 +9,12 @@ from sqlalchemy.exc import ProgrammingError, OperationalError
 from econuy.utils import metadata, sqlutil
 
 
-def _read(data_loc: Union[str, PathLike,
-                          Connection, Engine],
-          file_fmt: str = "csv",
-          multiindex: Optional[str] = "included",
-          table_name: Optional[str] = None) -> pd.DataFrame:
+def _read(
+    data_loc: Union[str, PathLike, Connection, Engine],
+    file_fmt: str = "csv",
+    multiindex: Optional[str] = "included",
+    table_name: Optional[str] = None,
+) -> pd.DataFrame:
     """Read a DataFrame from SQL database or CSV/Excel.
 
     Parameters
@@ -32,13 +33,11 @@ def _read(data_loc: Union[str, PathLike,
     try:
         if isinstance(data_loc, (Engine, Connection)):
             if multiindex is not None:
-                previous_data = sqlutil.read(con=data_loc,
-                                             table_name=table_name)
+                previous_data = sqlutil.read(con=data_loc, table_name=table_name)
             else:
-                previous_data = pd.read_sql(sql=table_name,
-                                            con=data_loc,
-                                            index_col="index",
-                                            parse_dates="index")
+                previous_data = pd.read_sql(
+                    sql=table_name, con=data_loc, index_col="index", parse_dates="index"
+                )
         else:
             date_format = None
             special_date_format = ["cattle", "reserves_changes"]
@@ -46,39 +45,42 @@ def _read(data_loc: Union[str, PathLike,
                 date_format = "%d/%m/%Y"
             if file_fmt == "csv":
                 if multiindex == "included":
-                    previous_data = pd.read_csv(data_loc, index_col=0,
-                                                header=list(range(9)),
-                                                float_precision="high",
-                                                encoding="latin1")
+                    previous_data = pd.read_csv(
+                        data_loc,
+                        index_col=0,
+                        header=list(range(9)),
+                        float_precision="high",
+                        encoding="latin1",
+                    )
                     metadata._set(previous_data)
                 else:
-                    previous_data = pd.read_csv(data_loc, index_col=0,
-                                                header=0, float_precision="high",
-                                                encoding="latin1")
+                    previous_data = pd.read_csv(
+                        data_loc, index_col=0, header=0, float_precision="high", encoding="latin1"
+                    )
             else:
                 if multiindex == "included":
-                    previous_data = pd.read_excel(data_loc, index_col=0,
-                                                  header=list(range(9)),
-                                                  sheet_name="Data")
+                    previous_data = pd.read_excel(
+                        data_loc, index_col=0, header=list(range(9)), sheet_name="Data"
+                    )
                     metadata._set(previous_data)
                 elif multiindex == "separate":
                     excel = pd.ExcelFile(data_loc)
-                    previous_data = pd.read_excel(excel, index_col=0,
-                                                  header=0, sheet_name="Data")
-                    header = pd.read_excel(excel,
-                                           sheet_name="Metadata",
-                                           index_col=0).rename_axis("Indicador").T
+                    previous_data = pd.read_excel(excel, index_col=0, header=0, sheet_name="Data")
+                    header = (
+                        pd.read_excel(excel, sheet_name="Metadata", index_col=0)
+                        .rename_axis("Indicador")
+                        .T
+                    )
                     previous_data.columns = pd.MultiIndex.from_frame(header.reset_index())
                     metadata._set(previous_data)
                 else:
-                    previous_data = pd.read_excel(data_loc, index_col=0,
-                                                  header=0, sheet_name="Data")
+                    previous_data = pd.read_excel(
+                        data_loc, index_col=0, header=0, sheet_name="Data"
+                    )
             try:
-                previous_data.index = pd.to_datetime(previous_data.index,
-                                                    format=date_format)
+                previous_data.index = pd.to_datetime(previous_data.index, format=date_format)
             except ValueError:
-                previous_data.index = pd.to_datetime(previous_data.index,
-                                                     format=None)
+                previous_data.index = pd.to_datetime(previous_data.index, format=None)
 
     except (ProgrammingError, OperationalError, FileNotFoundError):
         previous_data = pd.DataFrame()
@@ -86,10 +88,13 @@ def _read(data_loc: Union[str, PathLike,
     return previous_data
 
 
-def _save(data: pd.DataFrame,
-          data_loc: Union[str, PathLike, Connection, Engine],
-          table_name: str = None, file_fmt: str = "csv",
-          multiindex: str = "included"):
+def _save(
+    data: pd.DataFrame,
+    data_loc: Union[str, PathLike, Connection, Engine],
+    table_name: str = None,
+    file_fmt: str = "csv",
+    multiindex: str = "included",
+):
     """Save a DataFrame to SQL database or CSV/Excel.
 
     Parameters
@@ -108,8 +113,7 @@ def _save(data: pd.DataFrame,
         it to another sheet (only valid for Excel-type formats).
     """
     if isinstance(data_loc, (Engine, Connection)):
-        sqlutil.df_to_sql(data, name=table_name,
-                          con=data_loc)
+        sqlutil.df_to_sql(data, name=table_name, con=data_loc)
     else:
         data_proc = data.copy()
         if file_fmt == "csv":
@@ -134,8 +138,7 @@ def _save(data: pd.DataFrame,
     return
 
 
-def _revise(new_data: pd.DataFrame, prev_data: pd.DataFrame,
-            revise_rows: Union[int, str]):
+def _revise(new_data: pd.DataFrame, prev_data: pd.DataFrame, revise_rows: Union[int, str]):
     """Replace n rows of data at the end of a dataframe with new data."""
     if len(prev_data) == 0:
         return new_data
@@ -163,18 +166,22 @@ def _revise(new_data: pd.DataFrame, prev_data: pd.DataFrame,
     else:
         raise ValueError("`revise_rows` accepts int, 'nodup' or 'auto'")
 
-    non_revised = prev_data[:len(prev_data) - revise_rows]
-    revised = new_data[len(prev_data) - revise_rows:]
+    non_revised = prev_data[: len(prev_data) - revise_rows]
+    revised = new_data[len(prev_data) - revise_rows :]
     non_revised.columns = new_data.columns
     updated = non_revised.append(revised, sort=False)
 
     return updated
 
 
-def _io(operation: str, data_loc: Union[str, PathLike, Connection, Engine],
-        name: str, data: Optional[pd.DataFrame] = None,
-        file_fmt: str = "csv",
-        multiindex: Optional[str] = "included") -> Optional[pd.DataFrame]:
+def _io(
+    operation: str,
+    data_loc: Union[str, PathLike, Connection, Engine],
+    name: str,
+    data: Optional[pd.DataFrame] = None,
+    file_fmt: str = "csv",
+    multiindex: Optional[str] = "included",
+) -> Optional[pd.DataFrame]:
     """Save/read a DataFrame to/from SQL database or CSV/Excel.
 
     Parameters
@@ -201,7 +208,7 @@ def _io(operation: str, data_loc: Union[str, PathLike, Connection, Engine],
     if operation not in valid_operation:
         raise ValueError(f"'operation' must be one of {', '.join(valid_operation)}.")
     if multiindex not in ["included", "separate", None]:
-        raise ValueError(f"'multiindex' must be one of 'included', 'separate' or None.")
+        raise ValueError("'multiindex' must be one of 'included', 'separate' or None.")
 
     suffix = f".{file_fmt}"
     if operation == "read":
@@ -209,9 +216,7 @@ def _io(operation: str, data_loc: Union[str, PathLike, Connection, Engine],
             full_update_loc = (Path(data_loc) / name).with_suffix(suffix)
         else:
             full_update_loc = data_loc
-        return _read(full_update_loc, table_name=name,
-                     multiindex=multiindex,
-                     file_fmt=file_fmt)
+        return _read(full_update_loc, table_name=name, multiindex=multiindex, file_fmt=file_fmt)
 
     elif operation == "save":
         if isinstance(data_loc, (str, PathLike)):
@@ -221,7 +226,11 @@ def _io(operation: str, data_loc: Union[str, PathLike, Connection, Engine],
         else:
             full_save_loc = data_loc
 
-        _save(data=data, data_loc=full_save_loc,
-              file_fmt=file_fmt, multiindex=multiindex,
-              table_name=name)
+        _save(
+            data=data,
+            data_loc=full_save_loc,
+            file_fmt=file_fmt,
+            multiindex=multiindex,
+            table_name=name,
+        )
         return
