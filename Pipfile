@@ -17,6 +17,7 @@ autopep8 = "*"
 m2r = "*"
 recommonmark = "*"
 jupyter = "*"
+pre-commit = "*"
 
 [packages]
 pandas = "==1.2.3"
