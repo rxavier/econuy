@@ -15,7 +15,7 @@ from econuy.utils import metadata, x13util
 
 
 def convert_usd(df: pd.DataFrame,
-                pipeline = None,
+                pipeline=None,
                 errors: str = "raise") -> pd.DataFrame:
     """Convert to other units.
 
@@ -102,7 +102,7 @@ def _convert_usd(df: pd.DataFrame,
 def convert_real(df: pd.DataFrame,
                  start_date: Union[str, datetime, None] = None,
                  end_date: Union[str, datetime, None] = None,
-                 pipeline = None,
+                 pipeline=None,
                  errors: str = "raise") -> pd.DataFrame:
     """Convert to other units.
 
@@ -206,7 +206,7 @@ def _convert_real(df: pd.DataFrame,
 
 
 def convert_gdp(df: pd.DataFrame,
-                pipeline = None,
+                pipeline=None,
                 errors: str = "raise") -> pd.DataFrame:
     """Convert to other units.
 
@@ -623,113 +623,104 @@ def _decompose(df: pd.DataFrame, component: str = "both", method: str = "x13",
     old_columns = df_proc.columns
     df_proc.columns = df_proc.columns.get_level_values(level=0)
     df_proc.index = pd.to_datetime(df_proc.index, errors="coerce")
-    trends = pd.DataFrame(data=np.nan, index=df_proc.index,
-                          columns=old_columns)
-    seas_adjs = trends.copy()
 
-    if method == "x13":
-        try:
-            with warnings.catch_warnings():
-                if ignore_warnings is True:
-                    action = "ignore"
-                else:
-                    action = "default"
-                warnings.filterwarnings(action=action, category=X13Warning)
-                results = df_proc.apply(
-                    lambda x: x13a(x.dropna(), outlier=outlier,
+    trends_array = []
+    seas_adjs_array = []
+    for col in df_proc.columns:
+        col_df = df_proc[col].dropna()
+        if method == "x13":
+            try:
+                with warnings.catch_warnings():
+                    if ignore_warnings is True:
+                        action = "ignore"
+                    else:
+                        action = "default"
+                    warnings.filterwarnings(action=action, category=X13Warning)
+                    results = x13a(col_df, outlier=outlier,
                                    trading=trading, x12path=x13_binary,
                                    prefer_x13=True, **kwargs)
-                )
-            trends = results.apply(lambda x: x.trend.reindex(df_proc.index)).T
-            seas_adjs = results.apply(lambda x: x.seasadj.
-                                      reindex(df_proc.index)).T
 
-        except X13Error:
-            if force_x13 is True:
-                if outlier is True:
-                    try:
-                        warnings.warn("X13 error found with selected "
-                                      "parameters. Trying with outlier=False.",
-                                      UserWarning)
-                        return decompose(df=df, method=method,
-                                         outlier=False,
-                                         component=component,
-                                         fallback=fallback,
-                                         force_x13=force_x13,
-                                         x13_binary=x13_binary,
-                                         **kwargs)
-                    except X13Error:
+                    trends = results.trend.reindex(df_proc.index).T
+                    seas_adjs = results.seasadj.reindex(df_proc.index).T
+
+            except X13Error:
+                if force_x13 is True:
+                    if outlier is True:
+                        try:
+                            warnings.warn("X13 error found with selected "
+                                          "parameters. Trying with outlier=False.",
+                                          UserWarning)
+                            results = x13a(col_df,
+                                           outlier=False, trading=trading,
+                                           x12path=x13_binary,
+                                           prefer_x13=True, **kwargs)
+                        except X13Error:
+                            try:
+                                warnings.warn("X13 error found with trading=True. "
+                                              "Trying with trading=False.",
+                                              UserWarning)
+                                results = x13a(col_df,
+                                               outlier=False, trading=False,
+                                               x12path=x13_binary,
+                                               prefer_x13=True, **kwargs)
+                                trends = results.trend.reindex(df_proc.index).T
+                                seas_adjs = results.seasadj.reindex(
+                                    df_proc.index).T
+                            except X13Error:
+                                warnings.warn("No combination of parameters "
+                                              "successful. No decomposition "
+                                              "performed.",
+                                              UserWarning)
+                                trends = error_handler(
+                                    df=col_df, errors=errors)
+                                seas_adjs = trends.copy()
+
+                    elif trading is True:
                         try:
                             warnings.warn("X13 error found with trading=True. "
-                                          "Trying with trading=False.",
+                                          "Trying with trading=False...",
                                           UserWarning)
-                            return decompose(df=df, method=method,
-                                             outlier=False, trading=False,
-                                             component=component,
-                                             fallback=fallback,
-                                             force_x13=force_x13,
-                                             x13_binary=x13_binary,
-                                             **kwargs)
+                            results = x13a(col_df, trading=False,
+                                           x12path=x13_binary,
+                                           prefer_x13=True, **kwargs)
+                            trends = results.trend.reindex(df_proc.index).T
+                            seas_adjs = results.seasadj.reindex(
+                                df_proc.index).T
                         except X13Error:
                             warnings.warn("No combination of parameters "
-                                          "successful. No decomposition "
-                                          "performed.",
+                                          "successful. Filling with NaN.",
                                           UserWarning)
-                            trends = error_handler(df=df_proc, errors=errors)
+                            trends = error_handler(df=col_df, errors=errors)
                             seas_adjs = trends.copy()
 
-                elif trading is True:
-                    try:
-                        warnings.warn("X13 error found with trading=True. "
-                                      "Trying with trading=False...",
-                                      UserWarning)
-                        return decompose(df=df, method=method,
-                                         trading=False, component=component,
-                                         fallback=fallback,
-                                         force_x13=force_x13,
-                                         x13_binary=x13_binary,
-                                         **kwargs)
-                    except X13Error:
-                        warnings.warn("No combination of parameters "
-                                      "successful. Filling with NaN.",
-                                      UserWarning)
-                        trends = error_handler(df=df_proc, errors=errors)
-                        seas_adjs = trends.copy()
-
-            else:
-                if fallback == "loess":
-                    results = df_proc.apply(
-                        lambda x: STL(x.dropna()).fit(), result_type="expand")
                 else:
-                    results = df_proc.apply(
-                        lambda x: seasonal_decompose(
-                            x.dropna(), extrapolate_trend="freq"),
-                        result_type="expand")
-                trends = results.apply(lambda x:
-                                       x.trend.reindex(df_proc.index)).T
-                seas_adjs = results.apply(
-                    lambda x: (x.observed
-                               - x.seasonal).reindex(df_proc.index)).T
+                    if fallback == "loess":
+                        results = STL(col_df).fit()
+                    else:
+                        results = seasonal_decompose(
+                            col_df, extrapolate_trend="freq")
+                    trends = results.trend.reindex(df_proc.index).T
+                    seas_adjs = (results.observed
+                                 - results.seasonal).reindex(df_proc.index).T
 
-    else:
-        if method == "loess":
-            results = df_proc.apply(
-                lambda x: STL(x.dropna()).fit(), result_type="expand")
         else:
-            results = df_proc.apply(
-                lambda x: seasonal_decompose(x.dropna(),
-                                             extrapolate_trend="freq"),
-                result_type="expand")
-        trends = results.apply(lambda x:
-                               x.trend.reindex(df_proc.index)).T
-        seas_adjs = results.apply(
-            lambda x: (x.observed - x.seasonal).reindex(df_proc.index)).T
+            if method == "loess":
+                results = STL(col_df).fit()
+            else:
+                results = seasonal_decompose(col_df,
+                                             extrapolate_trend="freq")
+            trends = results.trend.reindex(df_proc.index).T
+            seas_adjs = (results.observed
+                         - results.seasonal).reindex(df_proc.index).T
 
+        trends_array.append(trends)
+        seas_adjs_array.append(seas_adjs)
+    trends = pd.concat(trends_array, axis=1)
+    seas_adjs = pd.concat(seas_adjs_array, axis=1)
     trends.columns = old_columns
     seas_adjs.columns = old_columns
     metadata._set(trends, seas_adj="Tendencia")
     metadata._set(seas_adjs, seas_adj="SA")
-    output = pd.DataFrame()
     if component == "both":
         output = {"trend": trends, "seas": seas_adjs}
     elif component == "seas":
