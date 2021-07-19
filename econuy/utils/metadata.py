@@ -7,11 +7,15 @@ from econuy.utils.sources import urls
 
 
 def _set(
-        df: pd.DataFrame, area: Optional[str] = None,
-        currency: Optional[str] = None, inf_adj: Optional[str] = None,
-        unit: Optional[str] = None, seas_adj: Optional[str] = None,
-        ts_type: Optional[str] = None, cumperiods: Optional[int] = None,
-        warn: bool = False
+    df: pd.DataFrame,
+    area: Optional[str] = None,
+    currency: Optional[str] = None,
+    inf_adj: Optional[str] = None,
+    unit: Optional[str] = None,
+    seas_adj: Optional[str] = None,
+    ts_type: Optional[str] = None,
+    cumperiods: Optional[int] = None,
+    warn: bool = False,
 ):
     """Add a multiindex to a dataframe's columns.
 
@@ -52,25 +56,43 @@ def _set(
         inferred_freq = pd.infer_freq(df.index)
     except ValueError:
         if warn:
-            warnings.warn("ValueError: Need at least 3 dates to infer frequency. "
-                      "Setting to '-'.", UserWarning)
+            warnings.warn(
+                "ValueError: Need at least 3 dates to infer frequency. " "Setting to '-'.",
+                UserWarning,
+            )
         inferred_freq = "-"
     if inferred_freq is None:
         if warn:
-            warnings.warn("Metadata: frequency could not be inferred "
-                        "from the index. Setting to '-'.", UserWarning)
+            warnings.warn(
+                "Metadata: frequency could not be inferred " "from the index. Setting to '-'.",
+                UserWarning,
+            )
         inferred_freq = "-"
     names = [
-        "Indicador", "Área", "Frecuencia", "Moneda",
-        "Inf. adj.", "Unidad", "Seas. Adj.", "Tipo", "Acum. períodos"
+        "Indicador",
+        "Área",
+        "Frecuencia",
+        "Moneda",
+        "Inf. adj.",
+        "Unidad",
+        "Seas. Adj.",
+        "Tipo",
+        "Acum. períodos",
     ]
     if not isinstance(df.columns, pd.MultiIndex):
         df.columns = pd.MultiIndex.from_product(
             [
-                colnames, [area], [inferred_freq], [currency], [inf_adj],
-                [unit], [seas_adj], [ts_type], [cumperiods]
+                colnames,
+                [area],
+                [inferred_freq],
+                [currency],
+                [inf_adj],
+                [unit],
+                [seas_adj],
+                [ts_type],
+                [cumperiods],
             ],
-            names=names
+            names=names,
         )
     else:
         arrays = []
@@ -103,26 +125,33 @@ def _set(
         return
 
 
-def _modify_multiindex(df: pd.DataFrame, levels: List[int],
-                       new_arrays: List[List[str]]):
+def _modify_multiindex(df: pd.DataFrame, levels: List[int], new_arrays: List[List[str]]):
     arrays = []
     for level in range(0, 9):
         arrays.append(list(df.columns.get_level_values(level)))
     for level, new_array in zip(levels, new_arrays):
         arrays[level] = new_array
     tuples = list(zip(*arrays))
-    df.columns = pd.MultiIndex.from_tuples(tuples,
-                                           names=["Indicador", "Área",
-                                                  "Frecuencia", "Moneda",
-                                                  "Inf. adj.", "Unidad",
-                                                  "Seas. Adj.", "Tipo",
-                                                  "Acum. períodos"])
+    df.columns = pd.MultiIndex.from_tuples(
+        tuples,
+        names=[
+            "Indicador",
+            "Área",
+            "Frecuencia",
+            "Moneda",
+            "Inf. adj.",
+            "Unidad",
+            "Seas. Adj.",
+            "Tipo",
+            "Acum. períodos",
+        ],
+    )
     return
 
 
-def _get_sources(dataset: str,
-                 html_urls: bool = True) -> Tuple[List[Optional[str]],
-                                                  List[str], List[str]]:
+def _get_sources(
+    dataset: str, html_urls: bool = True
+) -> Tuple[List[Optional[str]], List[str], List[str]]:
     """Given a dataset name, return source URLs and provider."""
     direct = urls[dataset]["source"]["direct"]
     indirect = urls[dataset]["source"]["indirect"]

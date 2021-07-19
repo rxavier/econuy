@@ -2,11 +2,9 @@ from os import path
 
 import numpy as np
 import pandas as pd
-from pandas.tseries.frequencies import infer_freq
 import pytest
 from sqlalchemy import create_engine
 
-from econuy import transform
 from econuy.session import Session
 from econuy.utils import metadata
 
@@ -15,25 +13,48 @@ TEST_DIR = path.join(CUR_DIR, "test-data")
 TEST_CON = create_engine("sqlite://").connect()
 
 
-def create_dummy_df(freq, periods=200, area="Test", currency="Test",
-                    inf_adj="Test", unit="Test", seas_adj="Test",
-                    ts_type="Test", cumperiods=1):
+def create_dummy_df(
+    freq,
+    periods=200,
+    area="Test",
+    currency="Test",
+    inf_adj="Test",
+    unit="Test",
+    seas_adj="Test",
+    ts_type="Test",
+    cumperiods=1,
+):
     dates = pd.date_range("2000-01-31", periods=periods, freq=freq)
     cols = ["A", "B", "C"]
-    data = np.hstack([np.random.uniform(-100, 100, [periods, 1]),
-                      np.random.uniform(1, 50, [periods, 1]),
-                      np.random.uniform(-100, -50, [periods, 1])])
+    data = np.hstack(
+        [
+            np.random.uniform(-100, 100, [periods, 1]),
+            np.random.uniform(1, 50, [periods, 1]),
+            np.random.uniform(-100, -50, [periods, 1]),
+        ]
+    )
     output = pd.DataFrame(index=dates, columns=cols, data=data)
-    metadata._set(output, area=area, currency=currency,
-                  inf_adj=inf_adj, unit=unit, seas_adj=seas_adj,
-                  ts_type=ts_type, cumperiods=cumperiods)
+    metadata._set(
+        output,
+        area=area,
+        currency=currency,
+        inf_adj=inf_adj,
+        unit=unit,
+        seas_adj=seas_adj,
+        ts_type=ts_type,
+        cumperiods=cumperiods,
+    )
     return output
 
 
-@pytest.mark.parametrize("freq,ts_type,operation,period,pd_per,pd_rol",
-                         [("A-DEC", "Flujo", "chg", "last", 1, 1),
-                          ("Q-DEC", "Stock", "diff", "inter", 4, 1),
-                          ("M", "Flujo", "chg", "annual", 12, 12)])
+@pytest.mark.parametrize(
+    "freq,ts_type,operation,period,pd_per,pd_rol",
+    [
+        ("A-DEC", "Flujo", "chg", "last", 1, 1),
+        ("Q-DEC", "Stock", "diff", "inter", 4, 1),
+        ("M", "Flujo", "chg", "annual", 12, 12),
+    ],
+)
 def test_chg_diff(freq, ts_type, operation, period, pd_per, pd_rol):
     df = create_dummy_df(freq=freq, ts_type=ts_type)
     s = Session(TEST_CON)
@@ -50,9 +71,10 @@ def test_chg_diff(freq, ts_type, operation, period, pd_per, pd_rol):
     assert df.equals(compare)
 
 
-@pytest.mark.parametrize("freq,ts_type,operation,window,pd_rol",
-                         [("M", "Flujo", "sum", 3, 3),
-                          ("Q-DEC", "Flujo", "mean", None, 4)])
+@pytest.mark.parametrize(
+    "freq,ts_type,operation,window,pd_rol",
+    [("M", "Flujo", "sum", 3, 3), ("Q-DEC", "Flujo", "mean", None, 4)],
+)
 def test_rolling(freq, ts_type, operation, window, pd_rol):
     df = create_dummy_df(freq=freq, ts_type=ts_type)
     s = Session()
@@ -67,14 +89,17 @@ def test_rolling(freq, ts_type, operation, window, pd_rol):
     assert df.equals(compare)
 
 
-@pytest.mark.parametrize("freq,ts_type,periods,cumperiods,rule,operation",
-                         [("M", "Flujo", 192, 1, "A-DEC", "sum"),
-                          ("Q-DEC", "Flujo", 102, 2, "A-DEC", "mean"),
-                          ("Q-DEC", "Stock", 102, 1, "A-DEC", "last"),
-                          ("A-DEC", "Flujo", 102, 1, "M", "upsample")])
+@pytest.mark.parametrize(
+    "freq,ts_type,periods,cumperiods,rule,operation",
+    [
+        ("M", "Flujo", 192, 1, "A-DEC", "sum"),
+        ("Q-DEC", "Flujo", 102, 2, "A-DEC", "mean"),
+        ("Q-DEC", "Stock", 102, 1, "A-DEC", "last"),
+        ("A-DEC", "Flujo", 102, 1, "M", "upsample"),
+    ],
+)
 def test_resample(freq, ts_type, periods, cumperiods, rule, operation):
-    df = create_dummy_df(freq=freq, ts_type=ts_type, periods=periods,
-                         cumperiods=cumperiods)
+    df = create_dummy_df(freq=freq, ts_type=ts_type, periods=periods, cumperiods=cumperiods)
     s = Session()
     s._datasets["dummy"] = df
     s.resample(rule=rule, operation=operation, select=0)
@@ -90,46 +115,57 @@ def test_resample(freq, ts_type, periods, cumperiods, rule, operation):
 
     pd_freqs = {"M": 12, "Q-DEC": 4, "A-DEC": 1}
     if periods % pd_freqs[freq] != 0 and operation != "upsample":
-        rows = (periods // pd_freqs[freq])
+        rows = periods // pd_freqs[freq]
         df = df.iloc[:rows, :]
     compare.index, compare.columns = df.index, df.columns
     assert df.equals(compare)
 
 
-@pytest.mark.parametrize("component,method,fallback,trading,outlier",
-                         [("trend", "x13", "loess", True, True),
-                         ("seas", "x13", "ma", True, False),
-                         ("trend", "loess", "ma", False, True),
-                         ("trend", "ma", "loess", False, False)])
+@pytest.mark.parametrize(
+    "component,method,fallback,trading,outlier",
+    [
+        ("trend", "x13", "loess", True, True),
+        ("seas", "x13", "ma", True, False),
+        ("trend", "loess", "ma", False, True),
+        ("trend", "ma", "loess", False, False),
+    ],
+)
 def test_decompose(component, method, fallback, trading, outlier):
-    df = pd.DataFrame(index=pd.date_range("2000-01-01", periods=100,
-                                          freq="Q-DEC"),
-                      data=np.random.exponential(2, 100).cumsum(),
-                      columns=["Exponential"])
+    df = pd.DataFrame(
+        index=pd.date_range("2000-01-01", periods=100, freq="Q-DEC"),
+        data=np.random.exponential(2, 100).cumsum(),
+        columns=["Exponential"],
+    )
     df["Real"] = df["Exponential"]
-    df.loc[df.index.month == 12,
-           "Real"] = (df.loc[df.index.month == 12, "Real"].
-                      multiply(np.random.uniform(1.06, 1.14)))
-    df.loc[df.index.month == 6,
-           "Real"] = (df.loc[df.index.month == 6, "Real"].
-                      multiply(np.random.uniform(0.94, 0.96)))
-    df.loc[df.index.month == 3,
-           "Real"] = (df.loc[df.index.month == 3, "Real"].
-                      multiply(np.random.uniform(1.04, 1.06)))
+    df.loc[df.index.month == 12, "Real"] = df.loc[df.index.month == 12, "Real"].multiply(
+        np.random.uniform(1.06, 1.14)
+    )
+    df.loc[df.index.month == 6, "Real"] = df.loc[df.index.month == 6, "Real"].multiply(
+        np.random.uniform(0.94, 0.96)
+    )
+    df.loc[df.index.month == 3, "Real"] = df.loc[df.index.month == 3, "Real"].multiply(
+        np.random.uniform(1.04, 1.06)
+    )
     df.drop("Exponential", axis=1, inplace=True)
     df = df.add(np.random.normal(0, 1, 100), axis=0)
     metadata._set(df, seas_adj="NSA")
     s = Session()
     s._datasets["test"] = df
-    s.decompose(component=component, trading=trading, method=method,
-                outlier=outlier, fallback=fallback,
-                ignore_warnings=True)
+    s.decompose(
+        component=component,
+        trading=trading,
+        method=method,
+        outlier=outlier,
+        fallback=fallback,
+        ignore_warnings=True,
+    )
     assert s._datasets["test"].std().values <= df.std().values
 
 
-@pytest.mark.parametrize("freq,start_date,end_date,base",
-                         [("M", "2004-01-01", None, 100),
-                          ("Q-DEC", "2004-01-01", "2005-01-01", 100.1)])
+@pytest.mark.parametrize(
+    "freq,start_date,end_date,base",
+    [("M", "2004-01-01", None, 100), ("Q-DEC", "2004-01-01", "2005-01-01", 100.1)],
+)
 def test_rebase(freq, start_date, end_date, base):
     df = create_dummy_df(freq=freq)
     s = Session()
@@ -145,14 +181,19 @@ def test_rebase(freq, start_date, end_date, base):
     assert df.equals(compare)
 
 
-@pytest.mark.parametrize("freq,ts_type,periods,cumperiods",
-                         [("D", "Flujo", 600, 1),
-                          ("M", "Stock", 48, 1),
-                          ("W-SUN", "Stock", 200, 1),
-                          ("Q-DEC", "Flujo", 24, 4)])
+@pytest.mark.parametrize(
+    "freq,ts_type,periods,cumperiods",
+    [
+        ("D", "Flujo", 600, 1),
+        ("M", "Stock", 48, 1),
+        ("W-SUN", "Stock", 200, 1),
+        ("Q-DEC", "Flujo", 24, 4),
+    ],
+)
 def test_convert_usd(freq, ts_type, periods, cumperiods):
-    df = create_dummy_df(freq=freq, periods=periods, ts_type=ts_type,
-                         currency="UYU", cumperiods=cumperiods)
+    df = create_dummy_df(
+        freq=freq, periods=periods, ts_type=ts_type, currency="UYU", cumperiods=cumperiods
+    )
     s = Session(location=TEST_DIR, download=False)
     s._datasets["dummy"] = df
     s.convert(flavor="usd")
@@ -180,13 +221,16 @@ def test_convert_usd(freq, ts_type, periods, cumperiods):
     assert df.equals(compare)
 
 
-@pytest.mark.parametrize("freq,periods,ts_type,start_date,end_date",
-                         [("M", 100, "Flujo", None, None),
-                          ("D", 1200, "Flujo", "2002-01-01", None),
-                          ("Q-DEC", 40, "Stock", "2002-01-01", "2002-12-31")])
+@pytest.mark.parametrize(
+    "freq,periods,ts_type,start_date,end_date",
+    [
+        ("M", 100, "Flujo", None, None),
+        ("D", 1200, "Flujo", "2002-01-01", None),
+        ("Q-DEC", 40, "Stock", "2002-01-01", "2002-12-31"),
+    ],
+)
 def test_convert_real(freq, periods, ts_type, start_date, end_date):
-    df = create_dummy_df(freq=freq, periods=periods, ts_type=ts_type,
-                         currency="UYU")
+    df = create_dummy_df(freq=freq, periods=periods, ts_type=ts_type, currency="UYU")
     s = Session(location=TEST_DIR, download=False)
     s._datasets["dummy"] = df
     s.convert(flavor="real", start_date=start_date, end_date=end_date)
@@ -216,14 +260,19 @@ def test_convert_real(freq, periods, ts_type, start_date, end_date):
     assert df.equals(compare)
 
 
-@pytest.mark.parametrize("freq,ts_type,periods,cumperiods,currency",
-                         [("D", "Flujo", 600, 1, "UYU"),
-                          ("M", "Stock", 48, 1, "USD"),
-                          ("A-DEC", "Stock", 10, 1, "USD"),
-                          ("Q-DEC", "Flujo", 24, 4, "UYU")])
+@pytest.mark.parametrize(
+    "freq,ts_type,periods,cumperiods,currency",
+    [
+        ("D", "Flujo", 600, 1, "UYU"),
+        ("M", "Stock", 48, 1, "USD"),
+        ("A-DEC", "Stock", 10, 1, "USD"),
+        ("Q-DEC", "Flujo", 24, 4, "UYU"),
+    ],
+)
 def test_convert_gdp(freq, ts_type, periods, cumperiods, currency):
-    df = create_dummy_df(freq=freq, periods=periods, ts_type=ts_type,
-                         currency=currency, cumperiods=cumperiods)
+    df = create_dummy_df(
+        freq=freq, periods=periods, ts_type=ts_type, currency=currency, cumperiods=cumperiods
+    )
     s = Session(location=TEST_DIR, download=False)
     s._datasets["dummy"] = df
     s.convert(flavor="gdp")
