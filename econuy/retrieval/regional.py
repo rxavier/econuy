@@ -112,7 +112,7 @@ def monthly_gdp() -> pd.DataFrame:
     """
     name = "regional_monthly_gdp"
 
-    arg = pd.read_excel(urls[name]["dl"]["arg"], usecols="D", skiprows=4).dropna(how="all")
+    arg = pd.read_excel(urls[name]["dl"]["arg"], usecols="C", skiprows=4).dropna(how="all")
     arg.index = pd.date_range(start="2004-01-31", freq="M", periods=len(arg))
 
     bra = pd.read_csv(urls[name]["dl"]["bra"], sep=";", index_col=0, decimal=",")
