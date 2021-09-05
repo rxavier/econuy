@@ -330,7 +330,7 @@ trade_metadata = {
             "Brasil": "América: Brasil",
             "Paraguay": "América: Paraguay",
             "Sub-total MERCOSUR (4 PAISES)": "América: MERCOSUR 4 países",
-            "Venezuela": "América: Venezuela",
+            # "Venezuela": "América: Venezuela",
             "Sub-total MERCOSUR (5 PAISES)": "América: MERCOSUR 5 países",
             "Bolivia": "América: Bolivia",
             "Chile": "América: Chile",
