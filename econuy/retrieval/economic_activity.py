@@ -767,7 +767,7 @@ def _lin_gdp(pipeline: Optional[Pipeline] = None):
     for table, gdp in zip(["NGDP", "NGDPD"], data):
         table_url = (
             f"https://www.imf.org/en/Publications/WEO/weo-database/"
-            f"2020/October/weo-report?c=298,&s={table},&sy="
+            f"2021/April/weo-report?c=298,&s={table},&sy="
             f"{last_year - 1}&ey={last_year + 1}&ssm=0&scsm=1&scc=0&"
             f"ssd=1&ssc=0&sic=0&sort=country&ds=.&br=1"
         )
