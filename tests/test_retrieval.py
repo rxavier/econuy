@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from econuy.session import Session
+from econuy.core import Pipeline
 from econuy.utils import get_project_root, metadata, ops
 
 
@@ -15,34 +15,26 @@ def trim_rows(input: str, output: str, rows: int = 10):
             ops._save(df, Path(output, f))
 
 
+p = Pipeline()
+all_datasets = list(p.available_datasets())
+
+
 @pytest.mark.parametrize(
-    "area",
-    [
-        "economic_activity",
-        "prices",
-        "fiscal_accounts",
-        "labor",
-        "external_sector",
-        "financial_sector",
-        "income",
-        "international",
-        "regional",
-    ],
+    "dataset",
+    all_datasets,
 )
-def test_retrieval(area):
+def test_retrieval(dataset):
     """Download every available dataset and compare with a previous version.
 
     Up to 5% deviations are accepted.
     """
     location = Path(get_project_root().parent, "tests/test-data")
-    s = Session(location=location, always_save=False)
-    s.get_bulk(names=area)
-    for k, v in s.datasets.items():
-        print(k)
-        test_path = Path(location, f"{k}.csv")
-        test = ops._read(test_path)
-        metadata._set(test)
-        compare = v.reindex(test.index)
-        div = test / compare
-        final = div[((div > 1.05) | (div < 0.95)).any(1)]
-        assert len(final) == 0
+    p = Pipeline(location=location, always_save=False)
+    p.get(dataset)
+    test_path = Path(location, f"{dataset}.csv")
+    test = ops._read(test_path)
+    metadata._set(test)
+    compare = p.dataset.reindex(test.index)
+    div = test / compare
+    final = div[((div > 1.05) | (div < 0.95)).any(1)]
+    assert len(final) == 0

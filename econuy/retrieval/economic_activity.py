@@ -44,6 +44,7 @@ def _natacc_retriever(
     raw.index = raw.index.str.replace(r"\bIII \b", "9-", regex=True)
     raw.index = raw.index.str.replace(r"\bIV \b", "12-", regex=True)
     raw.index = raw.index.str.replace(r"([0-9]+)(I)", r"\g<1>1", regex=True)
+    raw.index = raw.index.str.strip()
     raw.index = pd.to_datetime(raw.index, format="%m-%Y") + MonthEnd(1)
     raw.columns = colnames
     output = raw.apply(pd.to_numeric, errors="coerce")
@@ -585,9 +586,9 @@ def gdp_con_idx_sa_long(pipeline: Pipeline = None) -> pd.DataFrame:
 def gdp_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     """Get GDP data in NSA constant prices, 1988-.
 
-    Four datasets with three different base years, 1983, 2005 and 2016, are
+    Three datasets with two different base years, 1983 and 2016, are
     spliced in order to get to the result DataFrame. It uses the BCU's working
-    paper for retropolated GDP in current and constant prices for 2012-2015.
+    paper for retropolated GDP in current and constant prices for 1997-2015.
 
     Returns
     -------
@@ -601,31 +602,19 @@ def gdp_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     data_16.columns = data_16.columns.get_level_values(0)
     data_16 = data_16[["Producto bruto interno"]]
 
-    data_12 = pd.read_csv(urls["gdp_con_nsa_long"]["dl"]["2012"], index_col=0, parse_dates=True)
-    data_12 = data_12[["real"]]
-    data_12.columns = data_16.columns
-
-    aux = pd.concat([data_12, data_16], axis=0)
-
     colnames = ["Producto bruto interno"]
-    data_05 = _natacc_retriever(
-        url=urls["gdp_con_nsa_long"]["dl"]["2005"],
-        nrows=2,
-        skiprows=9,
-        inf_adj="Const. 2005",
+    data_97 = _natacc_retriever(
+        url=urls["gdp_con_nsa_long"]["dl"]["1997"],
+        nrows=1,
+        skiprows=6,
+        inf_adj="Const. 2016",
         unit="Millones",
         seas_adj="NSA",
         colnames=colnames,
     )
-    data_05.columns = data_05.columns.get_level_values(0)
-    aux_index = list(dict.fromkeys(list(data_05.index) + list(aux.index)))
-    reaux = aux.reindex(aux_index)
-    for quarter in reversed(aux_index):
-        if reaux.loc[quarter, :].isna().all():
-            next_quarter = quarter + MonthEnd(3)
-            reaux.loc[quarter, :] = (
-                reaux.loc[next_quarter, :] * data_05.loc[quarter, :] / data_05.loc[next_quarter, :]
-            )
+    data_97.columns = data_97.columns.get_level_values(0)
+
+    aux = pd.concat([data_97, data_16], axis=0)
 
     data_83 = pd.read_excel(
         urls["gdp_con_nsa_long"]["dl"]["1983"], skiprows=10, nrows=8, usecols="B:AAA", index_col=0
@@ -634,8 +623,8 @@ def gdp_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     data_83 = data_83[["PRODUCTO INTERNO BRUTO"]]
     data_83.columns = ["Producto bruto interno"]
 
-    reaux_index = list(dict.fromkeys(list(data_83.index) + list(reaux.index)))
-    output = reaux.reindex(reaux_index)
+    reaux_index = list(dict.fromkeys(list(data_83.index) + list(aux.index)))
+    output = aux.reindex(reaux_index)
     for quarter in reversed(reaux_index):
         if output.loc[quarter, :].isna().all():
             next_quarter = quarter + MonthEnd(3)
@@ -667,9 +656,8 @@ def gdp_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
 def gdp_cur_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     """Get GDP data in NSA current prices, 1997-.
 
-    Three datasets with two different base years, 2005 and 2016, are
-    spliced in order to get to the result DataFrame. It uses the BCU's working
-    paper for retropolated GDP in current and constant prices for 2012-2015.
+    It uses the BCU's working paper for retropolated GDP in current and constant prices for
+    1997-2015.
 
     Returns
     -------
@@ -683,33 +671,19 @@ def gdp_cur_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     data_16.columns = data_16.columns.get_level_values(0)
     data_16 = data_16[["Producto bruto interno"]]
 
-    data_12 = pd.read_csv(urls["gdp_cur_nsa_long"]["dl"]["2012"], index_col=0, parse_dates=True)
-    data_12 = data_12[["current"]]
-    data_12.columns = data_16.columns
-
-    aux = pd.concat([data_12, data_16], axis=0)
-
     colnames = ["Producto bruto interno"]
-    data_05 = _natacc_retriever(
-        url=urls["gdp_cur_nsa_long"]["dl"]["2005"],
-        nrows=2,
-        skiprows=9,
+    data_97 = _natacc_retriever(
+        url=urls["gdp_cur_nsa_long"]["dl"]["1997"],
+        nrows=1,
+        skiprows=6,
         inf_adj="No",
         unit="Millones",
         seas_adj="NSA",
         colnames=colnames,
     )
-    data_05.columns = data_05.columns.get_level_values(0)
-    aux_index = list(dict.fromkeys(list(data_05.index) + list(aux.index)))
-    output = aux.reindex(aux_index)
-    for quarter in reversed(aux_index):
-        if output.loc[quarter, :].isna().all():
-            next_quarter = quarter + MonthEnd(3)
-            output.loc[quarter, :] = (
-                output.loc[next_quarter, :]
-                * data_05.loc[quarter, :]
-                / data_05.loc[next_quarter, :]
-            )
+    data_97.columns = data_97.columns.get_level_values(0)
+
+    output = pd.concat([data_97, data_16], axis=0)
 
     metadata._set(
         output,
@@ -767,7 +741,7 @@ def _lin_gdp(pipeline: Optional[Pipeline] = None):
     for table, gdp in zip(["NGDP", "NGDPD"], data):
         table_url = (
             f"https://www.imf.org/en/Publications/WEO/weo-database/"
-            f"2020/October/weo-report?c=298,&s={table},&sy="
+            f"2021/April/weo-report?c=298,&s={table},&sy="
             f"{last_year - 1}&ey={last_year + 1}&ssm=0&scsm=1&scc=0&"
             f"ssd=1&ssc=0&sic=0&sort=country&ds=.&br=1"
         )
@@ -817,41 +791,33 @@ def industrial_production() -> pd.DataFrame:
     """
     name = "industrial_production"
 
-    try:
-        raw = pd.read_excel(urls[name]["dl"]["main"], skiprows=4, usecols="B:EM")
-        weights = pd.read_excel(urls[name]["dl"]["weights"], skiprows=3, usecols="B:E").dropna(
-            how="all"
-        )
-    except URLError as err:
-        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certificate = Path(get_project_root(), "utils", "files", "ine_certs.pem")
-            r = requests.get(urls[name]["dl"]["main"], verify=certificate)
-            raw = pd.read_excel(BytesIO(r.content), skiprows=4, usecols="B:EM")
-            r = requests.get(urls[name]["dl"]["weights"], verify=certificate)
-            weights = pd.read_excel(BytesIO(r.content), skiprows=3, usecols="B:E").dropna(
-                how="all"
-            )
-        else:
-            raise err
-    proc = raw.dropna(how="any", subset=["Mes"]).dropna(thresh=100, axis=1)
-    output = proc[~proc["Mes"].str.contains("PROM|Prom", regex=True)].drop("Mes", axis=1)
-    output.index = pd.date_range(start="2002-01-31", freq="M", periods=len(output))
+    raw = pd.read_excel(urls[name]["dl"]["main"], skiprows=4, usecols="C:DQ", na_values="(s)")
+    weights = pd.read_csv(urls[name]["dl"]["weights"]).dropna(how="all")
+    weights[["División", "Grupo", "Agrupación / Clase"]] = weights[
+        ["División", "Grupo", "Agrupación / Clase"]
+    ].astype(str)
+    output = raw.dropna(how="all")
+    output.index = pd.date_range(start="2018-01-31", freq="M", periods=len(output))
 
     column_names = []
     for c in output.columns[2:]:
-        match = weights.loc[weights["division"] == c, "Denominación"]
+        c = str(c)
+        match = weights.loc[weights["División"] == c, "Denominación"]
         prefix = "Div_"
         if isinstance(match, pd.Series) and match.empty:
-            prefix = "Agr_"
-            match = weights.loc[weights["agrupacion"] == c, "Denominación"]
+            prefix = "Gru_"
+            match = weights.loc[weights["Grupo"] == c, "Denominación"]
             if isinstance(match, pd.Series) and match.empty:
                 prefix = "Cls_"
-                match = weights.loc[weights["clase"] == c, "Denominación"]
+                match = weights.loc[weights["Agrupación / Clase"] == c, "Denominación"]
         try:
             match = match.iloc[0]
-        except AttributeError:
+        except (AttributeError, IndexError):
             pass
-        match = (prefix + match.capitalize().strip())[:-1]
+        try:
+            match = prefix + match.capitalize().strip()
+        except AttributeError:
+            match = c
         match = re.sub(r"[\(\)]", "-", match)
         if len(match) > 60:
             match = match[:58] + "..."
@@ -868,7 +834,7 @@ def industrial_production() -> pd.DataFrame:
         area="Actividad económica",
         currency="-",
         inf_adj="No",
-        unit="2006=100",
+        unit="2018=100",
         seas_adj="NSA",
         ts_type="Flujo",
         cumperiods=1,
@@ -898,51 +864,57 @@ def core_industrial(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
         pipeline = Pipeline()
 
     pipeline.get("industrial_production")
-    data = pipeline.dataset
+    data_18_weights = {"other foods": 0.0991, "pulp": 0.0907}
+    data_18 = pipeline.dataset
+    data_18 = data_18[
+        [
+            "Industrias manufactureras",
+            "Industrias manufactureras sin refinería",
+            "Cls_Elaboración de comidas y platos preparados; elaboració...",
+            "Cls_Fabricación de pasta de celulosa, papel y cartón",
+        ]
+    ]
+    data_18.columns = ["total", "ex-refinery", "other foods", "pulp"]
+    data_18["core"] = data_18["ex-refinery"] - (
+        data_18["other foods"] * data_18_weights["other foods"]
+        + data_18["pulp"] * data_18_weights["pulp"]
+    )
 
-    try:
-        weights = pd.read_excel(urls[name]["dl"]["weights"], skiprows=3).dropna(how="all")
-    except URLError as err:
-        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certificate = Path(get_project_root(), "utils", "files", "ine_certs.pem")
-            r = requests.get(urls[name]["dl"]["weights"], verify=certificate)
-            weights = pd.read_excel(BytesIO(r.content), skiprows=3).dropna(how="all")
-        else:
-            raise err
-    weights = weights.rename(
-        columns={
-            "Unnamed: 5": "Pond. división",
-            "Unnamed: 6": "Pond. agrupación",
-            "Unnamed: 7": "Pond. clase",
-        }
+    data_06_weights = {"other foods": 0.08221045, "pulp": 0.00809761}
+    data_06 = pd.read_excel(urls[name]["dl"]["2006"], skiprows=4, usecols="B:D,F,CF,CX")
+    data_06 = data_06.loc[~data_06["Mes"].str.contains("Prom").astype(bool), :]
+    data_06 = data_06.iloc[:, 2:]
+    data_06.columns = ["total", "ex-refinery", "other foods", "pulp"]
+    data_06.index = pd.date_range(start="2002-01-31", freq="M", periods=len(data_06))
+    data_06["core"] = data_06["ex-refinery"] - (
+        data_06["other foods"] * data_06_weights["other foods"]
+        + data_06["pulp"] * data_06_weights["pulp"]
     )
-    other_foods = (
-        weights.loc[weights["clase"] == 1549]["Pond. clase"].values[0]
-        * weights.loc[(weights["agrupacion"] == 154) & (weights["clase"] == 0)][
-            "Pond. agrupación"
-        ].values[0]
-        * weights.loc[(weights["division"] == 15) & (weights["agrupacion"] == 0)][
-            "Pond. división"
-        ].values[0]
-        / 1000000
-    )
-    pulp = (
-        weights.loc[weights["clase"] == 2101]["Pond. clase"].values[0]
-        * weights.loc[(weights["division"] == 21) & (weights["agrupacion"] == 0)][
-            "Pond. división"
-        ].values[0]
-        / 10000
-    )
-    output = data.loc[:, ["Industrias manufactureras", "Industrias manufactureras sin refinería"]]
-    exclude = (
-        data.loc[:, "Cls_Elaboración de productos alimenticios n.c.p"] * other_foods
-        + data.loc[:, "Cls_Pulpa de madera, papel y cartón"] * pulp
-    )
-    core = data["Industrias manufactureras sin refinería"] - exclude
-    core = pd.concat([core], keys=["Núcleo industrial"], names=["Indicador"], axis=1)
-    output = pd.concat([output, core], axis=1)
-    output = transform.rebase(output, start_date="2006-01-01", end_date="2006-12-31")
+
+    output = data_18.reindex(pd.date_range(start="2002-01-31", freq="M", end=data_18.index[-1]))
+    for row in reversed(output.index):
+        next_month = row + MonthEnd(1)
+        if output.loc[row].isna().all():
+            output.loc[row] = data_06.loc[row] / data_06.loc[next_month] * output.loc[next_month]
+    output = output[["total", "ex-refinery", "core"]]
+    output.columns = [
+        "Industrias manufactureras",
+        "Industrias manufactureras sin refinería",
+        "Núcleo industrial",
+    ]
     output.rename_axis(None, inplace=True)
+
+    metadata._set(
+        output,
+        area="Actividad económica",
+        currency="-",
+        inf_adj="No",
+        unit="2018=100",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
+    )
+    output = transform.rebase(output, start_date="2018-01-01", end_date="2018-12-31")
 
     return output
 

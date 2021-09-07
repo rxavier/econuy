@@ -43,7 +43,11 @@ def _trade_retriever(name: str) -> pd.DataFrame:
         raw.index = pd.to_datetime(raw.index, errors="coerce") + MonthEnd(0)
         proc = raw[raw.index.notnull()].dropna(thresh=5, axis=1)
         if name != "trade_m_sect_val":
-            proc = proc.loc[:, meta["colnames"].keys()]
+            try:
+                proc = proc.loc[:, meta["colnames"].keys()]
+            except KeyError:
+                proc.insert(7, "Venezuela", 0)
+                proc = proc.loc[:, meta["colnames"].keys()]
             proc.columns = meta["colnames"].values()
         else:
             proc = proc.loc[:, ~(proc == "miles de dólares").any()]

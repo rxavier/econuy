@@ -573,7 +573,9 @@ def decompose(
     binary_path = None
     if method == "x13":
         if x13_binary == "search":
-            binary_path = x13util._search_binary(start_path=getcwd(), n=search_parents)
+            binary_path = x13util._search_binary(
+                start_path=getcwd(), n=search_parents, download_path=getcwd()
+            )
         elif isinstance(x13_binary, str):
             binary_path = x13_binary
         elif isinstance(x13_binary, PathLike):
