@@ -621,12 +621,12 @@ urls = {
     },
     "industrial_production": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181",
-            "weights": "https://www.ine.gub.uy/c/document_library/get_file?uuid=864b4bc2-626d-49ab-82ef-1bcf08360da1&groupId=10181",
+            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=e5ee6e11-601f-45ff-9335-68cd5191fa39&groupId=10181",
+            "weights": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/industrial_production_2018_weights.csv",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181"
+                "https://www.ine.gub.uy/c/document_library/get_file?uuid=e5ee6e11-601f-45ff-9335-68cd5191fa39&groupId=10181"
             ],
             "indirect": ["http://www.ine.gub.uy/web/guest/industria-manufacturera"],
             "provider": ["INE"],
@@ -992,13 +992,13 @@ urls = {
     },
     "core_industrial": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181",
-            "weights": "https://www.ine.gub.uy/c/document_library/get_file?uuid=864b4bc2-626d-49ab-82ef-1bcf08360da1&groupId=10181",
+            "2018": "https://www.ine.gub.uy/c/document_library/get_file?uuid=e5ee6e11-601f-45ff-9335-68cd5191fa39&groupId=10181",
+            "2006": "https://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181",
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=864b4bc2-626d-49ab-82ef-1bcf08360da1&groupId=10181",
+                "https://www.ine.gub.uy/c/document_library/get_file?uuid=e5ee6e11-601f-45ff-9335-68cd5191fa39&groupId=10181",
+                "https://www.ine.gub.uy/c/document_library/get_file?uuid=17185e91-4198-4449-877a-59d69479e45d&groupId=10181",
             ],
             "indirect": ["http://www.ine.gub.uy/web/guest/industria-manufacturera"],
             "provider": ["econuy en base a INE"],
