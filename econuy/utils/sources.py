@@ -570,19 +570,17 @@ urls = {
     },
     "gdp_con_nsa_long": {
         "dl": {
-            "2012": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/gdp_paper.csv",
-            "2005": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_131t.xls",
+            "1997": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/estudios/Documents/pib_k_backcasting.xlsx",
             "1983": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/cuadro_42t83.xls",
         },
         "source": {
             "direct": [
-                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_131t.xls",
                 "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/cuadro_42t83.xls",
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/estudios/Documents/pib_k_backcasting.xlsx",
                 "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/5.%20Desestacionalizado.xlsx",
             ],
             "indirect": [
-                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Documentos%20de%20Trabajo/2.2021.pdf",
-                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm",
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/estudios/Paginas/Detalle.aspx?itm=49",
                 "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/PRESENTACION83t.HTM",
                 "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx",
             ],

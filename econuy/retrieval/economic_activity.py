@@ -44,6 +44,7 @@ def _natacc_retriever(
     raw.index = raw.index.str.replace(r"\bIII \b", "9-", regex=True)
     raw.index = raw.index.str.replace(r"\bIV \b", "12-", regex=True)
     raw.index = raw.index.str.replace(r"([0-9]+)(I)", r"\g<1>1", regex=True)
+    raw.index = raw.index.str.strip()
     raw.index = pd.to_datetime(raw.index, format="%m-%Y") + MonthEnd(1)
     raw.columns = colnames
     output = raw.apply(pd.to_numeric, errors="coerce")
@@ -585,9 +586,9 @@ def gdp_con_idx_sa_long(pipeline: Pipeline = None) -> pd.DataFrame:
 def gdp_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     """Get GDP data in NSA constant prices, 1988-.
 
-    Four datasets with three different base years, 1983, 2005 and 2016, are
+    Three datasets with two different base years, 1983 and 2016, are
     spliced in order to get to the result DataFrame. It uses the BCU's working
-    paper for retropolated GDP in current and constant prices for 2012-2015.
+    paper for retropolated GDP in current and constant prices for 1997-2015.
 
     Returns
     -------
@@ -601,31 +602,19 @@ def gdp_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     data_16.columns = data_16.columns.get_level_values(0)
     data_16 = data_16[["Producto bruto interno"]]
 
-    data_12 = pd.read_csv(urls["gdp_con_nsa_long"]["dl"]["2012"], index_col=0, parse_dates=True)
-    data_12 = data_12[["real"]]
-    data_12.columns = data_16.columns
-
-    aux = pd.concat([data_12, data_16], axis=0)
-
     colnames = ["Producto bruto interno"]
-    data_05 = _natacc_retriever(
-        url=urls["gdp_con_nsa_long"]["dl"]["2005"],
-        nrows=2,
-        skiprows=9,
-        inf_adj="Const. 2005",
+    data_97 = _natacc_retriever(
+        url=urls["gdp_con_nsa_long"]["dl"]["1997"],
+        nrows=1,
+        skiprows=6,
+        inf_adj="Const. 2016",
         unit="Millones",
         seas_adj="NSA",
         colnames=colnames,
     )
-    data_05.columns = data_05.columns.get_level_values(0)
-    aux_index = list(dict.fromkeys(list(data_05.index) + list(aux.index)))
-    reaux = aux.reindex(aux_index)
-    for quarter in reversed(aux_index):
-        if reaux.loc[quarter, :].isna().all():
-            next_quarter = quarter + MonthEnd(3)
-            reaux.loc[quarter, :] = (
-                reaux.loc[next_quarter, :] * data_05.loc[quarter, :] / data_05.loc[next_quarter, :]
-            )
+    data_97.columns = data_97.columns.get_level_values(0)
+
+    aux = pd.concat([data_97, data_16], axis=0)
 
     data_83 = pd.read_excel(
         urls["gdp_con_nsa_long"]["dl"]["1983"], skiprows=10, nrows=8, usecols="B:AAA", index_col=0
@@ -634,8 +623,8 @@ def gdp_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     data_83 = data_83[["PRODUCTO INTERNO BRUTO"]]
     data_83.columns = ["Producto bruto interno"]
 
-    reaux_index = list(dict.fromkeys(list(data_83.index) + list(reaux.index)))
-    output = reaux.reindex(reaux_index)
+    reaux_index = list(dict.fromkeys(list(data_83.index) + list(aux.index)))
+    output = aux.reindex(reaux_index)
     for quarter in reversed(reaux_index):
         if output.loc[quarter, :].isna().all():
             next_quarter = quarter + MonthEnd(3)
@@ -667,9 +656,8 @@ def gdp_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
 def gdp_cur_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     """Get GDP data in NSA current prices, 1997-.
 
-    Three datasets with two different base years, 2005 and 2016, are
-    spliced in order to get to the result DataFrame. It uses the BCU's working
-    paper for retropolated GDP in current and constant prices for 2012-2015.
+    It uses the BCU's working paper for retropolated GDP in current and constant prices for
+    1997-2015.
 
     Returns
     -------
@@ -683,33 +671,19 @@ def gdp_cur_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     data_16.columns = data_16.columns.get_level_values(0)
     data_16 = data_16[["Producto bruto interno"]]
 
-    data_12 = pd.read_csv(urls["gdp_cur_nsa_long"]["dl"]["2012"], index_col=0, parse_dates=True)
-    data_12 = data_12[["current"]]
-    data_12.columns = data_16.columns
-
-    aux = pd.concat([data_12, data_16], axis=0)
-
     colnames = ["Producto bruto interno"]
-    data_05 = _natacc_retriever(
-        url=urls["gdp_cur_nsa_long"]["dl"]["2005"],
-        nrows=2,
-        skiprows=9,
+    data_97 = _natacc_retriever(
+        url=urls["gdp_cur_nsa_long"]["dl"]["1997"],
+        nrows=1,
+        skiprows=6,
         inf_adj="No",
         unit="Millones",
         seas_adj="NSA",
         colnames=colnames,
     )
-    data_05.columns = data_05.columns.get_level_values(0)
-    aux_index = list(dict.fromkeys(list(data_05.index) + list(aux.index)))
-    output = aux.reindex(aux_index)
-    for quarter in reversed(aux_index):
-        if output.loc[quarter, :].isna().all():
-            next_quarter = quarter + MonthEnd(3)
-            output.loc[quarter, :] = (
-                output.loc[next_quarter, :]
-                * data_05.loc[quarter, :]
-                / data_05.loc[next_quarter, :]
-            )
+    data_97.columns = data_97.columns.get_level_values(0)
+
+    output = pd.concat([data_97, data_16], axis=0)
 
     metadata._set(
         output,
