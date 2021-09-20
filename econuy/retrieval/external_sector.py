@@ -537,7 +537,7 @@ def commodity_prices() -> pd.DataFrame:
     raw_imf = pd.read_excel(imf).dropna(how="all", axis=1).dropna(how="all", axis=0)
     raw_imf.columns = raw_imf.iloc[0, :]
     proc_imf = raw_imf.iloc[3:, 1:]
-    proc_imf.index = pd.date_range(start="1980-01-31", periods=len(proc_imf), freq="M")
+    proc_imf.index = pd.date_range(start="1990-01-31", periods=len(proc_imf), freq="M")
     rice = proc_imf[proc_imf.columns[proc_imf.columns.str.contains("Rice")]]
     wood = proc_imf[proc_imf.columns[proc_imf.columns.str.contains("Sawnwood")]]
     wood = wood.mean(axis=1).to_frame()
