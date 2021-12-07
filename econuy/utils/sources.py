@@ -104,8 +104,8 @@ urls = {
     "commodity_prices": {
         "dl": {
             "beef": "https://www.inac.uy/innovaportal/v/9799/10/innova.front/serie-semanal-ingreso-medio-de-exportacion---bovino-ovino-y-otros-productos",
-            "pulp": f"https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600339?ordre="
-            f"antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=4&anneeFin="
+            "pulp": f"https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600341?ordre="
+            f"antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=12&anneeFin="
             f"{dt.datetime.now().year}",
             "soybean": "https://www.quandl.com/api/v3/datasets/CHRIS/CME_S1.csv?api_key=3TPxACcrxy9WsE871Lqe",
             "wheat": "https://www.quandl.com/api/v3/datasets/CHRIS/CME_W1.csv?api_key=3TPxACcrxy9WsE871Lqe",
@@ -116,8 +116,8 @@ urls = {
         "source": {
             "direct": [
                 "https://www.inac.uy/innovaportal/v/9799/10/innova.front/serie-semanal-ingreso-medio-de-exportacion---bovino-ovino-y-otros-productos",
-                f"https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600339?ordre=antechronologique&"
-                f"transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=3&anneeFin="
+                f"https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600341?ordre=antechronologique&"
+                f"transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=12&anneeFin="
                 f"{dt.datetime.now().year}",
                 "https://www.quandl.com/api/v3/datasets/CHRIS/CME_S1.csv?api_key=3TPxACcrxy9WsE871Lqe",
                 "https://www.quandl.com/api/v3/datasets/CHRIS/CME_W1.csv?api_key=3TPxACcrxy9WsE871Lqe",

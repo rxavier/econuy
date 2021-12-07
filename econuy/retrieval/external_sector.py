@@ -476,17 +476,6 @@ def commodity_prices() -> pd.DataFrame:
     )
     beef = proc_beef.resample("M").mean()
 
-    raw_pulp_r = requests.get(url["pulp"])
-    temp_dir = tempfile.TemporaryDirectory()
-    with zipfile.ZipFile(BytesIO(raw_pulp_r.content), "r") as f:
-        f.extractall(path=temp_dir.name)
-        path_temp = path.join(temp_dir.name, "monthly_values.csv")
-        raw_pulp = pd.read_csv(path_temp, sep=";").dropna(how="any")
-    proc_pulp = raw_pulp.copy().sort_index(ascending=False)
-    proc_pulp.index = pd.date_range(start="1990-01-31", periods=len(proc_pulp), freq="M")
-    proc_pulp.drop(["Label", "Codes"], axis=1, inplace=True)
-    pulp = proc_pulp
-
     soy_wheat = []
     for link in [url["soybean"], url["wheat"]]:
         raw = pd.read_csv(link, index_col=0)
@@ -525,11 +514,23 @@ def commodity_prices() -> pd.DataFrame:
     )
     eurusd = pd.read_html(eurusd_r.content)[0].drop("MMM YYYY", axis=1)
     eurusd.index = pd.date_range(start="2001-01-31", periods=len(eurusd), freq="M")
-    eurusd = eurusd.reindex(prev_milk.index)
-    prev_milk = prev_milk.divide(eurusd.values).multiply(10)
+    eurusd_milk = eurusd.reindex(prev_milk.index)
+    prev_milk = prev_milk.divide(eurusd_milk.values).multiply(10)
     prev_milk = prev_milk.loc[prev_milk.index < min(proc_milk.index)]
     prev_milk.columns, proc_milk.columns = ["Price"], ["Price"]
     milk = prev_milk.append(proc_milk)
+
+    raw_pulp_r = requests.get(url["pulp"])
+    temp_dir = tempfile.TemporaryDirectory()
+    with zipfile.ZipFile(BytesIO(raw_pulp_r.content), "r") as f:
+        f.extractall(path=temp_dir.name)
+        path_temp = path.join(temp_dir.name, "monthly_values.csv")
+        raw_pulp = pd.read_csv(path_temp, sep=";").dropna(how="any")
+    proc_pulp = raw_pulp.copy().sort_index(ascending=False)
+    proc_pulp.index = pd.date_range(start="1990-01-31", periods=len(proc_pulp), freq="M")
+    proc_pulp = proc_pulp.drop(["Label", "Codes"], axis=1).astype(float)
+    proc_pulp = proc_pulp.div(eurusd.reindex(proc_pulp.index).values)
+    pulp = proc_pulp
 
     r_imf = requests.get(url["imf"])
     imf = re.findall("external-data[A-z]+.ashx", r_imf.text)[0]
