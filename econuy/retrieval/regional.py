@@ -56,7 +56,7 @@ def gdp(driver: WebDriver = None) -> pd.DataFrame:
     driver.quit()
     url = soup.find_all(href=re.compile("desest"))[0]["href"]
     full_url = f"https://www.indec.gob.ar{url}"
-    arg = pd.read_excel(full_url, skiprows=3, usecols="D").dropna(how="all")
+    arg = pd.read_excel(full_url, skiprows=3, usecols="C").dropna(how="all")
     arg.index = pd.date_range(start="2004-03-31", freq="Q-DEC", periods=len(arg))
     arg_old = pd.read_excel(urls[name]["dl"]["arg_old"], skiprows=7, usecols="D").dropna(how="all")
     arg_old.index = pd.date_range(start="1993-03-31", freq="Q-DEC", periods=len(arg_old))
