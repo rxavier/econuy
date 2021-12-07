@@ -107,8 +107,8 @@ urls = {
             "pulp": f"https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600341?ordre="
             f"antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=12&anneeFin="
             f"{dt.datetime.now().year}",
-            "soybean": "https://www.quandl.com/api/v3/datasets/CHRIS/CME_S1.csv?api_key=3TPxACcrxy9WsE871Lqe",
-            "wheat": "https://www.quandl.com/api/v3/datasets/CHRIS/CME_W1.csv?api_key=3TPxACcrxy9WsE871Lqe",
+            "soybean": "https://data.nasdaq.com/api/v3/datasets/ODA/PSOYB_USD.csv?api_key=3TPxACcrxy9WsE871Lqe",
+            "wheat": "https://data.nasdaq.com/api/v3/datasets/ODA/PWHEAMT_USD.csv?api_key=3TPxACcrxy9WsE871Lqe",
             "milk1": "https://www.inale.org/estadisticas/",
             "milk2": "https://ec.europa.eu/info/sites/info/files/food-farming-fisheries/farming/documents/eu-milk-historical-price-series_en.xls",
             "imf": "https://www.imf.org/en/Research/commodity-prices",
@@ -119,8 +119,8 @@ urls = {
                 f"https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600341?ordre=antechronologique&"
                 f"transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=12&anneeFin="
                 f"{dt.datetime.now().year}",
-                "https://www.quandl.com/api/v3/datasets/CHRIS/CME_S1.csv?api_key=3TPxACcrxy9WsE871Lqe",
-                "https://www.quandl.com/api/v3/datasets/CHRIS/CME_W1.csv?api_key=3TPxACcrxy9WsE871Lqe",
+                "https://data.nasdaq.com/api/v3/datasets/ODA/PWHEAMT_USD.csv?api_key=3TPxACcrxy9WsE871Lqe",
+                "https://data.nasdaq.com/api/v3/datasets/ODA/PWHEAMT_USD.csv?api_key=3TPxACcrxy9WsE871Lqe",
                 "https://ec.europa.eu/info/sites/info/files/food-farming-fisheries/farming/documents/eu-milk-historical-price-series_en.xls",
             ],
             "indirect": [

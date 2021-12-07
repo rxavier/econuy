@@ -453,8 +453,6 @@ def commodity_prices() -> pd.DataFrame:
         Prices and price indexes of relevant commodities for Uruguay.
 
     """
-    bushel_conv = 36.74 / 100
-
     url = urls["commodity_prices"]["dl"]
     try:
         raw_beef = pd.read_excel(url["beef"], header=4, index_col=0).dropna(how="all")
@@ -478,8 +476,7 @@ def commodity_prices() -> pd.DataFrame:
 
     soy_wheat = []
     for link in [url["soybean"], url["wheat"]]:
-        raw = pd.read_csv(link, index_col=0)
-        proc = (raw["Settle"] * bushel_conv).to_frame()
+        proc = pd.read_csv(link, index_col=0)
         proc.index = pd.to_datetime(proc.index, format="%Y-%m-%d")
         proc.sort_index(inplace=True)
         soy_wheat.append(proc.resample("M").mean())
