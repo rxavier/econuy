@@ -292,9 +292,9 @@ pytz==2021.3
     # via
     #   babel
     #   pandas
-pywin32==303
+#pywin32==303
     # via jupyter-core
-pywinpty==1.1.6
+#pywinpty==1.1.6
     # via terminado
 pyyaml==6.0
     # via pre-commit
