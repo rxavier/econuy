@@ -72,7 +72,7 @@ def original():
         },
         "cpi": {
             "description": "Índice de precios al consumidor - IPC (ene-37, M)",
-            "description_en": "Consumer price index - IPC (Jan-37, M)",
+            "description_en": "Consumer price index - CPI (Jan-37, M)",
             "function": prices.cpi,
         },
         "nxr_monthly": {
@@ -127,7 +127,7 @@ def original():
         },
         "tax_revenue": {
             "description": "Recaudación por impuesto (ene-82, M)",
-            "description_en": "Tax revenue (Jan-82, M)",
+            "description_en": "Tax revenue by source (Jan-82, M)",
             "function": fiscal_accounts.tax_revenue,
         },
         "public_debt_gps": {
@@ -277,7 +277,7 @@ def original():
         },
         "income_capita": {
             "description": "Ingreso medio per cápita sin valor locativo ni aguinaldo (ene-06, M)",
-            "description_en": "Average income per capita (Jan-06, M)",
+            "description_en": "Average per capita income (Jan-06, M)",
             "function": income.income_capita,
         },
         "consumer_confidence": {
