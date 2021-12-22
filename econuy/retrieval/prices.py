@@ -384,7 +384,7 @@ def cpi_measures(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     output = output.apply(pd.to_numeric, errors="coerce")
     metadata._set(
         output,
-        area="Precios y salarios",
+        area="Precios",
         currency="-",
         inf_adj="No",
         unit="2010-12=100",
