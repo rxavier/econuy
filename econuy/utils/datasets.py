@@ -32,7 +32,7 @@ def original():
         },
         "gdp_con_idx_sa": {
             "description": "PBI: índice real, desestacionalizado (mar-16, T)",
-            "description_en": "PBI: real index, seasonally adjusted (Mar-16, Q)",
+            "description_en": "GDP: real index, seasonally adjusted (Mar-16, Q)",
             "function": economic_activity.gdp_con_idx_sa,
         },
         "industrial_production": {
@@ -142,7 +142,7 @@ def original():
         },
         "public_debt_cb": {
             "description": "Deuda del Banco Central: por plazo contractual, residual, moneda y residencia (dic-99, T)",
-            "description_en": "Central bank debt: by contractual term, residual, currency and residence (Dec-99, Q",
+            "description_en": "Central bank debt: by contractual term, residual, currency and residence (Dec-99, Q)",
             "function": fiscal_accounts.public_debt_cb,
         },
         "public_assets": {
