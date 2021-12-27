@@ -88,13 +88,12 @@ def cpi_divisions() -> pd.DataFrame:
     with pd.ExcelFile(urls[name]["dl"]["main"]) as excel:
         for sheet, rows in zip(excel.sheet_names, [9, 8]):
             data = (
-                pd.read_excel(
-                    excel, sheet_name=sheet, skiprows=rows, nrows=14, usecols="C:IM", index_col=0
-                )
+                pd.read_excel(excel, sheet_name=sheet, skiprows=rows, nrows=14)
                 .dropna(how="all")
                 .dropna(how="all", axis=1)
                 .T
             )
+            data = data.iloc[3:]
             data.columns = [
                 "Índice General",
                 "Alimentos y Bebidas No Alcohólicas",
