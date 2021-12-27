@@ -77,6 +77,20 @@ urls = {
             "provider": ["INE"],
         },
     },
+    "ppi": {
+        "dl": {
+            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=fdc16ffa-4e69-4fd6-becc-836cc3bb7e61&groupId=10181"
+        },
+        "source": {
+            "direct": [
+                "https://www.ine.gub.uy/c/document_library/get_file?uuid=fdc16ffa-4e69-4fd6-becc-836cc3bb7e61&groupId=10181"
+            ],
+            "indirect": [
+                "https://www.ine.gub.uy/web/guest/ippn-indice-de-precios-al-productor-de-productos-nacionales"
+            ],
+            "provider": ["INE"],
+        },
+    },
     "nxr_monthly": {
         "dl": {
             "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=3fbf4ffd-a829-420c-aca9-9f01ecd7919a&groupId=10181"

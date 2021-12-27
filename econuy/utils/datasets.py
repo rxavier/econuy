@@ -75,6 +75,11 @@ def original():
             "description_en": "Consumer price index - CPI (Jan-37, M)",
             "function": prices.cpi,
         },
+        "ppi": {
+            "description": "Índice de precios al productor de productos nacionales por sección - IPPN (ene-68, M)",
+            "description_en": "Producer price index by division - PPI (Jan-68, M)",
+            "function": prices.ppi,
+        },
         "nxr_monthly": {
             "description": "Tipo de cambio, interbancario, mensual (abr-72, M)",
             "description_en": "Exchange rate, interbank, monthly (Apr-72, M)",

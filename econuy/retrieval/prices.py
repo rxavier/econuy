@@ -31,7 +31,7 @@ def cpi() -> pd.DataFrame:
 
     Returns
     -------
-    Monthly CPI index : pd.DataFrame
+    Monthly CPI : pd.DataFrame
 
     """
     name = "cpi"
@@ -67,6 +67,48 @@ def cpi() -> pd.DataFrame:
     )
 
     return cpi
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=30,
+)
+def ppi() -> pd.DataFrame:
+    """Get PPI data.
+
+    Returns
+    -------
+    Monthly PPI : pd.DataFrame
+
+    """
+    name = "ppi"
+
+    raw = pd.read_excel(urls[name]["dl"]["main"], skiprows=7, index_col=0).dropna()
+
+    raw.columns = [
+        "Índice general",
+        "Ganadería, agricultura y silvicultura",
+        "Pesca",
+        "Explotación de minas y canteras",
+        "Industrias manufactureras",
+    ]
+    raw.rename_axis(None, inplace=True)
+    raw.index = raw.index + MonthEnd(1)
+    output = raw.apply(pd.to_numeric, errors="coerce")
+
+    metadata._set(
+        output,
+        area="Precios",
+        currency="-",
+        inf_adj="No",
+        unit="2010-03=100",
+        seas_adj="NSA",
+        ts_type="-",
+        cumperiods=1,
+    )
+
+    return output
 
 
 @retry(
