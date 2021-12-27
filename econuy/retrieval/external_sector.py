@@ -472,7 +472,7 @@ def commodity_prices() -> pd.DataFrame:
         proc_beef / 1000,
         proc_beef,
     )
-    beef = proc_beef.resample("M").mean() * 1000
+    beef = proc_beef.resample("M").mean()
 
     soy_wheat = []
     for link in [url["soybean"], url["wheat"]]:
