@@ -89,6 +89,18 @@ urls = {
             "provider": ["INE"],
         },
     },
+    "cpi_classes": {
+        "dl": {
+            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=5d597b80-0b5d-4131-ba4d-fe6b609b4666&groupId=10181"
+        },
+        "source": {
+            "direct": [
+                "https://www.ine.gub.uy/c/document_library/get_file?uuid=5d597b80-0b5d-4131-ba4d-fe6b609b4666&groupId=10181"
+            ],
+            "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
+            "provider": ["INE"],
+        },
+    },
     "ppi": {
         "dl": {
             "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=fdc16ffa-4e69-4fd6-becc-836cc3bb7e61&groupId=10181"

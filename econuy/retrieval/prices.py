@@ -133,6 +133,76 @@ def cpi_divisions() -> pd.DataFrame:
 @retry(
     retry_on_exceptions=(HTTPError, URLError),
     max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def cpi_classes() -> pd.DataFrame:
+    """Get CPI data by division, group and class.
+
+    Returns
+    -------
+    Monthly CPI by division, group and class : pd.DataFrame
+
+    """
+    name = "cpi_classes"
+
+    raw = []
+    nmonths = 0
+    with pd.ExcelFile(urls[name]["dl"]["main"]) as excel:
+        for sheet in excel.sheet_names:
+            data = (
+                pd.read_excel(excel, sheet_name=sheet, skiprows=8, nrows=147)
+                .dropna(how="all")
+                .dropna(how="all", axis=1)
+            )
+            data["Unnamed: 1"] = np.where(
+                data["Unnamed: 0"].str.len() == 2,
+                "Div_" + data["Unnamed: 1"],
+                np.where(
+                    data["Unnamed: 0"].str.len() == 3,
+                    "Gru_" + data["Unnamed: 1"],
+                    "Cls_" + data["Unnamed: 1"],
+                ),
+            )
+            data = data.iloc[:, 1:].T
+            data.columns = data.iloc[0]
+            data = data.iloc[1:]
+            data = data.loc[data.index.str.contains("Índice")].reset_index(drop=True).iloc[:, 1:]
+            data.rename(columns={"Cls_Índice General": "Índice General"}, inplace=True)
+            data.index = range(nmonths, nmonths + len(data))
+            data.rename(
+                columns={
+                    "Div_Bebidas Alcoholicas, Tabaco y Estupefacientes": "Div_Bebidas Alcohólicas, Tabaco y Estupefacientes",
+                    "Div_Muebles, Artículos Para el Hogar y Para la Coservación Oridnaria del Hogar": "Div_Muebles, Artículos Para el Hogar y Para la Conservación Ordinaria del Hogar",
+                    "Gru_Enseñanza no atribuíble a ningún nivel": "Gru_Enseñanza no atribuible a ningún nivel",
+                    "Cls_Enseñanza no atribuíble a ningún nivel": "Cls_Enseñanza no atribuible a ningún nivel",
+                    "Cls_Otros aparatos, articulos y productos para la atención personal": "Cls_Otros aparatos, artículos y productos para la atención personal",
+                },
+                inplace=True,
+            )
+            raw.append(data)
+            nmonths = nmonths + len(data)
+    output = pd.concat(raw)
+    output.index = pd.date_range("2011-01-31", freq="M", periods=len(output))
+    output.rename_axis(None, inplace=True)
+    output = output.apply(pd.to_numeric, errors="coerce")
+
+    metadata._set(
+        output,
+        area="Precios",
+        currency="-",
+        inf_adj="No",
+        unit="2010-12=100",
+        seas_adj="NSA",
+        ts_type="-",
+        cumperiods=1,
+    )
+
+    return output
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
     retry_window_after_first_call_in_seconds=30,
 )
 def ppi() -> pd.DataFrame:

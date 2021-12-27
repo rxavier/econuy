@@ -80,6 +80,11 @@ def original():
             "description_en": "Consumer price index by division - CPI (Mar-97, M)",
             "function": prices.cpi_divisions,
         },
+        "cpi_classes": {
+            "description": "Índice de precios al consumidor por división, grupo y clase - IPC (ene-11, M)",
+            "description_en": "Consumer price index by division, group and class - CPI (Jan-11, M)",
+            "function": prices.cpi_classes,
+        },
         "ppi": {
             "description": "Índice de precios al productor de productos nacionales por sección - IPPN (ene-68, M)",
             "description_en": "Producer price index by division - PPI (Jan-68, M)",
