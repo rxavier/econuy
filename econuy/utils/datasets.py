@@ -351,6 +351,11 @@ def custom():
             "description_en": "CPI: tradable, non-tradable, core and residual (Mar-97, M [e])",
             "function": prices.cpi_measures,
         },
+        "utilities": {
+            "description": "Tarifas públicas (mar-97, M [e])",
+            "description_en": "Public utilities prices (Mar-97, M [e])",
+            "function": prices.utilities,
+        },
         "balance_summary": {
             "description": "Resultado fiscal: Todas las agregaciones, inc. aj. FSS (ene-99, M [e])",
             "description_en": "Fiscal balance: all aggregations, inc. FSS adjustment (Jan-99, M [e])",
