@@ -72,6 +72,67 @@ def cpi() -> pd.DataFrame:
 @retry(
     retry_on_exceptions=(HTTPError, URLError),
     max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def cpi_divisions() -> pd.DataFrame:
+    """Get CPI data by division.
+
+    Returns
+    -------
+    Monthly CPI by division : pd.DataFrame
+
+    """
+    name = "cpi_divisions"
+
+    raw = []
+    with pd.ExcelFile(urls[name]["dl"]["main"]) as excel:
+        for sheet, rows in zip(excel.sheet_names, [9, 8]):
+            data = (
+                pd.read_excel(
+                    excel, sheet_name=sheet, skiprows=rows, nrows=14, usecols="C:IM", index_col=0
+                )
+                .dropna(how="all")
+                .dropna(how="all", axis=1)
+                .T
+            )
+            data.columns = [
+                "Índice General",
+                "Alimentos y Bebidas No Alcohólicas",
+                "Bebidas Alcohólicas, Tabaco y Estupefacientes",
+                "Prendas de Vestir y Calzado",
+                "Vivienda",
+                "Muebles, Artículos para el Hogar y para la Conservación Ordinaria del Hogar",
+                "Salud",
+                "Transporte",
+                "Comunicaciones",
+                "Recreación y Cultura",
+                "Educación",
+                "Restaurantes y Hoteles",
+                "Bienes y Servicios Diversos",
+            ]
+            raw.append(data)
+    output = pd.concat(raw)
+    output.index = pd.date_range(start="1997-03-31", freq="M", periods=len(output))
+    output.rename_axis(None, inplace=True)
+    output = output.apply(pd.to_numeric, errors="coerce")
+
+    metadata._set(
+        output,
+        area="Precios",
+        currency="-",
+        inf_adj="No",
+        unit="2010-12=100",
+        seas_adj="NSA",
+        ts_type="-",
+        cumperiods=1,
+    )
+
+    return output
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
     retry_window_after_first_call_in_seconds=30,
 )
 def ppi() -> pd.DataFrame:

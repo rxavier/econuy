@@ -75,6 +75,11 @@ def original():
             "description_en": "Consumer price index - CPI (Jan-37, M)",
             "function": prices.cpi,
         },
+        "cpi_divisions": {
+            "description": "Índice de precios al consumidor por división - IPC (mar-97, M)",
+            "description_en": "Consumer price index by division - CPI (Mar-97, M)",
+            "function": prices.cpi_divisions,
+        },
         "ppi": {
             "description": "Índice de precios al productor de productos nacionales por sección - IPPN (ene-68, M)",
             "description_en": "Producer price index by division - PPI (Jan-68, M)",
