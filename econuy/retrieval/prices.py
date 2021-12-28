@@ -31,7 +31,7 @@ def cpi() -> pd.DataFrame:
 
     Returns
     -------
-    Monthly CPI index : pd.DataFrame
+    Monthly CPI : pd.DataFrame
 
     """
     name = "cpi"
@@ -67,6 +67,348 @@ def cpi() -> pd.DataFrame:
     )
 
     return cpi
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def cpi_divisions() -> pd.DataFrame:
+    """Get CPI data by division.
+
+    Returns
+    -------
+    Monthly CPI by division : pd.DataFrame
+
+    """
+    name = "cpi_divisions"
+
+    raw = []
+    with pd.ExcelFile(urls[name]["dl"]["main"]) as excel:
+        for sheet, rows in zip(excel.sheet_names, [9, 8]):
+            data = (
+                pd.read_excel(excel, sheet_name=sheet, skiprows=rows, nrows=14)
+                .dropna(how="all")
+                .dropna(how="all", axis=1)
+                .T
+            )
+            data = data.iloc[3:]
+            data.columns = [
+                "Índice General",
+                "Alimentos y Bebidas No Alcohólicas",
+                "Bebidas Alcohólicas, Tabaco y Estupefacientes",
+                "Prendas de Vestir y Calzado",
+                "Vivienda",
+                "Muebles, Artículos para el Hogar y para la Conservación Ordinaria del Hogar",
+                "Salud",
+                "Transporte",
+                "Comunicaciones",
+                "Recreación y Cultura",
+                "Educación",
+                "Restaurantes y Hoteles",
+                "Bienes y Servicios Diversos",
+            ]
+            raw.append(data)
+    output = pd.concat(raw)
+    output.index = pd.date_range(start="1997-03-31", freq="M", periods=len(output))
+    output.rename_axis(None, inplace=True)
+    output = output.apply(pd.to_numeric, errors="coerce")
+
+    metadata._set(
+        output,
+        area="Precios",
+        currency="-",
+        inf_adj="No",
+        unit="2010-12=100",
+        seas_adj="NSA",
+        ts_type="-",
+        cumperiods=1,
+    )
+
+    return output
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def cpi_classes() -> pd.DataFrame:
+    """Get CPI data by division, group and class.
+
+    Returns
+    -------
+    Monthly CPI by division, group and class : pd.DataFrame
+
+    """
+    name = "cpi_classes"
+
+    raw = []
+    nmonths = 0
+    with pd.ExcelFile(urls[name]["dl"]["main"]) as excel:
+        for sheet in excel.sheet_names:
+            data = (
+                pd.read_excel(excel, sheet_name=sheet, skiprows=8, nrows=147)
+                .dropna(how="all")
+                .dropna(how="all", axis=1)
+            )
+            data["Unnamed: 1"] = np.where(
+                data["Unnamed: 0"].str.len() == 2,
+                "Div_" + data["Unnamed: 1"],
+                np.where(
+                    data["Unnamed: 0"].str.len() == 3,
+                    "Gru_" + data["Unnamed: 1"],
+                    "Cls_" + data["Unnamed: 1"],
+                ),
+            )
+            data = data.iloc[:, 1:].T
+            data.columns = data.iloc[0]
+            data = data.iloc[1:]
+            data = data.loc[data.index.str.contains("Índice")].reset_index(drop=True).iloc[:, 1:]
+            data.rename(columns={"Cls_Índice General": "Índice General"}, inplace=True)
+            data.index = range(nmonths, nmonths + len(data))
+            data.rename(
+                columns={
+                    "Div_Bebidas Alcoholicas, Tabaco y Estupefacientes": "Div_Bebidas Alcohólicas, Tabaco y Estupefacientes",
+                    "Div_Muebles, Artículos Para el Hogar y Para la Coservación Oridnaria del Hogar": "Div_Muebles, Artículos Para el Hogar y Para la Conservación Ordinaria del Hogar",
+                    "Gru_Enseñanza no atribuíble a ningún nivel": "Gru_Enseñanza no atribuible a ningún nivel",
+                    "Cls_Enseñanza no atribuíble a ningún nivel": "Cls_Enseñanza no atribuible a ningún nivel",
+                    "Cls_Otros aparatos, articulos y productos para la atención personal": "Cls_Otros aparatos, artículos y productos para la atención personal",
+                },
+                inplace=True,
+            )
+            raw.append(data)
+            nmonths = nmonths + len(data)
+    output = pd.concat(raw)
+    output.index = pd.date_range("2011-01-31", freq="M", periods=len(output))
+    output.rename_axis(None, inplace=True)
+    output = output.apply(pd.to_numeric, errors="coerce")
+
+    metadata._set(
+        output,
+        area="Precios",
+        currency="-",
+        inf_adj="No",
+        unit="2010-12=100",
+        seas_adj="NSA",
+        ts_type="-",
+        cumperiods=1,
+    )
+
+    return output
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def inflation_expectations() -> pd.DataFrame:
+    """Get data for the BCU inflation expectations survey.
+
+    Returns
+    -------
+    Monthly inflation expectations : pd.DataFrame
+
+    """
+    name = "inflation_expectations"
+
+    raw = (
+        pd.read_excel(urls[name]["dl"]["main"], skiprows=9)
+        .dropna(how="all", axis=1)
+        .dropna(thresh=4)
+    )
+    mask = raw.iloc[-12:].isna().all()
+    output = raw.loc[:, ~mask]
+
+    output.columns = (
+        ["Fecha"]
+        + ["Inflación mensual del mes corriente"] * 5
+        + ["Inflación para los próximos 6 meses"] * 5
+        + ["Inflación anual del año calendario corriente"] * 5
+        + ["Inflación anual de los próximos 12 meses"] * 5
+        + ["Inflación anual del año calendario siguiente"] * 5
+        + ["Inflación anual de los próximos 24 meses"] * 5
+        + ["Inflación anual a dos años calendario"] * 5
+    )
+    output.set_index("Fecha", inplace=True, drop=True)
+    output.columns = output.columns + " - " + output.iloc[0]
+    output = output.iloc[1:]
+    output.rename_axis(None, inplace=True)
+    output.index = pd.date_range(start="2004-01-31", freq="M", periods=len(output))
+    output = output.apply(pd.to_numeric, errors="coerce")
+
+    metadata._set(
+        output,
+        area="Precios",
+        currency="-",
+        inf_adj="No",
+        unit="%",
+        seas_adj="NSA",
+        ts_type="-",
+        cumperiods=1,
+    )
+
+    return output
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def utilities() -> pd.DataFrame:
+    """Get prices for government-owned utilities.
+
+    Returns
+    -------
+    Monthly utilities prices : pd.DataFrame
+
+    """
+    name = "utilities"
+
+    cpi_1997 = pd.read_excel(urls[name]["dl"]["1997"], skiprows=5, nrows=529).dropna()
+    products = [
+        "    Electricidad",
+        "        Supergas",
+        "        Agua corriente",
+        "      Combustibles Liquidos",
+        "      Servicio Telefonico",
+    ]
+    cpi_1997 = cpi_1997.loc[
+        cpi_1997["Rubros, Agrupaciones, Subrubros, Familias y Artículos"].isin(products)
+    ]
+    cpi_1997 = cpi_1997.T.iloc[1:]
+    cpi_1997.columns = [
+        "Electricidad",
+        "Supergás",
+        "Combustibles líquidos",
+        "Agua corriente",
+        "Servicio telefónico",
+    ]
+    cpi_1997.index = pd.date_range(start="1997-03-31", freq="M", periods=len(cpi_1997))
+    cpi_1997.rename_axis(None, inplace=True)
+
+    with pd.ExcelFile(urls[name]["dl"]["2010"]) as excel:
+        cpi_2010 = []
+        for sheet in excel.sheet_names:
+            data = pd.read_excel(excel, sheet_name=sheet, skiprows=8, nrows=640).dropna(how="all")
+            products = [
+                "04510010",
+                "04520020",
+                "07221",
+                "04410010",
+                "08300010",
+                "08300020",
+                "08300030",
+            ]
+            data = data.loc[
+                data["Unnamed: 0"].isin(products),
+                data.columns.str.contains("Indice|Índice", regex=True),
+            ].T
+            data.columns = [
+                "Agua corriente",
+                "Electricidad",
+                "Supergás",
+                "Combustibles líquidos",
+                "Servicio de telefonía fija",
+                "Servicio de telefonía móvil",
+                "Servicio de Internet",
+            ]
+            cpi_2010.append(data)
+        cpi_2010 = pd.concat(cpi_2010)
+        cpi_2010.index = pd.date_range(start="2010-12-31", freq="M", periods=len(cpi_2010))
+
+    with pd.ExcelFile(urls[name]["dl"]["2019"]) as excel:
+        cpi_2019 = []
+        for sheet in excel.sheet_names:
+            data = pd.read_excel(excel, sheet_name=sheet, skiprows=8, nrows=640).dropna(how="all")
+            products = [
+                "04510010",
+                "04520020",
+                "07221",
+                "04410010",
+                "08300010",
+                "08300020",
+                "08300030",
+            ]
+            data = data.loc[
+                data["Unnamed: 0"].isin(products),
+                data.columns.str.contains("Indice|Índice", regex=True),
+            ].T
+            data.columns = [
+                "Agua corriente",
+                "Electricidad",
+                "Supergás",
+                "Combustibles líquidos",
+                "Servicio de telefonía fija",
+                "Servicio de telefonía móvil",
+                "Servicio de Internet",
+            ]
+            cpi_2019.append(data)
+        cpi_2019 = pd.concat(cpi_2019)
+        cpi_2019.index = pd.date_range(start="2019-01-31", freq="M", periods=len(cpi_2019))
+
+    utilities_10 = pd.concat([cpi_2010, cpi_2019])
+    output = pd.concat([cpi_1997 / cpi_1997.iloc[-1] * 100, utilities_10])
+    output = output.loc[~output.index.duplicated(keep="last")]
+    output.at[pd.Timestamp(2010, 12, 31), "Servicio telefónico"] = 100
+
+    metadata._set(
+        output,
+        area="Precios",
+        currency="-",
+        inf_adj="No",
+        unit="2010-12=100",
+        seas_adj="NSA",
+        ts_type="-",
+        cumperiods=1,
+    )
+
+    return output
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=30,
+)
+def ppi() -> pd.DataFrame:
+    """Get PPI data.
+
+    Returns
+    -------
+    Monthly PPI : pd.DataFrame
+
+    """
+    name = "ppi"
+
+    raw = pd.read_excel(urls[name]["dl"]["main"], skiprows=7, index_col=0).dropna()
+
+    raw.columns = [
+        "Índice general",
+        "Ganadería, agricultura y silvicultura",
+        "Pesca",
+        "Explotación de minas y canteras",
+        "Industrias manufactureras",
+    ]
+    raw.rename_axis(None, inplace=True)
+    raw.index = raw.index + MonthEnd(1)
+    output = raw.apply(pd.to_numeric, errors="coerce")
+
+    metadata._set(
+        output,
+        area="Precios",
+        currency="-",
+        inf_adj="No",
+        unit="2010-03=100",
+        seas_adj="NSA",
+        ts_type="-",
+        cumperiods=1,
+    )
+
+    return output
 
 
 @retry(

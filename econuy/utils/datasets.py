@@ -75,6 +75,26 @@ def original():
             "description_en": "Consumer price index - CPI (Jan-37, M)",
             "function": prices.cpi,
         },
+        "cpi_divisions": {
+            "description": "Índice de precios al consumidor por división - IPC (mar-97, M)",
+            "description_en": "Consumer price index by division - CPI (Mar-97, M)",
+            "function": prices.cpi_divisions,
+        },
+        "cpi_classes": {
+            "description": "Índice de precios al consumidor por división, grupo y clase - IPC (ene-11, M)",
+            "description_en": "Consumer price index by division, group and class - CPI (Jan-11, M)",
+            "function": prices.cpi_classes,
+        },
+        "inflation_expectations": {
+            "description": "Expectativas de inflación (ene-04, M)",
+            "description_en": "Inflation expectations (Jan-04, M)",
+            "function": prices.inflation_expectations,
+        },
+        "ppi": {
+            "description": "Índice de precios al productor de productos nacionales por sección - IPPN (ene-68, M)",
+            "description_en": "Producer price index by division - PPI (Jan-68, M)",
+            "function": prices.ppi,
+        },
         "nxr_monthly": {
             "description": "Tipo de cambio, interbancario, mensual (abr-72, M)",
             "description_en": "Exchange rate, interbank, monthly (Apr-72, M)",
@@ -169,6 +189,11 @@ def original():
             "description": "Salarios reales: total, públicos y privados (ene-68, M)",
             "description_en": "Real wages: total, public and private (Jan-68, M)",
             "function": labor.real_wages,
+        },
+        "bop": {
+            "description": "Balanza de pagos (mar-12, T)",
+            "description_en": "Balance of payments (Mar-12, Q)",
+            "function": external_sector.bop,
         },
         "trade_x_prod_val": {
             "description": "Exportaciones por sector, valor (ene-00, M)",
@@ -306,6 +331,11 @@ def custom():
             "description_en": "Industrial production: total, ex-refinery and core (Jan-02, M [e])",
             "function": economic_activity.core_industrial,
         },
+        "bop_summary": {
+            "description": "Balanza de pagos resumida y flujos de capital (mar-12, T)",
+            "description_en": "Summarized balance of payments and capital flows (Mar-12, Q)",
+            "function": external_sector.bop_summary,
+        },
         "natacc_ind_con_nsa_long": {
             "description": "Cuentas nacionales: oferta, precios constantes, serie empalmada (mar-88, T [e])",
             "description_en": "National accounts: supply, constant prices, spliced series (Mar-88, Q [e])",
@@ -335,6 +365,11 @@ def custom():
             "description": "IPC transable, no transable, subyacente y residual (mar-97, M [e])",
             "description_en": "CPI: tradable, non-tradable, core and residual (Mar-97, M [e])",
             "function": prices.cpi_measures,
+        },
+        "utilities": {
+            "description": "Tarifas públicas (mar-97, M [e])",
+            "description_en": "Public utilities prices (Mar-97, M [e])",
+            "function": prices.utilities,
         },
         "balance_summary": {
             "description": "Resultado fiscal: Todas las agregaciones, inc. aj. FSS (ene-99, M [e])",
