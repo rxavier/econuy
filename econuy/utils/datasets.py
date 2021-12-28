@@ -85,6 +85,11 @@ def original():
             "description_en": "Consumer price index by division, group and class - CPI (Jan-11, M)",
             "function": prices.cpi_classes,
         },
+        "inflation_expectations": {
+            "description": "Expectativas de inflación (ene-04, M)",
+            "description_en": "Inflation expectations (Jan-04, M)",
+            "function": prices.inflation_expectations,
+        },
         "ppi": {
             "description": "Índice de precios al productor de productos nacionales por sección - IPPN (ene-68, M)",
             "description_en": "Producer price index by division - PPI (Jan-68, M)",

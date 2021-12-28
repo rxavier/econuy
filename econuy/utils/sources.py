@@ -101,6 +101,20 @@ urls = {
             "provider": ["INE"],
         },
     },
+    "inflation_expectations": {
+        "dl": {
+            "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Encuesta-Expectativas-Inflacion/IEES05I2.XLS"
+        },
+        "source": {
+            "direct": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Encuesta-Expectativas-Inflacion/IEES05I2.XLS"
+            ],
+            "indirect": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Encuesta-Inflacion.aspx"
+            ],
+            "provider": ["BCU"],
+        },
+    },
     "utilities": {
         "dl": {
             "1997": "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",

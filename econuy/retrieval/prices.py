@@ -204,6 +204,60 @@ def cpi_classes() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
+def inflation_expectations() -> pd.DataFrame:
+    """Get data for the BCU inflation expectations survey.
+
+    Returns
+    -------
+    Monthly inflation expectations : pd.DataFrame
+
+    """
+    name = "inflation_expectations"
+
+    raw = (
+        pd.read_excel(urls[name]["dl"]["main"], skiprows=9)
+        .dropna(how="all", axis=1)
+        .dropna(thresh=4)
+    )
+    mask = raw.iloc[-12:].isna().all()
+    output = raw.loc[:, ~mask]
+
+    output.columns = (
+        ["Fecha"]
+        + ["Inflación mensual del mes corriente"] * 5
+        + ["Inflación para los próximos 6 meses"] * 5
+        + ["Inflación anual del año calendario corriente"] * 5
+        + ["Inflación anual de los próximos 12 meses"] * 5
+        + ["Inflación anual del año calendario siguiente"] * 5
+        + ["Inflación anual de los próximos 24 meses"] * 5
+        + ["Inflación anual a dos años calendario"] * 5
+    )
+    output.set_index("Fecha", inplace=True, drop=True)
+    output.columns = output.columns + " - " + output.iloc[0]
+    output = output.iloc[1:]
+    output.rename_axis(None, inplace=True)
+    output.index = pd.date_range(start="2004-01-31", freq="M", periods=len(output))
+    output = output.apply(pd.to_numeric, errors="coerce")
+
+    metadata._set(
+        output,
+        area="Precios",
+        currency="-",
+        inf_adj="No",
+        unit="%",
+        seas_adj="NSA",
+        ts_type="-",
+        cumperiods=1,
+    )
+
+    return output
+
+
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
 def utilities() -> pd.DataFrame:
     """Get prices for government-owned utilities.
 
