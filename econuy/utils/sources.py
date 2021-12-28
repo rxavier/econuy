@@ -128,7 +128,7 @@ urls = {
                 "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
             ],
             "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
-            "provider": ["INE"],
+            "provider": ["econuy en base a INE"],
         },
     },
     "ppi": {
@@ -793,6 +793,30 @@ urls = {
             "provider": [
                 "econuy en base a INE, BCRA, Ipea, IBGE, FMI, Ámbito e Inflación Verdadera"
             ],
+        },
+    },
+    "bop": {
+        "dl": {
+            "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Balanza%20de%20Pagos/dse_bp_m6_arm_scn.xlsx"
+        },
+        "source": {
+            "direct": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Balanza%20de%20Pagos/dse_bp_m6_arm_scn.xlsx"
+            ],
+            "indirect": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/BalanzadePagos.aspx"
+            ],
+            "provider": ["BCU"],
+        },
+    },
+    "bop_summary": {
+        "dl": {},
+        "source": {
+            "direct": [],
+            "indirect": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/BalanzadePagos.aspx"
+            ],
+            "provider": ["econuy en base a BCU"],
         },
     },
     "trade_x_prod_val": {

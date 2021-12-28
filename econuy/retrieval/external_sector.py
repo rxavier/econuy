@@ -751,6 +751,126 @@ def rxr_custom(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
 
 
 @retry(
+    retry_on_exceptions=(error.HTTPError, error.URLError),
+    max_calls_total=10,
+    retry_window_after_first_call_in_seconds=90,
+)
+def bop() -> pd.DataFrame:
+    """Get balance of payments.
+
+    Returns
+    -------
+    Quarterly balance of payments : pd.DataFrame
+
+    """
+    raw = (
+        pd.read_excel(urls["bop"]["dl"]["main"], skiprows=7, index_col=0, sheet_name="Cuadro Nº 1")
+        .dropna(how="all")
+        .T
+    )
+    output = raw.iloc[:, 2:]
+    output.index = pd.date_range(start="2012-03-31", freq="Q", periods=len(output))
+    pattern = r"\(1\)|\(2\)|\(3\)|\(4\)|\(5\)"
+    output.columns = [re.sub(pattern, "", x).strip() for x in output.columns]
+
+    metadata._set(
+        output,
+        area="Sector externo",
+        currency="USD",
+        inf_adj="No",
+        unit="Millones",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
+    )
+
+    return output
+
+
+@retry(
+    retry_on_exceptions=(error.HTTPError, error.URLError),
+    max_calls_total=10,
+    retry_window_after_first_call_in_seconds=90,
+)
+def bop_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+    """Get a balance of payments summary and capital flows calculations.
+
+    Returns
+    -------
+    Quarterly balance of payments summary : pd.DataFrame
+
+    """
+    if pipeline is None:
+        pipeline = Pipeline()
+
+    pipeline.get("bop")
+    bop = pipeline.dataset.copy()
+    output = pd.DataFrame(index=bop.index)
+    output["Cuenta corriente"] = bop["1. Cuenta Corriente"]
+    output["Balance de bienes y servicios"] = bop["1.A. Bienes y Servicios"]
+    output["Balance de bienes"] = bop["1.A.a Bienes"]
+    output["Exportaciones de bienes"] = bop["Crédito"].iloc[:, 0]
+    output["Importaciones de bienes"] = bop["Débito"].iloc[:, 0]
+    output["Balance de servicios"] = bop["1.A.b Servicios"]
+    output["Exportaciones de servicios"] = bop["Crédito"].iloc[:, 1]
+    output["Importaciones de servicios"] = bop["Débito"].iloc[:, 1]
+    output["Ingreso primario"] = bop["1.B Ingreso Primario"]
+    output["Ingreso secundario"] = bop["1.C Ingreso Secundario"]
+    output["Cuenta capital"] = bop["2. Cuenta Capital"]
+    output["Crédito en cuenta capital"] = bop["Crédito"].iloc[:, -1]
+    output["Débito en cuenta capital"] = bop["Débito"].iloc[:, -1]
+    output["Cuenta financiera"] = bop[
+        "3. Cuenta Financiera (Préstamo neto (+) / endeudamiento neto (–))"
+    ]
+    output["Balance de inversión directa"] = bop["3.1 Inversión directa"]
+    output["Inversión directa en el exterior"] = bop[
+        "Adquisición neta de activos financieros"
+    ].iloc[:, 0]
+    output["Inversión directa en Uruguay"] = bop["Pasivos netos incurridos"].iloc[:, 0]
+    output["Balance de inversión de cartera"] = bop["3.2 Inversión de cartera"]
+    output["Inversión de cartera en el exterior"] = bop[
+        "Adquisición neta de activos financieros"
+    ].iloc[:, 1]
+    output["Inversión de cartera en Uruguay"] = bop["Pasivos netos incurridos"].iloc[:, 1]
+    output["Saldo de derivados financieros"] = bop[
+        "3.3 Derivados financieros (distintos de reservas)"
+    ]
+    output["Balance de otra inversión"] = bop["3.4 Otra inversión"]
+    output["Otra inversión en el exterior"] = bop["Adquisición neta de activos financieros"].iloc[
+        :, 2
+    ]
+    output["Otra inversión en Uruguay"] = bop["Pasivos netos incurridos"].iloc[:, 2]
+    output["Variación de activos de reserva"] = bop["3.5 Activos de Reserva BCU"]
+    output["Errores y omisiones"] = bop["4.  Errores y Omisiones  (4 = -(1+2-3))"]
+    output["Flujos brutos de capital"] = (
+        output["Inversión directa en Uruguay"]
+        + output["Inversión de cartera en Uruguay"]
+        + output["Otra inversión en Uruguay"]
+        + output["Crédito en cuenta capital"]
+    )
+    output["Flujos netos de capital"] = (
+        -output["Balance de inversión directa"]
+        - output["Balance de inversión de cartera"]
+        - output["Balance de otra inversión"]
+        - output["Saldo de derivados financieros"]
+        + output["Cuenta capital"]
+    )
+
+    metadata._set(
+        output,
+        area="Sector externo",
+        currency="USD",
+        inf_adj="No",
+        unit="Millones",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
+    )
+
+    return output
+
+
+@retry(
     retry_on_exceptions=(HTTPError, URLError),
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,

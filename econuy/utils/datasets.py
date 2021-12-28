@@ -190,6 +190,11 @@ def original():
             "description_en": "Real wages: total, public and private (Jan-68, M)",
             "function": labor.real_wages,
         },
+        "bop": {
+            "description": "Balanza de pagos (mar-12, T)",
+            "description_en": "Balance of payments (Mar-12, Q)",
+            "function": external_sector.bop,
+        },
         "trade_x_prod_val": {
             "description": "Exportaciones por sector, valor (ene-00, M)",
             "description_en": "Exports by sector, value (Jan-00, M)",
@@ -325,6 +330,11 @@ def custom():
             "description": "Producción industrial: total, sin refinería y núcleo (ene-02, M [e])",
             "description_en": "Industrial production: total, ex-refinery and core (Jan-02, M [e])",
             "function": economic_activity.core_industrial,
+        },
+        "bop_summary": {
+            "description": "Balanza de pagos resumida y flujos de capital (mar-12, T)",
+            "description_en": "Summarized balance of payments and capital flows (Mar-12, Q)",
+            "function": external_sector.bop_summary,
         },
         "natacc_ind_con_nsa_long": {
             "description": "Cuentas nacionales: oferta, precios constantes, serie empalmada (mar-88, T [e])",
