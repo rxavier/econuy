@@ -25,7 +25,7 @@ from econuy.retrieval import regional
 from econuy.core import Pipeline
 from econuy.utils import ops, metadata, get_project_root
 from econuy.utils.sources import urls
-from econuy.utils.extras import trade_metadata, reserves_cols
+from econuy.utils.extras import trade_metadata, reserves_cols, bop_cols
 
 
 def _trade_retriever(name: str) -> pd.DataFrame:
@@ -772,6 +772,15 @@ def bop() -> pd.DataFrame:
     output.index = pd.date_range(start="2012-03-31", freq="Q", periods=len(output))
     pattern = r"\(1\)|\(2\)|\(3\)|\(4\)|\(5\)"
     output.columns = [re.sub(pattern, "", x).strip() for x in output.columns]
+    output = output.drop(
+        [
+            "Por Sector Institucional",
+            "Por Categoría Funcional",
+            "Por Instrumento y Sector Institucional",
+        ],
+        axis=1,
+    )
+    output.columns = [x[:58] + "..." if len(x) > 60 else x for x in bop_cols]
 
     metadata._set(
         output,
@@ -806,42 +815,40 @@ def bop_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     pipeline.get("bop")
     bop = pipeline.dataset.copy()
     output = pd.DataFrame(index=bop.index)
-    output["Cuenta corriente"] = bop["1. Cuenta Corriente"]
-    output["Balance de bienes y servicios"] = bop["1.A. Bienes y Servicios"]
-    output["Balance de bienes"] = bop["1.A.a Bienes"]
-    output["Exportaciones de bienes"] = bop["Crédito"].iloc[:, 0]
-    output["Importaciones de bienes"] = bop["Débito"].iloc[:, 0]
-    output["Balance de servicios"] = bop["1.A.b Servicios"]
-    output["Exportaciones de servicios"] = bop["Crédito"].iloc[:, 1]
-    output["Importaciones de servicios"] = bop["Débito"].iloc[:, 1]
-    output["Ingreso primario"] = bop["1.B Ingreso Primario"]
-    output["Ingreso secundario"] = bop["1.C Ingreso Secundario"]
-    output["Cuenta capital"] = bop["2. Cuenta Capital"]
-    output["Crédito en cuenta capital"] = bop["Crédito"].iloc[:, -1]
-    output["Débito en cuenta capital"] = bop["Débito"].iloc[:, -1]
-    output["Cuenta financiera"] = bop[
-        "3. Cuenta Financiera (Préstamo neto (+) / endeudamiento neto (–))"
-    ]
-    output["Balance de inversión directa"] = bop["3.1 Inversión directa"]
+    output["Cuenta corriente"] = bop["Cuenta Corriente"]
+    output["Balance de bienes y servicios"] = bop["Bienes y Servicios"]
+    output["Balance de bienes"] = bop["Bienes"]
+    output["Exportaciones de bienes"] = bop["Bienes - Crédito"]
+    output["Importaciones de bienes"] = bop["Bienes - Débito"]
+    output["Balance de servicios"] = bop["Servicios"]
+    output["Exportaciones de servicios"] = bop["Servicios - Crédito"]
+    output["Importaciones de servicios"] = bop["Servicios - Débito"]
+    output["Ingreso primario"] = bop["Ingreso Primario"]
+    output["Ingreso secundario"] = bop["Ingreso Secundario"]
+    output["Cuenta capital"] = bop["Cuenta Capital"]
+    output["Crédito en cuenta capital"] = bop["Cuenta Capital - Crédito"]
+    output["Débito en cuenta capital"] = bop["Cuenta Capital - Débito"]
+    output["Cuenta financiera"] = bop["Cuenta Financiera"]
+    output["Balance de inversión directa"] = bop["Inversión directa"]
     output["Inversión directa en el exterior"] = bop[
-        "Adquisición neta de activos financieros"
-    ].iloc[:, 0]
-    output["Inversión directa en Uruguay"] = bop["Pasivos netos incurridos"].iloc[:, 0]
-    output["Balance de inversión de cartera"] = bop["3.2 Inversión de cartera"]
+        "Inversión directa - Adquisición neta de activos financieros"
+    ]
+    output["Inversión directa en Uruguay"] = bop["Inversión directa - Pasivos netos incurridos"]
+    output["Balance de inversión de cartera"] = bop["Inversión de cartera"]
     output["Inversión de cartera en el exterior"] = bop[
-        "Adquisición neta de activos financieros"
-    ].iloc[:, 1]
-    output["Inversión de cartera en Uruguay"] = bop["Pasivos netos incurridos"].iloc[:, 1]
-    output["Saldo de derivados financieros"] = bop[
-        "3.3 Derivados financieros (distintos de reservas)"
+        "Inversión de cartera - Adquisición neta de activos fin"
     ]
-    output["Balance de otra inversión"] = bop["3.4 Otra inversión"]
-    output["Otra inversión en el exterior"] = bop["Adquisición neta de activos financieros"].iloc[
-        :, 2
+    output["Inversión de cartera en Uruguay"] = bop[
+        "Inversión de cartera - Pasivos netos incurridos"
     ]
-    output["Otra inversión en Uruguay"] = bop["Pasivos netos incurridos"].iloc[:, 2]
-    output["Variación de activos de reserva"] = bop["3.5 Activos de Reserva BCU"]
-    output["Errores y omisiones"] = bop["4.  Errores y Omisiones  (4 = -(1+2-3))"]
+    output["Saldo de derivados financieros"] = bop["Derivados financieros (distintos de reservas)"]
+    output["Balance de otra inversión"] = bop["Otra inversión"]
+    output["Otra inversión en el exterior"] = bop[
+        "Otra inversión - Adquisición neta de activos financieros"
+    ]
+    output["Otra inversión en Uruguay"] = bop["Otra inversión - Pasivos netos incurridos"]
+    output["Variación de activos de reserva"] = bop["Activos de Reserva BCU"]
+    output["Errores y omisiones"] = bop["Errores y Omisiones"]
     output["Flujos brutos de capital"] = (
         output["Inversión directa en Uruguay"]
         + output["Inversión de cartera en Uruguay"]
