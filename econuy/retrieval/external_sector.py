@@ -490,7 +490,7 @@ def commodity_prices() -> pd.DataFrame:
     raw_milk = pd.read_excel(
         requests.utils.quote(xls).replace("%3A", ":"),
         skiprows=14,
-        nrows=dt.datetime.now().year - 2006,
+        nrows=dt.datetime.now().year - 2007,
     )
     raw_milk.dropna(how="all", axis=1, inplace=True)
     raw_milk.drop(["Promedio ", "Variación"], axis=1, inplace=True)
