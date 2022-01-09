@@ -841,7 +841,7 @@ def bop_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     output["Inversión de cartera en Uruguay"] = bop[
         "Inversión de cartera - Pasivos netos incurridos"
     ]
-    output["Saldo de derivados financieros"] = bop["Derivados financieros (distintos de reservas)"]
+    output["Saldo de derivados financieros"] = bop["Derivados financieros - distintos de reservas"]
     output["Balance de otra inversión"] = bop["Otra inversión"]
     output["Otra inversión en el exterior"] = bop[
         "Otra inversión - Adquisición neta de activos financieros"
