@@ -25,7 +25,7 @@ from econuy.retrieval import regional
 from econuy.core import Pipeline
 from econuy.utils import ops, metadata, get_project_root
 from econuy.utils.sources import urls
-from econuy.utils.extras import trade_metadata, reserves_cols
+from econuy.utils.extras import trade_metadata, reserves_cols, bop_cols
 
 
 def _trade_retriever(name: str) -> pd.DataFrame:
@@ -453,8 +453,6 @@ def commodity_prices() -> pd.DataFrame:
         Prices and price indexes of relevant commodities for Uruguay.
 
     """
-    bushel_conv = 36.74 / 100
-
     url = urls["commodity_prices"]["dl"]
     try:
         raw_beef = pd.read_excel(url["beef"], header=4, index_col=0).dropna(how="all")
@@ -476,21 +474,9 @@ def commodity_prices() -> pd.DataFrame:
     )
     beef = proc_beef.resample("M").mean()
 
-    raw_pulp_r = requests.get(url["pulp"])
-    temp_dir = tempfile.TemporaryDirectory()
-    with zipfile.ZipFile(BytesIO(raw_pulp_r.content), "r") as f:
-        f.extractall(path=temp_dir.name)
-        path_temp = path.join(temp_dir.name, "monthly_values.csv")
-        raw_pulp = pd.read_csv(path_temp, sep=";").dropna(how="any")
-    proc_pulp = raw_pulp.copy().sort_index(ascending=False)
-    proc_pulp.index = pd.date_range(start="1990-01-31", periods=len(proc_pulp), freq="M")
-    proc_pulp.drop(["Label", "Codes"], axis=1, inplace=True)
-    pulp = proc_pulp
-
     soy_wheat = []
     for link in [url["soybean"], url["wheat"]]:
-        raw = pd.read_csv(link, index_col=0)
-        proc = (raw["Settle"] * bushel_conv).to_frame()
+        proc = pd.read_csv(link, index_col=0)
         proc.index = pd.to_datetime(proc.index, format="%Y-%m-%d")
         proc.sort_index(inplace=True)
         soy_wheat.append(proc.resample("M").mean())
@@ -504,7 +490,7 @@ def commodity_prices() -> pd.DataFrame:
     raw_milk = pd.read_excel(
         requests.utils.quote(xls).replace("%3A", ":"),
         skiprows=14,
-        nrows=dt.datetime.now().year - 2006,
+        nrows=dt.datetime.now().year - 2007,
     )
     raw_milk.dropna(how="all", axis=1, inplace=True)
     raw_milk.drop(["Promedio ", "Variación"], axis=1, inplace=True)
@@ -525,11 +511,23 @@ def commodity_prices() -> pd.DataFrame:
     )
     eurusd = pd.read_html(eurusd_r.content)[0].drop("MMM YYYY", axis=1)
     eurusd.index = pd.date_range(start="2001-01-31", periods=len(eurusd), freq="M")
-    eurusd = eurusd.reindex(prev_milk.index)
-    prev_milk = prev_milk.divide(eurusd.values).multiply(10)
+    eurusd_milk = eurusd.reindex(prev_milk.index)
+    prev_milk = prev_milk.divide(eurusd_milk.values).multiply(10)
     prev_milk = prev_milk.loc[prev_milk.index < min(proc_milk.index)]
     prev_milk.columns, proc_milk.columns = ["Price"], ["Price"]
     milk = prev_milk.append(proc_milk)
+
+    raw_pulp_r = requests.get(url["pulp"])
+    temp_dir = tempfile.TemporaryDirectory()
+    with zipfile.ZipFile(BytesIO(raw_pulp_r.content), "r") as f:
+        f.extractall(path=temp_dir.name)
+        path_temp = path.join(temp_dir.name, "monthly_values.csv")
+        raw_pulp = pd.read_csv(path_temp, sep=";").dropna(how="any")
+    proc_pulp = raw_pulp.copy().sort_index(ascending=False)
+    proc_pulp.index = pd.date_range(start="1990-01-31", periods=len(proc_pulp), freq="M")
+    proc_pulp = proc_pulp.drop(["Label", "Codes"], axis=1).astype(float)
+    proc_pulp = proc_pulp.div(eurusd.reindex(proc_pulp.index).values)
+    pulp = proc_pulp
 
     r_imf = requests.get(url["imf"])
     imf = re.findall("external-data[A-z]+.ashx", r_imf.text)[0]
@@ -537,7 +535,7 @@ def commodity_prices() -> pd.DataFrame:
     raw_imf = pd.read_excel(imf).dropna(how="all", axis=1).dropna(how="all", axis=0)
     raw_imf.columns = raw_imf.iloc[0, :]
     proc_imf = raw_imf.iloc[3:, 1:]
-    proc_imf.index = pd.date_range(start="1980-01-31", periods=len(proc_imf), freq="M")
+    proc_imf.index = pd.date_range(start="1990-01-31", periods=len(proc_imf), freq="M")
     rice = proc_imf[proc_imf.columns[proc_imf.columns.str.contains("Rice")]]
     wood = proc_imf[proc_imf.columns[proc_imf.columns.str.contains("Sawnwood")]]
     wood = wood.mean(axis=1).to_frame()
@@ -747,6 +745,133 @@ def rxr_custom(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     output = transform.rebase(output, start_date="2010-01-01", end_date="2010-12-31", base=100)
     metadata._modify_multiindex(
         output, levels=[3], new_arrays=[["UYU/ARS", "UYU/ARS", "UYU/BRL", "UYU/USD"]]
+    )
+
+    return output
+
+
+@retry(
+    retry_on_exceptions=(error.HTTPError, error.URLError),
+    max_calls_total=10,
+    retry_window_after_first_call_in_seconds=90,
+)
+def bop() -> pd.DataFrame:
+    """Get balance of payments.
+
+    Returns
+    -------
+    Quarterly balance of payments : pd.DataFrame
+
+    """
+    raw = (
+        pd.read_excel(urls["bop"]["dl"]["main"], skiprows=7, index_col=0, sheet_name="Cuadro Nº 1")
+        .dropna(how="all")
+        .T
+    )
+    output = raw.iloc[:, 2:]
+    output.index = pd.date_range(start="2012-03-31", freq="Q", periods=len(output))
+    pattern = r"\(1\)|\(2\)|\(3\)|\(4\)|\(5\)"
+    output.columns = [re.sub(pattern, "", x).strip() for x in output.columns]
+    output = output.drop(
+        [
+            "Por Sector Institucional",
+            "Por Categoría Funcional",
+            "Por Instrumento y Sector Institucional",
+        ],
+        axis=1,
+    )
+    output.columns = [x[:58] + "..." if len(x) > 60 else x for x in bop_cols]
+
+    metadata._set(
+        output,
+        area="Sector externo",
+        currency="USD",
+        inf_adj="No",
+        unit="Millones",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
+    )
+
+    return output
+
+
+@retry(
+    retry_on_exceptions=(error.HTTPError, error.URLError),
+    max_calls_total=10,
+    retry_window_after_first_call_in_seconds=90,
+)
+def bop_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+    """Get a balance of payments summary and capital flows calculations.
+
+    Returns
+    -------
+    Quarterly balance of payments summary : pd.DataFrame
+
+    """
+    if pipeline is None:
+        pipeline = Pipeline()
+
+    pipeline.get("bop")
+    bop = pipeline.dataset.copy()
+    output = pd.DataFrame(index=bop.index)
+    output["Cuenta corriente"] = bop["Cuenta Corriente"]
+    output["Balance de bienes y servicios"] = bop["Bienes y Servicios"]
+    output["Balance de bienes"] = bop["Bienes"]
+    output["Exportaciones de bienes"] = bop["Bienes - Crédito"]
+    output["Importaciones de bienes"] = bop["Bienes - Débito"]
+    output["Balance de servicios"] = bop["Servicios"]
+    output["Exportaciones de servicios"] = bop["Servicios - Crédito"]
+    output["Importaciones de servicios"] = bop["Servicios - Débito"]
+    output["Ingreso primario"] = bop["Ingreso Primario"]
+    output["Ingreso secundario"] = bop["Ingreso Secundario"]
+    output["Cuenta capital"] = bop["Cuenta Capital"]
+    output["Crédito en cuenta capital"] = bop["Cuenta Capital - Crédito"]
+    output["Débito en cuenta capital"] = bop["Cuenta Capital - Débito"]
+    output["Cuenta financiera"] = bop["Cuenta Financiera"]
+    output["Balance de inversión directa"] = bop["Inversión directa"]
+    output["Inversión directa en el exterior"] = bop[
+        "Inversión directa - Adquisición neta de activos financieros"
+    ]
+    output["Inversión directa en Uruguay"] = bop["Inversión directa - Pasivos netos incurridos"]
+    output["Balance de inversión de cartera"] = bop["Inversión de cartera"]
+    output["Inversión de cartera en el exterior"] = bop[
+        "Inversión de cartera - Adquisición neta de activos fin"
+    ]
+    output["Inversión de cartera en Uruguay"] = bop[
+        "Inversión de cartera - Pasivos netos incurridos"
+    ]
+    output["Saldo de derivados financieros"] = bop["Derivados financieros (distintos de reservas)"]
+    output["Balance de otra inversión"] = bop["Otra inversión"]
+    output["Otra inversión en el exterior"] = bop[
+        "Otra inversión - Adquisición neta de activos financieros"
+    ]
+    output["Otra inversión en Uruguay"] = bop["Otra inversión - Pasivos netos incurridos"]
+    output["Variación de activos de reserva"] = bop["Activos de Reserva BCU"]
+    output["Errores y omisiones"] = bop["Errores y Omisiones"]
+    output["Flujos brutos de capital"] = (
+        output["Inversión directa en Uruguay"]
+        + output["Inversión de cartera en Uruguay"]
+        + output["Otra inversión en Uruguay"]
+        + output["Crédito en cuenta capital"]
+    )
+    output["Flujos netos de capital"] = (
+        -output["Balance de inversión directa"]
+        - output["Balance de inversión de cartera"]
+        - output["Balance de otra inversión"]
+        - output["Saldo de derivados financieros"]
+        + output["Cuenta capital"]
+    )
+
+    metadata._set(
+        output,
+        area="Sector externo",
+        currency="USD",
+        inf_adj="No",
+        unit="Millones",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
     )
 
     return output

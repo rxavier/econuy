@@ -239,56 +239,10 @@ def rates_people(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     rates = rates.loc[
         :, ["Tasa de actividad: total", "Tasa de empleo: total", "Tasa de desempleo: total"]
     ]
-    try:
-        act_5000 = pd.read_excel(
-            urls[name]["dl"]["act_5000"],
-            sheet_name="Mensual",
-            index_col=0,
-            skiprows=8,
-            usecols="A:B",
-        ).dropna(how="any")
-        emp_5000 = pd.read_excel(
-            urls[name]["dl"]["emp_5000"],
-            sheet_name="Mensual",
-            index_col=0,
-            skiprows=8,
-            usecols="A:B",
-        ).dropna(how="any")
-        des_5000 = pd.read_excel(
-            urls[name]["dl"]["des_5000"],
-            sheet_name="Mensual",
-            index_col=0,
-            skiprows=7,
-            usecols="A:B",
-        ).dropna(how="any")
-        working_age = pd.read_excel(
-            urls[name]["dl"]["population"], skiprows=7, index_col=0, nrows=92
-        ).dropna(how="all")
-    except URLError as err:
-        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certificate = Path(get_project_root(), "utils", "files", "ine_certs.pem")
-            r = requests.get(urls[name]["dl"]["act_5000"], verify=certificate)
-            act_5000 = pd.read_excel(
-                BytesIO(r.content), sheet_name="Mensual", index_col=0, skiprows=8, usecols="A:B"
-            ).dropna(how="any")
-            r = requests.get(urls[name]["dl"]["emp_5000"], verify=certificate)
-            emp_5000 = pd.read_excel(
-                BytesIO(r.content), sheet_name="Mensual", index_col=0, skiprows=8, usecols="A:B"
-            ).dropna(how="any")
-            r = requests.get(urls[name]["dl"]["des_5000"], verify=certificate)
-            des_5000 = pd.read_excel(
-                BytesIO(r.content), sheet_name="Mensual", index_col=0, skiprows=7, usecols="A:B"
-            ).dropna(how="any")
-            r = requests.get(urls[name]["dl"]["population"], verify=certificate)
-            working_age = pd.read_excel(
-                BytesIO(r.content), skiprows=7, index_col=0, nrows=92
-            ).dropna(how="all")
-        else:
-            raise err
-    for df in [act_5000, emp_5000, des_5000]:
-        df.index = df.index + MonthEnd(0)
-    rates_5000 = pd.concat([act_5000, emp_5000, des_5000], axis=1)
-    rates_prev = rates_5000.loc[rates_5000.index < "2006-01-31"]
+    rates_prev = pd.read_csv(urls[name]["dl"]["5k"], index_col=0, parse_dates=True)
+    working_age = pd.read_excel(
+        urls[name]["dl"]["population"], skiprows=7, index_col=0, nrows=92
+    ).dropna(how="all")
     rates_prev.columns = rates.columns
     rates = pd.concat([rates_prev, rates])
     rates.columns = rates.columns.set_levels(

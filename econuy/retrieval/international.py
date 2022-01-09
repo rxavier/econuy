@@ -1,23 +1,23 @@
 import datetime as dt
-import os
 import tempfile
 import zipfile
 from random import randint
 from io import BytesIO
 from os import path
-from pathlib import Path
 from urllib.error import HTTPError, URLError
 
 import pandas as pd
 import requests
-from dotenv import load_dotenv
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 
 from econuy.transform import decompose, rebase
-from econuy.utils import metadata, get_project_root
+from econuy.utils import metadata
 from econuy.utils.sources import urls
 from econuy.utils.extras import investing_headers
+
+
+FRED_API_KEY = "f5700348a7dd3a997c88af6d35608a12"
 
 
 @retry(
@@ -74,11 +74,9 @@ def gdp() -> pd.DataFrame:
     chn = chn_sa.iloc[:, [0]].div(10)
 
     gdps = []
-    load_dotenv(Path(get_project_root(), ".env"))
-    fred_api_key = os.environ.get("FRED_API_KEY")
     for series in ["GDPC1", "CLVMNACSCAB1GQEU272020", "JPNRGDPEXP"]:
         r = requests.get(
-            f"{urls[name]['dl']['fred']}{series}&api_key=" f"{fred_api_key}&file_type=json"
+            f"{urls[name]['dl']['fred']}{series}&api_key=" f"{FRED_API_KEY}&file_type=json"
         )
         aux = pd.DataFrame.from_records(r.json()["observations"])
         aux = aux[["date", "value"]].set_index("date")
@@ -219,9 +217,7 @@ def long_rates() -> pd.DataFrame:
     name = "global_long_rates"
 
     bonds = []
-    load_dotenv(Path(get_project_root(), ".env"))
-    fred_api_key = os.environ.get("FRED_API_KEY")
-    r = requests.get(f"{urls[name]['dl']['fred']}DGS10&api_key=" f"{fred_api_key}&file_type=json")
+    r = requests.get(f"{urls[name]['dl']['fred']}DGS10&api_key=" f"{FRED_API_KEY}&file_type=json")
     us = pd.DataFrame.from_records(r.json()["observations"])
     us = us[["date", "value"]].set_index("date")
     us.index = pd.to_datetime(us.index)

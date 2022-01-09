@@ -15,7 +15,7 @@ import sys
 from shutil import copyfile
 
 sys.path.insert(0, os.path.abspath("../../"))
-from econuy import __version__
+from econuy._version import __version__
 
 
 copyfile("../../README.md", "README.md")
@@ -23,7 +23,7 @@ copyfile("../../README.md", "README.md")
 # -- Project information -----------------------------------------------------
 
 project = "econuy"
-copyright = "2020, Rafael Xavier"
+copyright = "2021, Rafael Xavier"
 author = "Rafael Xavier"
 
 # The full version, including alpha/beta/rc tags

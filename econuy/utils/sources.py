@@ -77,6 +77,75 @@ urls = {
             "provider": ["INE"],
         },
     },
+    "cpi_divisions": {
+        "dl": {
+            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=68d73d74-fbf9-4db1-bc61-2fbc6f104ef8&groupId=10181",
+            "1997": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/cpi_divisons.csv",
+        },
+        "source": {
+            "direct": [
+                "https://www.ine.gub.uy/c/document_library/get_file?uuid=68d73d74-fbf9-4db1-bc61-2fbc6f104ef8&groupId=10181"
+            ],
+            "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
+            "provider": ["INE"],
+        },
+    },
+    "cpi_classes": {
+        "dl": {
+            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=5d597b80-0b5d-4131-ba4d-fe6b609b4666&groupId=10181"
+        },
+        "source": {
+            "direct": [
+                "https://www.ine.gub.uy/c/document_library/get_file?uuid=5d597b80-0b5d-4131-ba4d-fe6b609b4666&groupId=10181"
+            ],
+            "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
+            "provider": ["INE"],
+        },
+    },
+    "inflation_expectations": {
+        "dl": {
+            "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Encuesta-Expectativas-Inflacion/IEES05I2.XLS"
+        },
+        "source": {
+            "direct": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Encuesta-Expectativas-Inflacion/IEES05I2.XLS"
+            ],
+            "indirect": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Encuesta-Inflacion.aspx"
+            ],
+            "provider": ["BCU"],
+        },
+    },
+    "utilities": {
+        "dl": {
+            "1997": "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
+            "2010": "https://www.ine.gub.uy/c/document_library/get_file?uuid=668d4f77-74d8-46ba-8360-77bd867996df&groupId=10181",
+            "2019": "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
+        },
+        "source": {
+            "direct": [
+                "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
+                "https://www.ine.gub.uy/c/document_library/get_file?uuid=668d4f77-74d8-46ba-8360-77bd867996df&groupId=10181",
+                "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
+            ],
+            "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
+            "provider": ["econuy en base a INE"],
+        },
+    },
+    "ppi": {
+        "dl": {
+            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=fdc16ffa-4e69-4fd6-becc-836cc3bb7e61&groupId=10181"
+        },
+        "source": {
+            "direct": [
+                "https://www.ine.gub.uy/c/document_library/get_file?uuid=fdc16ffa-4e69-4fd6-becc-836cc3bb7e61&groupId=10181"
+            ],
+            "indirect": [
+                "https://www.ine.gub.uy/web/guest/ippn-indice-de-precios-al-productor-de-productos-nacionales"
+            ],
+            "provider": ["INE"],
+        },
+    },
     "nxr_monthly": {
         "dl": {
             "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=3fbf4ffd-a829-420c-aca9-9f01ecd7919a&groupId=10181"
@@ -104,11 +173,11 @@ urls = {
     "commodity_prices": {
         "dl": {
             "beef": "https://www.inac.uy/innovaportal/v/9799/10/innova.front/serie-semanal-ingreso-medio-de-exportacion---bovino-ovino-y-otros-productos",
-            "pulp": f"https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600339?ordre="
-            f"antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=4&anneeFin="
+            "pulp": f"https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600341?ordre="
+            f"antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=12&anneeFin="
             f"{dt.datetime.now().year}",
-            "soybean": "https://www.quandl.com/api/v3/datasets/CHRIS/CME_S1.csv?api_key=3TPxACcrxy9WsE871Lqe",
-            "wheat": "https://www.quandl.com/api/v3/datasets/CHRIS/CME_W1.csv?api_key=3TPxACcrxy9WsE871Lqe",
+            "soybean": "https://data.nasdaq.com/api/v3/datasets/ODA/PSOYB_USD.csv?api_key=3TPxACcrxy9WsE871Lqe",
+            "wheat": "https://data.nasdaq.com/api/v3/datasets/ODA/PWHEAMT_USD.csv?api_key=3TPxACcrxy9WsE871Lqe",
             "milk1": "https://www.inale.org/estadisticas/",
             "milk2": "https://ec.europa.eu/info/sites/info/files/food-farming-fisheries/farming/documents/eu-milk-historical-price-series_en.xls",
             "imf": "https://www.imf.org/en/Research/commodity-prices",
@@ -116,11 +185,11 @@ urls = {
         "source": {
             "direct": [
                 "https://www.inac.uy/innovaportal/v/9799/10/innova.front/serie-semanal-ingreso-medio-de-exportacion---bovino-ovino-y-otros-productos",
-                f"https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600339?ordre=antechronologique&"
-                f"transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=3&anneeFin="
+                f"https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600341?ordre=antechronologique&"
+                f"transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=12&anneeFin="
                 f"{dt.datetime.now().year}",
-                "https://www.quandl.com/api/v3/datasets/CHRIS/CME_S1.csv?api_key=3TPxACcrxy9WsE871Lqe",
-                "https://www.quandl.com/api/v3/datasets/CHRIS/CME_W1.csv?api_key=3TPxACcrxy9WsE871Lqe",
+                "https://data.nasdaq.com/api/v3/datasets/ODA/PWHEAMT_USD.csv?api_key=3TPxACcrxy9WsE871Lqe",
+                "https://data.nasdaq.com/api/v3/datasets/ODA/PWHEAMT_USD.csv?api_key=3TPxACcrxy9WsE871Lqe",
                 "https://ec.europa.eu/info/sites/info/files/food-farming-fisheries/farming/documents/eu-milk-historical-price-series_en.xls",
             ],
             "indirect": [
@@ -727,6 +796,30 @@ urls = {
             ],
         },
     },
+    "bop": {
+        "dl": {
+            "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Balanza%20de%20Pagos/dse_bp_m6_arm_scn.xlsx"
+        },
+        "source": {
+            "direct": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Balanza%20de%20Pagos/dse_bp_m6_arm_scn.xlsx"
+            ],
+            "indirect": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/BalanzadePagos.aspx"
+            ],
+            "provider": ["BCU"],
+        },
+    },
+    "bop_summary": {
+        "dl": {},
+        "source": {
+            "direct": [],
+            "indirect": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/BalanzadePagos.aspx"
+            ],
+            "provider": ["econuy en base a BCU"],
+        },
+    },
     "trade_x_prod_val": {
         "dl": {
             "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/exp_ciiu_val.xls"
@@ -925,17 +1018,13 @@ urls = {
     },
     "labor_rates_people": {
         "dl": {
-            "act_5000": "https://www.ine.gub.uy/c/document_library/get_file?uuid=b51d8104-d367-4d0f-828b-189eefc29de2&groupId=10181",
-            "emp_5000": "https://www.ine.gub.uy/c/document_library/get_file?uuid=0902797e-e588-4da3-91cd-153c4d1d28a5&groupId=10181",
-            "des_5000": "https://www.ine.gub.uy/c/document_library/get_file?uuid=d1434567-3da4-4321-9341-4fb3d8b6a09c&groupId=10181",
+            "5k": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/labor_mkt_5k.csv",
             "population": "https://www.ine.gub.uy/c/document_library/get_file?uuid=2a5c1e6e-b02f-4a63-963f-925edea7c17e&groupId=10181",
         },
         "source": {
             "direct": [
                 "https://www.ine.gub.uy/c/document_library/get_file?uuid=50ae926c-1ddc-4409-afc6-1fecf641e3d0&groupId=10181",
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=b51d8104-d367-4d0f-828b-189eefc29de2&groupId=10181",
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=0902797e-e588-4da3-91cd-153c4d1d28a5&groupId=10181",
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=d1434567-3da4-4321-9341-4fb3d8b6a09c&groupId=10181",
+                "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/labor_mkt_5k.csv",
                 "https://www.ine.gub.uy/c/document_library/get_file?uuid=2a5c1e6e-b02f-4a63-963f-925edea7c17e&groupId=10181",
             ],
             "indirect": [
