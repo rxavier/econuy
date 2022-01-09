@@ -293,7 +293,7 @@ def utilities() -> pd.DataFrame:
     cpi_1997.index = pd.date_range(start="1997-03-31", freq="M", periods=len(cpi_1997))
     cpi_1997.rename_axis(None, inplace=True)
 
-    with pd.ExcelFile(urls[name]["dl"]["2010"]) as excel:
+    with pd.ExcelFile(urls[name]["dl"]["2019"]) as excel:
         cpi_2010 = []
         for sheet in excel.sheet_names:
             data = pd.read_excel(excel, sheet_name=sheet, skiprows=8, nrows=640).dropna(how="all")
@@ -323,38 +323,7 @@ def utilities() -> pd.DataFrame:
         cpi_2010 = pd.concat(cpi_2010)
         cpi_2010.index = pd.date_range(start="2010-12-31", freq="M", periods=len(cpi_2010))
 
-    with pd.ExcelFile(urls[name]["dl"]["2019"]) as excel:
-        cpi_2019 = []
-        for sheet in excel.sheet_names:
-            data = pd.read_excel(excel, sheet_name=sheet, skiprows=8, nrows=640).dropna(how="all")
-            products = [
-                "04510010",
-                "04520020",
-                "07221",
-                "04410010",
-                "08300010",
-                "08300020",
-                "08300030",
-            ]
-            data = data.loc[
-                data["Unnamed: 0"].isin(products),
-                data.columns.str.contains("Indice|Índice", regex=True),
-            ].T
-            data.columns = [
-                "Agua corriente",
-                "Electricidad",
-                "Supergás",
-                "Combustibles líquidos",
-                "Servicio de telefonía fija",
-                "Servicio de telefonía móvil",
-                "Servicio de Internet",
-            ]
-            cpi_2019.append(data)
-        cpi_2019 = pd.concat(cpi_2019)
-        cpi_2019.index = pd.date_range(start="2019-01-31", freq="M", periods=len(cpi_2019))
-
-    utilities_10 = pd.concat([cpi_2010, cpi_2019])
-    output = pd.concat([cpi_1997 / cpi_1997.iloc[-1] * 100, utilities_10])
+    output = pd.concat([cpi_1997 / cpi_1997.iloc[-1] * 100, cpi_2010])
     output = output.loc[~output.index.duplicated(keep="last")]
     output.at[pd.Timestamp(2010, 12, 31), "Servicio telefónico"] = 100
 
