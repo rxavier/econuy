@@ -25,7 +25,7 @@ from econuy.retrieval import regional
 from econuy.core import Pipeline
 from econuy.utils import ops, metadata, get_project_root
 from econuy.utils.sources import urls
-from econuy.utils.extras import trade_metadata, reserves_cols
+from econuy.utils.extras import trade_metadata, reserves_cols, bop_cols
 
 
 def _trade_retriever(name: str) -> pd.DataFrame:
@@ -490,7 +490,7 @@ def commodity_prices() -> pd.DataFrame:
     raw_milk = pd.read_excel(
         requests.utils.quote(xls).replace("%3A", ":"),
         skiprows=14,
-        nrows=dt.datetime.now().year - 2006,
+        nrows=dt.datetime.now().year - 2007,
     )
     raw_milk.dropna(how="all", axis=1, inplace=True)
     raw_milk.drop(["Promedio ", "Variación"], axis=1, inplace=True)
@@ -745,6 +745,133 @@ def rxr_custom(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     output = transform.rebase(output, start_date="2010-01-01", end_date="2010-12-31", base=100)
     metadata._modify_multiindex(
         output, levels=[3], new_arrays=[["UYU/ARS", "UYU/ARS", "UYU/BRL", "UYU/USD"]]
+    )
+
+    return output
+
+
+@retry(
+    retry_on_exceptions=(error.HTTPError, error.URLError),
+    max_calls_total=10,
+    retry_window_after_first_call_in_seconds=90,
+)
+def bop() -> pd.DataFrame:
+    """Get balance of payments.
+
+    Returns
+    -------
+    Quarterly balance of payments : pd.DataFrame
+
+    """
+    raw = (
+        pd.read_excel(urls["bop"]["dl"]["main"], skiprows=7, index_col=0, sheet_name="Cuadro Nº 1")
+        .dropna(how="all")
+        .T
+    )
+    output = raw.iloc[:, 2:]
+    output.index = pd.date_range(start="2012-03-31", freq="Q", periods=len(output))
+    pattern = r"\(1\)|\(2\)|\(3\)|\(4\)|\(5\)"
+    output.columns = [re.sub(pattern, "", x).strip() for x in output.columns]
+    output = output.drop(
+        [
+            "Por Sector Institucional",
+            "Por Categoría Funcional",
+            "Por Instrumento y Sector Institucional",
+        ],
+        axis=1,
+    )
+    output.columns = [x[:58] + "..." if len(x) > 60 else x for x in bop_cols]
+
+    metadata._set(
+        output,
+        area="Sector externo",
+        currency="USD",
+        inf_adj="No",
+        unit="Millones",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
+    )
+
+    return output
+
+
+@retry(
+    retry_on_exceptions=(error.HTTPError, error.URLError),
+    max_calls_total=10,
+    retry_window_after_first_call_in_seconds=90,
+)
+def bop_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+    """Get a balance of payments summary and capital flows calculations.
+
+    Returns
+    -------
+    Quarterly balance of payments summary : pd.DataFrame
+
+    """
+    if pipeline is None:
+        pipeline = Pipeline()
+
+    pipeline.get("bop")
+    bop = pipeline.dataset.copy()
+    output = pd.DataFrame(index=bop.index)
+    output["Cuenta corriente"] = bop["Cuenta Corriente"]
+    output["Balance de bienes y servicios"] = bop["Bienes y Servicios"]
+    output["Balance de bienes"] = bop["Bienes"]
+    output["Exportaciones de bienes"] = bop["Bienes - Crédito"]
+    output["Importaciones de bienes"] = bop["Bienes - Débito"]
+    output["Balance de servicios"] = bop["Servicios"]
+    output["Exportaciones de servicios"] = bop["Servicios - Crédito"]
+    output["Importaciones de servicios"] = bop["Servicios - Débito"]
+    output["Ingreso primario"] = bop["Ingreso Primario"]
+    output["Ingreso secundario"] = bop["Ingreso Secundario"]
+    output["Cuenta capital"] = bop["Cuenta Capital"]
+    output["Crédito en cuenta capital"] = bop["Cuenta Capital - Crédito"]
+    output["Débito en cuenta capital"] = bop["Cuenta Capital - Débito"]
+    output["Cuenta financiera"] = bop["Cuenta Financiera"]
+    output["Balance de inversión directa"] = bop["Inversión directa"]
+    output["Inversión directa en el exterior"] = bop[
+        "Inversión directa - Adquisición neta de activos financieros"
+    ]
+    output["Inversión directa en Uruguay"] = bop["Inversión directa - Pasivos netos incurridos"]
+    output["Balance de inversión de cartera"] = bop["Inversión de cartera"]
+    output["Inversión de cartera en el exterior"] = bop[
+        "Inversión de cartera - Adquisición neta de activos fin"
+    ]
+    output["Inversión de cartera en Uruguay"] = bop[
+        "Inversión de cartera - Pasivos netos incurridos"
+    ]
+    output["Saldo de derivados financieros"] = bop["Derivados financieros (distintos de reservas)"]
+    output["Balance de otra inversión"] = bop["Otra inversión"]
+    output["Otra inversión en el exterior"] = bop[
+        "Otra inversión - Adquisición neta de activos financieros"
+    ]
+    output["Otra inversión en Uruguay"] = bop["Otra inversión - Pasivos netos incurridos"]
+    output["Variación de activos de reserva"] = bop["Activos de Reserva BCU"]
+    output["Errores y omisiones"] = bop["Errores y Omisiones"]
+    output["Flujos brutos de capital"] = (
+        output["Inversión directa en Uruguay"]
+        + output["Inversión de cartera en Uruguay"]
+        + output["Otra inversión en Uruguay"]
+        + output["Crédito en cuenta capital"]
+    )
+    output["Flujos netos de capital"] = (
+        -output["Balance de inversión directa"]
+        - output["Balance de inversión de cartera"]
+        - output["Balance de otra inversión"]
+        - output["Saldo de derivados financieros"]
+        + output["Cuenta capital"]
+    )
+
+    metadata._set(
+        output,
+        area="Sector externo",
+        currency="USD",
+        inf_adj="No",
+        unit="Millones",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
     )
 
     return output

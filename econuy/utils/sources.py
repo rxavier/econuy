@@ -77,6 +77,75 @@ urls = {
             "provider": ["INE"],
         },
     },
+    "cpi_divisions": {
+        "dl": {
+            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=68d73d74-fbf9-4db1-bc61-2fbc6f104ef8&groupId=10181",
+            "1997": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/cpi_divisons.csv",
+        },
+        "source": {
+            "direct": [
+                "https://www.ine.gub.uy/c/document_library/get_file?uuid=68d73d74-fbf9-4db1-bc61-2fbc6f104ef8&groupId=10181"
+            ],
+            "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
+            "provider": ["INE"],
+        },
+    },
+    "cpi_classes": {
+        "dl": {
+            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=5d597b80-0b5d-4131-ba4d-fe6b609b4666&groupId=10181"
+        },
+        "source": {
+            "direct": [
+                "https://www.ine.gub.uy/c/document_library/get_file?uuid=5d597b80-0b5d-4131-ba4d-fe6b609b4666&groupId=10181"
+            ],
+            "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
+            "provider": ["INE"],
+        },
+    },
+    "inflation_expectations": {
+        "dl": {
+            "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Encuesta-Expectativas-Inflacion/IEES05I2.XLS"
+        },
+        "source": {
+            "direct": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Encuesta-Expectativas-Inflacion/IEES05I2.XLS"
+            ],
+            "indirect": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Encuesta-Inflacion.aspx"
+            ],
+            "provider": ["BCU"],
+        },
+    },
+    "utilities": {
+        "dl": {
+            "1997": "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
+            "2010": "https://www.ine.gub.uy/c/document_library/get_file?uuid=668d4f77-74d8-46ba-8360-77bd867996df&groupId=10181",
+            "2019": "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
+        },
+        "source": {
+            "direct": [
+                "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
+                "https://www.ine.gub.uy/c/document_library/get_file?uuid=668d4f77-74d8-46ba-8360-77bd867996df&groupId=10181",
+                "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
+            ],
+            "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
+            "provider": ["econuy en base a INE"],
+        },
+    },
+    "ppi": {
+        "dl": {
+            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=fdc16ffa-4e69-4fd6-becc-836cc3bb7e61&groupId=10181"
+        },
+        "source": {
+            "direct": [
+                "https://www.ine.gub.uy/c/document_library/get_file?uuid=fdc16ffa-4e69-4fd6-becc-836cc3bb7e61&groupId=10181"
+            ],
+            "indirect": [
+                "https://www.ine.gub.uy/web/guest/ippn-indice-de-precios-al-productor-de-productos-nacionales"
+            ],
+            "provider": ["INE"],
+        },
+    },
     "nxr_monthly": {
         "dl": {
             "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=3fbf4ffd-a829-420c-aca9-9f01ecd7919a&groupId=10181"
@@ -725,6 +794,30 @@ urls = {
             "provider": [
                 "econuy en base a INE, BCRA, Ipea, IBGE, FMI, Ámbito e Inflación Verdadera"
             ],
+        },
+    },
+    "bop": {
+        "dl": {
+            "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Balanza%20de%20Pagos/dse_bp_m6_arm_scn.xlsx"
+        },
+        "source": {
+            "direct": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Balanza%20de%20Pagos/dse_bp_m6_arm_scn.xlsx"
+            ],
+            "indirect": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/BalanzadePagos.aspx"
+            ],
+            "provider": ["BCU"],
+        },
+    },
+    "bop_summary": {
+        "dl": {},
+        "source": {
+            "direct": [],
+            "indirect": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/BalanzadePagos.aspx"
+            ],
+            "provider": ["econuy en base a BCU"],
         },
     },
     "trade_x_prod_val": {
