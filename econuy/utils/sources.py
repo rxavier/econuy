@@ -79,11 +79,12 @@ urls = {
     },
     "cpi_divisions": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=c4b5efaa-cdd4-497a-ab78-e3138e4f08dc&groupId=10181"
+            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=68d73d74-fbf9-4db1-bc61-2fbc6f104ef8&groupId=10181",
+            "1997": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/cpi_divisons.csv",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=c4b5efaa-cdd4-497a-ab78-e3138e4f08dc&groupId=10181"
+                "https://www.ine.gub.uy/c/document_library/get_file?uuid=68d73d74-fbf9-4db1-bc61-2fbc6f104ef8&groupId=10181"
             ],
             "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
             "provider": ["INE"],

@@ -86,14 +86,13 @@ def cpi_divisions() -> pd.DataFrame:
 
     raw = []
     with pd.ExcelFile(urls[name]["dl"]["main"]) as excel:
-        for sheet, rows in zip(excel.sheet_names, [9, 8]):
+        for sheet in excel.sheet_names:
             data = (
-                pd.read_excel(excel, sheet_name=sheet, skiprows=rows, nrows=14)
+                pd.read_excel(excel, sheet_name=sheet, skiprows=8, nrows=18)
                 .dropna(how="all")
                 .dropna(how="all", axis=1)
-                .T
             )
-            data = data.iloc[3:]
+            data = data.loc[:, data.columns.str.contains("Índice")].dropna(how="all").T
             data.columns = [
                 "Índice General",
                 "Alimentos y Bebidas No Alcohólicas",
@@ -111,8 +110,12 @@ def cpi_divisions() -> pd.DataFrame:
             ]
             raw.append(data)
     output = pd.concat(raw)
-    output.index = pd.date_range(start="1997-03-31", freq="M", periods=len(output))
+    output.index = pd.date_range(start="2011-01-31", freq="M", periods=len(output))
     output.rename_axis(None, inplace=True)
+
+    prev = pd.read_csv(urls[name]["dl"]["1997"], index_col=0, parse_dates=True)
+    output = pd.concat([prev, output], axis=0)
+    output = output.loc[~output.index.duplicated(keep="last"), :]
     output = output.apply(pd.to_numeric, errors="coerce")
 
     metadata._set(
@@ -598,31 +601,15 @@ def cpi_measures(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
 
     name = "cpi_measures"
 
-    try:
-        xls_10_14 = pd.ExcelFile(urls[name]["dl"]["2010-14"])
-        xls_15 = pd.ExcelFile(urls[name]["dl"]["2015-"])
-        prod_97 = (
-            pd.read_excel(urls[name]["dl"]["1997"], skiprows=5)
-            .dropna(how="any")
-            .set_index("Rubros, Agrupaciones, Subrubros, Familias y Artículos")
-            .T
-        )
-    except URLError as err:
-        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certificate = Path(get_project_root(), "utils", "files", "ine_certs.pem")
-            r = requests.get(urls[name]["dl"]["2010-14"], verify=certificate)
-            xls_10_14 = pd.ExcelFile(BytesIO(r.content))
-            r = requests.get(urls[name]["dl"]["2015-"], verify=certificate)
-            xls_15 = pd.ExcelFile(BytesIO(r.content))
-            r = requests.get(urls[name]["dl"]["1997"], verify=certificate)
-            prod_97 = (
-                pd.read_excel(BytesIO(r.content), skiprows=5)
-                .dropna(how="any")
-                .set_index("Rubros, Agrupaciones, Subrubros, Familias y Artículos")
-                .T
-            )
-        else:
-            raise err
+    xls_10_14 = pd.ExcelFile(urls[name]["dl"]["2010-14"])
+    xls_15 = pd.ExcelFile(urls[name]["dl"]["2015-"])
+    prod_97 = (
+        pd.read_excel(urls[name]["dl"]["1997"], skiprows=5)
+        .dropna(how="any")
+        .set_index("Rubros, Agrupaciones, Subrubros, Familias y Artículos")
+        .T
+    )
+
     weights_97 = pd.read_excel(urls[name]["dl"]["1997_weights"], index_col=0).drop_duplicates(
         subset="Descripción", keep="first"
     )
