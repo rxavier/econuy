@@ -241,7 +241,7 @@ patsy==0.5.2
     # via statsmodels
 pickleshare==0.7.5
     # via ipython
-pillow==8.4.0
+pillow==9.0.0
     # via matplotlib
 platformdirs==2.4.0
     # via virtualenv
