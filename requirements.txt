@@ -36,7 +36,7 @@ beautifulsoup4==4.10.0
     # via econuy (setup.py)
 bleach==4.1.0
     # via nbconvert
-certifi==2021.10.8
+certifi==2022.12.7
     # via
     #   requests
     #   urllib3
