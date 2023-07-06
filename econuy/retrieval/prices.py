@@ -35,38 +35,25 @@ def cpi() -> pd.DataFrame:
 
     """
     name = "cpi"
-
-    try:
-        cpi = pd.read_excel(
-            urls[name]["dl"]["main"], skiprows=7, usecols="A:B", index_col=0
-        ).dropna()
-    except URLError as err:
-        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certificate = Path(get_project_root(), "utils", "files", "ine_certs.pem")
-            r = requests.get(urls[name]["dl"]["main"], verify=certificate)
-            cpi = pd.read_excel(
-                BytesIO(r.content), skiprows=7, usecols="A:B", index_col=0
-            ).dropna()
-        else:
-            raise err
-    cpi.columns = ["Índice de precios al consumo"]
-    cpi.rename_axis(None, inplace=True)
-    cpi.index = cpi.index + MonthEnd(1)
-    cpi = cpi.apply(pd.to_numeric, errors="coerce")
-    cpi.rename_axis(None, inplace=True)
+    raw = pd.read_excel(urls[name]["dl"]["main"], usecols="C").dropna(axis=0, how="any")
+    output = raw.set_index(
+        pd.date_range(start="1937-07-31", freq="M", periods=len(raw))
+    ).rename_axis(None)
+    output.columns = ["Índice de precios al consumo"]
+    output = output.apply(pd.to_numeric, errors="coerce")
 
     metadata._set(
-        cpi,
+        output,
         area="Precios",
         currency="-",
         inf_adj="No",
-        unit="2010-10=100",
+        unit="2022-10=100",
         seas_adj="NSA",
         ts_type="-",
         cumperiods=1,
     )
 
-    return cpi
+    return output
 
 
 @retry(
@@ -83,39 +70,31 @@ def cpi_divisions() -> pd.DataFrame:
 
     """
     name = "cpi_divisions"
-
-    raw = []
-    with pd.ExcelFile(urls[name]["dl"]["main"]) as excel:
-        for sheet in excel.sheet_names:
-            data = (
-                pd.read_excel(excel, sheet_name=sheet, skiprows=8, nrows=18)
-                .dropna(how="all")
-                .dropna(how="all", axis=1)
-            )
-            data = data.loc[:, data.columns.str.contains("Índice")].dropna(how="all").T
-            data.columns = [
-                "Índice General",
-                "Alimentos y Bebidas No Alcohólicas",
-                "Bebidas Alcohólicas, Tabaco y Estupefacientes",
-                "Prendas de Vestir y Calzado",
-                "Vivienda",
-                "Muebles, Artículos para el Hogar y para la Conservación Ordinaria del Hogar",
-                "Salud",
-                "Transporte",
-                "Comunicaciones",
-                "Recreación y Cultura",
-                "Educación",
-                "Restaurantes y Hoteles",
-                "Bienes y Servicios Diversos",
-            ]
-            raw.append(data)
-    output = pd.concat(raw)
-    output.index = pd.date_range(start="2011-01-31", freq="M", periods=len(output))
-    output.rename_axis(None, inplace=True)
-
-    prev = pd.read_csv(urls[name]["dl"]["1997"], index_col=0, parse_dates=True)
-    output = pd.concat([prev, output], axis=0)
-    output = output.loc[~output.index.duplicated(keep="last"), :]
+    raw = (
+        pd.read_excel(urls[name]["dl"]["main"], usecols="A:D")
+        .dropna(axis=0, how="any")
+        .assign(date=lambda x: x["Año"].astype(str) + x["Mes"].astype(str).str.pad(2, "left", "0"))
+        .pivot(columns="División", values="Indice Total País", index="date")
+    )
+    output = raw.set_index(
+        pd.date_range(start="2010-12-31", freq="M", periods=len(raw))
+    ).rename_axis(None)
+    colnames = [
+        "ALIMENTOS Y BEBIDAS NO ALCOHÓLICAS",
+        "BEBIDAS ALCOHÓLICAS, TABACO Y NARCÓTICOS",
+        "ROPA Y CALZADO",
+        "VIVIENDA, AGUA, ELECTRICIDAD, GAS Y OTROS COMBUSTIBLES",
+        "MOBILIARIO, ENSERES DOMÉSTICOS y DEMÁS ARTÍCULOS REGULARES DE LOS HOGARES",
+        "SALUD",
+        "TRANSPORTE",
+        "INFORMACIÓN Y COMUNICACIÓN",
+        "RECREACIÓN, DEPORTE Y CULTURA",
+        "SERVICIOS DE EDUCACIÓN",
+        "RESTAURANTES Y SERVICIOS DE ALOJAMIENTO",
+        "SEGUROS Y SERVICIOS FINANCIEROS",
+        "CUIDADO PERSONAL, PROTECCIÓN SOCIAL Y BIENES DIVERSOS",
+    ]
+    output.columns = [x.capitalize() for x in colnames]
     output = output.apply(pd.to_numeric, errors="coerce")
 
     metadata._set(
@@ -123,7 +102,7 @@ def cpi_divisions() -> pd.DataFrame:
         area="Precios",
         currency="-",
         inf_adj="No",
-        unit="2010-12=100",
+        unit="2022-10=100",
         seas_adj="NSA",
         ts_type="-",
         cumperiods=1,

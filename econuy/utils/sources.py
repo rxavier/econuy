@@ -67,26 +67,29 @@ urls = {
     },
     "cpi": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=2e92084a-94ec-4fec-b5ca-42b40d5d2826&groupId=10181"
+            "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPC/Base%20Octubre%202022=100/IPC%20general_Total%20Pais_Montevideo_Interior_base%202022.xlsx"
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=2e92084a-94ec-4fec-b5ca-42b40d5d2826&groupId=10181"
+                "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPC/Base%20Octubre%202022=100/IPC%20general_Total%20Pais_Montevideo_Interior_base%202022.xlsx"
             ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
+            "indirect": [
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ipc-base-octubre-2022100"
+            ],
             "provider": ["INE"],
         },
     },
     "cpi_divisions": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=68d73d74-fbf9-4db1-bc61-2fbc6f104ef8&groupId=10181",
-            "1997": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/cpi_divisons.csv",
+            "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPC/Base%20Octubre%202022=100/IPC_Division_Pa%C3%ADs_desde%202010_base%202022.xlsx",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=68d73d74-fbf9-4db1-bc61-2fbc6f104ef8&groupId=10181"
+                "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPC/Base%20Octubre%202022=100/IPC_Division_Pa%C3%ADs_desde%202010_base%202022.xlsx"
             ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
+            "indirect": [
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ipc-base-octubre-2022100"
+            ],
             "provider": ["INE"],
         },
     },
@@ -134,27 +137,29 @@ urls = {
     },
     "ppi": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=fdc16ffa-4e69-4fd6-becc-836cc3bb7e61&groupId=10181"
+            "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPPN/IPPN%20C2%20M_B10.xls"
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=fdc16ffa-4e69-4fd6-becc-836cc3bb7e61&groupId=10181"
+                "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPPN/IPPN%20C2%20M_B10.xls"
             ],
             "indirect": [
-                "https://www.ine.gub.uy/web/guest/ippn-indice-de-precios-al-productor-de-productos-nacionales"
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ippn-base-marzo-2010100"
             ],
             "provider": ["INE"],
         },
     },
     "nxr_monthly": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=3fbf4ffd-a829-420c-aca9-9f01ecd7919a&groupId=10181"
+            "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/Cotizaci%C3%B3n%20de%20monedas/D%C3%B3lar.xls"
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=3fbf4ffd-a829-420c-aca9-9f01ecd7919a&groupId=10181"
+                "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/Cotizaci%C3%B3n%20de%20monedas/D%C3%B3lar.xls"
             ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/cotizacion-de-monedas2"],
+            "indirect": [
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/cotizacion-monedas"
+            ],
             "provider": ["INE"],
         },
     },
