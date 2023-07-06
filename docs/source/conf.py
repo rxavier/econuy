@@ -23,7 +23,7 @@ copyfile("../../README.md", "README.md")
 # -- Project information -----------------------------------------------------
 
 project = "econuy"
-copyright = "2021, Rafael Xavier"
+copyright = "2022, Rafael Xavier"
 author = "Rafael Xavier"
 
 # The full version, including alpha/beta/rc tags

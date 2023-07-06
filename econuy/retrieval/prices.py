@@ -570,8 +570,7 @@ def cpi_measures(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
 
     name = "cpi_measures"
 
-    xls_10_14 = pd.ExcelFile(urls[name]["dl"]["2010-14"])
-    xls_15 = pd.ExcelFile(urls[name]["dl"]["2015-"])
+    xls_10 = pd.ExcelFile(urls[name]["dl"]["2010-"])
     prod_97 = (
         pd.read_excel(urls[name]["dl"]["1997"], skiprows=5)
         .dropna(how="any")
@@ -582,20 +581,15 @@ def cpi_measures(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     weights_97 = pd.read_excel(urls[name]["dl"]["1997_weights"], index_col=0).drop_duplicates(
         subset="Descripción", keep="first"
     )
-    weights = pd.read_excel(
-        xls_10_14, sheet_name=xls_10_14.sheet_names[0], usecols="A:C", skiprows=13, index_col=0
-    ).dropna(how="any")
+    weights = pd.read_excel(xls_10, usecols="A:C", skiprows=13, index_col=0).dropna(how="any")
     weights.columns = ["Item", "Weight"]
     weights_8 = weights.loc[weights.index.str.len() == 8]
 
     sheets = []
-    for excel_file in [xls_10_14, xls_15]:
-        for sheet in excel_file.sheet_names:
-            raw = pd.read_excel(excel_file, sheet_name=sheet, usecols="D:IN", skiprows=8).dropna(
-                how="all"
-            )
-            proc = raw.loc[:, raw.columns.str.contains("Indice|Índice")].dropna(how="all")
-            sheets.append(proc.T)
+    for sheet in xls_10.sheet_names:
+        raw = pd.read_excel(xls_10, sheet_name=sheet, usecols="D:IN", skiprows=8).dropna(how="all")
+        proc = raw.loc[:, raw.columns.str.contains("Indice|Índice")].dropna(how="all")
+        sheets.append(proc.T)
     complete_10 = pd.concat(sheets)
     complete_10 = complete_10.iloc[:, 1:]
     complete_10.columns = [weights["Item"], weights.index]
