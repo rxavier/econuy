@@ -389,7 +389,7 @@ def nxr_monthly() -> pd.DataFrame:
             raise err
     nxr = nxr_raw.dropna(how="any", axis=0)
     nxr.columns = ["Tipo de cambio venta, fin de período", "Tipo de cambio venta, promedio"]
-    nxr.index = nxr.index + MonthEnd(1)
+    nxr.index = pd.to_datetime(nxr.index) + MonthEnd(1)
     nxr = nxr.apply(pd.to_numeric, errors="coerce")
     nxr.rename_axis(None, inplace=True)
 
