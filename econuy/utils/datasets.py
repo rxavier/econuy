@@ -65,11 +65,6 @@ def original():
             "description_en": "Milk delivery to plant (Jan-02, M)",
             "function": economic_activity.milk,
         },
-        "cement": {
-            "description": "Ventas de cemento (ene-90, M)",
-            "description_en": "Cement sales (Jan-90, M)",
-            "function": economic_activity.cement,
-        },
         "cpi": {
             "description": "Índice de precios al consumidor - IPC (ene-37, M)",
             "description_en": "Consumer price index - CPI (Jan-37, M)",

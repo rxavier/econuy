@@ -691,14 +691,16 @@ urls = {
     },
     "industrial_production": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=e5ee6e11-601f-45ff-9335-68cd5191fa39&groupId=10181",
+            "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IVFIM/Base%202018%20=%20100/IVFIM_IVF_B18.xlsx",
             "weights": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/industrial_production_2018_weights.csv",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=e5ee6e11-601f-45ff-9335-68cd5191fa39&groupId=10181"
+                "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IVFIM/Base%202018%20=%20100/IVFIM_IVF_B18.xlsx"
             ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/industria-manufacturera"],
+            "indirect": [
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ivfim-base-2018100"
+            ],
             "provider": ["INE"],
         },
     },
@@ -720,16 +722,6 @@ urls = {
             "direct": [],
             "indirect": ["https://www.inale.org/estadisticas/remision-a-planta/"],
             "provider": ["INALE"],
-        },
-    },
-    "cement": {
-        "dl": {"main": "http://www.ciu.com.uy/innovaportal/file/83062/1/cemento-web.xlsx"},
-        "source": {
-            "direct": ["http://www.ciu.com.uy/innovaportal/file/83062/1/cemento-web.xlsx"],
-            "indirect": [
-                "http://www.ciu.com.uy/innovaportal/v/83062/9/innova.front/series-de-ventas-mensuales-por-destino.html"
-            ],
-            "provider": ["AFCPU y CIU"],
         },
     },
     "consumer_confidence": {
@@ -1080,15 +1072,15 @@ urls = {
     },
     "core_industrial": {
         "dl": {
-            "2018": "https://www.ine.gub.uy/c/document_library/get_file?uuid=e5ee6e11-601f-45ff-9335-68cd5191fa39&groupId=10181",
-            "2006": "https://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181",
+            "2018": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IVFIM/Base%202018%20=%20100/IVFIM_IVF_B18.xlsx",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=e5ee6e11-601f-45ff-9335-68cd5191fa39&groupId=10181",
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=17185e91-4198-4449-877a-59d69479e45d&groupId=10181",
+                "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IVFIM/Base%202018%20=%20100/IVFIM_IVF_B18.xlsx",
             ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/industria-manufacturera"],
+            "indirect": [
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ivfim-base-2018100"
+            ],
             "provider": ["econuy en base a INE"],
         },
     },
