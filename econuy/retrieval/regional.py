@@ -167,7 +167,7 @@ def cpi() -> pd.DataFrame:
     arg_unoff = arg_unoff.to_frame().pct_change(periods=1).multiply(100).dropna()
     arg_unoff.columns = ["nivel"]
     arg = (
-        arg.append(arg_unoff)
+        pd.concat([arg, arg_unoff])
         .reset_index()
         .drop_duplicates(subset="index", keep="last")
         .set_index("index", drop=True)
@@ -320,7 +320,7 @@ def nxr() -> pd.DataFrame:
         aux.set_index(0, drop=True, inplace=True)
         aux.drop("Fecha", inplace=True)
         aux = aux.replace(",", ".", regex=True).apply(pd.to_numeric)
-        aux.index = pd.to_datetime(aux.index, format="%d-%m-%Y")
+        aux.index = pd.to_datetime(aux.index, format="%d/%m/%Y")
         aux.sort_index(inplace=True)
         aux.columns = [dollar]
         arg.append(aux)
@@ -332,7 +332,7 @@ def nxr() -> pd.DataFrame:
     bra = [(x["VALDATA"], x["VALVALOR"]) for x in bra["value"]]
     bra = pd.DataFrame.from_records(bra).dropna(how="any")
     bra.set_index(0, inplace=True)
-    bra.index = pd.to_datetime(bra.index.str[:-4], format="%Y-%m-%dT%H:%M:%S").tz_localize(None)
+    bra.index = pd.to_datetime(bra.index.str[:-4]).tz_localize(None)
     bra.columns = ["Brasil"]
 
     output = arg.join(bra, how="left").interpolate(method="linear", limit_area="inside")
