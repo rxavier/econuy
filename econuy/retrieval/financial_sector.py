@@ -40,6 +40,7 @@ def credit() -> pd.DataFrame:
         usecols="A:P,T:AB,AD:AL",
         index_col=0,
     )
+    raw.index = pd.to_datetime(raw.index, errors="coerce")
     output = raw.loc[~pd.isna(raw.index)].dropna(how="all", axis=1)
     output.index = output.index + MonthEnd(0)
     output.columns = [
@@ -116,6 +117,7 @@ def deposits() -> pd.DataFrame:
         usecols="A:S",
         index_col=0,
     )
+    raw.index = pd.to_datetime(raw.index, errors="coerce")
     output = raw.loc[~pd.isna(raw.index)].dropna(how="all", axis=1)
     output.index = output.index + MonthEnd(0)
     output.columns = [
@@ -310,7 +312,7 @@ def sovereign_risk() -> pd.DataFrame:
     output = pd.concat([historical, current])
     output = output.loc[~output.index.duplicated(keep="last")]
     output.sort_index(inplace=True)
-    output = output.apply(pd.to_numeric, errors="coerce")
+    output = output.apply(pd.to_numeric, errors="coerce").interpolate(limit_area="inside")
     output.rename_axis(None, inplace=True)
 
     metadata._set(
