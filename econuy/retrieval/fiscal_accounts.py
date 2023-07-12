@@ -165,10 +165,17 @@ def tax_revenue() -> pd.DataFrame:
     Monthly tax revenues : pd.DataFrame
 
     """
-    raw = pd.read_excel(urls["tax_revenue"]["dl"]["main"], usecols="C:AO", index_col=0)
-    raw.index = pd.to_datetime(raw.index, errors="coerce")
-    output = raw.loc[~pd.isna(raw.index)]
-    output.index = output.index + MonthEnd(0)
+    raw = (
+        pd.read_excel(urls["tax_revenue"]["dl"]["main"])
+        .iloc[:, 2:]
+        .drop(index=[0, 1])
+        .set_index("SELECCIONE IMPUESTO")
+        .rename_axis(None)
+    )
+    raw.index = pd.to_datetime(raw.index, format="%Y-%m-%d HH:MM:SS", errors="coerce") + MonthEnd(
+        0
+    )
+    output = raw.loc[~pd.isna(raw.index), ~raw.columns.str.contains("Unnamed")]
     output.columns = taxes_columns
     output = output.div(1000000)
     latest = pd.read_csv(urls["tax_revenue"]["dl"]["pdfs"], index_col=0, parse_dates=True)
@@ -230,7 +237,7 @@ def _public_debt_retriever() -> Dict[str, pd.DataFrame]:
         skiprows=10,
         nrows=(dt.datetime.now().year - 1999) * 4,
     )
-    gps = gps_raw.dropna(how="any", thresh=2)
+    gps = gps_raw.dropna(thresh=2)
     gps.index = pd.date_range(start="1999-12-31", periods=len(gps), freq="Q-DEC")
     gps.columns = colnames
 
