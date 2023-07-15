@@ -93,18 +93,18 @@ urls = {
             "provider": ["INE"],
         },
     },
-    "cpi_classes": {
-        "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=5d597b80-0b5d-4131-ba4d-fe6b609b4666&groupId=10181"
-        },
-        "source": {
-            "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=5d597b80-0b5d-4131-ba4d-fe6b609b4666&groupId=10181"
-            ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
-            "provider": ["INE"],
-        },
-    },
+    # "cpi_classes": {
+    #     "dl": {
+    #         "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=5d597b80-0b5d-4131-ba4d-fe6b609b4666&groupId=10181"
+    #     },
+    #     "source": {
+    #         "direct": [
+    #             "https://www.ine.gub.uy/c/document_library/get_file?uuid=5d597b80-0b5d-4131-ba4d-fe6b609b4666&groupId=10181"
+    #         ],
+    #         "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
+    #         "provider": ["INE"],
+    #     },
+    # },
     "inflation_expectations": {
         "dl": {
             "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Encuesta-Expectativas-Inflacion/IEES05I2.XLS"
@@ -119,22 +119,22 @@ urls = {
             "provider": ["BCU"],
         },
     },
-    "utilities": {
-        "dl": {
-            "1997": "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
-            "2010": "https://www.ine.gub.uy/c/document_library/get_file?uuid=668d4f77-74d8-46ba-8360-77bd867996df&groupId=10181",
-            "2019": "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
-        },
-        "source": {
-            "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=668d4f77-74d8-46ba-8360-77bd867996df&groupId=10181",
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
-            ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
-            "provider": ["econuy en base a INE"],
-        },
-    },
+    # "utilities": {
+    #     "dl": {
+    #         "1997": "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
+    #         "2010": "https://www.ine.gub.uy/c/document_library/get_file?uuid=668d4f77-74d8-46ba-8360-77bd867996df&groupId=10181",
+    #         "2019": "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
+    #     },
+    #     "source": {
+    #         "direct": [
+    #             "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
+    #             "https://www.ine.gub.uy/c/document_library/get_file?uuid=668d4f77-74d8-46ba-8360-77bd867996df&groupId=10181",
+    #             "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
+    #         ],
+    #         "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
+    #         "provider": ["econuy en base a INE"],
+    #     },
+    # },
     "ppi": {
         "dl": {
             "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPPN/IPPN%20C2%20M_B10.xls"
@@ -971,22 +971,22 @@ urls = {
             "provider": ["BCU"],
         },
     },
-    "cpi_measures": {
-        "dl": {
-            "2010-": "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
-            "1997": "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
-            "1997_weights": "https://docs.google.com/spreadsheets/d/1gSQdp6b97udmki0DZBndhLajLv6uGDX7kYb66BUswj8/export#gid=0",
-        },
-        "source": {
-            "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
-                "http://www.ine.gub.uy/c/document_library/get_file?uuid=5f2e75d2-5df6-48da-978d-e7930d47c037&groupId=10181",
-            ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
-            "provider": ["econuy en base a INE"],
-        },
-    },
+    # "cpi_measures": {
+    #     "dl": {
+    #         "2010-": "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
+    #         "1997": "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
+    #         "1997_weights": "https://docs.google.com/spreadsheets/d/1gSQdp6b97udmki0DZBndhLajLv6uGDX7kYb66BUswj8/export#gid=0",
+    #     },
+    #     "source": {
+    #         "direct": [
+    #             "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
+    #             "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
+    #             "http://www.ine.gub.uy/c/document_library/get_file?uuid=5f2e75d2-5df6-48da-978d-e7930d47c037&groupId=10181",
+    #         ],
+    #         "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
+    #         "provider": ["econuy en base a INE"],
+    #     },
+    # },
     "balance_fss": {
         "dl": {},
         "source": {

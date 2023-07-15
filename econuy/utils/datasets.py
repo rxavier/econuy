@@ -75,11 +75,11 @@ def original():
             "description_en": "Consumer price index by division - CPI (Mar-97, M)",
             "function": prices.cpi_divisions,
         },
-        "cpi_classes": {
-            "description": "Índice de precios al consumidor por división, grupo y clase - IPC (ene-11, M)",
-            "description_en": "Consumer price index by division, group and class - CPI (Jan-11, M)",
-            "function": prices.cpi_classes,
-        },
+        # "cpi_classes": {
+        #     "description": "Índice de precios al consumidor por división, grupo y clase - IPC (ene-11, M)",
+        #     "description_en": "Consumer price index by division, group and class - CPI (Jan-11, M)",
+        #     "function": prices.cpi_classes,
+        # },
         "inflation_expectations": {
             "description": "Expectativas de inflación (ene-04, M)",
             "description_en": "Inflation expectations (Jan-04, M)",
@@ -305,7 +305,7 @@ def original():
 
 def custom():
     from econuy.retrieval import (
-        prices,
+        # prices,
         fiscal_accounts,
         economic_activity,
         labor,
@@ -351,16 +351,16 @@ def custom():
             "description_en": "GDP: current prices, spliced series (wp BCU 12-15) (Mar-97, Q [e])",
             "function": economic_activity.gdp_cur_nsa_long,
         },
-        "cpi_measures": {
-            "description": "IPC transable, no transable, subyacente y residual (mar-97, M [e])",
-            "description_en": "CPI: tradable, non-tradable, core and residual (Mar-97, M [e])",
-            "function": prices.cpi_measures,
-        },
-        "utilities": {
-            "description": "Tarifas públicas (mar-97, M [e])",
-            "description_en": "Public utilities prices (Mar-97, M [e])",
-            "function": prices.utilities,
-        },
+        # "cpi_measures": {
+        #     "description": "IPC transable, no transable, subyacente y residual (mar-97, M [e])",
+        #     "description_en": "CPI: tradable, non-tradable, core and residual (Mar-97, M [e])",
+        #     "function": prices.cpi_measures,
+        # },
+        # "utilities": {
+        #     "description": "Tarifas públicas (mar-97, M [e])",
+        #     "description_en": "Public utilities prices (Mar-97, M [e])",
+        #     "function": prices.utilities,
+        # },
         "balance_summary": {
             "description": "Resultado fiscal: Todas las agregaciones, inc. aj. FSS (ene-99, M [e])",
             "description_en": "Fiscal balance: all aggregations, inc. FSS adjustment (Jan-99, M [e])",
