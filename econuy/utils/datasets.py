@@ -300,11 +300,6 @@ def original():
             "description_en": "Average per capita income (Jan-06, M)",
             "function": income.income_capita,
         },
-        "consumer_confidence": {
-            "description": "Índice de Confianza del Consumidor (ago-07, M)",
-            "description_en": "Consumer Confidence Index (Aug-07, M)",
-            "function": income.consumer_confidence,
-        },
     }
 
 

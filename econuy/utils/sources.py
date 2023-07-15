@@ -487,30 +487,28 @@ urls = {
     },
     "income_household": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=40bd0267-3922-478d-8bc0-252f508a72fe&groupId=10181",
-            "missing": "https://docs.google.com/spreadsheets/d/1amqU3fUSok0kDB_LYvCZlBtVpkZeTK5vW5O8bShlOtw/export?format=xlsx&authuser=0",
+            "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/ECHING10.xls",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=40bd0267-3922-478d-8bc0-252f508a72fe&groupId=10181"
+                "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/ECHING10.xls"
             ],
             "indirect": [
-                "http://www.ine.gub.uy/web/guest/gastos-e-ingresos-de-las-personas-y-los-hogares"
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ech-ingresos-personas-hogares"
             ],
             "provider": ["INE"],
         },
     },
     "income_capita": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=ca57dafa-8091-4c2f-8df8-7b8445859b93&groupId=10181",
-            "missing": "https://docs.google.com/spreadsheets/d/1amqU3fUSok0kDB_LYvCZlBtVpkZeTK5vW5O8bShlOtw/export?format=xlsx&authuser=0",
+            "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/ECHING14.xls",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=ca57dafa-8091-4c2f-8df8-7b8445859b93&groupId=10181"
+                "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/ECHING14.xls"
             ],
             "indirect": [
-                "http://www.ine.gub.uy/web/guest/gastos-e-ingresos-de-las-personas-y-los-hogares"
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ech-ingresos-personas-hogares"
             ],
             "provider": ["INE"],
         },
@@ -722,18 +720,6 @@ urls = {
             "direct": [],
             "indirect": ["https://www.inale.org/estadisticas/remision-a-planta/"],
             "provider": ["INALE"],
-        },
-    },
-    "consumer_confidence": {
-        "dl": {
-            "main": "https://ucu.edu.uy/sites/default/files/facultad/fce/i_competitividad/serie_icc_-.xlsx"
-        },
-        "source": {
-            "direct": [
-                "https://ucu.edu.uy/sites/default/files/facultad/fce/i_competitividad/serie_icc_-.xlsx"
-            ],
-            "indirect": ["https://ucu.edu.uy/es/icc"],
-            "provider": ["UCU"],
         },
     },
     "sovereign_risk": {
