@@ -421,11 +421,11 @@ def custom():
             "description_en": "Monetary policy interest rates of the United States, Eurozone, Japan and China (01-Jan-46, D)",
             "function": international.policy_rates,
         },
-        "global_long_rates": {
-            "description": "Tasas de interés de largo plazo (10 años) de EE.UU., Alemania, Francia, España, Italia, Reino Unido, Japón y China (02-ene-62, D)",
-            "description_en": "Long term interest rates (10 years) of the United States, Germany, France, Spain, Italy, United Kingdom, Japan and China (02-Jan-62, D)",
-            "function": international.long_rates,
-        },
+        # "global_long_rates": {
+        #     "description": "Tasas de interés de largo plazo (10 años) de EE.UU., Alemania, Francia, España, Italia, Reino Unido, Japón y China (02-ene-62, D)",
+        #     "description_en": "Long term interest rates (10 years) of the United States, Germany, France, Spain, Italy, United Kingdom, Japan and China (02-Jan-62, D)",
+        #     "function": international.long_rates,
+        # },
         "global_nxr": {
             "description": "Cotización de monedas de EE.UU., Eurozona, Japón y China (04-ene-71, D)",
             "description_en": "Exchange rates of the United States, Eurozone, Japan and China (04-Jan-71, D)",

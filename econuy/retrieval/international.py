@@ -1,7 +1,8 @@
 import datetime as dt
 import tempfile
 import zipfile
-from random import randint
+
+# from random import randint
 from io import BytesIO
 from os import path
 from urllib.error import HTTPError, URLError
@@ -14,7 +15,8 @@ from pandas.tseries.offsets import MonthEnd
 from econuy.transform import decompose, rebase
 from econuy.utils import metadata
 from econuy.utils.sources import urls
-from econuy.utils.extras import investing_headers
+
+# from econuy.utils.extras import investing_headers
 
 
 FRED_API_KEY = "f5700348a7dd3a997c88af6d35608a12"
@@ -172,15 +174,16 @@ def policy_rates() -> pd.DataFrame:
     temp_dir = tempfile.TemporaryDirectory()
     with zipfile.ZipFile(BytesIO(r.content), "r") as f:
         f.extractall(path=temp_dir.name)
-        path_temp = path.join(temp_dir.name, "WEBSTATS_CBPOL_D_DATAFLOW_csv_row.csv")
+        path_temp = path.join(temp_dir.name, "WS_CBPOL_csv_row.csv")
         raw = pd.read_csv(
-            path_temp, usecols=[0, 7, 19, 36, 37], index_col=0, header=2, parse_dates=True
+            path_temp, usecols=[0, 21, 16, 40, 41], index_col=0, skiprows=8, parse_dates=True
         ).dropna(how="all")
     output = raw.apply(pd.to_numeric, errors="coerce").interpolate(
         method="linear", limit_area="inside"
     )
-    output.columns = ["China", "Japón", "Estados Unidos", "Eurozona"]
+    output.columns = ["Japón", "China", "Estados Unidos", "Eurozona"]
     output = output[["Estados Unidos", "Eurozona", "Japón", "China"]]
+    output.index = pd.to_datetime(output.index)
     output.rename_axis(None, inplace=True)
 
     metadata._set(
@@ -198,90 +201,91 @@ def policy_rates() -> pd.DataFrame:
     return output
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=12,
-    retry_window_after_first_call_in_seconds=60,
-)
-def long_rates() -> pd.DataFrame:
-    """Get 10-year government bonds interest rates.
+# @retry(
+#     retry_on_exceptions=(HTTPError, URLError),
+#     max_calls_total=12,
+#     retry_window_after_first_call_in_seconds=60,
+# )
+# def long_rates() -> pd.DataFrame:
+#     """Get 10-year government bonds interest rates.
 
-    Countries/aggregates selected are US, Germany, France, Italy, Spain
-    United Kingdom, Japan and China.
+#     Countries/aggregates selected are US, Germany, France, Italy, Spain
+#     United Kingdom, Japan and China.
 
-    Returns
-    -------
-    Daily 10-year government bonds interest rates : pd.DataFrame
+#     Returns
+#     -------
+#     Daily 10-year government bonds interest rates : pd.DataFrame
 
-    """
-    name = "global_long_rates"
+#     """
+#     name = "global_long_rates"
 
-    bonds = []
-    r = requests.get(f"{urls[name]['dl']['fred']}DGS10&api_key=" f"{FRED_API_KEY}&file_type=json")
-    us = pd.DataFrame.from_records(r.json()["observations"])
-    us = us[["date", "value"]].set_index("date")
-    us.index = pd.to_datetime(us.index)
-    us.columns = ["United States"]
-    bonds.append(us.apply(pd.to_numeric, errors="coerce").dropna())
+#     bonds = []
+#     r = requests.get(f"{urls[name]['dl']['fred']}DGS10&api_key=" f"{FRED_API_KEY}&file_type=json")
+#     us = pd.DataFrame.from_records(r.json()["observations"])
+#     us = us[["date", "value"]].set_index("date")
+#     us.index = pd.to_datetime(us.index)
+#     us.columns = ["United States"]
+#     bonds.append(us.apply(pd.to_numeric, errors="coerce").dropna())
 
-    for country, sid in zip(
-        ["Germany", "France", "Italy", "Spain", "United Kingdom", "Japan", "China"],
-        ["23693", "23778", "23738", "23806", "23673", "23901", "29227"],
-    ):
-        end_date_dt = dt.datetime(2000, 1, 1)
-        start_date_dt = dt.datetime(2000, 1, 1)
-        aux = []
-        while end_date_dt < dt.datetime.now():
-            end_date_dt = start_date_dt + dt.timedelta(days=5000)
-            params = {
-                "curr_id": sid,
-                "smlID": str(randint(1000000, 99999999)),
-                "header": f"{country} 10-Year Bond Yield Historical Data",
-                "st_date": start_date_dt.strftime("%m/%d/%Y"),
-                "end_date": end_date_dt.strftime("%m/%d/%Y"),
-                "interval_sec": "Daily",
-                "sort_col": "date",
-                "sort_ord": "DESC",
-                "action": "historical_data",
-            }
-            r = requests.post(
-                urls["global_long_rates"]["dl"]["main"], headers=investing_headers, data=params
-            )
-            aux.append(pd.read_html(r.content, match="Price", index_col=0, parse_dates=True)[0])
-            start_date_dt = end_date_dt + dt.timedelta(days=1)
-        aux = pd.concat(aux, axis=0)[["Price"]].sort_index()
-        aux.columns = [country]
-        bonds.append(aux)
+#     for country, sid in zip(
+#         ["Germany", "France", "Italy", "Spain", "United Kingdom", "Japan", "China"],
+#         ["23693", "23778", "23738", "23806", "23673", "23901", "29227"],
+#     ):
+#         end_date_dt = dt.datetime(2000, 1, 1)
+#         start_date_dt = dt.datetime(2000, 1, 1)
+#         aux = []
+#         while end_date_dt < dt.datetime.now():
+#             end_date_dt = start_date_dt + dt.timedelta(days=5000)
+#             params = {
+#                 "curr_id": sid,
+#                 "smlID": str(randint(1000000, 99999999)),
+#                 "header": f"{country} 10-Year Bond Yield Historical Data",
+#                 "st_date": start_date_dt.strftime("%m/%d/%Y"),
+#                 "end_date": end_date_dt.strftime("%m/%d/%Y"),
+#                 "interval_sec": "Daily",
+#                 "sort_col": "date",
+#                 "sort_ord": "DESC",
+#                 "action": "historical_data",
+#             }
+#             r = requests.post(
+#                 urls["global_long_rates"]["dl"]["main"], headers=investing_headers, data=params
+#             )
+#             aux.append(pd.read_html(r.content, match="Price", index_col=0,
+#                                     parse_dates=True, flavor="lxml")[0])
+#             start_date_dt = end_date_dt + dt.timedelta(days=1)
+#         aux = pd.concat(aux, axis=0)[["Price"]].sort_index()
+#         aux.columns = [country]
+#         bonds.append(aux)
 
-    output = bonds[0].join(bonds[1:], how="left")
-    output = output.interpolate(method="linear", limit_area="inside")
-    output.columns = [
-        "Estados Unidos",
-        "Alemania",
-        "Francia",
-        "Italia",
-        "España",
-        "Reino Unido",
-        "Japón",
-        "China",
-    ]
-    output.rename_axis(None, inplace=True)
+#     output = bonds[0].join(bonds[1:], how="left")
+#     output = output.interpolate(method="linear", limit_area="inside")
+#     output.columns = [
+#         "Estados Unidos",
+#         "Alemania",
+#         "Francia",
+#         "Italia",
+#         "España",
+#         "Reino Unido",
+#         "Japón",
+#         "China",
+#     ]
+#     output.rename_axis(None, inplace=True)
 
-    metadata._set(
-        output,
-        area="Global",
-        currency="USD",
-        inf_adj="No",
-        seas_adj="NSA",
-        unit="Tasa",
-        ts_type="-",
-        cumperiods=1,
-    )
-    metadata._modify_multiindex(
-        output, levels=[3], new_arrays=[["USD", "EUR", "EUR", "EUR", "EUR", "GBP", "JPY", "CNY"]]
-    )
+#     metadata._set(
+#         output,
+#         area="Global",
+#         currency="USD",
+#         inf_adj="No",
+#         seas_adj="NSA",
+#         unit="Tasa",
+#         ts_type="-",
+#         cumperiods=1,
+#     )
+#     metadata._modify_multiindex(
+#         output, levels=[3], new_arrays=[["USD", "EUR", "EUR", "EUR", "EUR", "GBP", "JPY", "CNY"]]
+#     )
 
-    return output
+#     return output
 
 
 @retry(

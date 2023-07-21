@@ -1105,14 +1105,10 @@ urls = {
         },
     },
     "global_policy_rates": {
-        "dl": {
-            "main": "https://www.bis.org/statistics/full_webstats_cbpol_d_dataflow_csv_row.zip"
-        },
+        "dl": {"main": "https://data.bis.org/static/bulk/WS_CBPOL_csv_row.zip"},
         "source": {
-            "direct": [
-                "https://www.bis.org/statistics/full_webstats_cbpol_d_dataflow_csv_row.zip"
-            ],
-            "indirect": ["https://www.bis.org/statistics/cbpol.htm"],
+            "direct": ["https://data.bis.org/static/bulk/WS_CBPOL_csv_row.zip"],
+            "indirect": ["https://data.bis.org/topics/CBPOL/data"],
             "provider": ["BIS"],
         },
     },

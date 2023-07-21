@@ -14,22 +14,29 @@ def _get_binary(file_path: Union[str, os.PathLike, None] = None) -> None:
 
     urls = {
         "Windows": "https://github.com/rxavier/econuy-extras/raw/main/econuy_extras/x13/windows/x13as.exe",
-        "Darwin": "https://github.com/rxavier/econuy-extras/raw/main/econuy_extras/x13/darwin/x13as",
+        "Darwin-x64": "https://github.com/rxavier/econuy-extras/raw/main/econuy_extras/x13/darwin/x64/x13as",
+        "Darwin-arm64": "https://github.com/rxavier/econuy-extras/raw/main/econuy_extras/x13/darwin/arm64/x13as",
         "Linux": "https://github.com/rxavier/econuy-extras/raw/main/econuy_extras/x13/linux/x13as",
     }
 
     system_string = platform.system()
-    if system_string not in urls.keys():
-        raise ValueError("X13 binaries are only available for Windows, Darwin (macOS) or Linux.")
     if system_string == "Windows":
         suffix = ".exe"
     else:
         suffix = ""
+    if system_string == "Darwin":
+        if "ARM64" in platform.version():
+            system_string += "-arm64"
+        else:
+            system_string += "-x64"
+    if system_string not in urls.keys():
+        raise ValueError("X13 binaries are only available for Windows, Darwin (macOS) or Linux.")
 
     r = requests.get(urls[system_string])
     binary_path = Path(file_path, f"x13as{suffix}")
     with open(binary_path, "wb") as f:
         f.write(r.content)
+    os.chmod(binary_path, 0o755)
     print("Download complete.")
     return binary_path
 
