@@ -112,7 +112,7 @@ def monthly_gdp() -> pd.DataFrame:
     """
     name = "regional_monthly_gdp"
 
-    arg = pd.read_excel(urls[name]["dl"]["arg"], usecols="C", skiprows=4).dropna(how="all")
+    arg = pd.read_excel(urls[name]["dl"]["arg"], usecols="C", skiprows=3).dropna(how="all")
     arg.index = pd.date_range(start="2004-01-31", freq="M", periods=len(arg))
 
     bra = pd.read_csv(urls[name]["dl"]["bra"], sep=";", index_col=0, decimal=",")
@@ -214,24 +214,13 @@ def embi_spreads() -> pd.DataFrame:
     """
     name = "regional_embi_spreads"
 
-    global_ = pd.read_excel(
-        urls[name]["dl"]["global"], usecols="A:B", skiprows=1, index_col=0, parse_dates=True
+    raw = pd.read_excel(urls[name]["dl"]["main"], usecols="A:B,E,G", skiprows=1, index_col=0)
+    output = (
+        raw.loc[~pd.isna(raw.index)]
+        .mul(100)
+        .rename(columns={"Global": "EMBI Global"})[["Argentina", "Brasil", "EMBI Global"]]
     )
-    global_ = global_.loc[~pd.isna(global_.index)].mul(100)
-    region = []
-    for cnt in ["argentina", "brasil"]:
-        r = requests.get(urls[name]["dl"][cnt])
-        aux = pd.DataFrame(r.json())
-        aux.set_index(0, drop=True, inplace=True)
-        aux.drop("Fecha", inplace=True)
-        aux = aux.replace(",", ".", regex=True).apply(pd.to_numeric)
-        aux.index = pd.to_datetime(aux.index, format="%d-%m-%Y")
-        aux.sort_index(inplace=True)
-        aux.columns = [cnt]
-        region.append(aux)
-    region = region[0].join(region[1]).interpolate(limit_area="inside")
-    output = region.join(global_, how="left").interpolate(method="linear", limit_area="inside")
-    output.columns = ["Argentina", "Brasil", "EMBI Global"]
+    output.index = pd.to_datetime(output.index)
     output = output.apply(pd.to_numeric, errors="coerce")
     output.rename_axis(None, inplace=True)
 
@@ -273,8 +262,10 @@ def embi_yields(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     if pipeline is None:
         pipeline = Pipeline()
 
-    pipeline.get("global_long_rates")
-    treasuries = pipeline.dataset["Estados Unidos"]
+    treasuries = pd.read_csv(
+        urls["regional_embi_yields"]["dl"]["treasury"], usecols=[0, 4], index_col=0
+    )
+    treasuries.index = pd.to_datetime(treasuries.index)
     pipeline.get("regional_embi_spreads")
     spreads = pipeline.dataset
 
@@ -378,13 +369,14 @@ def policy_rates() -> pd.DataFrame:
     temp_dir = tempfile.TemporaryDirectory()
     with zipfile.ZipFile(BytesIO(r.content), "r") as f:
         f.extractall(path=temp_dir.name)
-        path_temp = path.join(temp_dir.name, "WEBSTATS_CBPOL_D_DATAFLOW_csv_row.csv")
-        raw = pd.read_csv(
-            path_temp, usecols=[0, 1, 3], index_col=0, header=2, parse_dates=True
-        ).dropna(how="all")
+        path_temp = path.join(temp_dir.name, "WS_CBPOL_csv_row.csv")
+        raw = pd.read_csv(path_temp, usecols=[0, 74, 77], index_col=0, skiprows=8).dropna(
+            how="all"
+        )
     output = raw.apply(pd.to_numeric, errors="coerce").interpolate(
         method="linear", limit_area="inside"
     )
+    output.index = pd.to_datetime(output.index)
     output.columns = ["Argentina", "Brasil"]
     output.rename_axis(None, inplace=True)
 

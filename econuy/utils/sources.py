@@ -1146,29 +1146,30 @@ urls = {
     },
     "regional_embi_spreads": {
         "dl": {
-            "global": "https://cdn.bancentral.gov.do/documents/entorno-internacional/documents/Serie_Historica_Spread_del_EMBI.xlsx",
-            "brasil": f"https://mercados.ambito.com//riesgopaisinternacional/brasil/historico-general/01-01-1990/{dt.datetime.now().strftime('%d-%m-%Y')}",
-            "argentina": f"https://mercados.ambito.com//riesgopais/historico-general/01-01-1990/{dt.datetime.now().strftime('%d-%m-%Y')}",
+            "main": "https://cdn.bancentral.gov.do/documents/entorno-internacional/documents/Serie_Historica_Spread_del_EMBI.xlsx",
         },
         "source": {
-            "direct": [],
+            "direct": [
+                "https://cdn.bancentral.gov.do/documents/entorno-internacional/documents/Serie_Historica_Spread_del_EMBI.xlsx"
+            ],
             "indirect": [
-                "https://www.ambito.com/contenidos/riesgo-pais.html",
                 "https://www.bancentral.gov.do/a/d/2585-entorno-internacional",
             ],
-            "provider": ["Ámbito, BCRD"],
+            "provider": ["BCRD"],
         },
     },
     "regional_embi_yields": {
+        "dl": {
+            "treasury": f"https://query1.finance.yahoo.com/v7/finance/download/%5ETNX?period1=-252374400&period2={dt.datetime.now().timestamp().__round__()}&interval=1d&events=history&includeAdjustedClose=true"
+        },
         "source": {
             "direct": [],
             "indirect": [
-                "https://fred.stlouisfed.org/series/DGS10",
-                "https://www.ambito.com/contenidos/riesgo-pais.html",
+                "https://finance.yahoo.com/quote/%5ETNX/history?p=%5ETNX",
                 "https://www.bancentral.gov.do/a/d/2585-entorno-internacional",
             ],
-            "provider": ["econuy en base a FRB St. Louis, Ámbito y BCRD"],
-        }
+            "provider": ["econuy en base a Yahoo Finance y BCRD"],
+        },
     },
     "regional_gdp": {
         "dl": {
@@ -1220,14 +1221,10 @@ urls = {
         },
     },
     "regional_policy_rates": {
-        "dl": {
-            "main": "https://www.bis.org/statistics/full_webstats_cbpol_d_dataflow_csv_row.zip"
-        },
+        "dl": {"main": "https://data.bis.org/static/bulk/WS_CBPOL_csv_row.zip"},
         "source": {
-            "direct": [
-                "https://www.bis.org/statistics/full_webstats_cbpol_d_dataflow_csv_row.zip"
-            ],
-            "indirect": ["https://www.bis.org/statistics/cbpol.htm"],
+            "direct": ["https://data.bis.org/static/bulk/WS_CBPOL_csv_row.zip"],
+            "indirect": ["https://data.bis.org/topics/CBPOL/data"],
             "provider": ["BIS"],
         },
     },

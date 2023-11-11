@@ -175,9 +175,9 @@ def policy_rates() -> pd.DataFrame:
     with zipfile.ZipFile(BytesIO(r.content), "r") as f:
         f.extractall(path=temp_dir.name)
         path_temp = path.join(temp_dir.name, "WS_CBPOL_csv_row.csv")
-        raw = pd.read_csv(
-            path_temp, usecols=[0, 21, 16, 40, 41], index_col=0, skiprows=8, parse_dates=True
-        ).dropna(how="all")
+        raw = pd.read_csv(path_temp, usecols=[0, 18, 28, 65, 66], index_col=0, skiprows=8).dropna(
+            how="all"
+        )
     output = raw.apply(pd.to_numeric, errors="coerce").interpolate(
         method="linear", limit_area="inside"
     )

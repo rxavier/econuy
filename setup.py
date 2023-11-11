@@ -45,7 +45,7 @@ setup(
         "opnieuw",
         "sqlalchemy",
         "selenium",
-        "chromedriver-autoinstaller",
+        "chromedriver-autoinstaller>=0.6.0",
         "python-dotenv",
         "patool",
         "xlrd",

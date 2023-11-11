@@ -34,3 +34,4 @@ pytest.ini
 econuy/.env
 
 orig-data/
+.DS_Store
