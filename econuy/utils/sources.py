@@ -445,43 +445,46 @@ urls = {
     },
     "labor_rates": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=50ae926c-1ddc-4409-afc6-1fecf641e3d0&groupId=10181",
+            "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/Total%20nacional%20vigentes.rar",
             "missing": "https://docs.google.com/spreadsheets/d/1amqU3fUSok0kDB_LYvCZlBtVpkZeTK5vW5O8bShlOtw/export?format=xlsx&authuser=0",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=50ae926c-1ddc-4409-afc6-1fecf641e3d0&groupId=10181"
+                "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/Total%20nacional%20vigentes.rar"
             ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/actividad-empleo-y-desempleo"],
+            "indirect": [
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
+            ],
             "provider": ["INE"],
         },
     },
     "nominal_wages": {
         "dl": {
-            "historical": "https://www.ine.gub.uy/c/document_library/get_file?uuid=a76433b7-5fba-40fc-9958-dd913338e989&groupId=10181",
-            "current": "https://www.ine.gub.uy/c/document_library/get_file?uuid=97f07fd8-9410-476e-bf81-e6b1c11467ef&groupId=10181",
+            "historical": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IMS/Base%20Julio%202008=100/IMS%20C1%20Gral%20emp%20M%20B08.xls",
+            "current": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IMS/Base%20Julio%202008=100/IMS%20C1%20Gral%20P-P%20M%20emp%20B08.xls",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=a76433b7-5fba-40fc-9958-dd913338e989&groupId=10181",
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=97f07fd8-9410-476e-bf81-e6b1c11467ef&groupId=10181",
+                "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IMS/Base%20Julio%202008=100/IMS%20C1%20Gral%20emp%20M%20B08.xls",
+                "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IMS/Base%20Julio%202008=100/IMS%20C1%20Gral%20P-P%20M%20emp%20B08.xls",
             ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/ims-indice-medio-de-salarios"],
+            "indirect": [
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-indice-medio-salarios-ims-base-julio-2008100"
+            ],
             "provider": ["INE"],
         },
     },
     "hours_worked": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=167e0db0-95ca-45d2-8e81-3b8c5bb8f9ee&groupId=10181",
-            "historical": "https://www.ine.gub.uy/c/document_library/get_file?uuid=73ac6ede-8452-48b8-ad32-993d3b047091&groupId=10181",
-            "missing": "https://docs.google.com/spreadsheets/d/1amqU3fUSok0kDB_LYvCZlBtVpkZeTK5vW5O8bShlOtw/export?format=xlsx&authuser=0",
+            "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/Total%20nacional%20vigentes.rar",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=167e0db0-95ca-45d2-8e81-3b8c5bb8f9ee&groupId=10181",
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=73ac6ede-8452-48b8-ad32-993d3b047091&groupId=10181",
+                "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/Total%20nacional%20vigentes.rar",
             ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/actividad-empleo-y-desempleo"],
+            "indirect": [
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
+            ],
             "provider": ["INE"],
         },
     },
@@ -999,18 +1002,16 @@ urls = {
     },
     "labor_rates_people": {
         "dl": {
-            "5k": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/labor_mkt_5k.csv",
-            "population": "https://www.ine.gub.uy/c/document_library/get_file?uuid=2a5c1e6e-b02f-4a63-963f-925edea7c17e&groupId=10181",
+            "population": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/Estimaciones%20y%20proyecciones/Revisi%C3%B3n%202013/Total_pais_poblacion_por_sexo_y_edad_1996-2050.xls",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=50ae926c-1ddc-4409-afc6-1fecf641e3d0&groupId=10181",
-                "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/labor_mkt_5k.csv",
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=2a5c1e6e-b02f-4a63-963f-925edea7c17e&groupId=10181",
+                "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/Total%20nacional%20vigentes.rar",
+                "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/Estimaciones%20y%20proyecciones/Revisi%C3%B3n%202013/Total_pais_poblacion_por_sexo_y_edad_1996-2050.xls",
             ],
             "indirect": [
-                "http://www.ine.gub.uy/web/guest/actividad-empleo-y-desempleo",
-                "http://www.ine.gub.uy/estimaciones-y-proyecciones",
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo",
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/estimaciones-proyecciones",
             ],
             "provider": ["econuy en base a INE"],
         },
