@@ -1,6 +1,7 @@
 import datetime as dt
 import re
 import time
+from pathlib import Path
 from io import BytesIO
 from typing import Optional
 from urllib.error import HTTPError, URLError
@@ -13,7 +14,7 @@ from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from selenium.webdriver.remote.webdriver import WebDriver
 
-from econuy.utils import metadata
+from econuy.utils import metadata, get_project_root
 from econuy.utils.chromedriver import _build
 from econuy.utils.sources import urls
 
@@ -32,14 +33,26 @@ def credit() -> pd.DataFrame:
 
     """
     name = "credit"
-
-    raw = pd.read_excel(
-        urls[name]["dl"]["main"],
-        sheet_name="Total Sist. Banc.",
-        skiprows=10,
-        usecols="A:P,T:AB,AD:AL",
-        index_col=0,
-    )
+    try:
+        raw = pd.read_excel(
+            urls[name]["dl"]["main"],
+            sheet_name="Total Sist. Banc.",
+            skiprows=10,
+            usecols="A:P,T:AB,AD:AL",
+            index_col=0,
+        )
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(urls[name]["dl"]["main"], verify=certs_path)
+            raw = pd.read_excel(
+                r.content,
+                sheet_name="Total Sist. Banc.",
+                skiprows=10,
+                usecols="A:P,T:AB,AD:AL",
+                index_col=0,
+            )
+    raw.index = pd.to_datetime(raw.index, errors="coerce")
     output = raw.loc[~pd.isna(raw.index)].dropna(how="all", axis=1)
     output.index = output.index + MonthEnd(0)
     output.columns = [
@@ -108,14 +121,26 @@ def deposits() -> pd.DataFrame:
 
     """
     name = "deposits"
-
-    raw = pd.read_excel(
-        urls[name]["dl"]["main"],
-        sheet_name="Total Sist. Banc.",
-        skiprows=8,
-        usecols="A:S",
-        index_col=0,
-    )
+    try:
+        raw = pd.read_excel(
+            urls[name]["dl"]["main"],
+            sheet_name="Total Sist. Banc.",
+            skiprows=8,
+            usecols="A:S",
+            index_col=0,
+        )
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(urls[name]["dl"]["main"], verify=certs_path)
+            raw = pd.read_excel(
+                r.content,
+                sheet_name="Total Sist. Banc.",
+                skiprows=8,
+                usecols="A:S",
+                index_col=0,
+            )
+    raw.index = pd.to_datetime(raw.index, errors="coerce")
     output = raw.loc[~pd.isna(raw.index)].dropna(how="all", axis=1)
     output.index = output.index + MonthEnd(0)
     output.columns = [
@@ -167,7 +192,15 @@ def interest_rates() -> pd.DataFrame:
     Monthly interest rates : pd.DataFrame
 
     """
-    xls = pd.ExcelFile(urls["interest_rates"]["dl"]["main"])
+    name = "interest_rates"
+    try:
+        xls = pd.ExcelFile(urls[name]["dl"]["main"])
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(urls[name]["dl"]["main"], verify=certs_path)
+            xls = pd.ExcelFile(r.content)
+
     sheets = ["Activas $", "Activas UI", "Activas U$S", "Pasivas $", "Pasivas UI", "Pasivas U$S"]
     columns = ["B:C,G,K", "B:C,G,K", "B:C,H,L", "B:C,N,T", "B:C,P,W", "B:C,N,T"]
     sheet_data = []
@@ -310,7 +343,7 @@ def sovereign_risk() -> pd.DataFrame:
     output = pd.concat([historical, current])
     output = output.loc[~output.index.duplicated(keep="last")]
     output.sort_index(inplace=True)
-    output = output.apply(pd.to_numeric, errors="coerce")
+    output = output.apply(pd.to_numeric, errors="coerce").interpolate(limit_area="inside")
     output.rename_axis(None, inplace=True)
 
     metadata._set(

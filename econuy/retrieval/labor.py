@@ -1,16 +1,17 @@
-﻿from pathlib import Path
-from io import BytesIO
+﻿import tempfile
+from pathlib import Path
 from typing import Optional
 from urllib.error import URLError, HTTPError
 
 import pandas as pd
 import requests
+import patoolib
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 
 from econuy import transform
 from econuy.core import Pipeline
-from econuy.utils import metadata, get_project_root
+from econuy.utils import metadata
 from econuy.utils.sources import urls
 
 
@@ -29,17 +30,16 @@ def labor_rates() -> pd.DataFrame:
     """
     name = "labor_rates"
 
-    try:
-        labor_raw = pd.read_excel(urls[name]["dl"]["main"], skiprows=39).dropna(axis=0, thresh=2)
-    except URLError as err:
-        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certificate = Path(get_project_root(), "utils", "files", "ine_certs.pem")
-            r = requests.get(urls[name]["dl"]["main"], verify=certificate)
-            labor_raw = pd.read_excel(BytesIO(r.content), skiprows=39).dropna(axis=0, thresh=2)
-        else:
-            raise err
+    temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
+    with open(temp_rar, "wb") as f:
+        r = requests.get(urls[name]["dl"]["main"])
+        f.write(r.content)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
+        excel_path = Path(temp_dir) / "ECH0103.xlsx"
+        labor_raw = pd.read_excel(excel_path, skiprows=39).dropna(axis=0, thresh=2)
     labor = labor_raw[~labor_raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
-    labor.index = pd.date_range(start="2006-01-01", periods=len(labor), freq="M")
+    labor.index = pd.date_range(start="2006-01-31", periods=len(labor), freq="M")
     labor = labor.drop(columns="Unnamed: 0")
     labor.columns = [
         "Tasa de actividad: total",
@@ -52,10 +52,7 @@ def labor_rates() -> pd.DataFrame:
         "Tasa de desempleo: hombres",
         "Tasa de desempleo: mujeres",
     ]
-    missing = pd.read_excel(urls[name]["dl"]["missing"], index_col=0, header=0).iloc[:, :9]
-    missing.columns = labor.columns
-    labor = labor.append(missing)
-    labor = labor.loc[~labor.index.duplicated(keep="first")]
+
     labor = labor.apply(pd.to_numeric, errors="coerce")
     labor.rename_axis(None, inplace=True)
 
@@ -88,19 +85,8 @@ def nominal_wages() -> pd.DataFrame:
     """
     name = "nominal_wages"
 
-    try:
-        historical = pd.read_excel(urls[name]["dl"]["historical"], skiprows=8, usecols="A:B")
-        current = pd.read_excel(urls[name]["dl"]["current"], skiprows=8, usecols="A,C:D")
-    except URLError as err:
-        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certificate = Path(get_project_root(), "utils", "files", "ine_certs.pem")
-            r = requests.get(urls[name]["dl"]["historical"], verify=certificate)
-            historical = pd.read_excel(BytesIO(r.content), skiprows=8, usecols="A:B")
-            r = requests.get(urls[name]["dl"]["current"], verify=certificate)
-            current = pd.read_excel(BytesIO(r.content), skiprows=8, usecols="A,C:D")
-        else:
-            raise err
-
+    historical = pd.read_excel(urls[name]["dl"]["historical"], skiprows=8, usecols="A:B")
+    current = pd.read_excel(urls[name]["dl"]["current"], skiprows=8, usecols="A,C:D")
     historical = historical.dropna(how="any").set_index("Unnamed: 0")
     current = current.dropna(how="any").set_index("Unnamed: 0")
     wages = pd.concat([historical, current], axis=1)
@@ -142,33 +128,17 @@ def hours() -> pd.DataFrame:
     """
     name = "hours_worked"
 
-    try:
-        raw = pd.read_excel(
-            urls[name]["dl"]["main"], sheet_name="Mensual", skiprows=5, index_col=0
-        ).dropna(how="all")
-        prev_hours = (
-            pd.read_excel(urls[name]["dl"]["historical"], index_col=0, skiprows=8)
-            .dropna(how="all")
-            .iloc[:, [0]]
-        )
-    except URLError as err:
-        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certificate = Path(get_project_root(), "utils", "files", "ine_certs.pem")
-            r = requests.get(urls[name]["dl"]["main"], verify=certificate)
-            raw = pd.read_excel(
-                BytesIO(r.content), sheet_name="Mensual", skiprows=5, index_col=0
-            ).dropna(how="all")
-            r = requests.get(urls[name]["dl"]["historical"], verify=certificate)
-            prev_hours = (
-                pd.read_excel(BytesIO(r.content), index_col=0, skiprows=8)
-                .dropna(how="all")
-                .iloc[:, [0]]
-            )
-        else:
-            raise err
-    raw.index = pd.to_datetime(raw.index)
-    output = raw.loc[~pd.isna(raw.index)]
-    output.index = output.index + MonthEnd(0)
+    temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
+    with open(temp_rar, "wb") as f:
+        r = requests.get(urls[name]["dl"]["main"])
+        f.write(r.content)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
+        excel_path = Path(temp_dir) / "ECH0703.xlsx"
+        raw = pd.read_excel(excel_path).dropna(axis=0, thresh=2)
+
+    output = raw[~raw.iloc[:, 0].str.contains("-|/|Total|Año", regex=True)].iloc[:, 1:]
+    output.index = pd.date_range(start="2011-01-31", periods=len(output), freq="M")
     output.columns = [
         "Total",
         "Industrias manufactureras",
@@ -189,11 +159,6 @@ def hours() -> pd.DataFrame:
         "Agro, forestación, pesca y minería",
     ]
 
-    prev_hours = prev_hours.loc[~prev_hours.index.str.contains("-|Total")]
-    prev_hours.index = pd.date_range(start="2006-01-31", freq="M", periods=len(prev_hours))
-    prev_hours = prev_hours.loc[prev_hours.index < "2011-01-01"]
-    prev_hours.columns = ["Total"]
-    output = prev_hours.append(output, sort=False)
     output.rename_axis(None, inplace=True)
 
     metadata._set(
@@ -239,12 +204,9 @@ def rates_people(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     rates = rates.loc[
         :, ["Tasa de actividad: total", "Tasa de empleo: total", "Tasa de desempleo: total"]
     ]
-    rates_prev = pd.read_csv(urls[name]["dl"]["5k"], index_col=0, parse_dates=True)
     working_age = pd.read_excel(
         urls[name]["dl"]["population"], skiprows=7, index_col=0, nrows=92
     ).dropna(how="all")
-    rates_prev.columns = rates.columns
-    rates = pd.concat([rates_prev, rates])
     rates.columns = rates.columns.set_levels(
         rates.columns.levels[0].str.replace(": total", ""), level=0
     )

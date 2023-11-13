@@ -1,6 +1,6 @@
 trade_metadata = {
     "x_prod_val": {
-        "cols": "D:ZZZ",
+        "start_col": 3,
         "currency": "USD",
         "unit": "Millones",
         "colnames": {
@@ -40,7 +40,7 @@ trade_metadata = {
         },
     },
     "x_prod_vol": {
-        "cols": "D:ZZZ",
+        "start_col": 3,
         "currency": "-",
         "unit": "2005=100",
         "colnames": {
@@ -74,7 +74,7 @@ trade_metadata = {
         },
     },
     "x_prod_pri": {
-        "cols": "D:ZZZ",
+        "start_col": 3,
         "currency": "USD",
         "unit": "2005=100",
         "colnames": {
@@ -108,7 +108,7 @@ trade_metadata = {
         },
     },
     "x_dest_val": {
-        "cols": "B:ZZZ",
+        "start_col": 1,
         "currency": "USD",
         "unit": "Millones",
         "colnames": {
@@ -158,7 +158,7 @@ trade_metadata = {
         },
     },
     "x_dest_vol": {
-        "cols": "B:ZZZ",
+        "start_col": 1,
         "currency": "-",
         "unit": "2005=100",
         "colnames": {
@@ -189,7 +189,7 @@ trade_metadata = {
         },
     },
     "x_dest_pri": {
-        "cols": "B:ZZZ",
+        "start_col": 1,
         "currency": "USD",
         "unit": "2005=100",
         "colnames": {
@@ -220,7 +220,7 @@ trade_metadata = {
         },
     },
     "m_sect_val": {
-        "cols": "C:ZZZ",
+        "start_col": 2,
         "currency": "USD",
         "unit": "Millones",
         "old_colnames": [
@@ -279,7 +279,7 @@ trade_metadata = {
         ],
     },
     "m_sect_vol": {
-        "cols": "B:ZZZ",
+        "start_col": 2,
         "currency": "-",
         "unit": "2005=100",
         "colnames": {
@@ -299,7 +299,7 @@ trade_metadata = {
         },
     },
     "m_sect_pri": {
-        "cols": "B:ZZZ",
+        "start_col": 1,
         "currency": "USD",
         "unit": "2005=100",
         "colnames": {
@@ -319,7 +319,7 @@ trade_metadata = {
         },
     },
     "m_orig_val": {
-        "cols": "B:ZZZ",
+        "start_col": 1,
         "currency": "USD",
         "unit": "Millones",
         "colnames": {
@@ -369,7 +369,7 @@ trade_metadata = {
         },
     },
     "m_orig_vol": {
-        "cols": "B:ZZZ",
+        "start_col": 1,
         "currency": "-",
         "unit": "2005=100",
         "colnames": {
@@ -400,7 +400,7 @@ trade_metadata = {
         },
     },
     "m_orig_pri": {
-        "cols": "B:ZZZ",
+        "start_col": 1,
         "currency": "USD",
         "unit": "2005=100",
         "colnames": {
@@ -869,15 +869,7 @@ taxes_columns = [
     "Impuesto de Educación Primaria",
     "Recaudación Total de la DGI",
 ]
-investing_headers = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) "
-    "AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/86.0.4240.111 Safari/537.36",
-    "X-Requested-With": "XMLHttpRequest",
-    "Accept": "text/html",
-    "Accept-Encoding": "gzip, deflate",
-    "Connection": "keep-alive",
-}
+
 
 bop_cols = [
     "Cuenta Corriente",

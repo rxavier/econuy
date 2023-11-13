@@ -148,7 +148,7 @@ def _revise(new_data: pd.DataFrame, prev_data: pd.DataFrame, revise_rows: Union[
 
     if isinstance(revise_rows, str) and revise_rows in "noduplicate":
         prev_data.columns = new_data.columns
-        updated = prev_data.append(new_data)
+        updated = pd.concat([prev_data, new_data], axis=0)
         updated = updated.loc[~updated.index.duplicated(keep="last")]
         updated.sort_index(inplace=True)
         return updated

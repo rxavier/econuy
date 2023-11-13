@@ -1,7 +1,7 @@
 import datetime as dt
 import re
 import tempfile
-import urllib
+import time
 import zipfile
 from pathlib import Path
 from io import BytesIO
@@ -10,12 +10,12 @@ from os import PathLike, path
 from typing import Union, Optional
 from urllib import error
 from urllib.error import HTTPError, URLError
+from requests.exceptions import SSLError
 
 import numpy as np
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-from dateutil.relativedelta import relativedelta
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd, YearEnd
 from sqlalchemy.engine.base import Engine, Connection
@@ -32,11 +32,19 @@ def _trade_retriever(name: str) -> pd.DataFrame:
     """Helper function. See any of the `trade_...()` functions."""
     short_name = name[6:]
     meta = trade_metadata[short_name]
-    xls = pd.ExcelFile(urls[name]["dl"]["main"])
+    try:
+        xls = pd.ExcelFile(urls[name]["dl"]["main"])
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(urls[name]["dl"]["main"], verify=certs_path)
+            xls = pd.ExcelFile(r.content)
     sheets = []
+    start_col = meta["start_col"]
     for sheet in xls.sheet_names:
         raw = (
-            pd.read_excel(xls, sheet_name=sheet, usecols=meta["cols"], index_col=0, skiprows=7)
+            pd.read_excel(xls, sheet_name=sheet, index_col=start_col, skiprows=7)
+            .iloc[:, start_col:]
             .dropna(thresh=5)
             .T
         )
@@ -357,11 +365,11 @@ def _commodity_weights(
         if not output.equals(pd.DataFrame()):
             return output
 
-    base_url = "http://comtrade.un.org/api/get?max=10000&type=C&freq=A&px=S3&ps"
-    prods = "%2C".join(
+    base_url = "https://comtradeapi.un.org/public/v1/preview/C/A/SS?period"
+    prods = ",".join(
         [
             "0011",
-            "011",
+            "0111",
             "01251",
             "01252",
             "0176",
@@ -378,37 +386,41 @@ def _commodity_weights(
     )
     start = 1992
     year_pairs = []
-    while start < dt.datetime.now().year - 5:
-        stop = start + 4
+    while start < dt.datetime.now().year - 12:
+        stop = start + 11
         year_pairs.append(range(start, stop))
         start = stop
     year_pairs.append(range(year_pairs[-1].stop, dt.datetime.now().year - 1))
     reqs = []
     for pair in year_pairs:
-        years = "%2C".join(str(x) for x in pair)
-        full_url = f"{base_url}={years}&r=all&p=858&rg=1&cc={prods}"
+        years = ",".join(str(x) for x in pair)
+        full_url = f"{base_url}={years}&reporterCode=&partnerCode=858&flowCode=m&cmdCode={prods}&customsCode=c00&motCode=0&partner2Code=0&aggregateBy=reportercode&breakdownMode=classic&includeDesc=True&countOnlyFalse"
         un_r = requests.get(full_url)
-        reqs.append(pd.DataFrame(un_r.json()["dataset"]))
+        reqs.append(pd.DataFrame(un_r.json()["data"]))
+        time.sleep(3)
     raw = pd.concat(reqs, axis=0)
 
-    table = raw.groupby(["period", "cmdDescE"]).sum().reset_index()
-    table = table.pivot(index="period", columns="cmdDescE", values="TradeValue")
+    table = raw.groupby(["period", "cmdDesc"]).sum().reset_index()
+    table = table.pivot(index="period", columns="cmdDesc", values="primaryValue")
     table.fillna(0, inplace=True)
-    percentage = table.div(table.sum(axis=1), axis=0)
-    percentage.index = pd.to_datetime(percentage.index, format="%Y") + YearEnd(1)
-    roll = percentage.rolling(window=3, min_periods=3).mean()
-    output = roll.resample("M").bfill()
+
+    # output = roll.resample("M").bfill()
 
     beef = [
-        "BOVINE MEAT",
-        "Edible offal of bovine animals, fresh or chilled",
-        "Meat and offal (other than liver), of bovine animals, " "prepared or preserv",
-        "Edible offal of bovine animals, frozen",
         "Bovine animals, live",
+        "Bovine meat, fresh, chilled or frozen",
+        "Bovine meat,frsh,chilled",
+        "Edible offal of bovine animals, frozen",
+        "Edible offal of bovine animals, fresh or chilled",
+        "Edible offal of bovine animals, fresh/chilled",
+        "Meat & offal (other than liver), of bovine animals, prepared/preserved, n.e.s.",
+        "Meat and offal (other than liver), of bovine animals, prepared or preserv",
+        "Meat of bovine animals, fresh or chilled",
+        "Meat of bovine animals,fresh,chilled or frozen",
     ]
-    output["Beef"] = output[beef].sum(axis=1, min_count=len(beef))
-    output.drop(beef, axis=1, inplace=True)
-    output.columns = [
+    table["Beef"] = table[beef].sum(axis=1, min_count=len(beef))
+    table.drop(beef, axis=1, inplace=True)
+    table.columns = [
         "Cebada",
         "Madera",
         "Oro",
@@ -420,6 +432,9 @@ def _commodity_weights(
         "Lana",
         "Carne bovina",
     ]
+    output = table.div(table.sum(axis=1), axis=0)
+    output.index = pd.to_datetime(output.index, format="%Y") + YearEnd(1)
+    output = output.rolling(window=3, min_periods=3).mean().bfill()
 
     if location is not None:
         previous_data = ops._io(
@@ -474,23 +489,23 @@ def commodity_prices() -> pd.DataFrame:
     )
     beef = proc_beef.resample("M").mean()
 
-    soy_wheat = []
-    for link in [url["soybean"], url["wheat"]]:
-        proc = pd.read_csv(link, index_col=0)
-        proc.index = pd.to_datetime(proc.index, format="%Y-%m-%d")
-        proc.sort_index(inplace=True)
-        soy_wheat.append(proc.resample("M").mean())
-    soybean = soy_wheat[0]
-    wheat = soy_wheat[1]
+    # soy_wheat = []
+    # for link in [url["soybean"], url["wheat"]]:
+    #    proc = pd.read_csv(link, index_col=0)
+    #    proc.index = pd.to_datetime(proc.index, format="%Y-%m-%d")
+    #    proc.sort_index(inplace=True)
+    #    soy_wheat.append(proc.resample("M").mean())
+    # soybean = soy_wheat[0]
+    # wheat = soy_wheat[1]
 
     milk_r = requests.get(url["milk1"])
     milk_soup = BeautifulSoup(milk_r.content, "html.parser")
-    links = milk_soup.find_all(href=re.compile("Oceanía|Oceania"))
+    links = milk_soup.find_all(href=re.compile("Europa"))
     xls = links[0]["href"]
     raw_milk = pd.read_excel(
         requests.utils.quote(xls).replace("%3A", ":"),
-        skiprows=14,
-        nrows=dt.datetime.now().year - 2007,
+        skiprows=13,
+        nrows=dt.datetime.now().year - 2006,
     )
     raw_milk.dropna(how="all", axis=1, inplace=True)
     raw_milk.drop(["Promedio ", "Variación"], axis=1, inplace=True)
@@ -498,12 +513,22 @@ def commodity_prices() -> pd.DataFrame:
     proc_milk = pd.melt(raw_milk, id_vars=["Año/Mes"])
     proc_milk.sort_values(by=["Año/Mes", "variable"], inplace=True)
     proc_milk.index = pd.date_range(start="2007-01-31", periods=len(proc_milk), freq="M")
-    proc_milk = proc_milk.iloc[:, 2].to_frame()
+    proc_milk = proc_milk.iloc[:, 2].to_frame().divide(10).dropna()
 
     prev_milk = pd.read_excel(
-        url["milk2"], sheet_name="Dairy Products Prices", index_col=0, usecols="A,D", skiprows=5
+        url["milk2"],
+        sheet_name="Raw Milk Prices",
+        index_col=0,
+        skiprows=6,
+        usecols="A:AB",
+        na_values=["c", 0],
     )
-    prev_milk = prev_milk.resample("M").mean()
+    prev_milk = (
+        prev_milk[prev_milk.index.notna()].dropna(axis=0, how="all").mean(axis=1).to_frame()
+    )
+    prev_milk = prev_milk.set_index(
+        pd.date_range(start="1977-01-31", freq="M", periods=len(prev_milk))
+    )
     eurusd_r = requests.get(
         "http://fx.sauder.ubc.ca/cgi/fxdata",
         params=f"b=USD&c=EUR&rd=&fd=1&fm=1&fy=2001&ld=31&lm=12&ly="
@@ -515,7 +540,7 @@ def commodity_prices() -> pd.DataFrame:
     prev_milk = prev_milk.divide(eurusd_milk.values).multiply(10)
     prev_milk = prev_milk.loc[prev_milk.index < min(proc_milk.index)]
     prev_milk.columns, proc_milk.columns = ["Price"], ["Price"]
-    milk = prev_milk.append(proc_milk)
+    milk = pd.concat([prev_milk, proc_milk])
 
     raw_pulp_r = requests.get(url["pulp"])
     temp_dir = tempfile.TemporaryDirectory()
@@ -543,6 +568,8 @@ def commodity_prices() -> pd.DataFrame:
     wool = wool.mean(axis=1).to_frame()
     barley = proc_imf[proc_imf.columns[proc_imf.columns.str.startswith("Barley")]]
     gold = proc_imf[proc_imf.columns[proc_imf.columns.str.startswith("Gold")]]
+    soybean = proc_imf[proc_imf.columns[proc_imf.columns.str.startswith("Soybeans, U.S.")]]
+    wheat = proc_imf[proc_imf.columns[proc_imf.columns.str.startswith("Wheat")]]
 
     complete = pd.concat(
         [beef, pulp, soybean, milk, rice, wood, wool, barley, gold, wheat], axis=1
@@ -657,7 +684,15 @@ def rxr_official() -> pd.DataFrame:
         Available: global, regional, extraregional, Argentina, Brazil, US.
 
     """
-    raw = pd.read_excel(urls["rxr_official"]["dl"]["main"], skiprows=8, usecols="B:N", index_col=0)
+    try:
+        raw = pd.read_excel(
+            urls["rxr_official"]["dl"]["main"], skiprows=8, usecols="B:N", index_col=0
+        )
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(urls["rxr_official"]["dl"]["main"], verify=certs_path)
+            raw = pd.read_excel(r.content, skiprows=8, usecols="B:N", index_col=0)
     proc = raw.dropna(how="any")
     proc.columns = [
         "Global",
@@ -763,11 +798,23 @@ def bop() -> pd.DataFrame:
     Quarterly balance of payments : pd.DataFrame
 
     """
-    raw = (
-        pd.read_excel(urls["bop"]["dl"]["main"], skiprows=7, index_col=0, sheet_name="Cuadro Nº 1")
-        .dropna(how="all")
-        .T
-    )
+    try:
+        raw = (
+            pd.read_excel(
+                urls["bop"]["dl"]["main"], skiprows=7, index_col=0, sheet_name="Cuadro Nº 1"
+            )
+            .dropna(how="all")
+            .T
+        )
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(urls["bop"]["dl"]["main"], verify=certs_path)
+            raw = (
+                pd.read_excel(r.content, skiprows=7, index_col=0, sheet_name="Cuadro Nº 1")
+                .dropna(how="all")
+                .T
+            )
     output = raw.iloc[:, 2:]
     output.index = pd.date_range(start="2012-03-31", freq="Q", periods=len(output))
     pattern = r"\(1\)|\(2\)|\(3\)|\(4\)|\(5\)"
@@ -890,10 +937,16 @@ def reserves() -> pd.DataFrame:
     Daily international reserves : pd.DataFrame
 
     """
-    raw = pd.read_excel(
-        urls["reserves"]["dl"]["main"], usecols="D:J", index_col=0, skiprows=5, na_values="n/d"
-    )
-    proc = raw.dropna(how="any", thresh=1)
+    try:
+        raw = pd.read_excel(
+            urls["reserves"]["dl"]["main"], usecols="D:J", index_col=0, skiprows=5, na_values="n/d"
+        )
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(urls["reserves"]["dl"]["main"], verify=certs_path)
+            raw = pd.read_excel(r.content, usecols="D:J", index_col=0, skiprows=5, na_values="n/d")
+    proc = raw.dropna(thresh=1)
     reserves = proc[proc.index.notnull()]
     reserves.columns = [
         "Activos de reserva",
@@ -942,7 +995,7 @@ def reserves_changes(
 
     Returns
     -------
-    Daily international reserves changes : pd.DataFrame
+    Monthly international reserves changes : pd.DataFrame
 
     """
     name = "reserves_changes"
@@ -953,48 +1006,88 @@ def reserves_changes(
         first_year = 2013
     else:
         first_year = previous_data.index[-1].year
+    current_year = dt.datetime.now().year
+    mapping = dict(
+        zip(
+            ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Set", "Oct", "Nov", "Dic"],
+            [str(x).zfill(2) for x in range(1, 13)],
+        )
+    )
+    mapping.update({"Sep": "09"})
+    try:
+        r = requests.get(
+            "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Informe-Diario-Pasivos-Monetarios.aspx"
+        )
+    except (URLError, SSLError) as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Informe-Diario-Pasivos-Monetarios.aspx",
+                verify=certs_path,
+            )
+    latest = re.findall(
+        f"infd_[A-z]+{2023}.xls",
+        r.text,
+    )[0].split(
+        "_"
+    )[1]
 
-    months = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "set", "oct", "nov", "dic"]
-    years = list(range(first_year, dt.datetime.now().year + 1))
-    files = [month + str(year) for year in years for month in months]
-    first_dates = list(pd.date_range(start=f"{first_year}-01-01", periods=len(files), freq="MS"))
-    url = urls["reserves_changes"]["dl"]["main"]
-    links = [f"{url}{file}.xls" for file in files]
-    wrong_may14 = f"{url}may2014.xls"
-    fixed_may14 = f"{url}mayo2014.xls"
-    links = [fixed_may14 if x == wrong_may14 else x for x in links]
-
-    if not previous_data.empty:
-        previous_data.columns = previous_data.columns.set_levels(["-"], level=2)
-        previous_data.columns = reserves_cols[1:46]
-        previous_data.index = pd.to_datetime(previous_data.index).normalize()
-
-    reports = []
-    for link, first_day in zip(links, first_dates):
+    months = []
+    for year in range(first_year, current_year + 1):
+        if year < current_year:
+            filename = f"dic{year}.xls"
+        else:
+            filename = latest
         try:
-            raw = pd.read_excel(link, sheet_name="ACTIVOS DE RESERVA", skiprows=3)
-            last_day = first_day + relativedelta(months=1) - dt.timedelta(days=1)
-            proc = raw.dropna(axis=0, thresh=20).dropna(axis=1, thresh=20)
-            proc = proc.transpose()
-            proc = proc.iloc[:, 1:46]
-            proc.columns = reserves_cols[1:46]
-            proc = proc.iloc[1:]
-            proc.index = pd.to_datetime(proc.index, errors="coerce").normalize()
-            proc = proc.loc[proc.index.dropna()]
-            proc = proc.loc[first_day:last_day]
-            reports.append(proc)
+            data = pd.read_excel(
+                f"{urls[name]['dl']['main']}{filename}",
+                skiprows=2,
+                sheet_name="ACTIVOS DE RESERVA",
+            )
+        except URLError as err:
+            if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+                certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+                r = requests.get(f"{urls[name]['dl']['main']}{filename}", verify=certs_path)
+                data = pd.read_excel(
+                    r.content,
+                    skiprows=2,
+                    sheet_name="ACTIVOS DE RESERVA",
+                )
+        data = data.dropna(how="all").dropna(how="all", axis=1).set_index("CONCEPTOS")
+        if data.columns[0] == "Mes":
+            data.columns = data.iloc[0, :]
+        data = (
+            data.iloc[1:]
+            .T.reset_index(names="date")
+            .loc[
+                lambda x: ~x["date"]
+                .astype(str)
+                .str.contains("Unnamed|Trimestre|Año|I", regex=True, case=True),
+                lambda x: x.columns.notna(),
+            ]
+        )
+        data["date"] = data["date"].replace("Mes\n", "", regex=True).str.strip()
+        data = data.loc[data["date"].notna()]
 
-        except urllib.error.HTTPError:
-            pass
-
-    mar14 = pd.read_excel(urls[name]["dl"]["missing"], index_col=0)
-    mar14.columns = reserves_cols[1:46]
-    reserves = pd.concat(reports + [mar14], sort=False)
-    reserves = previous_data.append(reserves, sort=False)
-    reserves = reserves.loc[~reserves.index.duplicated(keep="last")].sort_index()
-
-    reserves = reserves.apply(pd.to_numeric, errors="coerce")
-    reserves.rename_axis(None, inplace=True)
+        index = pd.Series(data["date"]).str.split("-", expand=True).replace(mapping)
+        index = pd.to_datetime(
+            index.iloc[:, 0] + "-" + index.iloc[:, 1], format="%m-%Y", errors="coerce"
+        ) + pd.tseries.offsets.MonthEnd(1)
+        if year == 2019:
+            index = index.fillna(dt.datetime(year, 1, 31))
+        elif year == 2013:
+            index = index.fillna(dt.datetime(year, 12, 31))
+        data["date"] = index
+        data.columns = ["date"] + reserves_cols
+        months.append(data)
+    reserves = (
+        pd.concat(months, sort=False, ignore_index=True)
+        .drop_duplicates(subset="date")
+        .dropna(subset="date")
+        .set_index("date")
+        .sort_index()
+        .rename_axis(None)
+    )
     metadata._set(
         reserves,
         area="Sector externo",

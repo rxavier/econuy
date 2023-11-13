@@ -43,7 +43,7 @@ urls = {
     },
     "credit": {
         "dl": {
-            "main": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Creditos.xlsx "
+            "main": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Creditos.xlsx"
         },
         "source": {
             "direct": [
@@ -67,41 +67,44 @@ urls = {
     },
     "cpi": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=2e92084a-94ec-4fec-b5ca-42b40d5d2826&groupId=10181"
+            "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPC/Base%20Octubre%202022=100/IPC%20general_Total%20Pais_Montevideo_Interior_base%202022.xlsx"
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=2e92084a-94ec-4fec-b5ca-42b40d5d2826&groupId=10181"
+                "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPC/Base%20Octubre%202022=100/IPC%20general_Total%20Pais_Montevideo_Interior_base%202022.xlsx"
             ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
+            "indirect": [
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ipc-base-octubre-2022100"
+            ],
             "provider": ["INE"],
         },
     },
     "cpi_divisions": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=68d73d74-fbf9-4db1-bc61-2fbc6f104ef8&groupId=10181",
-            "1997": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/cpi_divisons.csv",
+            "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPC/Base%20Octubre%202022=100/IPC_Division_Pa%C3%ADs_desde%202010_base%202022.xlsx",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=68d73d74-fbf9-4db1-bc61-2fbc6f104ef8&groupId=10181"
+                "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPC/Base%20Octubre%202022=100/IPC_Division_Pa%C3%ADs_desde%202010_base%202022.xlsx"
             ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
+            "indirect": [
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ipc-base-octubre-2022100"
+            ],
             "provider": ["INE"],
         },
     },
-    "cpi_classes": {
-        "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=5d597b80-0b5d-4131-ba4d-fe6b609b4666&groupId=10181"
-        },
-        "source": {
-            "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=5d597b80-0b5d-4131-ba4d-fe6b609b4666&groupId=10181"
-            ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
-            "provider": ["INE"],
-        },
-    },
+    # "cpi_classes": {
+    #     "dl": {
+    #         "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=5d597b80-0b5d-4131-ba4d-fe6b609b4666&groupId=10181"
+    #     },
+    #     "source": {
+    #         "direct": [
+    #             "https://www.ine.gub.uy/c/document_library/get_file?uuid=5d597b80-0b5d-4131-ba4d-fe6b609b4666&groupId=10181"
+    #         ],
+    #         "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
+    #         "provider": ["INE"],
+    #     },
+    # },
     "inflation_expectations": {
         "dl": {
             "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Encuesta-Expectativas-Inflacion/IEES05I2.XLS"
@@ -116,58 +119,62 @@ urls = {
             "provider": ["BCU"],
         },
     },
-    "utilities": {
-        "dl": {
-            "1997": "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
-            "2010": "https://www.ine.gub.uy/c/document_library/get_file?uuid=668d4f77-74d8-46ba-8360-77bd867996df&groupId=10181",
-            "2019": "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
-        },
-        "source": {
-            "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=668d4f77-74d8-46ba-8360-77bd867996df&groupId=10181",
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
-            ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
-            "provider": ["econuy en base a INE"],
-        },
-    },
+    # "utilities": {
+    #     "dl": {
+    #         "1997": "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
+    #         "2010": "https://www.ine.gub.uy/c/document_library/get_file?uuid=668d4f77-74d8-46ba-8360-77bd867996df&groupId=10181",
+    #         "2019": "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
+    #     },
+    #     "source": {
+    #         "direct": [
+    #             "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
+    #             "https://www.ine.gub.uy/c/document_library/get_file?uuid=668d4f77-74d8-46ba-8360-77bd867996df&groupId=10181",
+    #             "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
+    #         ],
+    #         "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
+    #         "provider": ["econuy en base a INE"],
+    #     },
+    # },
     "ppi": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=fdc16ffa-4e69-4fd6-becc-836cc3bb7e61&groupId=10181"
+            "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPPN/IPPN%20C2%20M_B10.xls"
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=fdc16ffa-4e69-4fd6-becc-836cc3bb7e61&groupId=10181"
+                "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPPN/IPPN%20C2%20M_B10.xls"
             ],
             "indirect": [
-                "https://www.ine.gub.uy/web/guest/ippn-indice-de-precios-al-productor-de-productos-nacionales"
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ippn-base-marzo-2010100"
             ],
             "provider": ["INE"],
         },
     },
     "nxr_monthly": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=3fbf4ffd-a829-420c-aca9-9f01ecd7919a&groupId=10181"
+            "historical": "https://github.com/rxavier/econuy-extras/raw/main/econuy_extras/manual_data/nxr_monthly_ine.xls"
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=3fbf4ffd-a829-420c-aca9-9f01ecd7919a&groupId=10181"
+                "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/Cotizaci%C3%B3n%20de%20monedas/Cotizaci%C3%B3n%20monedas.xlsx"
             ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/cotizacion-de-monedas2"],
+            "indirect": [
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/cotizacion-monedas"
+            ],
             "provider": ["INE"],
         },
     },
     "nxr_daily": {
         "dl": {
-            "main": "https://www.bcu.gub.uy/_layouts/15/BCU.Cotizaciones/handler/FileHandler.ashx?op=downloadcotizacionesexcel&KeyValuePairs={%22KeyValuePairs%22:{%22Monedas%22:[{%22Val%22:%222224%22,%22Text%22:%22DLS.%20USA%20CABLE%22}],"
+            "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/Cotizaci%C3%B3n%20de%20monedas/Cotizaci%C3%B3n%20monedas.xlsx",
         },
         "source": {
-            "direct": [],
-            "indirect": [
-                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Cotizaciones.aspx"
+            "direct": [
+                "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/Cotizaci%C3%B3n%20de%20monedas/Cotizaci%C3%B3n%20monedas.xlsx"
             ],
-            "provider": ["BCU"],
+            "indirect": [
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/cotizacion-monedas"
+            ],
+            "provider": ["INE"],
         },
     },
     "commodity_prices": {
@@ -176,10 +183,8 @@ urls = {
             "pulp": f"https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600341?ordre="
             f"antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=12&anneeFin="
             f"{dt.datetime.now().year}",
-            "soybean": "https://data.nasdaq.com/api/v3/datasets/ODA/PSOYB_USD.csv?api_key=3TPxACcrxy9WsE871Lqe",
-            "wheat": "https://data.nasdaq.com/api/v3/datasets/ODA/PWHEAMT_USD.csv?api_key=3TPxACcrxy9WsE871Lqe",
             "milk1": "https://www.inale.org/estadisticas/",
-            "milk2": "https://ec.europa.eu/info/sites/info/files/food-farming-fisheries/farming/documents/eu-milk-historical-price-series_en.xls",
+            "milk2": "https://agriculture.ec.europa.eu/document/download/62d01488-33a0-4601-a841-ca48fa11d999_en?filename=eu-milk-historical-price-series_en_0.xlsx",
             "imf": "https://www.imf.org/en/Research/commodity-prices",
         },
         "source": {
@@ -189,16 +194,14 @@ urls = {
                 f"transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=12&anneeFin="
                 f"{dt.datetime.now().year}",
                 "https://data.nasdaq.com/api/v3/datasets/ODA/PWHEAMT_USD.csv?api_key=3TPxACcrxy9WsE871Lqe",
-                "https://data.nasdaq.com/api/v3/datasets/ODA/PWHEAMT_USD.csv?api_key=3TPxACcrxy9WsE871Lqe",
-                "https://ec.europa.eu/info/sites/info/files/food-farming-fisheries/farming/documents/eu-milk-historical-price-series_en.xls",
+                "https://agriculture.ec.europa.eu/document/download/62d01488-33a0-4601-a841-ca48fa11d999_en?filename=eu-milk-historical-price-series_en_0.xlsx",
             ],
             "indirect": [
                 "https://www.inac.uy/innovaportal/v/5541/10/innova.front/precios",
                 "https://www.insee.fr/fr/statistiques/serie/010600339",
-                "https://www.quandl.com/data/CHRIS/CME_S1-Soybean-Futures-Continuous-Contract-1-S1-Front-Month",
-                "https://www.quandl.com/data/CHRIS/CME_W1-Wheat-Futures-Continuous-Contract-1-W1-Front-Month",
+                "https://www.imf.org/en/Research/commodity-prices",
                 "https://www.inale.org/estadisticas/",
-                "https://ec.europa.eu/info/food-farming-fisheries/farming/facts-and-figures/markets/overviews/market-observatories/milk",
+                "https://agriculture.ec.europa.eu/data-and-analysis/markets/overviews/market-observatories/milk_es",
                 "https://www.imf.org/en/Research/commodity-prices",
             ],
             "provider": ["econuy en base a INAC, INSEE, Quandl, INALE, Comisión Europea y FMI"],
@@ -214,7 +217,7 @@ urls = {
                 f"{dt.datetime.now().year}",
                 "https://www.quandl.com/api/v3/datasets/CHRIS/CME_S1.csv?api_key=3TPxACcrxy9WsE871Lqe",
                 "https://www.quandl.com/api/v3/datasets/CHRIS/CME_W1.csv?api_key=3TPxACcrxy9WsE871Lqe",
-                "https://ec.europa.eu/info/sites/info/files/food-farming-fisheries/farming/documents/eu-milk-historical-price-series_en.xls",
+                "https://agriculture.ec.europa.eu/data-and-analysis/markets/overviews/market-observatories/milk_es",
             ],
             "indirect": [
                 "https://www.inac.uy/innovaportal/v/5541/10/innova.front/precios",
@@ -222,7 +225,7 @@ urls = {
                 "https://www.quandl.com/data/CHRIS/CME_S1-Soybean-Futures-Continuous-Contract-1-S1-Front-Month",
                 "https://www.quandl.com/data/CHRIS/CME_W1-Wheat-Futures-Continuous-Contract-1-W1-Front-Month",
                 "https://www.inale.org/estadisticas/",
-                "https://ec.europa.eu/info/food-farming-fisheries/farming/facts-and-figures/markets/overviews/market-observatories/milk",
+                "https://agriculture.ec.europa.eu/data-and-analysis/markets/overviews/market-observatories/milk_es",
                 "https://www.imf.org/en/Research/commodity-prices",
                 "https://comtrade.un.org/",
             ],
@@ -341,12 +344,12 @@ urls = {
     },
     "tax_revenue": {
         "dl": {
-            "main": "https://www.dgi.gub.uy/wdgi/afiledownload?2,4,865,O,S,0,19353%3BS%3B100%3B108,",
+            "main": "https://www.dgi.gub.uy/wdgi/afiledownload?2,4,381,O,S,0,37376%3BS%3B2%3B126,",
             "pdfs": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/retrieval/taxes_pdf.csv",
         },
         "source": {
             "direct": [
-                "https://www.dgi.gub.uy/wdgi/afiledownload?2,4,865,O,S,0,19353%3BS%3B100%3B108,"
+                "https://www.dgi.gub.uy/wdgi/afiledownload?2,4,381,O,S,0,37376%3BS%3B2%3B126,"
             ],
             "indirect": [
                 "https://www.dgi.gub.uy/wdgi/page?2,principal,dgi--datos-y-series-estadisticas--serie-de-datos--recaudacion-anual-y-mensual-por-impuesto,O,es,0,",
@@ -440,72 +443,73 @@ urls = {
     },
     "labor_rates": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=50ae926c-1ddc-4409-afc6-1fecf641e3d0&groupId=10181",
+            "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/Total%20nacional%20vigentes.rar",
             "missing": "https://docs.google.com/spreadsheets/d/1amqU3fUSok0kDB_LYvCZlBtVpkZeTK5vW5O8bShlOtw/export?format=xlsx&authuser=0",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=50ae926c-1ddc-4409-afc6-1fecf641e3d0&groupId=10181"
+                "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/Total%20nacional%20vigentes.rar"
             ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/actividad-empleo-y-desempleo"],
+            "indirect": [
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
+            ],
             "provider": ["INE"],
         },
     },
     "nominal_wages": {
         "dl": {
-            "historical": "https://www.ine.gub.uy/c/document_library/get_file?uuid=a76433b7-5fba-40fc-9958-dd913338e989&groupId=10181",
-            "current": "https://www.ine.gub.uy/c/document_library/get_file?uuid=97f07fd8-9410-476e-bf81-e6b1c11467ef&groupId=10181",
+            "historical": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IMS/Base%20Julio%202008=100/IMS%20C1%20Gral%20emp%20M%20B08.xls",
+            "current": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IMS/Base%20Julio%202008=100/IMS%20C1%20Gral%20P-P%20M%20emp%20B08.xls",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=a76433b7-5fba-40fc-9958-dd913338e989&groupId=10181",
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=97f07fd8-9410-476e-bf81-e6b1c11467ef&groupId=10181",
+                "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IMS/Base%20Julio%202008=100/IMS%20C1%20Gral%20emp%20M%20B08.xls",
+                "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IMS/Base%20Julio%202008=100/IMS%20C1%20Gral%20P-P%20M%20emp%20B08.xls",
             ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/ims-indice-medio-de-salarios"],
+            "indirect": [
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-indice-medio-salarios-ims-base-julio-2008100"
+            ],
             "provider": ["INE"],
         },
     },
     "hours_worked": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=167e0db0-95ca-45d2-8e81-3b8c5bb8f9ee&groupId=10181",
-            "historical": "https://www.ine.gub.uy/c/document_library/get_file?uuid=73ac6ede-8452-48b8-ad32-993d3b047091&groupId=10181",
-            "missing": "https://docs.google.com/spreadsheets/d/1amqU3fUSok0kDB_LYvCZlBtVpkZeTK5vW5O8bShlOtw/export?format=xlsx&authuser=0",
+            "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/Total%20nacional%20vigentes.rar",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=167e0db0-95ca-45d2-8e81-3b8c5bb8f9ee&groupId=10181",
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=73ac6ede-8452-48b8-ad32-993d3b047091&groupId=10181",
+                "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/Total%20nacional%20vigentes.rar",
             ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/actividad-empleo-y-desempleo"],
+            "indirect": [
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
+            ],
             "provider": ["INE"],
         },
     },
     "income_household": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=40bd0267-3922-478d-8bc0-252f508a72fe&groupId=10181",
-            "missing": "https://docs.google.com/spreadsheets/d/1amqU3fUSok0kDB_LYvCZlBtVpkZeTK5vW5O8bShlOtw/export?format=xlsx&authuser=0",
+            "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/Ingresos%20de%20las%20personas%20y%20los%20hogares.rar",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=40bd0267-3922-478d-8bc0-252f508a72fe&groupId=10181"
+                "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/Ingresos%20de%20las%20personas%20y%20los%20hogares.rar"
             ],
             "indirect": [
-                "http://www.ine.gub.uy/web/guest/gastos-e-ingresos-de-las-personas-y-los-hogares"
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ech-ingresos-personas-hogares"
             ],
             "provider": ["INE"],
         },
     },
     "income_capita": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=ca57dafa-8091-4c2f-8df8-7b8445859b93&groupId=10181",
-            "missing": "https://docs.google.com/spreadsheets/d/1amqU3fUSok0kDB_LYvCZlBtVpkZeTK5vW5O8bShlOtw/export?format=xlsx&authuser=0",
+            "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/Ingresos%20de%20las%20personas%20y%20los%20hogares.rar",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=ca57dafa-8091-4c2f-8df8-7b8445859b93&groupId=10181"
+                "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/Ingresos%20de%20las%20personas%20y%20los%20hogares.rar"
             ],
             "indirect": [
-                "http://www.ine.gub.uy/web/guest/gastos-e-ingresos-de-las-personas-y-los-hogares"
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ech-ingresos-personas-hogares"
             ],
             "provider": ["INE"],
         },
@@ -686,14 +690,16 @@ urls = {
     },
     "industrial_production": {
         "dl": {
-            "main": "https://www.ine.gub.uy/c/document_library/get_file?uuid=e5ee6e11-601f-45ff-9335-68cd5191fa39&groupId=10181",
+            "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IVFIM/Base%202018%20=%20100/IVFIM_IVF_B18.xlsx",
             "weights": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/industrial_production_2018_weights.csv",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=e5ee6e11-601f-45ff-9335-68cd5191fa39&groupId=10181"
+                "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IVFIM/Base%202018%20=%20100/IVFIM_IVF_B18.xlsx"
             ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/industria-manufacturera"],
+            "indirect": [
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ivfim-base-2018100"
+            ],
             "provider": ["INE"],
         },
     },
@@ -715,28 +721,6 @@ urls = {
             "direct": [],
             "indirect": ["https://www.inale.org/estadisticas/remision-a-planta/"],
             "provider": ["INALE"],
-        },
-    },
-    "cement": {
-        "dl": {"main": "http://www.ciu.com.uy/innovaportal/file/83062/1/cemento-web.xlsx"},
-        "source": {
-            "direct": ["http://www.ciu.com.uy/innovaportal/file/83062/1/cemento-web.xlsx"],
-            "indirect": [
-                "http://www.ciu.com.uy/innovaportal/v/83062/9/innova.front/series-de-ventas-mensuales-por-destino.html"
-            ],
-            "provider": ["AFCPU y CIU"],
-        },
-    },
-    "consumer_confidence": {
-        "dl": {
-            "main": "https://ucu.edu.uy/sites/default/files/facultad/fce/i_competitividad/serie_icc_-.xlsx"
-        },
-        "source": {
-            "direct": [
-                "https://ucu.edu.uy/sites/default/files/facultad/fce/i_competitividad/serie_icc_-.xlsx"
-            ],
-            "indirect": ["https://ucu.edu.uy/es/icc"],
-            "provider": ["UCU"],
         },
     },
     "sovereign_risk": {
@@ -988,22 +972,22 @@ urls = {
             "provider": ["BCU"],
         },
     },
-    "cpi_measures": {
-        "dl": {
-            "2010-": "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
-            "1997": "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
-            "1997_weights": "https://docs.google.com/spreadsheets/d/1gSQdp6b97udmki0DZBndhLajLv6uGDX7kYb66BUswj8/export#gid=0",
-        },
-        "source": {
-            "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
-                "http://www.ine.gub.uy/c/document_library/get_file?uuid=5f2e75d2-5df6-48da-978d-e7930d47c037&groupId=10181",
-            ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
-            "provider": ["econuy en base a INE"],
-        },
-    },
+    # "cpi_measures": {
+    #     "dl": {
+    #         "2010-": "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
+    #         "1997": "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
+    #         "1997_weights": "https://docs.google.com/spreadsheets/d/1gSQdp6b97udmki0DZBndhLajLv6uGDX7kYb66BUswj8/export#gid=0",
+    #     },
+    #     "source": {
+    #         "direct": [
+    #             "https://www.ine.gub.uy/c/document_library/get_file?uuid=ad969d52-cebc-4b40-9a1f-34ce277e463e&groupId=10181",
+    #             "https://www.ine.gub.uy/c/document_library/get_file?uuid=1cd81500-420a-44d0-ae4d-0add9d913107&groupId=10181",
+    #             "http://www.ine.gub.uy/c/document_library/get_file?uuid=5f2e75d2-5df6-48da-978d-e7930d47c037&groupId=10181",
+    #         ],
+    #         "indirect": ["http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"],
+    #         "provider": ["econuy en base a INE"],
+    #     },
+    # },
     "balance_fss": {
         "dl": {},
         "source": {
@@ -1016,18 +1000,16 @@ urls = {
     },
     "labor_rates_people": {
         "dl": {
-            "5k": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/labor_mkt_5k.csv",
-            "population": "https://www.ine.gub.uy/c/document_library/get_file?uuid=2a5c1e6e-b02f-4a63-963f-925edea7c17e&groupId=10181",
+            "population": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/Estimaciones%20y%20proyecciones/Revisi%C3%B3n%202013/Total_pais_poblacion_por_sexo_y_edad_1996-2050.xls",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=50ae926c-1ddc-4409-afc6-1fecf641e3d0&groupId=10181",
-                "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/labor_mkt_5k.csv",
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=2a5c1e6e-b02f-4a63-963f-925edea7c17e&groupId=10181",
+                "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/Total%20nacional%20vigentes.rar",
+                "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/Estimaciones%20y%20proyecciones/Revisi%C3%B3n%202013/Total_pais_poblacion_por_sexo_y_edad_1996-2050.xls",
             ],
             "indirect": [
-                "http://www.ine.gub.uy/web/guest/actividad-empleo-y-desempleo",
-                "http://www.ine.gub.uy/estimaciones-y-proyecciones",
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo",
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/estimaciones-proyecciones",
             ],
             "provider": ["econuy en base a INE"],
         },
@@ -1075,15 +1057,15 @@ urls = {
     },
     "core_industrial": {
         "dl": {
-            "2018": "https://www.ine.gub.uy/c/document_library/get_file?uuid=e5ee6e11-601f-45ff-9335-68cd5191fa39&groupId=10181",
-            "2006": "https://www.ine.gub.uy/c/document_library/get_file?uuid=8e08c0dc-acc2-44f7-b302-daa32e0b978b&groupId=10181",
+            "2018": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IVFIM/Base%202018%20=%20100/IVFIM_IVF_B18.xlsx",
         },
         "source": {
             "direct": [
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=e5ee6e11-601f-45ff-9335-68cd5191fa39&groupId=10181",
-                "https://www.ine.gub.uy/c/document_library/get_file?uuid=17185e91-4198-4449-877a-59d69479e45d&groupId=10181",
+                "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IVFIM/Base%202018%20=%20100/IVFIM_IVF_B18.xlsx",
             ],
-            "indirect": ["http://www.ine.gub.uy/web/guest/industria-manufacturera"],
+            "indirect": [
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ivfim-base-2018100"
+            ],
             "provider": ["econuy en base a INE"],
         },
     },
@@ -1122,14 +1104,10 @@ urls = {
         },
     },
     "global_policy_rates": {
-        "dl": {
-            "main": "https://www.bis.org/statistics/full_webstats_cbpol_d_dataflow_csv_row.zip"
-        },
+        "dl": {"main": "https://data.bis.org/static/bulk/WS_CBPOL_csv_row.zip"},
         "source": {
-            "direct": [
-                "https://www.bis.org/statistics/full_webstats_cbpol_d_dataflow_csv_row.zip"
-            ],
-            "indirect": ["https://www.bis.org/statistics/cbpol.htm"],
+            "direct": ["https://data.bis.org/static/bulk/WS_CBPOL_csv_row.zip"],
+            "indirect": ["https://data.bis.org/topics/CBPOL/data"],
             "provider": ["BIS"],
         },
     },
@@ -1167,29 +1145,30 @@ urls = {
     },
     "regional_embi_spreads": {
         "dl": {
-            "global": "https://cdn.bancentral.gov.do/documents/entorno-internacional/documents/Serie_Historica_Spread_del_EMBI.xlsx",
-            "brasil": f"https://mercados.ambito.com//riesgopaisinternacional/brasil/historico-general/01-01-1990/{dt.datetime.now().strftime('%d-%m-%Y')}",
-            "argentina": f"https://mercados.ambito.com//riesgopais/historico-general/01-01-1990/{dt.datetime.now().strftime('%d-%m-%Y')}",
+            "main": "https://cdn.bancentral.gov.do/documents/entorno-internacional/documents/Serie_Historica_Spread_del_EMBI.xlsx",
         },
         "source": {
-            "direct": [],
+            "direct": [
+                "https://cdn.bancentral.gov.do/documents/entorno-internacional/documents/Serie_Historica_Spread_del_EMBI.xlsx"
+            ],
             "indirect": [
-                "https://www.ambito.com/contenidos/riesgo-pais.html",
                 "https://www.bancentral.gov.do/a/d/2585-entorno-internacional",
             ],
-            "provider": ["Ámbito, BCRD"],
+            "provider": ["BCRD"],
         },
     },
     "regional_embi_yields": {
+        "dl": {
+            "treasury": f"https://query1.finance.yahoo.com/v7/finance/download/%5ETNX?period1=-252374400&period2={dt.datetime.now().timestamp().__round__()}&interval=1d&events=history&includeAdjustedClose=true"
+        },
         "source": {
             "direct": [],
             "indirect": [
-                "https://fred.stlouisfed.org/series/DGS10",
-                "https://www.ambito.com/contenidos/riesgo-pais.html",
+                "https://finance.yahoo.com/quote/%5ETNX/history?p=%5ETNX",
                 "https://www.bancentral.gov.do/a/d/2585-entorno-internacional",
             ],
-            "provider": ["econuy en base a FRB St. Louis, Ámbito y BCRD"],
-        }
+            "provider": ["econuy en base a Yahoo Finance y BCRD"],
+        },
     },
     "regional_gdp": {
         "dl": {
@@ -1241,14 +1220,10 @@ urls = {
         },
     },
     "regional_policy_rates": {
-        "dl": {
-            "main": "https://www.bis.org/statistics/full_webstats_cbpol_d_dataflow_csv_row.zip"
-        },
+        "dl": {"main": "https://data.bis.org/static/bulk/WS_CBPOL_csv_row.zip"},
         "source": {
-            "direct": [
-                "https://www.bis.org/statistics/full_webstats_cbpol_d_dataflow_csv_row.zip"
-            ],
-            "indirect": ["https://www.bis.org/statistics/cbpol.htm"],
+            "direct": ["https://data.bis.org/static/bulk/WS_CBPOL_csv_row.zip"],
+            "indirect": ["https://data.bis.org/topics/CBPOL/data"],
             "provider": ["BIS"],
         },
     },
@@ -1268,16 +1243,16 @@ urls = {
     },
     "regional_stocks": {
         "dl": {
-            "arg": "https://www.investing.com/instruments/HistoricalDataAjax",
+            "arg": f"https://query1.finance.yahoo.com/v7/finance/download/%5EMERV?period1=844732800&period2={dt.datetime.now().timestamp().__round__()}&interval=1d&events=history&includeAdjustedClose=true",
             "bra": f"https://query1.finance.yahoo.com/v7/finance/download/%5EBVSP?period1=735868800&period2={dt.datetime.now().timestamp().__round__()}&interval=1d&events=history&includeAdjustedClose=true",
         },
         "source": {
             "direct": [],
             "indirect": [
-                "https://www.investing.com/indices/merv-historical-data",
-                "https://finance.yahoo.com/quote/%5EBVSP/history?period1=735868800&period2=1607212800&interval=1d&filter=history&frequency=1d&includeAdjustedClose=true",
+                "https://finance.yahoo.com/quote/%5EMERV/history?p=%5EMERV",
+                "https://finance.yahoo.com/quote/%5EBVSP/history?p=%5EBVSP",
             ],
-            "provider": ["Investing.com", "Yahoo Finance"],
+            "provider": ["Yahoo Finance"],
         },
     },
     "regional_rxr": {

@@ -494,7 +494,7 @@ def _rebase(
     base: float = 100.0,
 ) -> pd.DataFrame:
     if end_date is None:
-        start_date = df.iloc[df.index.get_loc(start_date, method="nearest")].name
+        start_date = df.iloc[df.index.get_indexer([start_date], method="nearest")].index[0]
         indexed = df.apply(lambda x: x / x.loc[start_date] * base)
         if isinstance(start_date, str):
             start_date = datetime.strptime(start_date, "%Y-%m-%d")
@@ -832,7 +832,6 @@ def _chg_diff(df: pd.DataFrame, operation: str = "chg", period: str = "last") ->
         )
 
     if period == "annual":
-
         if df.columns.get_level_values("Tipo")[0] == "Stock":
             output = df.apply(type_change[period][operation][0])
         else:

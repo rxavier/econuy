@@ -65,11 +65,6 @@ def original():
             "description_en": "Milk delivery to plant (Jan-02, M)",
             "function": economic_activity.milk,
         },
-        "cement": {
-            "description": "Ventas de cemento (ene-90, M)",
-            "description_en": "Cement sales (Jan-90, M)",
-            "function": economic_activity.cement,
-        },
         "cpi": {
             "description": "Índice de precios al consumidor - IPC (ene-37, M)",
             "description_en": "Consumer price index - CPI (Jan-37, M)",
@@ -80,11 +75,11 @@ def original():
             "description_en": "Consumer price index by division - CPI (Mar-97, M)",
             "function": prices.cpi_divisions,
         },
-        "cpi_classes": {
-            "description": "Índice de precios al consumidor por división, grupo y clase - IPC (ene-11, M)",
-            "description_en": "Consumer price index by division, group and class - CPI (Jan-11, M)",
-            "function": prices.cpi_classes,
-        },
+        # "cpi_classes": {
+        #     "description": "Índice de precios al consumidor por división, grupo y clase - IPC (ene-11, M)",
+        #     "description_en": "Consumer price index by division, group and class - CPI (Jan-11, M)",
+        #     "function": prices.cpi_classes,
+        # },
         "inflation_expectations": {
             "description": "Expectativas de inflación (ene-04, M)",
             "description_en": "Inflation expectations (Jan-04, M)",
@@ -305,17 +300,12 @@ def original():
             "description_en": "Average per capita income (Jan-06, M)",
             "function": income.income_capita,
         },
-        "consumer_confidence": {
-            "description": "Índice de Confianza del Consumidor (ago-07, M)",
-            "description_en": "Consumer Confidence Index (Aug-07, M)",
-            "function": income.consumer_confidence,
-        },
     }
 
 
 def custom():
     from econuy.retrieval import (
-        prices,
+        # prices,
         fiscal_accounts,
         economic_activity,
         labor,
@@ -361,16 +351,16 @@ def custom():
             "description_en": "GDP: current prices, spliced series (wp BCU 12-15) (Mar-97, Q [e])",
             "function": economic_activity.gdp_cur_nsa_long,
         },
-        "cpi_measures": {
-            "description": "IPC transable, no transable, subyacente y residual (mar-97, M [e])",
-            "description_en": "CPI: tradable, non-tradable, core and residual (Mar-97, M [e])",
-            "function": prices.cpi_measures,
-        },
-        "utilities": {
-            "description": "Tarifas públicas (mar-97, M [e])",
-            "description_en": "Public utilities prices (Mar-97, M [e])",
-            "function": prices.utilities,
-        },
+        # "cpi_measures": {
+        #     "description": "IPC transable, no transable, subyacente y residual (mar-97, M [e])",
+        #     "description_en": "CPI: tradable, non-tradable, core and residual (Mar-97, M [e])",
+        #     "function": prices.cpi_measures,
+        # },
+        # "utilities": {
+        #     "description": "Tarifas públicas (mar-97, M [e])",
+        #     "description_en": "Public utilities prices (Mar-97, M [e])",
+        #     "function": prices.utilities,
+        # },
         "balance_summary": {
             "description": "Resultado fiscal: Todas las agregaciones, inc. aj. FSS (ene-99, M [e])",
             "description_en": "Fiscal balance: all aggregations, inc. FSS adjustment (Jan-99, M [e])",
@@ -431,11 +421,11 @@ def custom():
             "description_en": "Monetary policy interest rates of the United States, Eurozone, Japan and China (01-Jan-46, D)",
             "function": international.policy_rates,
         },
-        "global_long_rates": {
-            "description": "Tasas de interés de largo plazo (10 años) de EE.UU., Alemania, Francia, España, Italia, Reino Unido, Japón y China (02-ene-62, D)",
-            "description_en": "Long term interest rates (10 years) of the United States, Germany, France, Spain, Italy, United Kingdom, Japan and China (02-Jan-62, D)",
-            "function": international.long_rates,
-        },
+        # "global_long_rates": {
+        #     "description": "Tasas de interés de largo plazo (10 años) de EE.UU., Alemania, Francia, España, Italia, Reino Unido, Japón y China (02-ene-62, D)",
+        #     "description_en": "Long term interest rates (10 years) of the United States, Germany, France, Spain, Italy, United Kingdom, Japan and China (02-Jan-62, D)",
+        #     "function": international.long_rates,
+        # },
         "global_nxr": {
             "description": "Cotización de monedas de EE.UU., Eurozona, Japón y China (04-ene-71, D)",
             "description_en": "Exchange rates of the United States, Eurozone, Japan and China (04-Jan-71, D)",

@@ -180,12 +180,13 @@ class Pipeline(object):
                 "regional_stocks",
                 "real_wages",
                 "labor_rates_people",
+                "nxr_monthly",
             ]:
                 # Some datasets require retrieving other datasets. Passing the
                 # class instance allows running these retrieval operations
                 # with the same parameters (for example, save file formats).
                 new_data = selection["function"](pipeline=self)
-            elif name in ["reserves_changes", "nxr_daily"]:
+            elif name in ["reserves_changes"]:
                 # Datasets that require many requests (mostly daily data) benefit
                 # from having previous data, so they can start requests
                 # from the last available date.

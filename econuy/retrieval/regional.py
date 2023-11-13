@@ -3,7 +3,6 @@ import tempfile
 import time
 import zipfile
 import datetime as dt
-from random import randint
 from io import BytesIO
 from os import path, listdir
 from typing import Optional
@@ -22,7 +21,6 @@ from econuy.transform import rebase, resample
 from econuy.utils import metadata
 from econuy.utils.chromedriver import _build
 from econuy.utils.sources import urls
-from econuy.utils.extras import investing_headers
 
 
 @retry(
@@ -107,12 +105,12 @@ def monthly_gdp() -> pd.DataFrame:
 
     Returns
     -------
-    Daily policy interest rates : pd.DataFrame
+    Monthly GDP : pd.DataFrame
 
     """
     name = "regional_monthly_gdp"
 
-    arg = pd.read_excel(urls[name]["dl"]["arg"], usecols="C", skiprows=4).dropna(how="all")
+    arg = pd.read_excel(urls[name]["dl"]["arg"], usecols="C", skiprows=3).dropna(how="all")
     arg.index = pd.date_range(start="2004-01-31", freq="M", periods=len(arg))
 
     bra = pd.read_csv(urls[name]["dl"]["bra"], sep=";", index_col=0, decimal=",")
@@ -167,7 +165,7 @@ def cpi() -> pd.DataFrame:
     arg_unoff = arg_unoff.to_frame().pct_change(periods=1).multiply(100).dropna()
     arg_unoff.columns = ["nivel"]
     arg = (
-        arg.append(arg_unoff)
+        pd.concat([arg, arg_unoff])
         .reset_index()
         .drop_duplicates(subset="index", keep="last")
         .set_index("index", drop=True)
@@ -214,24 +212,13 @@ def embi_spreads() -> pd.DataFrame:
     """
     name = "regional_embi_spreads"
 
-    global_ = pd.read_excel(
-        urls[name]["dl"]["global"], usecols="A:B", skiprows=1, index_col=0, parse_dates=True
+    raw = pd.read_excel(urls[name]["dl"]["main"], usecols="A:B,E,G", skiprows=1, index_col=0)
+    output = (
+        raw.loc[~pd.isna(raw.index)]
+        .mul(100)
+        .rename(columns={"Global": "EMBI Global"})[["Argentina", "Brasil", "EMBI Global"]]
     )
-    global_ = global_.loc[~pd.isna(global_.index)].mul(100)
-    region = []
-    for cnt in ["argentina", "brasil"]:
-        r = requests.get(urls[name]["dl"][cnt])
-        aux = pd.DataFrame(r.json())
-        aux.set_index(0, drop=True, inplace=True)
-        aux.drop("Fecha", inplace=True)
-        aux = aux.replace(",", ".", regex=True).apply(pd.to_numeric)
-        aux.index = pd.to_datetime(aux.index, format="%d-%m-%Y")
-        aux.sort_index(inplace=True)
-        aux.columns = [cnt]
-        region.append(aux)
-    region = region[0].join(region[1]).interpolate(limit_area="inside")
-    output = region.join(global_, how="left").interpolate(method="linear", limit_area="inside")
-    output.columns = ["Argentina", "Brasil", "EMBI Global"]
+    output.index = pd.to_datetime(output.index)
     output = output.apply(pd.to_numeric, errors="coerce")
     output.rename_axis(None, inplace=True)
 
@@ -273,8 +260,10 @@ def embi_yields(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     if pipeline is None:
         pipeline = Pipeline()
 
-    pipeline.get("global_long_rates")
-    treasuries = pipeline.dataset["Estados Unidos"]
+    treasuries = pd.read_csv(
+        urls["regional_embi_yields"]["dl"]["treasury"], usecols=[0, 4], index_col=0
+    )
+    treasuries.index = pd.to_datetime(treasuries.index)
     pipeline.get("regional_embi_spreads")
     spreads = pipeline.dataset
 
@@ -320,7 +309,7 @@ def nxr() -> pd.DataFrame:
         aux.set_index(0, drop=True, inplace=True)
         aux.drop("Fecha", inplace=True)
         aux = aux.replace(",", ".", regex=True).apply(pd.to_numeric)
-        aux.index = pd.to_datetime(aux.index, format="%d-%m-%Y")
+        aux.index = pd.to_datetime(aux.index, format="%d/%m/%Y")
         aux.sort_index(inplace=True)
         aux.columns = [dollar]
         arg.append(aux)
@@ -332,7 +321,7 @@ def nxr() -> pd.DataFrame:
     bra = [(x["VALDATA"], x["VALVALOR"]) for x in bra["value"]]
     bra = pd.DataFrame.from_records(bra).dropna(how="any")
     bra.set_index(0, inplace=True)
-    bra.index = pd.to_datetime(bra.index.str[:-4], format="%Y-%m-%dT%H:%M:%S").tz_localize(None)
+    bra.index = pd.to_datetime(bra.index.str[:-4]).tz_localize(None)
     bra.columns = ["Brasil"]
 
     output = arg.join(bra, how="left").interpolate(method="linear", limit_area="inside")
@@ -378,14 +367,19 @@ def policy_rates() -> pd.DataFrame:
     temp_dir = tempfile.TemporaryDirectory()
     with zipfile.ZipFile(BytesIO(r.content), "r") as f:
         f.extractall(path=temp_dir.name)
-        path_temp = path.join(temp_dir.name, "WEBSTATS_CBPOL_D_DATAFLOW_csv_row.csv")
-        raw = pd.read_csv(
-            path_temp, usecols=[0, 1, 3], index_col=0, header=2, parse_dates=True
-        ).dropna(how="all")
-    output = raw.apply(pd.to_numeric, errors="coerce").interpolate(
-        method="linear", limit_area="inside"
+        path_temp = path.join(temp_dir.name, "WS_CBPOL_csv_row.csv")
+        raw = pd.read_csv(path_temp, index_col=0)
+    output = raw.loc[:, lambda x: x.columns.str.contains("D:Daily")]
+    output = (
+        output.loc[:, output.iloc[0].isin(["AR:Argentina", "BR:Brazil"])]
+        .iloc[8:]
+        .dropna(how="all")
     )
     output.columns = ["Argentina", "Brasil"]
+    output = output.apply(pd.to_numeric, errors="coerce").interpolate(
+        method="linear", limit_area="inside"
+    )
+    output.index = pd.to_datetime(output.index)
     output.rename_axis(None, inplace=True)
 
     metadata._set(
@@ -425,54 +419,25 @@ def stocks(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """
     name = "regional_stocks"
 
-    end_date_dt = dt.datetime(2000, 1, 1)
-    start_date_dt = dt.datetime(2000, 1, 1)
-    aux = []
-    while end_date_dt < dt.datetime.now():
-        end_date_dt = start_date_dt + dt.timedelta(days=5000)
-        params = {
-            "curr_id": "13376",
-            "smlID": str(randint(1000000, 99999999)),
-            "header": "S&amp;P Merval Historical Data",
-            "st_date": start_date_dt.strftime("%m/%d/%Y"),
-            "end_date": end_date_dt.strftime("%m/%d/%Y"),
-            "interval_sec": "Daily",
-            "sort_col": "date",
-            "sort_ord": "DESC",
-            "action": "historical_data",
-        }
-        r = requests.post(urls[name]["dl"]["arg"], headers=investing_headers, data=params)
-        aux.append(pd.read_html(r.content, match="Price", index_col=0, parse_dates=True)[0])
-        start_date_dt = end_date_dt + dt.timedelta(days=1)
-    arg = pd.concat(aux, axis=0)[["Price"]].sort_index()
-
-    bra = pd.read_csv(urls[name]["dl"]["bra"], index_col=0, parse_dates=True)[["Close"]]
-    bra = bra.loc[bra.index >= "2000-01-01"]
-
-    pipeline.get("regional_nxr")
-    converters = pipeline.dataset
-    converters.columns = converters.columns.get_level_values(0)
-    arg = pd.merge_asof(
-        arg, converters[["Argentina - informal"]], left_index=True, right_index=True
-    )
-    arg = (arg.iloc[:, 0] / arg.iloc[:, 1]).to_frame()
-    arg.columns = ["Argentina"]
-    bra = pd.merge_asof(bra, converters[["Brasil"]], left_index=True, right_index=True)
-    bra = (bra.iloc[:, 0] / bra.iloc[:, 1]).to_frame()
-    bra.columns = ["Brasil"]
-
-    output = arg.join(bra, how="left").interpolate(method="linear", limit_area="inside")
+    yahoo = []
+    for series in ["arg", "bra"]:
+        aux = pd.read_csv(urls[name]["dl"][series], index_col=0, usecols=[0, 4], parse_dates=True)
+        aux.columns = [series]
+        yahoo.append(aux)
+    output = pd.concat(yahoo, axis=1).interpolate(method="linear", limit_area="inside")
+    output.columns = ["MERVAL", "BOVESPA"]
     output.rename_axis(None, inplace=True)
     metadata._set(
         output,
-        area="Regional",
+        area="Global",
         currency="USD",
         inf_adj="No",
         seas_adj="NSA",
         ts_type="-",
         cumperiods=1,
     )
-    output = rebase(output, start_date="2019-01-02").dropna(how="all")
+    metadata._modify_multiindex(output, levels=[3], new_arrays=[["ARS", "BRL"]])
+    output = rebase(output, start_date="2019-01-02")
 
     return output
 
@@ -536,12 +501,12 @@ def _ifs(pipeline: Pipeline = None) -> pd.DataFrame:
     if pipeline is None:
         pipeline = Pipeline()
 
-    url_ = "http://dataservices.imf.org/REST/SDMX_JSON.svc/CompactData/IFS/M."
-    url_extra = ".?startPeriod=1970&endPeriod="
+    url_ = "http://dataservices.imf.org/REST/SDMX_JSON.svc/CompactData/IFS/M"
+    url_extra = "?startPeriod=1970&endPeriod="
     ifs = []
     for country in ["US", "BR", "AR"]:
         for indicator in ["PCPI_IX", "ENDA_XDC_USD_RATE"]:
-            base_url = f"{url_}{country}.{indicator}{url_extra}" f"{dt.datetime.now().year}"
+            base_url = f"{url_}.{country}.{indicator}.{url_extra}{dt.datetime.now().year}"
             r_json = requests.get(base_url).json()
             data = r_json["CompactData"]["DataSet"]["Series"]["Obs"]
             try:

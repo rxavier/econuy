@@ -1,5 +1,6 @@
 import datetime as dt
 import re
+from pathlib import Path
 from typing import Dict, Optional
 from urllib.error import HTTPError, URLError
 
@@ -12,7 +13,7 @@ from requests.exceptions import ConnectionError
 
 from econuy import transform
 from econuy.core import Pipeline
-from econuy.utils import metadata
+from econuy.utils import metadata, get_project_root
 from econuy.utils.sources import urls
 from econuy.utils.extras import fiscal_sheets, taxes_columns
 
@@ -165,10 +166,17 @@ def tax_revenue() -> pd.DataFrame:
     Monthly tax revenues : pd.DataFrame
 
     """
-    raw = pd.read_excel(urls["tax_revenue"]["dl"]["main"], usecols="C:AO", index_col=0)
-    raw.index = pd.to_datetime(raw.index, errors="coerce")
-    output = raw.loc[~pd.isna(raw.index)]
-    output.index = output.index + MonthEnd(0)
+    raw = (
+        pd.read_excel(urls["tax_revenue"]["dl"]["main"])
+        .iloc[:, 2:]
+        .drop(index=[0, 1])
+        .set_index("SELECCIONE IMPUESTO")
+        .rename_axis(None)
+    )
+    raw.index = pd.to_datetime(raw.index, format="%Y-%m-%d HH:MM:SS", errors="coerce") + MonthEnd(
+        0
+    )
+    output = raw.loc[~pd.isna(raw.index), ~raw.columns.str.contains("Unnamed")]
     output.columns = taxes_columns
     output = output.div(1000000)
     latest = pd.read_csv(urls["tax_revenue"]["dl"]["pdfs"], index_col=0, parse_dates=True)
@@ -220,8 +228,13 @@ def _public_debt_retriever() -> Dict[str, pd.DataFrame]:
         "Residencia: no residentes",
         "Residencia: residentes",
     ]
-
-    xls = pd.ExcelFile(urls["public_debt_gps"]["dl"]["main"])
+    try:
+        xls = pd.ExcelFile(urls["public_debt_gps"]["dl"]["main"])
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(urls["public_debt_gps"]["dl"]["main"], verify=certs_path)
+            xls = pd.ExcelFile(r.content)
     gps_raw = pd.read_excel(
         xls,
         sheet_name="SPG2",
@@ -230,7 +243,7 @@ def _public_debt_retriever() -> Dict[str, pd.DataFrame]:
         skiprows=10,
         nrows=(dt.datetime.now().year - 1999) * 4,
     )
-    gps = gps_raw.dropna(how="any", thresh=2)
+    gps = gps_raw.dropna(thresh=2)
     gps.index = pd.date_range(start="1999-12-31", periods=len(gps), freq="Q-DEC")
     gps.columns = colnames
 
