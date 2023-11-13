@@ -177,9 +177,11 @@ def _convert_real(
         converted_df = df.div(cpi_to_use, axis=0)
         col_text = "Const."
     elif end_date is None:
-        month = df.iloc[df.index.get_loc(start_date, method="nearest")].name
+        start_date = pd.to_datetime(start_date)
+        month = df.index.to_series().sub(start_date).abs().idxmin()
+        # month = df.iloc[df.index.get_loc(start_date, method="nearest")].name
         converted_df = df.div(cpi_to_use, axis=0) * cpi_to_use.loc[month]
-        m_start = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m")
+        m_start = start_date.strftime("%Y-%m")
         col_text = f"Const. {m_start}"
     else:
         converted_df = df.div(cpi_to_use, axis=0) * cpi_to_use[start_date:end_date].mean()

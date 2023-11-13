@@ -1074,7 +1074,7 @@ def milk() -> pd.DataFrame:
         .dropna()
         .rename_axis(None)
     )
-    output = raw.set_index(pd.date_range(start="2002-01-31", freq="M", periods=len(raw)))
+    output = raw.set_index(pd.date_range(start="2002-01-31", freq="M", periods=len(raw))) * 1000
     output = output.apply(pd.to_numeric)
     output.columns = ["Remisión de leche a planta"]
 

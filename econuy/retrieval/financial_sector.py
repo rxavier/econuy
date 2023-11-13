@@ -34,24 +34,29 @@ def credit() -> pd.DataFrame:
     """
     name = "credit"
     try:
-        raw = pd.read_excel(
-            urls[name]["dl"]["main"],
-            sheet_name="Total Sist. Banc.",
-            skiprows=10,
-            usecols="A:P,T:AB,AD:AL",
-            index_col=0,
-        )
+        xls = pd.ExcelFile(urls[name]["dl"]["main"])
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
             r = requests.get(urls[name]["dl"]["main"], verify=certs_path)
-            raw = pd.read_excel(
-                r.content,
-                sheet_name="Total Sist. Banc.",
-                skiprows=10,
-                usecols="A:P,T:AB,AD:AL",
-                index_col=0,
-            )
+            xls = pd.ExcelFile(r.content)
+    tc = pd.read_excel(
+        xls,
+        sheet_name="TC",
+        skiprows=1,
+        usecols="A:B",
+        index_col=0,
+        parse_dates=True,
+        date_format="%Y%m",
+    ).squeeze()
+    tc.index = tc.index + MonthEnd(0)
+    raw = pd.read_excel(
+        xls,
+        sheet_name="Total Sist. Banc.",
+        skiprows=10,
+        usecols="A:P,T:AB,AD:AL",
+        index_col=0,
+    )
     raw.index = pd.to_datetime(raw.index, errors="coerce")
     output = raw.loc[~pd.isna(raw.index)].dropna(how="all", axis=1)
     output.index = output.index + MonthEnd(0)
@@ -90,6 +95,7 @@ def credit() -> pd.DataFrame:
         "Créditos: Resid. ME total - vencidos",
         "Créditos: Resid. ME total- total",
     ]
+    output.iloc[:, :24] = output.iloc[:, :24].div(tc, axis=0)
 
     output = output.apply(pd.to_numeric, errors="coerce")
     output.rename_axis(None, inplace=True)
@@ -122,24 +128,29 @@ def deposits() -> pd.DataFrame:
     """
     name = "deposits"
     try:
-        raw = pd.read_excel(
-            urls[name]["dl"]["main"],
-            sheet_name="Total Sist. Banc.",
-            skiprows=8,
-            usecols="A:S",
-            index_col=0,
-        )
+        xls = pd.ExcelFile(urls[name]["dl"]["main"])
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
             r = requests.get(urls[name]["dl"]["main"], verify=certs_path)
-            raw = pd.read_excel(
-                r.content,
-                sheet_name="Total Sist. Banc.",
-                skiprows=8,
-                usecols="A:S",
-                index_col=0,
-            )
+            xls = pd.ExcelFile(r.content)
+    tc = pd.read_excel(
+        xls,
+        sheet_name="TC",
+        skiprows=1,
+        usecols="A:B",
+        index_col=0,
+        parse_dates=True,
+        date_format="%Y%m",
+    ).squeeze()
+    tc.index = tc.index + MonthEnd(0)
+    raw = pd.read_excel(
+        xls,
+        sheet_name="Total Sist. Banc.",
+        skiprows=8,
+        usecols="A:S",
+        index_col=0,
+    )
     raw.index = pd.to_datetime(raw.index, errors="coerce")
     output = raw.loc[~pd.isna(raw.index)].dropna(how="all", axis=1)
     output.index = output.index + MonthEnd(0)
@@ -162,7 +173,7 @@ def deposits() -> pd.DataFrame:
         "Depósitos: S. privado - residente",
         "Depósitos: S. privado - no residente",
     ]
-
+    output.iloc[:, :15] = output.iloc[:, :15].div(tc, axis=0)
     output = output.apply(pd.to_numeric, errors="coerce")
     output.rename_axis(None, inplace=True)
     metadata._set(

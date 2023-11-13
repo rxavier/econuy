@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import create_engine, inspect, text
 
 from econuy.core import Pipeline
 from econuy.session import Session
@@ -13,7 +13,7 @@ from econuy.utils import sqlutil, datasets, ops
 
 CUR_DIR = path.abspath(path.dirname(__file__))
 TEST_DIR = path.join(CUR_DIR, "test-data")
-TEST_CON = create_engine("sqlite://")
+TEST_CON = create_engine("sqlite://").connect()
 sqlutil.insert_csvs(con=TEST_CON, directory=TEST_DIR)
 
 
@@ -32,7 +32,8 @@ def remove_temporary_files_folders():
 
     for table in inspect(TEST_CON).get_table_names():
         if table not in avoid:
-            TEST_CON.engine.execute(f'DROP TABLE IF EXISTS "{table}"')
+            sql_statement = text(f'DROP TABLE IF EXISTS "{table}"')
+            TEST_CON.execute(sql_statement)
 
     return
 

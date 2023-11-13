@@ -173,7 +173,8 @@ def test_rebase(freq, start_date, end_date, base):
     s.rebase(start_date=start_date, end_date=end_date, base=base, select=[0])
     compare = s._datasets["dummy"]
     if end_date is None:
-        start = df.iloc[df.index.get_loc(start_date, method="nearest")].name
+        start_date = pd.to_datetime(start_date)
+        start = df.index.to_series().sub(start_date).abs().idxmin()
         df = df / df.loc[start] * base
     else:
         df = df / df.loc[start_date:end_date].mean() * base
@@ -251,7 +252,9 @@ def test_convert_real(freq, periods, ts_type, start_date, end_date):
     if start_date is None:
         df = df.div(cpi, axis=0)
     elif end_date is None:
-        month = df.iloc[df.index.get_loc(start_date, method="nearest")].name
+        start_date = pd.to_datetime(start_date)
+        month = df.index.to_series().sub(start_date).abs().idxmin()
+        # month = df.iloc[df.index.get_loc(start_date, method="nearest")].name
         df = df.div(cpi, axis=0) * cpi.loc[month]
     else:
         df = df.div(cpi, axis=0) * cpi[start_date:end_date].mean()
@@ -308,5 +311,5 @@ def test_convert_gdp(freq, ts_type, periods, cumperiods, currency):
     df = df.div(gdp, axis=0).multiply(100)
     compare.index, compare.columns = df.index, df.columns
     div = df / compare
-    final = div[((div > 1.01) | (div < 0.99)).any(1)]
+    final = div[((div > 1.01) | (div < 0.99)).any(axis=1)]
     assert len(final) == 0
