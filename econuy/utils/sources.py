@@ -676,6 +676,20 @@ urls = {
             "provider": ["BCU"],
         },
     },
+    "monthly_gdp": {
+        "dl": {
+            "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Documents/Anexo-IMAE.xlsx",
+        },
+        "source": {
+            "direct": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Documents/Anexo-IMAE.xlsx",
+            ],
+            "indirect": [
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Informe-del-Indicador-Mensual-de-Actividad-Economica-(IMAE).aspx",
+            ],
+            "provider": ["BCU"],
+        },
+    },
     "reserves": {
         "dl": {
             "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/MonedayCredito/Activos-de-Reserva/reservas.xls"
