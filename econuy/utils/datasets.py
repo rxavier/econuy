@@ -35,6 +35,11 @@ def original():
             "description_en": "GDP: real index, seasonally adjusted (Mar-16, Q)",
             "function": economic_activity.gdp_con_idx_sa,
         },
+        "monthly_gdp": {
+            "description": "Indicador mensual de actividad económica: índice 2016=100, desestacionalizado y tendencia-ciclo (ene-16, M)",
+            "description_en": "Monthly indicator of economic activity: index 2016=100, seasonally adjusted and trend-cycle (Jan-16, M)",
+            "function": economic_activity.monthly_gdp,
+        },
         "industrial_production": {
             "description": "Producción industrial: por división, agrupaciones y clases (ene-02, M)",
             "description_en": "Industrial production: by division, groups and classes (Jan-02, M)",

@@ -20,6 +20,50 @@ from econuy.utils import metadata, get_project_root
 from econuy.utils.sources import urls
 
 
+@retry(
+    retry_on_exceptions=(HTTPError, URLError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=60,
+)
+def monthly_gdp() -> pd.DataFrame:
+    """Get the monthly indicator for economic activity.
+
+    Returns
+    -------
+    Monthly GDP : pd.DataFrame
+
+    """
+    name = "monthly_gdp"
+    try:
+        output = pd.read_excel(urls[name]["dl"]["main"], usecols="B:D")
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(urls[name]["dl"]["main"], verify=certs_path)
+            output = pd.read_excel(r.content, usecols="B:D")
+    output.index = pd.date_range(start="2016-01-31", freq="M", periods=len(output))
+    output.columns = [
+        "Indicador mensual de actividad económica",
+        "Indicador mensual de actividad económica (desestacionalizado)",
+        "Indicador mensual de actividad económica (tendencia-ciclo)",
+    ]
+    output.rename_axis(None, inplace=True)
+
+    metadata._set(
+        output,
+        area="Actividad económica",
+        currency="UYU",
+        inf_adj="Const. 2016",
+        unit="2016=100",
+        seas_adj="NSA",
+        ts_type="Flujo",
+        cumperiods=1,
+    )
+    metadata._modify_multiindex(output, levels=[6], new_arrays=[["NSA", "SA", "Tendencia"]])
+
+    return output
+
+
 def _natacc_retriever(
     url: str,
     nrows: int,
@@ -1030,7 +1074,7 @@ def milk() -> pd.DataFrame:
         .dropna()
         .rename_axis(None)
     )
-    output = raw.set_index(pd.date_range(start="2002-01-31", freq="M", periods=len(raw)))
+    output = raw.set_index(pd.date_range(start="2002-01-31", freq="M", periods=len(raw))) * 1000
     output = output.apply(pd.to_numeric)
     output.columns = ["Remisión de leche a planta"]
 

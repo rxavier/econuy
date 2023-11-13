@@ -2,7 +2,6 @@ import datetime as dt
 import tempfile
 import zipfile
 
-# from random import randint
 from io import BytesIO
 from os import path
 from urllib.error import HTTPError, URLError

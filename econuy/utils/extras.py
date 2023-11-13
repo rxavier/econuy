@@ -279,7 +279,7 @@ trade_metadata = {
         ],
     },
     "m_sect_vol": {
-        "start_col": 2,
+        "start_col": 1,
         "currency": "-",
         "unit": "2005=100",
         "colnames": {

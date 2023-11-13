@@ -36,5 +36,5 @@ def test_retrieval(dataset):
     metadata._set(test)
     compare = p.dataset.reindex(test.index)
     div = test / compare
-    final = div[((div > 1.05) | (div < 0.95)).any(1)]
+    final = div[((div > 1.05) | (div < 0.95)).any(axis=1)]
     assert len(final) == 0
