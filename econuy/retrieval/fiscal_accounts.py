@@ -1,5 +1,6 @@
 import datetime as dt
 import re
+from pathlib import Path
 from typing import Dict, Optional
 from urllib.error import HTTPError, URLError
 
@@ -12,7 +13,7 @@ from requests.exceptions import ConnectionError
 
 from econuy import transform
 from econuy.core import Pipeline
-from econuy.utils import metadata
+from econuy.utils import metadata, get_project_root
 from econuy.utils.sources import urls
 from econuy.utils.extras import fiscal_sheets, taxes_columns
 
@@ -227,8 +228,13 @@ def _public_debt_retriever() -> Dict[str, pd.DataFrame]:
         "Residencia: no residentes",
         "Residencia: residentes",
     ]
-
-    xls = pd.ExcelFile(urls["public_debt_gps"]["dl"]["main"])
+    try:
+        xls = pd.ExcelFile(urls["public_debt_gps"]["dl"]["main"])
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(urls["public_debt_gps"]["dl"]["main"], verify=certs_path)
+            xls = pd.ExcelFile(r.content)
     gps_raw = pd.read_excel(
         xls,
         sheet_name="SPG2",

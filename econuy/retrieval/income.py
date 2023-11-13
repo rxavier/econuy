@@ -1,6 +1,10 @@
+import tempfile
+from pathlib import Path
 from urllib.error import URLError, HTTPError
 
 import pandas as pd
+import patoolib
+import requests
 from opnieuw import retry
 
 from econuy.utils import metadata
@@ -22,11 +26,19 @@ def income_household() -> pd.DataFrame:
     """
     name = "income_household"
 
-    raw = (
-        pd.read_excel(urls[name]["dl"]["main"], skiprows=5)
-        .dropna(thresh=5)
-        .loc[lambda x: x["Mes, Trimestre y Año"].str.contains("/[0-9]{2}", regex=True)]
-    )
+    temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
+    with open(temp_rar, "wb") as f:
+        r = requests.get(urls[name]["dl"]["main"])
+        f.write(r.content)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
+        excel_path = Path(temp_dir) / "ECHING10.xlsx"
+        raw = (
+            pd.read_excel(excel_path, skiprows=5)
+            .dropna(thresh=5)
+            .loc[lambda x: x["Mes, Trimestre y Año"].str.contains("/[0-9]{2}", regex=True)]
+        )
+
     output = raw.set_index(pd.date_range(start="2006-03-31", freq="Q-DEC", periods=len(raw))).iloc[
         :, 1:
     ]
@@ -71,11 +83,19 @@ def income_capita() -> pd.DataFrame:
     """
     name = "income_capita"
 
-    raw = (
-        pd.read_excel(urls[name]["dl"]["main"], skiprows=5)
-        .dropna(thresh=5)
-        .loc[lambda x: x["Mes, Trimestre y Año "].str.contains("/[0-9]{2}", regex=True)]
-    )
+    temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
+    with open(temp_rar, "wb") as f:
+        r = requests.get(urls[name]["dl"]["main"])
+        f.write(r.content)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
+        excel_path = Path(temp_dir) / "ECHING14.xlsx"
+        raw = (
+            pd.read_excel(excel_path, skiprows=5)
+            .dropna(thresh=5)
+            .loc[lambda x: x["Mes, Trimestre y Año "].str.contains("/[0-9]{2}", regex=True)]
+        )
+
     output = raw.set_index(pd.date_range(start="2006-03-31", freq="Q-DEC", periods=len(raw))).iloc[
         :, 1:
     ]

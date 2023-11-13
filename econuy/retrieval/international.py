@@ -16,8 +16,6 @@ from econuy.transform import decompose, rebase
 from econuy.utils import metadata
 from econuy.utils.sources import urls
 
-# from econuy.utils.extras import investing_headers
-
 
 FRED_API_KEY = "f5700348a7dd3a997c88af6d35608a12"
 
@@ -175,13 +173,20 @@ def policy_rates() -> pd.DataFrame:
     with zipfile.ZipFile(BytesIO(r.content), "r") as f:
         f.extractall(path=temp_dir.name)
         path_temp = path.join(temp_dir.name, "WS_CBPOL_csv_row.csv")
-        raw = pd.read_csv(path_temp, usecols=[0, 18, 28, 65, 66], index_col=0, skiprows=8).dropna(
-            how="all"
-        )
-    output = raw.apply(pd.to_numeric, errors="coerce").interpolate(
-        method="linear", limit_area="inside"
+        raw = pd.read_csv(path_temp, index_col=0)
+    output = raw.loc[:, lambda x: x.columns.str.contains("D:Daily")]
+    output = (
+        output.loc[
+            :, output.iloc[0].isin(["JP:Japan", "CN:China", "US:United States", "XM:Euro area"])
+        ]
+        .iloc[8:]
+        .dropna(how="all")
     )
     output.columns = ["Japón", "China", "Estados Unidos", "Eurozona"]
+    output = output.apply(pd.to_numeric, errors="coerce").interpolate(
+        method="linear", limit_area="inside"
+    )
+
     output = output[["Estados Unidos", "Eurozona", "Japón", "China"]]
     output.index = pd.to_datetime(output.index)
     output.rename_axis(None, inplace=True)

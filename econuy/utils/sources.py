@@ -43,7 +43,7 @@ urls = {
     },
     "credit": {
         "dl": {
-            "main": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Creditos.xlsx "
+            "main": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Creditos.xlsx"
         },
         "source": {
             "direct": [
@@ -151,11 +151,11 @@ urls = {
     },
     "nxr_monthly": {
         "dl": {
-            "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/Cotizaci%C3%B3n%20de%20monedas/D%C3%B3lar.xls"
+            "historical": "https://github.com/rxavier/econuy-extras/raw/main/econuy_extras/manual_data/nxr_monthly_ine.xls"
         },
         "source": {
             "direct": [
-                "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/Cotizaci%C3%B3n%20de%20monedas/D%C3%B3lar.xls"
+                "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/Cotizaci%C3%B3n%20de%20monedas/Cotizaci%C3%B3n%20monedas.xlsx"
             ],
             "indirect": [
                 "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/cotizacion-monedas"
@@ -165,14 +165,16 @@ urls = {
     },
     "nxr_daily": {
         "dl": {
-            "main": "https://www.bcu.gub.uy/_layouts/15/BCU.Cotizaciones/handler/FileHandler.ashx?op=downloadcotizacionesexcel&KeyValuePairs={%22KeyValuePairs%22:{%22Monedas%22:[{%22Val%22:%222224%22,%22Text%22:%22DLS.%20USA%20CABLE%22}],"
+            "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/Cotizaci%C3%B3n%20de%20monedas/Cotizaci%C3%B3n%20monedas.xlsx",
         },
         "source": {
-            "direct": [],
-            "indirect": [
-                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Cotizaciones.aspx"
+            "direct": [
+                "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/Cotizaci%C3%B3n%20de%20monedas/Cotizaci%C3%B3n%20monedas.xlsx"
             ],
-            "provider": ["BCU"],
+            "indirect": [
+                "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/cotizacion-monedas"
+            ],
+            "provider": ["INE"],
         },
     },
     "commodity_prices": {
@@ -181,8 +183,6 @@ urls = {
             "pulp": f"https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600341?ordre="
             f"antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=12&anneeFin="
             f"{dt.datetime.now().year}",
-            "soybean": "https://data.nasdaq.com/api/v3/datasets/ODA/PSOYB_USD.csv?api_key=3TPxACcrxy9WsE871Lqe",
-            "wheat": "https://data.nasdaq.com/api/v3/datasets/ODA/PWHEAMT_USD.csv?api_key=3TPxACcrxy9WsE871Lqe",
             "milk1": "https://www.inale.org/estadisticas/",
             "milk2": "https://agriculture.ec.europa.eu/document/download/62d01488-33a0-4601-a841-ca48fa11d999_en?filename=eu-milk-historical-price-series_en_0.xlsx",
             "imf": "https://www.imf.org/en/Research/commodity-prices",
@@ -194,14 +194,12 @@ urls = {
                 f"transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=12&anneeFin="
                 f"{dt.datetime.now().year}",
                 "https://data.nasdaq.com/api/v3/datasets/ODA/PWHEAMT_USD.csv?api_key=3TPxACcrxy9WsE871Lqe",
-                "https://data.nasdaq.com/api/v3/datasets/ODA/PWHEAMT_USD.csv?api_key=3TPxACcrxy9WsE871Lqe",
                 "https://agriculture.ec.europa.eu/document/download/62d01488-33a0-4601-a841-ca48fa11d999_en?filename=eu-milk-historical-price-series_en_0.xlsx",
             ],
             "indirect": [
                 "https://www.inac.uy/innovaportal/v/5541/10/innova.front/precios",
                 "https://www.insee.fr/fr/statistiques/serie/010600339",
-                "https://www.quandl.com/data/CHRIS/CME_S1-Soybean-Futures-Continuous-Contract-1-S1-Front-Month",
-                "https://www.quandl.com/data/CHRIS/CME_W1-Wheat-Futures-Continuous-Contract-1-W1-Front-Month",
+                "https://www.imf.org/en/Research/commodity-prices",
                 "https://www.inale.org/estadisticas/",
                 "https://agriculture.ec.europa.eu/data-and-analysis/markets/overviews/market-observatories/milk_es",
                 "https://www.imf.org/en/Research/commodity-prices",
@@ -490,11 +488,11 @@ urls = {
     },
     "income_household": {
         "dl": {
-            "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/ECHING10.xls",
+            "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/Ingresos%20de%20las%20personas%20y%20los%20hogares.rar",
         },
         "source": {
             "direct": [
-                "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/ECHING10.xls"
+                "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/Ingresos%20de%20las%20personas%20y%20los%20hogares.rar"
             ],
             "indirect": [
                 "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ech-ingresos-personas-hogares"
@@ -504,11 +502,11 @@ urls = {
     },
     "income_capita": {
         "dl": {
-            "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/ECHING14.xls",
+            "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/Ingresos%20de%20las%20personas%20y%20los%20hogares.rar",
         },
         "source": {
             "direct": [
-                "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/ECHING14.xls"
+                "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/Ingresos%20de%20las%20personas%20y%20los%20hogares.rar"
             ],
             "indirect": [
                 "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ech-ingresos-personas-hogares"
@@ -1245,16 +1243,16 @@ urls = {
     },
     "regional_stocks": {
         "dl": {
-            "arg": "https://www.investing.com/instruments/HistoricalDataAjax",
+            "arg": f"https://query1.finance.yahoo.com/v7/finance/download/%5EMERV?period1=844732800&period2={dt.datetime.now().timestamp().__round__()}&interval=1d&events=history&includeAdjustedClose=true",
             "bra": f"https://query1.finance.yahoo.com/v7/finance/download/%5EBVSP?period1=735868800&period2={dt.datetime.now().timestamp().__round__()}&interval=1d&events=history&includeAdjustedClose=true",
         },
         "source": {
             "direct": [],
             "indirect": [
-                "https://www.investing.com/indices/merv-historical-data",
-                "https://finance.yahoo.com/quote/%5EBVSP/history?period1=735868800&period2=1607212800&interval=1d&filter=history&frequency=1d&includeAdjustedClose=true",
+                "https://finance.yahoo.com/quote/%5EMERV/history?p=%5EMERV",
+                "https://finance.yahoo.com/quote/%5EBVSP/history?p=%5EBVSP",
             ],
-            "provider": ["Investing.com", "Yahoo Finance"],
+            "provider": ["Yahoo Finance"],
         },
     },
     "regional_rxr": {

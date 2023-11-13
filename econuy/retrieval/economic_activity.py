@@ -1,6 +1,7 @@
 import datetime as dt
 import re
 import tempfile
+from pathlib import Path
 from os import listdir, path
 from typing import List, Optional
 from urllib.error import HTTPError, URLError
@@ -15,7 +16,7 @@ from pandas.tseries.offsets import MonthEnd
 
 from econuy import transform
 from econuy.core import Pipeline
-from econuy.utils import metadata
+from econuy.utils import metadata, get_project_root
 from econuy.utils.sources import urls
 
 
@@ -29,14 +30,14 @@ def _natacc_retriever(
     colnames: List[str],
 ) -> pd.DataFrame:
     """Helper function. See any of the `natacc_...()` functions."""
-
-    raw = (
-        pd.read_excel(url, skiprows=skiprows, nrows=nrows, index_col=1)
-        .iloc[:, 1:]
-        .dropna(how="all", axis=1)
-        .dropna(how="all", axis=0)
-        .T
-    )
+    try:
+        raw = pd.read_excel(url, skiprows=skiprows, nrows=nrows, index_col=1)
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(url, verify=certs_path)
+            raw = pd.read_excel(r.content, skiprows=skiprows, nrows=nrows, index_col=1)
+    raw = raw.iloc[:, 1:].dropna(how="all", axis=1).dropna(how="all", axis=0).T
     raw.index = raw.index.str.replace("*", "", regex=False)
     raw.index = raw.index.str.replace(r"\bI \b", "3-", regex=True)
     raw.index = raw.index.str.replace(r"\bII \b", "6-", regex=True)
@@ -342,17 +343,31 @@ def natacc_ind_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
             "Producto bruto interno",
         ]
     ]
-
-    data_83 = (
-        pd.read_excel(
-            urls["natacc_ind_con_nsa_long"]["dl"]["1983"],
-            skiprows=10,
-            nrows=8,
-            index_col=1,
+    try:
+        data_83 = (
+            pd.read_excel(
+                urls["natacc_ind_con_nsa_long"]["dl"]["1983"],
+                skiprows=10,
+                nrows=8,
+                index_col=1,
+            )
+            .iloc[:, 1:]
+            .T
         )
-        .iloc[:, 1:]
-        .T
-    )
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(urls["natacc_ind_con_nsa_long"]["dl"]["1983"], verify=certs_path)
+            data_83 = (
+                pd.read_excel(
+                    r.content,
+                    skiprows=10,
+                    nrows=8,
+                    index_col=1,
+                )
+                .iloc[:, 1:]
+                .T
+            )
     data_83.index = pd.date_range(start="1988-03-31", freq="Q-DEC", periods=len(data_83))
     data_83["Impuestos menos subvenciones"] = np.nan
     data_83 = data_83[
@@ -450,17 +465,31 @@ def natacc_gas_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
             aux.loc[quarter, :] = (
                 aux.loc[next_quarter, :] * data_05.loc[quarter, :] / data_05.loc[next_quarter, :]
             )
-
-    data_83 = (
-        pd.read_excel(
-            urls["natacc_gas_con_nsa_long"]["dl"]["1983"],
-            skiprows=10,
-            nrows=11,
-            index_col=1,
+    try:
+        data_83 = (
+            pd.read_excel(
+                urls["natacc_gas_con_nsa_long"]["dl"]["1983"],
+                skiprows=10,
+                nrows=11,
+                index_col=1,
+            )
+            .iloc[:, 1:]
+            .T
         )
-        .iloc[:, 1:]
-        .T
-    )
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(urls["natacc_gas_con_nsa_long"]["dl"]["1983"], verify=certs_path)
+            data_83 = (
+                pd.read_excel(
+                    r.content,
+                    skiprows=10,
+                    nrows=11,
+                    index_col=1,
+                )
+                .iloc[:, 1:]
+                .T
+            )
     data_83.index = pd.date_range(start="1988-03-31", freq="Q-DEC", periods=len(data_83))
     data_83.drop(
         ["Sector público", "Sector privado", "Variación de existencias"], axis=1, inplace=True
@@ -546,17 +575,31 @@ def gdp_con_idx_sa_long(pipeline: Pipeline = None) -> pd.DataFrame:
             aux.loc[quarter, :] = (
                 aux.loc[next_quarter, :] * data_05.loc[quarter, :] / data_05.loc[next_quarter, :]
             )
-
-    data_83 = (
-        pd.read_excel(
-            urls["gdp_con_idx_sa_long"]["dl"]["1983"],
-            skiprows=10,
-            nrows=8,
-            index_col=1,
+    try:
+        data_83 = (
+            pd.read_excel(
+                urls["gdp_con_idx_sa_long"]["dl"]["1983"],
+                skiprows=10,
+                nrows=8,
+                index_col=1,
+            )
+            .iloc[:, 1:]
+            .T
         )
-        .iloc[:, 1:]
-        .T
-    )
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(urls["gdp_con_idx_sa_long"]["dl"]["1983"], verify=certs_path)
+            data_83 = (
+                pd.read_excel(
+                    r.content,
+                    skiprows=10,
+                    nrows=8,
+                    index_col=1,
+                )
+                .iloc[:, 1:]
+                .T
+            )
     data_83.index = pd.date_range(start="1988-03-31", freq="Q-DEC", periods=len(data_83))
     data_83 = data_83[["PRODUCTO INTERNO BRUTO"]]
     data_83.columns = aux.columns
@@ -624,11 +667,28 @@ def gdp_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
 
     aux = pd.concat([data_97, data_16], axis=0)
 
-    data_83 = (
-        pd.read_excel(urls["gdp_con_nsa_long"]["dl"]["1983"], skiprows=10, nrows=8, index_col=1)
-        .iloc[:, 1:]
-        .T
-    )
+    try:
+        data_83 = (
+            pd.read_excel(
+                urls["gdp_con_nsa_long"]["dl"]["1983"], skiprows=10, nrows=8, index_col=1
+            )
+            .iloc[:, 1:]
+            .T
+        )
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(urls["gdp_con_nsa_long"]["dl"]["1983"], verify=certs_path)
+            data_83 = (
+                pd.read_excel(
+                    r.content,
+                    skiprows=10,
+                    nrows=8,
+                    index_col=1,
+                )
+                .iloc[:, 1:]
+                .T
+            )
     data_83.index = pd.date_range(start="1988-03-31", freq="Q-DEC", periods=len(data_83))
     data_83 = data_83[["PRODUCTO INTERNO BRUTO"]]
     data_83.columns = ["Producto bruto interno"]

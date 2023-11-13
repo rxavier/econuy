@@ -10,6 +10,7 @@ from os import PathLike, path
 from typing import Union, Optional
 from urllib import error
 from urllib.error import HTTPError, URLError
+from requests.exceptions import SSLError
 
 import numpy as np
 import pandas as pd
@@ -31,7 +32,13 @@ def _trade_retriever(name: str) -> pd.DataFrame:
     """Helper function. See any of the `trade_...()` functions."""
     short_name = name[6:]
     meta = trade_metadata[short_name]
-    xls = pd.ExcelFile(urls[name]["dl"]["main"])
+    try:
+        xls = pd.ExcelFile(urls[name]["dl"]["main"])
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(urls[name]["dl"]["main"], verify=certs_path)
+            xls = pd.ExcelFile(r.content)
     sheets = []
     start_col = meta["start_col"]
     for sheet in xls.sheet_names:
@@ -482,14 +489,14 @@ def commodity_prices() -> pd.DataFrame:
     )
     beef = proc_beef.resample("M").mean()
 
-    soy_wheat = []
-    for link in [url["soybean"], url["wheat"]]:
-        proc = pd.read_csv(link, index_col=0)
-        proc.index = pd.to_datetime(proc.index, format="%Y-%m-%d")
-        proc.sort_index(inplace=True)
-        soy_wheat.append(proc.resample("M").mean())
-    soybean = soy_wheat[0]
-    wheat = soy_wheat[1]
+    # soy_wheat = []
+    # for link in [url["soybean"], url["wheat"]]:
+    #    proc = pd.read_csv(link, index_col=0)
+    #    proc.index = pd.to_datetime(proc.index, format="%Y-%m-%d")
+    #    proc.sort_index(inplace=True)
+    #    soy_wheat.append(proc.resample("M").mean())
+    # soybean = soy_wheat[0]
+    # wheat = soy_wheat[1]
 
     milk_r = requests.get(url["milk1"])
     milk_soup = BeautifulSoup(milk_r.content, "html.parser")
@@ -561,6 +568,8 @@ def commodity_prices() -> pd.DataFrame:
     wool = wool.mean(axis=1).to_frame()
     barley = proc_imf[proc_imf.columns[proc_imf.columns.str.startswith("Barley")]]
     gold = proc_imf[proc_imf.columns[proc_imf.columns.str.startswith("Gold")]]
+    soybean = proc_imf[proc_imf.columns[proc_imf.columns.str.startswith("Soybeans, U.S.")]]
+    wheat = proc_imf[proc_imf.columns[proc_imf.columns.str.startswith("Wheat")]]
 
     complete = pd.concat(
         [beef, pulp, soybean, milk, rice, wood, wool, barley, gold, wheat], axis=1
@@ -675,7 +684,15 @@ def rxr_official() -> pd.DataFrame:
         Available: global, regional, extraregional, Argentina, Brazil, US.
 
     """
-    raw = pd.read_excel(urls["rxr_official"]["dl"]["main"], skiprows=8, usecols="B:N", index_col=0)
+    try:
+        raw = pd.read_excel(
+            urls["rxr_official"]["dl"]["main"], skiprows=8, usecols="B:N", index_col=0
+        )
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(urls["rxr_official"]["dl"]["main"], verify=certs_path)
+            raw = pd.read_excel(r.content, skiprows=8, usecols="B:N", index_col=0)
     proc = raw.dropna(how="any")
     proc.columns = [
         "Global",
@@ -781,11 +798,23 @@ def bop() -> pd.DataFrame:
     Quarterly balance of payments : pd.DataFrame
 
     """
-    raw = (
-        pd.read_excel(urls["bop"]["dl"]["main"], skiprows=7, index_col=0, sheet_name="Cuadro Nº 1")
-        .dropna(how="all")
-        .T
-    )
+    try:
+        raw = (
+            pd.read_excel(
+                urls["bop"]["dl"]["main"], skiprows=7, index_col=0, sheet_name="Cuadro Nº 1"
+            )
+            .dropna(how="all")
+            .T
+        )
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(urls["bop"]["dl"]["main"], verify=certs_path)
+            raw = (
+                pd.read_excel(r.content, skiprows=7, index_col=0, sheet_name="Cuadro Nº 1")
+                .dropna(how="all")
+                .T
+            )
     output = raw.iloc[:, 2:]
     output.index = pd.date_range(start="2012-03-31", freq="Q", periods=len(output))
     pattern = r"\(1\)|\(2\)|\(3\)|\(4\)|\(5\)"
@@ -908,9 +937,15 @@ def reserves() -> pd.DataFrame:
     Daily international reserves : pd.DataFrame
 
     """
-    raw = pd.read_excel(
-        urls["reserves"]["dl"]["main"], usecols="D:J", index_col=0, skiprows=5, na_values="n/d"
-    )
+    try:
+        raw = pd.read_excel(
+            urls["reserves"]["dl"]["main"], usecols="D:J", index_col=0, skiprows=5, na_values="n/d"
+        )
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(urls["reserves"]["dl"]["main"], verify=certs_path)
+            raw = pd.read_excel(r.content, usecols="D:J", index_col=0, skiprows=5, na_values="n/d")
     proc = raw.dropna(thresh=1)
     reserves = proc[proc.index.notnull()]
     reserves.columns = [
@@ -979,12 +1014,23 @@ def reserves_changes(
         )
     )
     mapping.update({"Sep": "09"})
+    try:
+        r = requests.get(
+            "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Informe-Diario-Pasivos-Monetarios.aspx"
+        )
+    except (URLError, SSLError) as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(
+                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Informe-Diario-Pasivos-Monetarios.aspx",
+                verify=certs_path,
+            )
     latest = re.findall(
         f"infd_[A-z]+{2023}.xls",
-        requests.get(
-            "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Informe-Diario-Pasivos-Monetarios.aspx"
-        ).text,
-    )[0].split("_")[1]
+        r.text,
+    )[0].split(
+        "_"
+    )[1]
 
     months = []
     for year in range(first_year, current_year + 1):
@@ -992,16 +1038,22 @@ def reserves_changes(
             filename = f"dic{year}.xls"
         else:
             filename = latest
-        data = (
-            pd.read_excel(
+        try:
+            data = pd.read_excel(
                 f"{urls[name]['dl']['main']}{filename}",
                 skiprows=2,
                 sheet_name="ACTIVOS DE RESERVA",
             )
-            .dropna(how="all")
-            .dropna(how="all", axis=1)
-            .set_index("CONCEPTOS")
-        )
+        except URLError as err:
+            if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+                certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+                r = requests.get(f"{urls[name]['dl']['main']}{filename}", verify=certs_path)
+                data = pd.read_excel(
+                    r.content,
+                    skiprows=2,
+                    sheet_name="ACTIVOS DE RESERVA",
+                )
+        data = data.dropna(how="all").dropna(how="all", axis=1).set_index("CONCEPTOS")
         if data.columns[0] == "Mes":
             data.columns = data.iloc[0, :]
         data = (

@@ -1,9 +1,6 @@
-import datetime as dt
 import warnings
 from urllib.error import URLError, HTTPError
-from io import BytesIO
 from pathlib import Path
-from zipfile import BadZipFile
 from typing import Optional
 
 import numpy as np
@@ -13,14 +10,10 @@ from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from scipy.stats import stats
 
-# from scipy.stats.mstats_basic import winsorize
 
-# from econuy import transform
 from econuy.core import Pipeline
 from econuy.utils import metadata, get_project_root
 from econuy.utils.sources import urls
-
-# from econuy.utils.extras import cpi_details
 
 
 @retry(
@@ -198,11 +191,14 @@ def inflation_expectations() -> pd.DataFrame:
     """
     name = "inflation_expectations"
 
-    raw = (
-        pd.read_excel(urls[name]["dl"]["main"], skiprows=9)
-        .dropna(how="all", axis=1)
-        .dropna(thresh=4)
-    )
+    try:
+        raw = pd.read_excel(urls[name]["dl"]["main"], skiprows=9)
+    except URLError as err:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            r = requests.get(urls[name]["dl"]["main"], verify=certs_path)
+            raw = pd.read_excel(r.content, skiprows=9)
+    raw = raw.dropna(how="all", axis=1).dropna(thresh=4)
     mask = raw.iloc[-12:].isna().all()
     output = raw.loc[:, ~mask]
 
@@ -369,8 +365,13 @@ def ppi() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=30,
 )
-def nxr_monthly() -> pd.DataFrame:
+def nxr_monthly(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """Get monthly nominal exchange rate data.
+
+    Parameters
+    ----------
+    pipeline : econuy.core.Pipeline or None, default None
+        An instance of the econuy Pipeline class.
 
     Returns
     -------
@@ -380,23 +381,31 @@ def nxr_monthly() -> pd.DataFrame:
     """
     name = "nxr_monthly"
 
-    try:
-        nxr_raw = pd.read_excel(urls[name]["dl"]["main"], skiprows=4, index_col=0, usecols="A,C,F")
-    except URLError as err:
-        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certificate = Path(get_project_root(), "utils", "files", "ine_certs.pem")
-            r = requests.get(urls[name]["dl"]["main"], verify=certificate)
-            nxr_raw = pd.read_excel(BytesIO(r.content), skiprows=4, index_col=0, usecols="A,C,F")
-        else:
-            raise err
-    nxr = nxr_raw.dropna(how="any", axis=0)
-    nxr.columns = ["Tipo de cambio venta, fin de período", "Tipo de cambio venta, promedio"]
-    nxr.index = pd.to_datetime(nxr.index) + MonthEnd(1)
-    nxr = nxr.apply(pd.to_numeric, errors="coerce")
-    nxr.rename_axis(None, inplace=True)
+    if pipeline is None:
+        pipeline = Pipeline()
+
+    pipeline.get("nxr_daily")
+    nxr_daily = pipeline.dataset
+    output = pd.DataFrame(
+        {
+            "Tipo de cambio venta, fin de período": nxr_daily.iloc[:, 0].resample("M").last(),
+            "Tipo de cambio venta, promedio": nxr_daily.iloc[:, 0].resample("M").mean(),
+        }
+    )
+
+    historical = pd.read_excel(
+        urls[name]["dl"]["historical"], skiprows=4, index_col=0, usecols="A,C,F"
+    ).dropna(how="any", axis=0)
+    historical.columns = ["Tipo de cambio venta, fin de período", "Tipo de cambio venta, promedio"]
+    historical.index = pd.to_datetime(historical.index) + MonthEnd(1)
+    historical = historical.apply(pd.to_numeric, errors="coerce")
+    historical = historical.loc[:"2001-09-30", :]
+
+    output = pd.concat([historical, output])
+    output.rename_axis(None, inplace=True)
 
     metadata._set(
-        nxr,
+        output,
         area="Precios",
         currency="UYU/USD",
         inf_adj="No",
@@ -406,7 +415,7 @@ def nxr_monthly() -> pd.DataFrame:
         cumperiods=1,
     )
 
-    return nxr
+    return output
 
 
 @retry(
@@ -414,81 +423,44 @@ def nxr_monthly() -> pd.DataFrame:
     max_calls_total=10,
     retry_window_after_first_call_in_seconds=60,
 )
-def nxr_daily(
-    pipeline: Optional[Pipeline] = None, previous_data: pd.DataFrame = pd.DataFrame()
-) -> pd.DataFrame:
+def nxr_daily() -> pd.DataFrame:
     """Get daily nominal exchange rate data.
-
-    Parameters
-    ----------
-    pipeline : econuy.core.Pipeline or None, default None
-        An instance of the econuy Pipeline class.
-    previous_data : pd.DataFrame
-        A DataFrame representing this dataset used to extract last
-        available dates.
 
     Returns
     -------
-    Monthly nominal exchange rates : pd.DataFrame
-        Sell rate, monthly average and end of period.
+    Daily nominal exchange rates : pd.DataFrame
+        Sell rate.
 
     """
-    if pipeline is not None:
-        pipeline = Pipeline()
-    if previous_data.empty:
-        start_date = dt.datetime(1999, 12, 31)
-    else:
-        start_date = previous_data.index[-1]
+    name = "nxr_daily"
 
-    today = dt.datetime.now() - dt.timedelta(days=1)
-    runs = (today - start_date).days // 360
-    data = []
-    base_url = urls["nxr_daily"]["dl"]["main"]
-    if runs > 0:
-        for i in range(1, runs + 1):
-            from_ = (start_date + dt.timedelta(days=1)).strftime("%d/%m/%Y")
-            to_ = (start_date + dt.timedelta(days=360)).strftime("%d/%m/%Y")
-            dates = f"%22FechaDesde%22:%22{from_}%22,%22FechaHasta%22:%22{to_}"
-            url = f"{base_url}{dates}%22,%22Grupo%22:%222%22}}" + "}"
-            try:
-                data.append(pd.read_excel(url))
-                start_date = dt.datetime.strptime(to_, "%d/%m/%Y")
-            except (TypeError, BadZipFile):
-                pass
-    from_ = (start_date + dt.timedelta(days=1)).strftime("%d/%m/%Y")
-    to_ = (dt.datetime.now() - dt.timedelta(days=1)).strftime("%d/%m/%Y")
-    dates = f"%22FechaDesde%22:%22{from_}%22,%22FechaHasta%22:%22{to_}"
-    url = f"{base_url}{dates}%22,%22Grupo%22:%222%22}}" + "}"
-    try:
-        data.append(pd.read_excel(url))
-    except ValueError as e:
-        if "File is not a recognized excel file" in str(e):
-            pass
-    try:
-        output = pd.concat(data, axis=0)
-        output = output.pivot(index="Fecha", columns="Moneda", values="Venta").rename_axis(None)
-        output.index = pd.to_datetime(output.index, format="%d/%m/%Y", errors="coerce")
-        output.sort_index(inplace=True)
-        output.replace(",", ".", regex=True, inplace=True)
-        output.columns = ["Tipo de cambio US$, Cable"]
-        output = output.apply(pd.to_numeric, errors="coerce")
+    raw = pd.read_excel(urls[name]["dl"]["main"], skiprows=7, usecols="A:E").dropna(thresh=2)
+    raw["Unnamed: 1"] = (
+        raw["Unnamed: 1"]
+        .str.slice(stop=3)
+        .fillna(method="ffill")
+        .replace({"Dic": "Dec", "Ene": "Jan", "Abr": "Apr", "Ago": "Aug", "Set": "Sep"})
+    )
+    raw["Unnamed: 2"] = raw["Unnamed: 2"].fillna(method="ffill").astype(int)
+    raw.index = pd.to_datetime(
+        raw[["Unnamed: 2", "Unnamed: 1", "Unnamed: 0"]].astype(str).agg("-".join, axis=1),
+        format="%Y-%b-%d",
+    )
+    output = raw.loc["2001-10-01":, ["Unnamed: 4"]].rename(
+        columns={"Unnamed: 4": "Tipo de cambio venta"}
+    )
+    output.rename_axis(None, inplace=True)
 
-        metadata._set(
-            output,
-            area="Precios",
-            currency="UYU/USD",
-            inf_adj="No",
-            unit="-",
-            seas_adj="NSA",
-            ts_type="-",
-            cumperiods=1,
-        )
-        output.columns = output.columns.set_levels(["-"], level=2)
-        output.rename_axis(None, inplace=True)
-
-    except ValueError as e:
-        if str(e) == "No objects to concatenate":
-            return previous_data
+    metadata._set(
+        output,
+        area="Precios",
+        currency="UYU/USD",
+        inf_adj="No",
+        unit="-",
+        seas_adj="NSA",
+        ts_type="-",
+        cumperiods=1,
+    )
 
     return output
 
