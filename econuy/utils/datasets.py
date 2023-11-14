@@ -401,11 +401,11 @@ def custom():
             "description_en": "Econuy commodity price index (Jan-02, M [e])",
             "function": external_sector.commodity_index,
         },
-        "rxr_custom": {
-            "description": "Tipos de cambio reales, cálculos econuy (dic-79, M [e])",
-            "description_en": "Real exchange rates, econuy calculations (Dec-79, M [e])",
-            "function": external_sector.rxr_custom,
-        },
+        # "rxr_custom": {
+        #    "description": "Tipos de cambio reales, cálculos econuy (dic-79, M [e])",
+        #    "description_en": "Real exchange rates, econuy calculations (Dec-79, M [e])",
+        #    "function": external_sector.rxr_custom,
+        # },
         "bonds": {
             "description": "Rendimiento de bonos soberanos (02-jun-03, D [e])",
             "description_en": "Sovereign bond yield (02-Jun-03, D [e])",
@@ -476,11 +476,11 @@ def custom():
             "description_en": "Stock markets in USD of Argentina and Brazil (09-Apr-02, D)",
             "function": regional.stocks,
         },
-        "regional_rxr": {
-            "description": "Tipo de cambio real vs. EE.UU. de Argentina y Brasil (dic-70, M)",
-            "description_en": "Real exchange rate vs. the United States of Argentina and Brazil (Dec-70, M)",
-            "function": regional.rxr,
-        },
+        # "regional_rxr": {
+        #    "description": "Tipo de cambio real vs. EE.UU. de Argentina y Brasil (dic-70, M)",
+        #    "description_en": "Real exchange rate vs. the United States of Argentina and Brazil (Dec-70, M)",
+        #    "function": regional.rxr,
+        # },
         "_lin_gdp": {
             "description": "PBI corriente acumulado mensual linealizado en pesos y USD con proyecciones",
             "description_en": "Monthly linear interpolation of last 4 quarters current GDP in pesos and USD with forecasts",
