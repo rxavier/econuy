@@ -227,7 +227,7 @@ def convert_gdp(df: pd.DataFrame, pipeline=None, errors: str = "raise") -> pd.Da
             error_df = df.loc[:, [not check for check in checks]]
             msg = f"{error_df.columns[0][0]} does not have the " f"appropiate metadata."
             return error_handler(df=df, errors=errors, msg=msg)
-        pipeline.get(name="_lin_gdp")
+        pipeline.get(name="_monthly_interpolated_gdp")
         gdp_data = pipeline.dataset
         all_metadata = df.columns.droplevel("Indicador")
         if all(x == all_metadata[0] for x in all_metadata):
@@ -252,7 +252,7 @@ def _convert_gdp(df: pd.DataFrame, gdp: Optional[pd.DataFrame] = None) -> pd.Dat
         from econuy.core import Pipeline
 
         pipeline = Pipeline()
-        pipeline.get("_lin_gdp")
+        pipeline.get("_monthly_interpolated_gdp")
         gdp = pipeline.dataset
 
     inferred_freq = pd.infer_freq(df.index)

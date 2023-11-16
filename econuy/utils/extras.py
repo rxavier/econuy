@@ -1,5 +1,5 @@
-trade_metadata = {
-    "x_prod_val": {
+TRADE_METADATA = {
+    "trade_exports_sector_value": {
         "start_col": 3,
         "currency": "USD",
         "unit": "Millones",
@@ -39,7 +39,7 @@ trade_metadata = {
             "ELECTRICIDAD, GAS Y AGUA": "Electricidad, gas y agua: total",
         },
     },
-    "x_prod_vol": {
+    "trade_exports_sector_volume": {
         "start_col": 3,
         "currency": "-",
         "unit": "2005=100",
@@ -73,7 +73,7 @@ trade_metadata = {
             "Vehículos automotores, remolques, semiremolques y contenedores; partes y piezas elaboradas para los mismos": "Ind. manufacturera: automotores",
         },
     },
-    "x_prod_pri": {
+    "trade_exports_sector_price": {
         "start_col": 3,
         "currency": "USD",
         "unit": "2005=100",
@@ -107,7 +107,7 @@ trade_metadata = {
             "Vehículos automotores, remolques, semiremolques y contenedores; partes y piezas elaboradas para los mismos": "Ind. manufacturera: automotores",
         },
     },
-    "x_dest_val": {
+    "trade_exports_destination_value": {
         "start_col": 1,
         "currency": "USD",
         "unit": "Millones",
@@ -157,7 +157,7 @@ trade_metadata = {
             "OTROS PAISES": "Resto del mundo: otros",
         },
     },
-    "x_dest_vol": {
+    "trade_exports_destination_volume": {
         "start_col": 1,
         "currency": "-",
         "unit": "2005=100",
@@ -188,7 +188,7 @@ trade_metadata = {
             "RESTO DEL MUNDO": "Resto del mundo: total",
         },
     },
-    "x_dest_pri": {
+    "trade_exports_destination_price": {
         "start_col": 1,
         "currency": "USD",
         "unit": "2005=100",
@@ -219,7 +219,7 @@ trade_metadata = {
             "RESTO DEL MUNDO": "Resto del mundo: total",
         },
     },
-    "m_sect_val": {
+    "trade_imports_category_value": {
         "start_col": 2,
         "currency": "USD",
         "unit": "Millones",
@@ -278,7 +278,7 @@ trade_metadata = {
             "Intermedios: otros - resto",
         ],
     },
-    "m_sect_vol": {
+    "trade_imports_category_volume": {
         "start_col": 1,
         "currency": "-",
         "unit": "2005=100",
@@ -298,7 +298,7 @@ trade_metadata = {
             "OTROS INSUMOS INTERMEDIOS": "Intermedios: otros",
         },
     },
-    "m_sect_pri": {
+    "trade_imports_category_price": {
         "start_col": 1,
         "currency": "USD",
         "unit": "2005=100",
@@ -318,7 +318,7 @@ trade_metadata = {
             "OTROS INSUMOS INTERMEDIOS": "Intermedios: otros",
         },
     },
-    "m_orig_val": {
+    "trade_imports_origin_value": {
         "start_col": 1,
         "currency": "USD",
         "unit": "Millones",
@@ -368,7 +368,7 @@ trade_metadata = {
             "OTROS PAISES": "Resto del mundo: otros",
         },
     },
-    "m_orig_vol": {
+    "trade_imports_origin_volume": {
         "start_col": 1,
         "currency": "-",
         "unit": "2005=100",
@@ -399,7 +399,7 @@ trade_metadata = {
             "China (Continental)": "Resto del mundo: China",
         },
     },
-    "m_orig_pri": {
+    "trade_imports_origin_price": {
         "start_col": 1,
         "currency": "USD",
         "unit": "2005=100",
@@ -431,8 +431,8 @@ trade_metadata = {
         },
     },
 }
-fiscal_sheets = {
-    "nfps": {
+FISCAL_SHEETS = {
+    "fiscal_balance_nonfinancial_public_sector": {
         "sheet": "Sector Público No Monetario",
         "colnames": [
             "Ingresos: SPNF",
@@ -461,7 +461,7 @@ fiscal_sheets = {
             "Resultado: Global SPNF",
         ],
     },
-    "gps": {
+    "fiscal_balance_global_public_sector": {
         "sheet": "Sector Público Consolidado",
         "colnames": [
             "Resultado: Primario SPNF",
@@ -474,7 +474,7 @@ fiscal_sheets = {
             "Resultado: Global SPC",
         ],
     },
-    "cg-bps": {
+    "fiscal_balance_central_government": {
         "sheet": "Gobierno Central - BPS",
         "colnames": [
             "Ingresos: GC-BPS",
@@ -538,7 +538,7 @@ fiscal_sheets = {
             "Resultado: Global GC-BPS",
         ],
     },
-    "pe": {
+    "fiscal_balance_soe": {
         "sheet": "Empresas Públicas Consolidado",
         "colnames": [
             "Ingresos",
@@ -558,7 +558,7 @@ fiscal_sheets = {
             "Resultado: Global",
         ],
     },
-    "ancap": {
+    "fiscal_balance_ancap": {
         "sheet": "ANCAP",
         "colnames": [
             "Ingresos",
@@ -580,7 +580,7 @@ fiscal_sheets = {
             "Resultado: Global",
         ],
     },
-    "antel": {
+    "fiscal_balance_antel": {
         "sheet": "ANTEL",
         "colnames": [
             "Ingresos",
@@ -600,7 +600,7 @@ fiscal_sheets = {
             "Resultado: Global",
         ],
     },
-    "ose": {
+    "fiscal_balance_ose": {
         "sheet": "OSE",
         "colnames": [
             "Ingresos",
@@ -620,7 +620,7 @@ fiscal_sheets = {
             "Resultado: Global",
         ],
     },
-    "ute": {
+    "fiscal_balance_ute": {
         "sheet": "UTE",
         "colnames": [
             "Ingresos",
@@ -641,7 +641,7 @@ fiscal_sheets = {
         ],
     },
 }
-reserves_cols = [
+RESERVES_COLUMNS = [
     "Saldo al inicio del período",
     "1. Compras netas de moneda extranjera",
     "1.1. Compras netas en el mercado",
@@ -871,7 +871,7 @@ taxes_columns = [
 ]
 
 
-bop_cols = [
+BOP_COLUMNS = [
     "Cuenta Corriente",
     "Bienes y Servicios",
     "Bienes",

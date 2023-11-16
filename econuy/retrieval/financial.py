@@ -16,7 +16,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 
 from econuy.utils import metadata, get_project_root
 from econuy.utils.chromedriver import _build
-from econuy.utils.sources import urls
+from econuy.utils.ops import get_download_sources, get_name_from_function
 
 
 @retry(
@@ -24,7 +24,7 @@ from econuy.utils.sources import urls
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def credit() -> pd.DataFrame:
+def bank_credit() -> pd.DataFrame:
     """Get bank credit data.
 
     Returns
@@ -32,13 +32,14 @@ def credit() -> pd.DataFrame:
     Monthly credit : pd.DataFrame
 
     """
-    name = "credit"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
     try:
-        xls = pd.ExcelFile(urls[name]["dl"]["main"])
+        xls = pd.ExcelFile(sources["main"])
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(urls[name]["dl"]["main"], verify=certs_path)
+            r = requests.get(sources["main"], verify=certs_path)
             xls = pd.ExcelFile(r.content)
     tc = pd.read_excel(
         xls,
@@ -118,7 +119,7 @@ def credit() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def deposits() -> pd.DataFrame:
+def bank_deposits() -> pd.DataFrame:
     """Get bank deposits data.
 
     Returns
@@ -126,13 +127,14 @@ def deposits() -> pd.DataFrame:
     Monthly deposits : pd.DataFrame
 
     """
-    name = "deposits"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
     try:
-        xls = pd.ExcelFile(urls[name]["dl"]["main"])
+        xls = pd.ExcelFile(sources["main"])
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(urls[name]["dl"]["main"], verify=certs_path)
+            r = requests.get(sources["main"], verify=certs_path)
             xls = pd.ExcelFile(r.content)
     tc = pd.read_excel(
         xls,
@@ -195,7 +197,7 @@ def deposits() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def interest_rates() -> pd.DataFrame:
+def bank_interest_rates() -> pd.DataFrame:
     """Get interest rates data.
 
     Returns
@@ -203,13 +205,14 @@ def interest_rates() -> pd.DataFrame:
     Monthly interest rates : pd.DataFrame
 
     """
-    name = "interest_rates"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
     try:
-        xls = pd.ExcelFile(urls[name]["dl"]["main"])
+        xls = pd.ExcelFile(sources["main"])
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(urls[name]["dl"]["main"], verify=certs_path)
+            r = requests.get(sources["main"], verify=certs_path)
             xls = pd.ExcelFile(r.content)
 
     sheets = ["Activas $", "Activas UI", "Activas U$S", "Pasivas $", "Pasivas UI", "Pasivas U$S"]
@@ -314,7 +317,7 @@ def interest_rates() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def sovereign_risk() -> pd.DataFrame:
+def sovereign_risk_index() -> pd.DataFrame:
     """Get Uruguayan Bond Index (sovereign risk spreads) data.
 
     Returns
@@ -322,19 +325,20 @@ def sovereign_risk() -> pd.DataFrame:
     Uruguayan Bond Index : pd.DataFrame
 
     """
-    name = "sovereign_risk"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
     try:
         historical = pd.read_excel(
-            urls[name]["dl"]["historical"],
+            sources["historical"],
             usecols="B:C",
             skiprows=1,
             index_col=0,
             sheet_name="Valores de Cierre Diarios",
         )
-        r_current = requests.get(urls[name]["dl"]["current"])
+        r_current = requests.get(sources["current"])
     except (SSLError, URLError, HTTPError):
-        r_historical = requests.get(urls[name]["dl"]["historical"], verify=False)
+        r_historical = requests.get(sources["historical"], verify=False)
         historical = pd.read_excel(
             BytesIO(r_historical.content),
             usecols="B:C",
@@ -342,7 +346,7 @@ def sovereign_risk() -> pd.DataFrame:
             index_col=0,
             sheet_name="Valores de Cierre Diarios",
         )
-        r_current = requests.get(urls[name]["dl"]["current"], verify=False)
+        r_current = requests.get(sources["current"], verify=False)
     soup = BeautifulSoup(r_current.text, features="lxml")
     raw_string = soup.find_all(type="hidden")[0]["value"]
     raw_list = raw_string.split("],")
@@ -392,11 +396,12 @@ def call_rate(driver: Optional[WebDriver] = None) -> pd.DataFrame:
     Daily call rate : pd.DataFrame
 
     """
-    name = "call"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
     if driver is None:
         driver = _build()
-    driver.get(urls[name]["dl"]["main"])
+    driver.get(sources["main"])
     start = driver.find_element(by="name", value="ctl00$ContentPlaceHolder1$dateDesde$dateInput")
     start.clear()
     start.send_keys("01/01/2002")
@@ -439,7 +444,7 @@ def call_rate(driver: Optional[WebDriver] = None) -> pd.DataFrame:
     max_calls_total=8,
     retry_window_after_first_call_in_seconds=60,
 )
-def bonds(driver: Optional[WebDriver] = None) -> pd.DataFrame:
+def sovereign_bond_yields(driver: Optional[WebDriver] = None) -> pd.DataFrame:
     """Get interest rate yield for Uruguayan US-denominated bonds,
     inflation-linked bonds and peso bonds.
 
@@ -456,12 +461,13 @@ def bonds(driver: Optional[WebDriver] = None) -> pd.DataFrame:
     Daily bond yields in basis points : pd.DataFrame
 
     """
-    name = "bonds"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
     if driver is None:
         driver = _build()
     dfs = []
-    for url in urls[name]["dl"].values():
+    for url in sources.values():
         driver.get(url)
         start = driver.find_element(
             by="name", value="ctl00$ContentPlaceHolder1$dateDesde$dateInput"

@@ -12,7 +12,7 @@ from pandas.tseries.offsets import MonthEnd
 from econuy import transform
 from econuy.core import Pipeline
 from econuy.utils import metadata
-from econuy.utils.sources import urls
+from econuy.utils.ops import get_name_from_function, get_download_sources
 
 
 @retry(
@@ -28,11 +28,12 @@ def labor_rates() -> pd.DataFrame:
     Monthly participation, employment and unemployment rates : pd.DataFrame
 
     """
-    name = "labor_rates"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
     temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
     with open(temp_rar, "wb") as f:
-        r = requests.get(urls[name]["dl"]["main"])
+        r = requests.get(sources["main"])
         f.write(r.content)
     with tempfile.TemporaryDirectory() as temp_dir:
         patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
@@ -83,10 +84,11 @@ def nominal_wages() -> pd.DataFrame:
     Monthly wages separated by public and private sector : pd.DataFrame
 
     """
-    name = "nominal_wages"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
-    historical = pd.read_excel(urls[name]["dl"]["historical"], skiprows=8, usecols="A:B")
-    current = pd.read_excel(urls[name]["dl"]["current"], skiprows=8, usecols="A,C:D")
+    historical = pd.read_excel(sources["historical"], skiprows=8, usecols="A:B")
+    current = pd.read_excel(sources["current"], skiprows=8, usecols="A,C:D")
     historical = historical.dropna(how="any").set_index("Unnamed: 0")
     current = current.dropna(how="any").set_index("Unnamed: 0")
     wages = pd.concat([historical, current], axis=1)
@@ -118,7 +120,7 @@ def nominal_wages() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def hours() -> pd.DataFrame:
+def hours_worked() -> pd.DataFrame:
     """Get average hours worked data.
 
     Returns
@@ -126,11 +128,12 @@ def hours() -> pd.DataFrame:
     Monthly hours worked : pd.DataFrame
 
     """
-    name = "hours_worked"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
     temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
     with open(temp_rar, "wb") as f:
-        r = requests.get(urls[name]["dl"]["main"])
+        r = requests.get(sources["main"])
         f.write(r.content)
     with tempfile.TemporaryDirectory() as temp_dir:
         patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
@@ -180,7 +183,7 @@ def hours() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def rates_people(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+def labor_rates_persons(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """
     Get labor data, both rates and persons. Extends national data between 1991
     and 2005 with data for jurisdictions with more than 5,000 inhabitants.
@@ -195,7 +198,8 @@ def rates_people(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     Labor market data : pd.DataFrame
 
     """
-    name = "labor_rates_people"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
     if pipeline is None:
         pipeline = Pipeline()
 
@@ -204,9 +208,9 @@ def rates_people(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     rates = rates.loc[
         :, ["Tasa de actividad: total", "Tasa de empleo: total", "Tasa de desempleo: total"]
     ]
-    working_age = pd.read_excel(
-        urls[name]["dl"]["population"], skiprows=7, index_col=0, nrows=92
-    ).dropna(how="all")
+    working_age = pd.read_excel(sources["population"], skiprows=7, index_col=0, nrows=92).dropna(
+        how="all"
+    )
     rates.columns = rates.columns.set_levels(
         rates.columns.levels[0].str.replace(": total", ""), level=0
     )

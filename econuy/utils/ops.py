@@ -1,12 +1,14 @@
+import inspect
+import json
 from os import path, PathLike, mkdir
 from pathlib import Path
-from typing import Union, Optional
+from typing import Union, Optional, Dict
 
 import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
 from sqlalchemy.exc import ProgrammingError, OperationalError
 
-from econuy.utils import metadata, sqlutil
+from econuy.utils import metadata, sqlutil, get_project_root
 
 
 def _read(
@@ -40,7 +42,7 @@ def _read(
                 )
         else:
             date_format = None
-            special_date_format = ["cattle", "reserves_changes"]
+            special_date_format = ["cattle_slaughter", "international_reserves_changes"]
             if Path(data_loc).stem in special_date_format:
                 date_format = "%d/%m/%Y"
             if file_fmt == "csv":
@@ -234,3 +236,19 @@ def _io(
             table_name=name,
         )
         return
+
+
+def load_datasets_info() -> Dict:
+    with open(get_project_root() / "retrieval" / "datasets.json", "r") as f:
+        return json.load(f)
+
+
+DATASETS = load_datasets_info()
+
+
+def get_name_from_function() -> str:
+    return inspect.currentframe().f_back.f_code.co_name
+
+
+def get_download_sources(name: str) -> Dict:
+    return DATASETS[name]["sources"]["downloads"]

@@ -279,9 +279,9 @@ def test_convert_gdp(freq, ts_type, periods, cumperiods, currency):
     s = Session(location=TEST_DIR, download=False)
     s._datasets["dummy"] = df
     s.convert(flavor="gdp")
-    s.get("_lin_gdp")
+    s.get("_monthly_interpolated_gdp")
     compare = s.datasets["dummy"]
-    gdp = s.datasets["_lin_gdp"]
+    gdp = s.datasets["_monthly_interpolated_gdp"]
 
     if freq in ["M", "MS"]:
         gdp = gdp.resample(rule=freq).interpolate("linear")

@@ -20,7 +20,7 @@ from econuy.core import Pipeline
 from econuy.transform import rebase, resample
 from econuy.utils import metadata
 from econuy.utils.chromedriver import _build
-from econuy.utils.sources import urls
+from econuy.utils.ops import get_download_sources, get_name_from_function
 
 
 @retry(
@@ -28,7 +28,7 @@ from econuy.utils.sources import urls
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def gdp(driver: WebDriver = None) -> pd.DataFrame:
+def regional_gdp(driver: WebDriver = None) -> pd.DataFrame:
     """Get seasonally adjusted real GDP for Argentina and Brazil.
 
     This function requires a Selenium webdriver. It can be provided in the
@@ -44,11 +44,12 @@ def gdp(driver: WebDriver = None) -> pd.DataFrame:
     Quarterly real GDP : pd.DataFrame
 
     """
-    name = "regional_gdp"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
     if driver is None:
         driver = _build()
-    driver.get(urls[name]["dl"]["arg_new"])
+    driver.get(sources["arg_new"])
     time.sleep(5)
     soup = BeautifulSoup(driver.page_source, "lxml")
     driver.quit()
@@ -56,7 +57,7 @@ def gdp(driver: WebDriver = None) -> pd.DataFrame:
     full_url = f"https://www.indec.gob.ar{url}"
     arg = pd.read_excel(full_url, skiprows=3, usecols="C").dropna(how="all")
     arg.index = pd.date_range(start="2004-03-31", freq="Q-DEC", periods=len(arg))
-    arg_old = pd.read_excel(urls[name]["dl"]["arg_old"], skiprows=7, usecols="D").dropna(how="all")
+    arg_old = pd.read_excel(sources["arg_old"], skiprows=7, usecols="D").dropna(how="all")
     arg_old.index = pd.date_range(start="1993-03-31", freq="Q-DEC", periods=len(arg_old))
     arg = pd.concat([arg, arg_old], axis=1)
     for row in reversed(range(len(arg))):
@@ -64,7 +65,7 @@ def gdp(driver: WebDriver = None) -> pd.DataFrame:
             arg.iloc[row, 0] = arg.iloc[row, 1] / arg.iloc[row + 1, 1] * arg.iloc[row + 1, 0]
     arg = arg.iloc[:, [0]]
 
-    r = requests.get(urls[name]["dl"]["bra"])
+    r = requests.get(sources["bra"])
     temp_dir = tempfile.TemporaryDirectory()
     with zipfile.ZipFile(BytesIO(r.content), "r") as f:
         f.extractall(path=temp_dir.name)
@@ -98,7 +99,7 @@ def gdp(driver: WebDriver = None) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def monthly_gdp() -> pd.DataFrame:
+def regional_monthly_gdp() -> pd.DataFrame:
     """Get monthly GDP data.
 
     Countries/aggregates selected are Argentina and Brazil.
@@ -108,12 +109,13 @@ def monthly_gdp() -> pd.DataFrame:
     Monthly GDP : pd.DataFrame
 
     """
-    name = "regional_monthly_gdp"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
-    arg = pd.read_excel(urls[name]["dl"]["arg"], usecols="C", skiprows=3).dropna(how="all")
+    arg = pd.read_excel(sources["arg"], usecols="C", skiprows=3).dropna(how="all")
     arg.index = pd.date_range(start="2004-01-31", freq="M", periods=len(arg))
 
-    bra = pd.read_csv(urls[name]["dl"]["bra"], sep=";", index_col=0, decimal=",")
+    bra = pd.read_csv(sources["bra"], sep=";", index_col=0, decimal=",")
     bra.index = pd.date_range(start="2003-01-31", freq="M", periods=len(bra))
 
     output = pd.concat([arg, bra], axis=1)
@@ -139,7 +141,7 @@ def monthly_gdp() -> pd.DataFrame:
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def cpi() -> pd.DataFrame:
+def regional_cpi() -> pd.DataFrame:
     """Get consumer price index for Argentina and Brazil.
 
     Returns
@@ -147,16 +149,23 @@ def cpi() -> pd.DataFrame:
     Monthly CPI : pd.DataFrame
 
     """
-    name = "regional_cpi"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
-    arg = requests.get(urls[name]["dl"]["ar"], params=urls[name]["dl"]["ar_payload"])
+    arg = requests.get(
+        sources["ar"],
+        params=sources["ar_payload"].format(
+            date1=dt.datetime.now().strftime("%Y-%m-%d"),
+            date2=dt.datetime.now().strftime("%Y%m%d"),
+        ),
+    )
     arg = pd.read_html(arg.content)[0]
     arg.set_index("Fecha", drop=True, inplace=True)
     arg.index = pd.to_datetime(arg.index, format="%d/%m/%Y")
     arg.columns = ["nivel"]
     arg = arg.divide(10)
 
-    arg_unoff = pd.read_excel(urls[name]["dl"]["ar_unofficial"])
+    arg_unoff = pd.read_excel(sources["ar_unofficial"])
     arg_unoff.set_index("date", drop=True, inplace=True)
     arg_unoff.index = arg_unoff.index + MonthEnd(0)
     arg_unoff = arg_unoff.loc[
@@ -173,7 +182,7 @@ def cpi() -> pd.DataFrame:
     )
     arg = arg.divide(100).add(1).cumprod()
 
-    bra_r = requests.get(urls[name]["dl"]["bra"])
+    bra_r = requests.get(sources["bra"].format(date=dt.datetime.now().strftime("%Y%m")))
     bra = pd.DataFrame(bra_r.json())[["v"]]
     bra.index = pd.date_range(start="1979-12-31", freq="M", periods=len(bra))
     bra = bra.apply(pd.to_numeric, errors="coerce")
@@ -202,7 +211,7 @@ def cpi() -> pd.DataFrame:
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def embi_spreads() -> pd.DataFrame:
+def regional_embi_spreads() -> pd.DataFrame:
     """Get EMBI spread for Argentina, Brazil and the EMBI Global.
 
     Returns
@@ -210,9 +219,10 @@ def embi_spreads() -> pd.DataFrame:
     Daily 10-year government bond spreads : pd.DataFrame
 
     """
-    name = "regional_embi_spreads"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
-    raw = pd.read_excel(urls[name]["dl"]["main"], usecols="A:B,E,G", skiprows=1, index_col=0)
+    raw = pd.read_excel(sources["main"], usecols="A:B,E,G", skiprows=1, index_col=0)
     output = (
         raw.loc[~pd.isna(raw.index)]
         .mul(100)
@@ -241,7 +251,7 @@ def embi_spreads() -> pd.DataFrame:
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def embi_yields(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+def regional_embi_yields(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """Get EMBI yields for Argentina, Brazil and the EMBI Global.
 
     Yields are calculated by adding EMBI spreads to the 10-year US Treasury
@@ -257,11 +267,16 @@ def embi_yields(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     Daily 10-year government bonds interest rates : pd.DataFrame
 
     """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
+
     if pipeline is None:
         pipeline = Pipeline()
 
     treasuries = pd.read_csv(
-        urls["regional_embi_yields"]["dl"]["treasury"], usecols=[0, 4], index_col=0
+        sources["treasury"].format(timestamp=dt.datetime.now().timestamp().__round__()),
+        usecols=[0, 4],
+        index_col=0,
     )
     treasuries.index = pd.to_datetime(treasuries.index)
     pipeline.get("regional_embi_spreads")
@@ -292,7 +307,7 @@ def embi_yields(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def nxr() -> pd.DataFrame:
+def regional_nxr() -> pd.DataFrame:
     """Get USDARS and USDBRL.
 
     Returns
@@ -300,11 +315,12 @@ def nxr() -> pd.DataFrame:
     Daily exchange rates : pd.DataFrame
 
     """
-    name = "regional_nxr"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
     arg = []
     for dollar in ["ar", "ar_unofficial"]:
-        r = requests.get(urls[name]["dl"][dollar])
+        r = requests.get(sources[dollar].format(date=dt.datetime.now().strftime("%d-%m-%Y")))
         aux = pd.DataFrame(r.json())[[0, 2]]
         aux.set_index(0, drop=True, inplace=True)
         aux.drop("Fecha", inplace=True)
@@ -316,7 +332,7 @@ def nxr() -> pd.DataFrame:
     arg = arg[0].join(arg[1], how="left")
     arg.columns = ["Argentina - oficial", "Argentina - informal"]
 
-    r = requests.get(urls[name]["dl"]["bra"])
+    r = requests.get(sources["bra"])
     bra = pd.DataFrame(r.json())
     bra = [(x["VALDATA"], x["VALVALOR"]) for x in bra["value"]]
     bra = pd.DataFrame.from_records(bra).dropna(how="any")
@@ -351,7 +367,7 @@ def nxr() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def policy_rates() -> pd.DataFrame:
+def regional_policy_rates() -> pd.DataFrame:
     """Get central bank policy interest rates data.
 
     Countries/aggregates selected are Argentina and Brazil.
@@ -361,9 +377,10 @@ def policy_rates() -> pd.DataFrame:
     Daily policy interest rates : pd.DataFrame
 
     """
-    name = "regional_policy_rates"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
-    r = requests.get(urls[name]["dl"]["main"])
+    r = requests.get(sources["main"])
     temp_dir = tempfile.TemporaryDirectory()
     with zipfile.ZipFile(BytesIO(r.content), "r") as f:
         f.extractall(path=temp_dir.name)
@@ -402,7 +419,7 @@ def policy_rates() -> pd.DataFrame:
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def stocks(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+def regional_stock_markets() -> pd.DataFrame:
     """Get stock market index data in USD terms.
 
     Indexes selected are MERVAL and BOVESPA.
@@ -417,11 +434,17 @@ def stocks(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     Daily stock market index in USD terms: pd.DataFrame
 
     """
-    name = "regional_stocks"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
     yahoo = []
     for series in ["arg", "bra"]:
-        aux = pd.read_csv(urls[name]["dl"][series], index_col=0, usecols=[0, 4], parse_dates=True)
+        aux = pd.read_csv(
+            sources[series].format(timestamp=dt.datetime.now().timestamp().__round__()),
+            index_col=0,
+            usecols=[0, 4],
+            parse_dates=True,
+        )
         aux.columns = [series]
         yahoo.append(aux)
     output = pd.concat(yahoo, axis=1).interpolate(method="linear", limit_area="inside")
@@ -447,7 +470,7 @@ def stocks(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def rxr(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+def regional_rxr(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """Get real exchange rates vis-á-vis the US dollar for Argentina and Brasil .
 
     Returns

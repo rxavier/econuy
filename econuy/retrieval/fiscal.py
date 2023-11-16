@@ -14,8 +14,8 @@ from requests.exceptions import ConnectionError
 from econuy import transform
 from econuy.core import Pipeline
 from econuy.utils import metadata, get_project_root
-from econuy.utils.sources import urls
-from econuy.utils.extras import fiscal_sheets, taxes_columns
+from econuy.utils.extras import FISCAL_SHEETS, taxes_columns
+from econuy.utils.ops import get_name_from_function, get_download_sources
 
 
 @retry(
@@ -25,13 +25,14 @@ from econuy.utils.extras import fiscal_sheets, taxes_columns
 )
 def _balance_retriever() -> Dict[str, pd.DataFrame]:
     """Helper function. See any of the `balance_...()` functions."""
-    response = requests.get(urls["balance_gps"]["dl"]["main"])
+    sources = get_download_sources("fiscal_balance_global_public_sector")
+    response = requests.get(sources["main"])
     soup = BeautifulSoup(response.content, "html.parser")
     links = soup.find_all(href=re.compile("\\.xlsx$"))
     link = links[0]["href"]
     xls = pd.ExcelFile(link)
     output = {}
-    for dataset, meta in fiscal_sheets.items():
+    for dataset, meta in FISCAL_SHEETS.items():
         data = (
             pd.read_excel(xls, sheet_name=meta["sheet"])
             .dropna(axis=0, thresh=4)
@@ -61,7 +62,7 @@ def _balance_retriever() -> Dict[str, pd.DataFrame]:
     return output
 
 
-def balance_gps() -> pd.DataFrame:
+def fiscal_balance_global_public_sector() -> pd.DataFrame:
     """Get fiscal balance data for the consolidated public sector.
 
     Returns
@@ -69,10 +70,10 @@ def balance_gps() -> pd.DataFrame:
     Monthly fiscal balance for the consolidated public sector : pd.DataFrame
 
     """
-    return _balance_retriever()["gps"]
+    return _balance_retriever()["fiscal_balance_global_public_sector"]
 
 
-def balance_nfps() -> pd.DataFrame:
+def fiscal_balance_nonfinancial_public_sector() -> pd.DataFrame:
     """Get fiscal balance data for the non-financial public sector.
 
     Returns
@@ -80,10 +81,10 @@ def balance_nfps() -> pd.DataFrame:
     Monthly fiscal balance for the non-financial public sector : pd.DataFrame
 
     """
-    return _balance_retriever()["nfps"]
+    return _balance_retriever()["fiscal_balance_nonfinancial_public_sector"]
 
 
-def balance_cg_bps() -> pd.DataFrame:
+def fiscal_balance_central_government() -> pd.DataFrame:
     """Get fiscal balance data for the central government + BPS.
 
     Returns
@@ -91,10 +92,10 @@ def balance_cg_bps() -> pd.DataFrame:
     Monthly fiscal balance for the central government + BPS : pd.DataFrame
 
     """
-    return _balance_retriever()["cg-bps"]
+    return _balance_retriever()["fiscal_balance_central_government"]
 
 
-def balance_pe() -> pd.DataFrame:
+def fiscal_balance_soe() -> pd.DataFrame:
     """Get fiscal balance data for public enterprises.
 
     Returns
@@ -102,10 +103,10 @@ def balance_pe() -> pd.DataFrame:
     Monthly fiscal balance for public enterprises : pd.DataFrame
 
     """
-    return _balance_retriever()["pe"]
+    return _balance_retriever()["fiscal_balance_soe"]
 
 
-def balance_ancap() -> pd.DataFrame:
+def fiscal_balance_ancap() -> pd.DataFrame:
     """Get fiscal balance data for ANCAP.
 
     Returns
@@ -113,10 +114,10 @@ def balance_ancap() -> pd.DataFrame:
     Monthly fiscal balance for ANCAP : pd.DataFrame
 
     """
-    return _balance_retriever()["ancap"]
+    return _balance_retriever()["fiscal_balance_ancap"]
 
 
-def balance_ute() -> pd.DataFrame:
+def fiscal_balance_ute() -> pd.DataFrame:
     """Get fiscal balance data for UTE.
 
     Returns
@@ -124,10 +125,10 @@ def balance_ute() -> pd.DataFrame:
     Monthly fiscal balance for UTE : pd.DataFrame
 
     """
-    return _balance_retriever()["ute"]
+    return _balance_retriever()["fiscal_balance_ute"]
 
 
-def balance_antel() -> pd.DataFrame:
+def fiscal_balance_antel() -> pd.DataFrame:
     """Get fiscal balance data for ANTEL.
 
     Returns
@@ -135,10 +136,10 @@ def balance_antel() -> pd.DataFrame:
     Monthly fiscal balance for ANTEL : pd.DataFrame
 
     """
-    return _balance_retriever()["antel"]
+    return _balance_retriever()["fiscal_balance_antel"]
 
 
-def balance_ose() -> pd.DataFrame:
+def fiscal_balance_ose() -> pd.DataFrame:
     """Get fiscal balance data for OSE.
 
     Returns
@@ -146,7 +147,7 @@ def balance_ose() -> pd.DataFrame:
     Monthly fiscal balance for OSE : pd.DataFrame
 
     """
-    return _balance_retriever()["ose"]
+    return _balance_retriever()["fiscal_balance_ose"]
 
 
 @retry(
@@ -166,8 +167,10 @@ def tax_revenue() -> pd.DataFrame:
     Monthly tax revenues : pd.DataFrame
 
     """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
     raw = (
-        pd.read_excel(urls["tax_revenue"]["dl"]["main"])
+        pd.read_excel(sources["main"])
         .iloc[:, 2:]
         .drop(index=[0, 1])
         .set_index("SELECCIONE IMPUESTO")
@@ -179,7 +182,7 @@ def tax_revenue() -> pd.DataFrame:
     output = raw.loc[~pd.isna(raw.index), ~raw.columns.str.contains("Unnamed")]
     output.columns = taxes_columns
     output = output.div(1000000)
-    latest = pd.read_csv(urls["tax_revenue"]["dl"]["pdfs"], index_col=0, parse_dates=True)
+    latest = pd.read_csv(sources["pdfs"], index_col=0, parse_dates=True)
     latest = latest.loc[[x not in output.index for x in latest.index]]
     for col in latest.columns:
         for date in latest.index:
@@ -211,6 +214,7 @@ def tax_revenue() -> pd.DataFrame:
 )
 def _public_debt_retriever() -> Dict[str, pd.DataFrame]:
     """Helper function. See any of the `public_debt_...()` functions."""
+    sources = get_download_sources("public_debt_global_public_sector")
     colnames = [
         "Total deuda",
         "Plazo contractual: hasta 1 año",
@@ -229,11 +233,11 @@ def _public_debt_retriever() -> Dict[str, pd.DataFrame]:
         "Residencia: residentes",
     ]
     try:
-        xls = pd.ExcelFile(urls["public_debt_gps"]["dl"]["main"])
+        xls = pd.ExcelFile(sources["main"])
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(urls["public_debt_gps"]["dl"]["main"], verify=certs_path)
+            r = requests.get(sources["main"], verify=certs_path)
             xls = pd.ExcelFile(r.content)
     gps_raw = pd.read_excel(
         xls,
@@ -298,7 +302,12 @@ def _public_debt_retriever() -> Dict[str, pd.DataFrame]:
     assets.index = pd.date_range(start="1999-12-31", periods=len(assets), freq="Q-DEC")
     assets.columns = ["Total activos", "Sector público no monetario", "BCU"]
 
-    output = {"gps": gps, "nfps": nfps, "cb": cb, "assets": assets}
+    output = {
+        "public_debt_global_public_sector": gps,
+        "public_debt_nonfinancial_public_sector": nfps,
+        "public_debt_central_bank": cb,
+        "public_assets": assets,
+    }
 
     for meta, data in output.items():
         data.rename_axis(None, inplace=True)
@@ -318,7 +327,7 @@ def _public_debt_retriever() -> Dict[str, pd.DataFrame]:
     return output
 
 
-def public_debt_gps() -> pd.DataFrame:
+def public_debt_global_public_sector() -> pd.DataFrame:
     """Get public debt data for the consolidated public sector.
 
     Returns
@@ -326,10 +335,10 @@ def public_debt_gps() -> pd.DataFrame:
     Quarterly public debt data for the consolidated public sector: pd.DataFrame
 
     """
-    return _public_debt_retriever()["gps"]
+    return _public_debt_retriever()["public_debt_global_public_sector"]
 
 
-def public_debt_nfps() -> pd.DataFrame:
+def public_debt_nonfinancial_public_sector() -> pd.DataFrame:
     """Get public debt data for the non-financial public sector.
 
     Returns
@@ -337,10 +346,10 @@ def public_debt_nfps() -> pd.DataFrame:
     Quarterly public debt data for the non-financial public sector: pd.DataFrame
 
     """
-    return _public_debt_retriever()["nfps"]
+    return _public_debt_retriever()["public_debt_nonfinancial_public_sector"]
 
 
-def public_debt_cb() -> pd.DataFrame:
+def public_debt_central_bank() -> pd.DataFrame:
     """Get public debt data for the central bank
 
     Returns
@@ -348,7 +357,7 @@ def public_debt_cb() -> pd.DataFrame:
     Quarterly public debt data for the central bank : pd.DataFrame
 
     """
-    return _public_debt_retriever()["cb"]
+    return _public_debt_retriever()["public_debt_central_bank"]
 
 
 def public_assets() -> pd.DataFrame:
@@ -359,10 +368,10 @@ def public_assets() -> pd.DataFrame:
     Quarterly public sector assets: pd.DataFrame
 
     """
-    return _public_debt_retriever()["assets"]
+    return _public_debt_retriever()["public_assets"]
 
 
-def net_public_debt(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+def net_public_debt_global_public_sector(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """
     Get net public debt excluding deposits at the central bank.
 
@@ -379,13 +388,13 @@ def net_public_debt(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     if pipeline is None:
         pipeline = Pipeline()
 
-    pipeline.get("public_debt_gps")
+    pipeline.get("public_debt_global_public_sector")
     gross_debt = pipeline.dataset.loc[:, ["Total deuda"]]
     pipeline.get("public_assets")
     assets = pipeline.dataset.loc[:, ["Total activos"]]
     gross_debt.columns = ["Deuda neta del sector" " público global excl. encajes"]
     assets.columns = gross_debt.columns
-    pipeline.get("reserves")
+    pipeline.get("international_reserves")
     deposits = pipeline.dataset.loc[:, ["Obligaciones en ME con el sector financiero"]]
     deposits = (
         transform.resample(deposits, rule="Q-DEC", operation="last")
@@ -409,7 +418,7 @@ def net_public_debt(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     return output
 
 
-def balance_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+def fiscal_balance_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """
     Get the summary fiscal balance table found in the `Budget Law
     <https://www.gub.uy/contaduria-general-nacion/sites/
@@ -430,18 +439,18 @@ def balance_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """
     if pipeline is None or pipeline.download is True:
         data = _balance_retriever()
-        gps = data["gps"]
-        nfps = data["nfps"]
-        gc = data["cg-bps"]
-        pe = data["pe"]
+        gps = data["fiscal_balance_global_public_sector"]
+        nfps = data["fiscal_balance_nonfinancial_public_sector"]
+        gc = data["fiscal_balance_central_government"]
+        pe = data["fiscal_balance_soe"]
     else:
-        pipeline.get("balance_gps")
+        pipeline.get("fiscal_balance_global_public_sector")
         gps = pipeline.dataset
-        pipeline.get("balance_nfps")
+        pipeline.get("fiscal_balance_nonfinancial_public_sector")
         nfps = pipeline.dataset
-        pipeline.get("balance_cg-bps")
+        pipeline.get("fiscal_balance_central_government")
         gc = pipeline.dataset
-        pipeline.get("balance_pe")
+        pipeline.get("fiscal_balance_soe")
         pe = pipeline.dataset
 
     proc = pd.DataFrame(index=gps.index)
