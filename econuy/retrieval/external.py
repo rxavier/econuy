@@ -23,8 +23,8 @@ from sqlalchemy.engine.base import Engine, Connection
 from econuy import transform
 from econuy.retrieval import regional
 from econuy.core import Pipeline
-from econuy.utils import ops, metadata, get_project_root
-from econuy.utils.ops import get_download_sources, get_name_from_function
+from econuy.utils import operations, metadata, get_project_root
+from econuy.utils.operations import get_download_sources, get_name_from_function
 from econuy.utils.extras import TRADE_METADATA, RESERVES_COLUMNS, BOP_COLUMNS
 
 
@@ -371,7 +371,7 @@ def _commodity_weights(
 
     """
     if download is False and location is not None:
-        output = ops._io(
+        output = operations._io(
             operation="read", data_loc=location, name="commodity_weights", multiindex=None
         )
         if not output.equals(pd.DataFrame()):
@@ -449,13 +449,13 @@ def _commodity_weights(
     output = output.rolling(window=3, min_periods=3).mean().bfill()
 
     if location is not None:
-        previous_data = ops._io(
+        previous_data = operations._io(
             operation="read", data_loc=location, name="commodity_weights", multiindex=None
         )
-        output = ops._revise(new_data=output, prev_data=previous_data, revise_rows="nodup")
+        output = operations._revise(new_data=output, prev_data=previous_data, revise_rows="nodup")
 
     if location is not None:
-        ops._io(
+        operations._io(
             operation="save",
             data_loc=location,
             data=output,

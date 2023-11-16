@@ -17,7 +17,7 @@ Session class
 
 Data retrieval functions
 ------------------------
-.. automodule:: econuy.retrieval.economic_activity
+.. automodule:: econuy.retrieval.activity
    :members:
    :exclude-members: _natacc_retriever
    :undoc-members:
@@ -26,12 +26,12 @@ Data retrieval functions
    :members:
    :undoc-members:
    :show-inheritance:
-.. automodule:: econuy.retrieval.fiscal_accounts
+.. automodule:: econuy.retrieval.fiscal
    :members:
    :exclude-members: _balance_retriever
    :undoc-members:
    :show-inheritance:
-.. automodule:: econuy.retrieval.external_sector
+.. automodule:: econuy.retrieval.external
    :members:
    :exclude-members: _trade_retriever
    :undoc-members:
@@ -40,7 +40,7 @@ Data retrieval functions
    :members:
    :undoc-members:
    :show-inheritance:
-.. automodule:: econuy.retrieval.financial_sector
+.. automodule:: econuy.retrieval.financial
    :members:
    :undoc-members:
    :show-inheritance:
@@ -48,7 +48,7 @@ Data retrieval functions
    :members:
    :undoc-members:
    :show-inheritance:
-.. automodule:: econuy.retrieval.international
+.. automodule:: econuy.retrieval.global_
    :members:
    :undoc-members:
    :show-inheritance:
@@ -70,11 +70,11 @@ Utility functions
    :members:
    :undoc-members:
    :show-inheritance:
-.. automodule:: econuy.utils.ops
+.. automodule:: econuy.utils.operations
    :members:
    :undoc-members:
    :show-inheritance:
-.. automodule:: econuy.utils.sqlutil
+.. automodule:: econuy.utils.sql
    :members:
    :undoc-members:
    :show-inheritance:

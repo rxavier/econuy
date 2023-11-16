@@ -8,7 +8,7 @@ import pandas as pd
 from sqlalchemy.engine.base import Connection, Engine
 from sqlalchemy.exc import ProgrammingError, OperationalError
 
-from econuy.utils import metadata, sqlutil, get_project_root
+from econuy.utils import metadata, sql, get_project_root
 
 
 def _read(
@@ -35,7 +35,7 @@ def _read(
     try:
         if isinstance(data_loc, (Engine, Connection)):
             if multiindex is not None:
-                previous_data = sqlutil.read(con=data_loc, table_name=table_name)
+                previous_data = sql.read(con=data_loc, table_name=table_name)
             else:
                 previous_data = pd.read_sql(
                     sql=table_name, con=data_loc, index_col="index", parse_dates="index"
@@ -115,7 +115,7 @@ def _save(
         it to another sheet (only valid for Excel-type formats).
     """
     if isinstance(data_loc, (Engine, Connection)):
-        sqlutil.df_to_sql(data, name=table_name, con=data_loc)
+        sql.df_to_sql(data, name=table_name, con=data_loc)
     else:
         data_proc = data.copy()
         if file_fmt == "csv":

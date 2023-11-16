@@ -13,7 +13,7 @@ from pandas.tseries.offsets import MonthEnd
 
 from econuy.transform import decompose, rebase
 from econuy.utils import metadata
-from econuy.utils.ops import get_download_sources, get_name_from_function
+from econuy.utils.operations import get_download_sources, get_name_from_function
 
 
 FRED_API_KEY = "f5700348a7dd3a997c88af6d35608a12"

@@ -12,9 +12,10 @@ from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
 from econuy.core import Pipeline
-from econuy.utils import logutil, ops
+from econuy.utils import operations
+from econuy.utils import logging as log_utils
 from econuy.utils.exceptions import RetryLimitError
-from econuy.utils.ops import DATASETS
+from econuy.utils.operations import DATASETS
 
 
 class Session(object):
@@ -109,14 +110,14 @@ class Session(object):
                 )
             elif log == 2:
                 logfile = Path(self.location) / "info.log"
-                log_obj = logutil.setup(file=logfile)
+                log_obj = log_utils.setup(file=logfile)
             elif isinstance(log, str) and log != "custom":
                 logfile = (Path(self.location) / log).with_suffix(".log")
-                log_obj = logutil.setup(file=logfile)
+                log_obj = log_utils.setup(file=logfile)
             elif log == 1:
-                log_obj = logutil.setup(file=None)
+                log_obj = log_utils.setup(file=None)
             else:
-                log_obj = logutil.setup(null=True)
+                log_obj = log_utils.setup(null=True)
             self.logger = log_obj
 
     @classmethod
@@ -688,7 +689,7 @@ class Session(object):
 
         for name, dataset in self.datasets.items():
             if name in proc_select:
-                ops._io(
+                operations._io(
                     operation="save",
                     data_loc=self.location,
                     data=dataset,

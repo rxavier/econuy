@@ -8,9 +8,9 @@ from datetime import datetime
 import pandas as pd
 from sqlalchemy.engine.base import Engine, Connection
 
-from econuy.utils import ops
+from econuy.utils import operations
 from econuy import transform
-from econuy.utils.ops import DATASETS
+from econuy.utils.operations import DATASETS
 
 
 class Pipeline(object):
@@ -164,7 +164,7 @@ class Pipeline(object):
         if self.location is None:
             prev_data = pd.DataFrame()
         else:
-            prev_data = ops._io(
+            prev_data = operations._io(
                 operation="read",
                 data_loc=self.location,
                 name=name,
@@ -204,7 +204,7 @@ class Pipeline(object):
                 new_data = self._get_function(name)(pipeline=self, previous_data=prev_data)
             else:
                 new_data = self._get_function(name)()
-            data = ops._revise(new_data=new_data, prev_data=prev_data, revise_rows="nodup")
+            data = operations._revise(new_data=new_data, prev_data=prev_data, revise_rows="nodup")
             self._dataset = data
         self._name = name
         if self.always_save and (self.download or prev_data.empty) and self.location is not None:
@@ -602,7 +602,7 @@ class Pipeline(object):
         if self.location is None:
             raise ValueError("No save location defined.")
         else:
-            ops._io(
+            operations._io(
                 operation="save",
                 data_loc=self.location,
                 name=self.name,

@@ -8,14 +8,14 @@ from sqlalchemy import create_engine, inspect, text
 
 from econuy.core import Pipeline
 from econuy.session import Session
-from econuy.utils import sqlutil, ops
-from econuy.utils.ops import DATASETS
+from econuy.utils import sql, operations
+from econuy.utils.operations import DATASETS
 
 
 CUR_DIR = path.abspath(path.dirname(__file__))
 TEST_DIR = path.join(CUR_DIR, "test-data")
 TEST_CON = create_engine("sqlite://").connect()
-sqlutil.insert_csvs(con=TEST_CON, directory=TEST_DIR)
+sql.insert_csvs(con=TEST_CON, directory=TEST_DIR)
 
 
 def remove_temporary_files_folders():
@@ -67,7 +67,7 @@ def test_save(names, fmt, files, tmpdir):
     for f in files:
         file_path = Path(tmpdir, f)
         assert path.isfile(file_path)
-        assert not ops._read(file_path, file_fmt=fmt).empty
+        assert not operations._read(file_path, file_fmt=fmt).empty
 
 
 def test_save_different_formats(tmpdir):
