@@ -58,7 +58,7 @@ p = Pipeline(location="your_directory")
 
 Retrieves datasets (generally downloads them, unless the `download` attribute is `False` and the requested dataset exists at the `location`) and loads them into the `dataset` attribute as a Pandas DataFrame.
 
-The `Pipeline.available_datasets()` method returns a `dict` with the available options.
+The `Pipeline.available_datasets` attribute returns a `dict` with the available options.
 
 ```python
 from econuy.core import Pipeline

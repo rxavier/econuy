@@ -1,14 +1,16 @@
 from __future__ import annotations
 import copy
-from typing import Union, Optional, Dict
+import importlib
+from typing import Union, Optional, Dict, Callable
 from os import PathLike
 from datetime import datetime
 
 import pandas as pd
 from sqlalchemy.engine.base import Engine, Connection
 
-from econuy.utils import ops, datasets
+from econuy.utils import ops
 from econuy import transform
+from econuy.utils.ops import DATASETS
 
 
 class Pipeline(object):
@@ -71,6 +73,15 @@ class Pipeline(object):
         self._dataset = pd.DataFrame()
         self._download_commodity_weights = False
 
+    def _get_function(self, name: str) -> Callable:
+        """Get function from transform module."""
+        function_string = self.available_datasets[name]["function"]
+        module, function = function_string.split(".")
+        path_prefix = "econuy.retrieval."
+        module = importlib.import_module(path_prefix + module)
+        function = getattr(module, function)
+        return function
+
     @property
     def dataset(self) -> pd.DataFrame:
         """Get dataset."""
@@ -92,21 +103,23 @@ class Pipeline(object):
     def description(self) -> str:
         """Get dataset description."""
         try:
-            return self.available_datasets()[self.name]["description"]
+            return self.available_datasets[self.name]["description"]
         except KeyError:
             return None
 
-    @staticmethod
-    def available_datasets() -> Dict:
+    @property
+    def available_datasets(self) -> Dict:
         """Get a dictionary with all available datasets.
 
         The dictionary is separated by original and custom keys, which denote
         whether the dataset has been modified in some way or if its as provided
         by the source
         """
-        all = datasets.original()
-        all.update(datasets.custom())
-        return all
+        return {
+            name: metadata
+            for name, metadata in DATASETS.items()
+            if not metadata["disabled"] and not metadata["auxiliary"]
+        }
 
     def __repr__(self):
         return f"Pipeline(location={self.location})\n" f"Current dataset: {self.name}"
@@ -137,7 +150,7 @@ class Pipeline(object):
         ----------
         name : str
             Dataset to download, see available options in
-            :mod:`~econuy.core.Pipeline.available_datasets`.
+            :attr:`~econuy.core.Pipeline.available_datasets`.
 
         Raises
         ------
@@ -145,7 +158,7 @@ class Pipeline(object):
             If an invalid string is given to the ``name`` argument.
 
         """
-        if name not in self.available_datasets().keys():
+        if name not in list(self.available_datasets.keys()) + ["_monthly_interpolated_gdp"]:
             raise ValueError("Invalid dataset selected.")
 
         if self.location is None:
@@ -164,35 +177,33 @@ class Pipeline(object):
         else:
             if not self.download:
                 print(f"{name}: previous data not found, downloading.")
-            selection = self.available_datasets()[name]
             if name in [
                 "trade_balance",
                 "terms_of_trade",
                 "rxr_custom",
                 "commodity_index",
                 "cpi_measures",
-                "_lin_gdp",
+                "_monthly_interpolated_gdp",
                 "net_public_debt",
-                "balance_summary",
-                "core_industrial",
+                "fiscal_balance_summary",
+                "core_industrial_production",
                 "regional_embi_yields",
                 "regional_rxr",
-                "regional_stocks",
                 "real_wages",
-                "labor_rates_people",
+                "labor_rates_persons",
                 "nxr_monthly",
             ]:
                 # Some datasets require retrieving other datasets. Passing the
                 # class instance allows running these retrieval operations
                 # with the same parameters (for example, save file formats).
-                new_data = selection["function"](pipeline=self)
-            elif name in ["reserves_changes"]:
+                new_data = self._get_function(name)(pipeline=self)
+            elif name in ["international_reserves_changes"]:
                 # Datasets that require many requests (mostly daily data) benefit
                 # from having previous data, so they can start requests
                 # from the last available date.
-                new_data = selection["function"](pipeline=self, previous_data=prev_data)
+                new_data = self._get_function(name)(pipeline=self, previous_data=prev_data)
             else:
-                new_data = selection["function"]()
+                new_data = self._get_function(name)()
             data = ops._revise(new_data=new_data, prev_data=prev_data, revise_rows="nodup")
             self._dataset = data
         self._name = name

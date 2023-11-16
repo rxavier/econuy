@@ -1,0 +1,1907 @@
+{
+  "national_accounts_supply_constant_nsa": {
+    "description": "Cuentas nacionales: oferta, precios constantes (mar-16, T)",
+    "description_en": "National accounts: supply, constant prices (Mar-16, Q)",
+    "area": "activity",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "activity.national_accounts_supply_constant_nsa",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/1.%20Actividades_K.xlsx"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/1.%20Actividades_K.xlsx"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "national_accounts_demand_constant_nsa": {
+    "description": "Cuentas nacionales: demanda, precios constantes (mar-16, T)",
+    "description_en": "National accounts: demand, constant prices (Mar-16, Q)",
+    "area": "activity",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "activity.national_accounts_demand_constant_nsa",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/1.%20Gasto_K.xlsx"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/1.%20Gasto_K.xlsx"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-Componente-del-gasto.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "national_accounts_supply_current_nsa": {
+    "description": "Cuentas nacionales: oferta, precios corrientes (mar-16, T)",
+    "description_en": "National accounts: supply, current prices (Mar-16, Q)",
+    "area": "activity",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "activity.national_accounts_supply_current_nsa",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/2.%20Actividades_C.xlsx"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/2.%20Actividades_C.xlsx"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "national_accounts_demand_current_nsa": {
+    "description": "Cuentas nacionales: demanda, precios corrientes (mar-16, T)",
+    "description_en": "National accounts: demand, current prices (Mar-16, Q)",
+    "area": "activity",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "activity.national_accounts_demand_current_nsa",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/2.%20Gasto_C.xlsx"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/2.%20Gasto_C.xlsx"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-Componente-del-gasto.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "gdp_index_constant_sa": {
+    "description": "PBI: índice real, desestacionalizado (mar-16, T)",
+    "description_en": "GDP: real index, seasonally adjusted (Mar-16, Q)",
+    "area": "activity",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "activity.gdp_index_constant_sa",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/5.%20Desestacionalizado.xlsx"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/5.%20Desestacionalizado.xlsx"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "monthly_gdp": {
+    "description": "Indicador mensual de actividad económica: índice 2016=100, desestacionalizado y tendencia-ciclo (ene-16, M)",
+    "description_en": "Monthly indicator of economic activity: index 2016=100, seasonally adjusted and trend-cycle (Jan-16, M)",
+    "area": "activity",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "activity.monthly_gdp",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Documents/Anexo-IMAE.xlsx"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Documents/Anexo-IMAE.xlsx"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Informe-del-Indicador-Mensual-de-Actividad-Economica-(IMAE).aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "industrial_production": {
+    "description": "Producción industrial: por división, agrupaciones y clases (ene-02, M)",
+    "description_en": "Industrial production: by division, groups and classes (Jan-02, M)",
+    "area": "activity",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "activity.industrial_production",
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IVFIM/Base%202018%20=%20100/IVFIM_IVF_B18.xlsx",
+        "weights": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/industrial_production_2018_weights.csv"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IVFIM/Base%202018%20=%20100/IVFIM_IVF_B18.xlsx"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ivfim-base-2018100"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "electricity_sales": {
+    "description": "Ventas de energía eléctrica por sector (ene-00, M)",
+    "description_en": "Electricity sales by sector (Jan-00, M)",
+    "area": "activity",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "activity.electricity_sales",
+    "sources": {
+      "downloads": {
+        "main": "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-energia-electrica"
+      },
+      "direct": [],
+      "indirect": [
+        "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-energia-electrica"
+      ],
+      "provider": ["MIEM"]
+    }
+  },
+  "gasoline_sales": {
+    "description": "Ventas de nafta por departamento (ene-04, M)",
+    "description_en": "Gasoline sales by department (Jan-04, M)",
+    "area": "activity",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "activity.gasoline_sales",
+    "sources": {
+      "downloads": {
+        "main": "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-petroleo-derivados"
+      },
+      "direct": [],
+      "indirect": [
+        "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-petroleo-derivados"
+      ],
+      "provider": ["MIEM"]
+    }
+  },
+  "diesel_sales": {
+    "description": "Ventas de gasoil por departamento (ene-04, M)",
+    "description_en": "Diesel sales by department (Jan-04, M)",
+    "area": "activity",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "activity.diesel_sales",
+    "sources": {
+      "downloads": {
+        "main": "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-petroleo-derivados"
+      },
+      "direct": [],
+      "indirect": [
+        "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-petroleo-derivados"
+      ],
+      "provider": ["MIEM"]
+    }
+  },
+  "cattle_slaughter": {
+    "description": "Faena de bovinos (2-ene-05, S)",
+    "description_en": "Cattle slaughter (2-Jan-05, W)",
+    "area": "activity",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "activity.cattle_slaughter",
+    "sources": {
+      "downloads": {
+        "main": "https://www.inac.uy/innovaportal/v/11998/10/innova.front/serie-semanal-faena---bovinos-y-ovinos"
+      },
+      "direct": [
+        "https://www.inac.uy/innovaportal/v/11998/10/innova.front/serie-semanal-faena---bovinos-y-ovinos"
+      ],
+      "indirect": [
+        "https://www.inac.uy/innovaportal/v/5539/10/innova.front/faena"
+      ],
+      "provider": ["INAC"]
+    }
+  },
+  "milk_shipments": {
+    "description": "Remisión de leche a planta (ene-02, M)",
+    "description_en": "Milk delivery to plant (Jan-02, M)",
+    "area": "activity",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "activity.milk_shipments",
+    "sources": {
+      "downloads": {
+        "main": "https://www.inale.org/estadisticas/remision-a-planta/"
+      },
+      "direct": [],
+      "indirect": ["https://www.inale.org/estadisticas/remision-a-planta/"],
+      "provider": ["INALE"]
+    }
+  },
+  "core_industrial_production": {
+    "description": "Producción industrial: total, sin refinería y núcleo (ene-02, M [e])",
+    "description_en": "Industrial production: total, ex-refinery and core (Jan-02, M [e])",
+    "area": "activity",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "activity.core_industrial_production",
+    "sources": {
+      "downloads": {
+        "2018": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IVFIM/Base%202018%20=%20100/IVFIM_IVF_B18.xlsx"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IVFIM/Base%202018%20=%20100/IVFIM_IVF_B18.xlsx"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ivfim-base-2018100"
+      ],
+      "provider": ["econuy en base a INE"]
+    }
+  },
+  "national_accounts_supply_constant_nsa_extended": {
+    "description": "Cuentas nacionales: oferta, precios constantes, serie empalmada (mar-88, T [e])",
+    "description_en": "National accounts: supply, constant prices, spliced series (Mar-88, Q [e])",
+    "area": "activity",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "activity.national_accounts_supply_constant_nsa_extended",
+    "sources": {
+      "downloads": {
+        "2005": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_132t.xls",
+        "1983": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/cuadro_42t83.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_132t.xls",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/cuadro_42t83.xls",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/1.%20Actividades_K.xlsx"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/PRESENTACION83t.HTM",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "national_accounts_demand_constant_nsa_extended": {
+    "description": "Cuentas nacionales: demanda, precios constantes, serie empalmada (mar-88, T [e])",
+    "description_en": "National accounts: demand, constant prices, spliced series (Mar-88, Q [e])",
+    "area": "activity",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "activity.national_accounts_demand_constant_nsa_extended",
+    "sources": {
+      "downloads": {
+        "2005": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_104t.xls",
+        "1983": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/cuadro_45t83.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_104t.xls",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/cuadro_45t83.xls",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/1.%20Gasto_K.xlsx"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/PRESENTACION83t.HTM",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-Componente-del-gasto.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "gdp_index_constant_sa_extended": {
+    "description": "PBI: índice real, desestacionalizado, serie empalmada (mar-88, T [e])",
+    "description_en": "GDP: real index, seasonally adjusted, spliced series (Mar-88, Q [e])",
+    "area": "activity",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "activity.gdp_index_constant_sa_extended",
+    "sources": {
+      "downloads": {
+        "2005": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_133t.xls",
+        "1983": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/cuadro_55t83.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/cuadro_133t.xls",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/cuadro_55t83.xls",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/5.%20Desestacionalizado.xlsx"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/presentacion05t.htm",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/PRESENTACION83t.HTM",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "gdp_constant_nsa_extended": {
+    "description": "PBI: constante, serie empalmada (wp BCU 12-15) (mar-88, T [e])",
+    "description_en": "GDP: constant prices, spliced series (wp BCU 12-15) (Mar-88, Q [e])",
+    "area": "activity",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "activity.gdp_constant_nsa_extended",
+    "sources": {
+      "downloads": {
+        "1997": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/estudios/Documents/pib_k_backcasting.xlsx",
+        "1983": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/cuadro_42t83.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/cuadro_42t83.xls",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/estudios/Documents/pib_k_backcasting.xlsx",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/5.%20Desestacionalizado.xlsx"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/estudios/Paginas/Detalle.aspx?itm=49",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/PRESENTACION83t.HTM",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "gdp_current_nsa_extended": {
+    "description": "PBI: corriente, serie empalmada (wp BCU 12-15) (mar-97, T [e])",
+    "description_en": "GDP: current prices, spliced series (wp BCU 12-15) (Mar-97, Q [e])",
+    "area": "activity",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "activity.gdp_current_nsa_extended",
+    "sources": {
+      "downloads": {
+        "1997": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/estudios/Documents/pib_c_backcasting.xlsx"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/estudios/Documents/pib_c_backcasting.xlsx",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/5.%20Desestacionalizado.xlsx"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/estudios/Paginas/Detalle.aspx?itm=49",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "_monthly_interpolated_gdp": {
+    "description": "PBI corriente acumulado mensual linealizado en pesos y USD con proyecciones",
+    "description_en": "Monthly linear interpolation of last 4 quarters current GDP in pesos and USD with forecasts",
+    "area": "activity",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": true,
+    "function": "activity._monthly_interpolated_gdp"
+  },
+  "cpi": {
+    "description": "Índice de precios al consumidor - IPC (ene-37, M)",
+    "description_en": "Consumer price index - CPI (Jan-37, M)",
+    "area": "prices",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "prices.cpi",
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPC/Base%20Octubre%202022=100/IPC%20general_Total%20Pais_Montevideo_Interior_base%202022.xlsx"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPC/Base%20Octubre%202022=100/IPC%20general_Total%20Pais_Montevideo_Interior_base%202022.xlsx"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ipc-base-octubre-2022100"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "cpi_divisions": {
+    "description": "Índice de precios al consumidor por división - IPC (mar-97, M)",
+    "description_en": "Consumer price index by division - CPI (Mar-97, M)",
+    "area": "prices",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "prices.cpi_divisions",
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPC/Base%20Octubre%202022=100/IPC_Division_Pa%C3%ADs_desde%202010_base%202022.xlsx"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPC/Base%20Octubre%202022=100/IPC_Division_Pa%C3%ADs_desde%202010_base%202022.xlsx"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ipc-base-octubre-2022100"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "cpi_classes": {
+    "description": "Índice de precios al consumidor por división, grupo y clase - IPC (ene-11, M)",
+    "description_en": "Consumer price index by division, group and class - CPI (Jan-11, M)",
+    "area": "prices",
+    "custom": true,
+    "disabled": true,
+    "auxiliary": false,
+    "function": "prices.cpi_classes"
+  },
+  "inflation_expectations": {
+    "description": "Expectativas de inflación (ene-04, M)",
+    "description_en": "Inflation expectations (Jan-04, M)",
+    "area": "prices",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "prices.inflation_expectations",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Encuesta-Expectativas-Inflacion/IEES05I2.XLS"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Encuesta-Expectativas-Inflacion/IEES05I2.XLS"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Encuesta-Inflacion.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "ppi": {
+    "description": "Índice de precios al productor de productos nacionales por sección - IPPN (ene-68, M)",
+    "description_en": "Producer price index by division - PPI (Jan-68, M)",
+    "area": "prices",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "prices.ppi",
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPPN/IPPN%20C2%20M_B10.xls"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPPN/IPPN%20C2%20M_B10.xls"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ippn-base-marzo-2010100"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "nxr_monthly": {
+    "description": "Tipo de cambio, interbancario, mensual (abr-72, M)",
+    "description_en": "Exchange rate, interbank, monthly (Apr-72, M)",
+    "area": "prices",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "prices.nxr_monthly",
+    "sources": {
+      "downloads": {
+        "historical": "https://github.com/rxavier/econuy-extras/raw/main/econuy_extras/manual_data/nxr_monthly_ine.xls"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/Cotizaci%C3%B3n%20de%20monedas/Cotizaci%C3%B3n%20monedas.xlsx"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/cotizacion-monedas"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "nxr_daily": {
+    "description": "Tipo de cambio, interbancario, diario (3-ene-00, D)",
+    "description_en": "Exchange rate, interbank, daily (3-Jan-00, D)",
+    "area": "prices",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "prices.nxr_daily",
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/Cotizaci%C3%B3n%20de%20monedas/Cotizaci%C3%B3n%20monedas.xlsx"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/Cotizaci%C3%B3n%20de%20monedas/Cotizaci%C3%B3n%20monedas.xlsx"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/cotizacion-monedas"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "cpi_measures": {
+    "description": "IPC transable, no transable, subyacente y residual (mar-97, M [e])",
+    "description_en": "CPI: tradable, non-tradable, core and residual (Mar-97, M [e])",
+    "area": "prices",
+    "custom": true,
+    "disabled": true,
+    "auxiliary": false,
+    "function": "prices.cpi_measures"
+  },
+  "public_utilities_prices": {
+    "description": "Tarifas públicas (mar-97, M [e])",
+    "description_en": "Public utilities prices (Mar-97, M [e])",
+    "area": "prices",
+    "custom": true,
+    "disabled": true,
+    "auxiliary": false,
+    "function": "prices.public_utilities_prices"
+  },
+  "fiscal_balance_global_public_sector": {
+    "description": "Resultado fiscal: sector público consolidado (ene-99, M)",
+    "description_en": "Fiscal balance: consolidated public sector (Jan-99, M)",
+    "area": "fiscal",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "fiscal.fiscal_balance_global_public_sector",
+    "sources": {
+      "downloads": {
+        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+      },
+      "direct": [],
+      "indirect": [
+        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+      ],
+      "provider": ["MEF"]
+    }
+  },
+  "fiscal_balance_nonfinancial_public_sector": {
+    "description": "Resultado fiscal: sector público no financiero (ene-99, M)",
+    "description_en": "Fiscal balance: non-financial public sector (Jan-99, M)",
+    "area": "fiscal",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "fiscal.fiscal_balance_nonfinancial_public_sector",
+    "sources": {
+      "downloads": {
+        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+      },
+      "direct": [],
+      "indirect": [
+        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+      ],
+      "provider": ["MEF"]
+    }
+  },
+  "fiscal_balance_central_government": {
+    "description": "Resultado fiscal: gobierno central-BPS (ene-99, M)",
+    "description_en": "Fiscal balance: central government-BPS (Jan-99, M)",
+    "area": "fiscal",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "fiscal.fiscal_balance_central_government",
+    "sources": {
+      "downloads": {
+        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+      },
+      "direct": [],
+      "indirect": [
+        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+      ],
+      "provider": ["MEF"]
+    }
+  },
+  "fiscal_balance_soe": {
+    "description": "Resultado fiscal: empresas públicas",
+    "description_en": "Fiscal balance: public enterprises",
+    "area": "fiscal",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "fiscal.fiscal_balance_soe",
+    "sources": {
+      "downloads": {
+        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+      },
+      "direct": [],
+      "indirect": [
+        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+      ],
+      "provider": ["MEF"]
+    }
+  },
+  "fiscal_balance_ancap": {
+    "description": "Resultado fiscal: ANCAP (ene-01, M)",
+    "description_en": "Fiscal balance: ANCAP (Jan-01, M)",
+    "area": "fiscal",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "fiscal.fiscal_balance_ancap",
+    "sources": {
+      "downloads": {
+        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+      },
+      "direct": [],
+      "indirect": [
+        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+      ],
+      "provider": ["MEF"]
+    }
+  },
+  "fiscal_balance_ute": {
+    "description": "Resultado fiscal: UTE (ene-99, M)",
+    "description_en": "Fiscal balance: UTE (Jan-99, M)",
+    "area": "fiscal",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "fiscal.fiscal_balance_ute",
+    "sources": {
+      "downloads": {
+        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+      },
+      "direct": [],
+      "indirect": [
+        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+      ],
+      "provider": ["MEF"]
+    }
+  },
+  "fiscal_balance_antel": {
+    "description": "Resultado fiscal: ANTEL (ene-99, M)",
+    "description_en": "Fiscal balance: ANTEL (Jan-99, M)",
+    "area": "fiscal",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "fiscal.fiscal_balance_antel",
+    "sources": {
+      "downloads": {
+        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+      },
+      "direct": [],
+      "indirect": [
+        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+      ],
+      "provider": ["MEF"]
+    }
+  },
+  "fiscal_balance_ose": {
+    "description": "Resultado fiscal: OSE (ene-99, M)",
+    "description_en": "Fiscal balance: OSE (Jan-99, M)",
+    "area": "fiscal",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "fiscal.fiscal_balance_ose",
+    "sources": {
+      "downloads": {
+        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+      },
+      "direct": [],
+      "indirect": [
+        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+      ],
+      "provider": ["MEF"]
+    }
+  },
+  "tax_revenue": {
+    "description": "Recaudación por impuesto (ene-82, M)",
+    "description_en": "Tax revenue by source (Jan-82, M)",
+    "area": "fiscal",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "fiscal.tax_revenue",
+    "sources": {
+      "downloads": {
+        "main": "https://www.dgi.gub.uy/wdgi/afiledownload?2,4,381,O,S,0,37376%3BS%3B2%3B126,",
+        "pdfs": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/retrieval/taxes_pdf.csv"
+      },
+      "direct": [
+        "https://www.dgi.gub.uy/wdgi/afiledownload?2,4,381,O,S,0,37376%3BS%3B2%3B126,"
+      ],
+      "indirect": [
+        "https://www.dgi.gub.uy/wdgi/page?2,principal,dgi--datos-y-series-estadisticas--serie-de-datos--recaudacion-anual-y-mensual-por-impuesto,O,es,0,",
+        "https://www.dgi.gub.uy/wdgi/page?2,principal,dgi--datos-y-series-estadisticas--informes-mensuales-de-la-recaudacion-{year},O,es,0,"
+      ],
+      "provider": ["DGI"]
+    }
+  },
+  "public_debt_global_public_sector": {
+    "description": "Deuda del sector público global: por plazo contractual, residual, moneda y residencia (dic-99, T)",
+    "description_en": "General government debt: by contractual term, residual, currency and residence (Dec-99, Q)",
+    "area": "fiscal",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "fiscal.public_debt_global_public_sector",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "public_debt_nonfinancial_public_sector": {
+    "description": "Deuda del sector público no monetario: por plazo contractual, residual, moneda y residencia (dic-99, T)",
+    "description_en": "Non-monetary government debt: by contractual term, residual, currency and residence (Dec-99, Q)",
+    "area": "fiscal",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "fiscal.public_debt_nonfinancial_public_sector",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "public_debt_central_bank": {
+    "description": "Deuda del Banco Central: por plazo contractual, residual, moneda y residencia (dic-99, T)",
+    "description_en": "Central bank debt: by contractual term, residual, currency and residence (Dec-99, Q)",
+    "area": "fiscal",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "fiscal.public_debt_central_bank",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "public_assets": {
+    "description": "Activos del sectro público (dic-99, T)",
+    "description_en": "Public assets (Dec-99, Q)",
+    "area": "fiscal",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "fiscal.public_assets",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "fiscal_balance_summary": {
+    "description": "Resultado fiscal: Todas las agregaciones, inc. aj. FSS (ene-99, M [e])",
+    "description_en": "Fiscal balance: all aggregations, inc. FSS adjustment (Jan-99, M [e])",
+    "area": "fiscal",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "fiscal.fiscal_balance_summary",
+    "sources": {
+      "downloads": {
+        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+      },
+      "direct": [],
+      "indirect": [
+        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+      ],
+      "provider": ["MEF"]
+    }
+  },
+  "net_public_debt_global_public_sector": {
+    "description": "Deuda neta del sector público global excl. encajes (dic-99, T [e])",
+    "description_en": "Net public debt excluding bank deposits (Dec-99, T [e])",
+    "area": "fiscal",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "fiscal.net_public_debt_global_public_sector",
+    "sources": {
+      "downloads": {},
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/MonedayCredito/Activos-de-Reserva/reservas.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"
+      ],
+      "provider": ["econuy en base a BCU"]
+    }
+  },
+  "labor_rates": {
+    "description": "Tasas de actividad, empleo y desempleo por sexo (ene-06, M)",
+    "description_en": "Labor force participation, employment and unemployment rates by gender (Jan-06, M)",
+    "area": "labor",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "labor.labor_rates",
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/Total%20nacional%20vigentes.rar"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/Total%20nacional%20vigentes.rar"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "hours_worked": {
+    "description": "Horas promedio trabajadas por sector (ene-06, M)",
+    "description_en": "Average hours worked by sector (Jan-06, M)",
+    "area": "labor",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "labor.hours_worked",
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/Total%20nacional%20vigentes.rar"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/Total%20nacional%20vigentes.rar"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "nominal_wages": {
+    "description": "Salarios nominales: total, públicos y privados (ene-68, M)",
+    "description_en": "Nominal wages: total, public and private (Jan-68, M)",
+    "area": "labor",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "labor.nominal_wages",
+    "sources": {
+      "downloads": {
+        "historical": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IMS/Base%20Julio%202008=100/IMS%20C1%20Gral%20emp%20M%20B08.xls",
+        "current": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IMS/Base%20Julio%202008=100/IMS%20C1%20Gral%20P-P%20M%20emp%20B08.xls"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IMS/Base%20Julio%202008=100/IMS%20C1%20Gral%20emp%20M%20B08.xls",
+        "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IMS/Base%20Julio%202008=100/IMS%20C1%20Gral%20P-P%20M%20emp%20B08.xls"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-indice-medio-salarios-ims-base-julio-2008100"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "real_wages": {
+    "description": "Salarios reales: total, públicos y privados (ene-68, M)",
+    "description_en": "Real wages: total, public and private (Jan-68, M)",
+    "area": "labor",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "labor.real_wages",
+    "sources": {
+      "downloads": {},
+      "direct": [
+        "https://www.ine.gub.uy/c/document_library/get_file?uuid=a76433b7-5fba-40fc-9958-dd913338e989&groupId=10181",
+        "https://www.ine.gub.uy/c/document_library/get_file?uuid=97f07fd8-9410-476e-bf81-e6b1c11467ef&groupId=10181",
+        "https://www.ine.gub.uy/c/document_library/get_file?uuid=97f07fd8-9410-476e-bf81-e6b1c11467ef&groupId=10181"
+      ],
+      "indirect": [
+        "http://www.ine.gub.uy/web/guest/ims-indice-medio-de-salarios",
+        "http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"
+      ],
+      "provider": ["econuy en base a INE"]
+    }
+  },
+  "labor_rates_persons": {
+    "description": "Actividad, empleo y desempleo: series extendidas de tasas y personas (ene-91, M [e])",
+    "description_en": "Labor force participation, employment and unemployment: extended series of rates and people (Jan-91, M [e])",
+    "area": "labor",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "labor.labor_rates_persons",
+    "sources": {
+      "downloads": {
+        "population": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/Estimaciones%20y%20proyecciones/Revisi%C3%B3n%202013/Total_pais_poblacion_por_sexo_y_edad_1996-2050.xls"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/Total%20nacional%20vigentes.rar",
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/Estimaciones%20y%20proyecciones/Revisi%C3%B3n%202013/Total_pais_poblacion_por_sexo_y_edad_1996-2050.xls"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo",
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/estimaciones-proyecciones"
+      ],
+      "provider": ["econuy en base a INE"]
+    }
+  },
+  "balance_of_payments": {
+    "description": "Balanza de pagos (mar-12, T)",
+    "description_en": "Balance of payments (Mar-12, Q)",
+    "area": "external",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.balance_of_payments",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Balanza%20de%20Pagos/dse_bp_m6_arm_scn.xlsx"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Balanza%20de%20Pagos/dse_bp_m6_arm_scn.xlsx"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/BalanzadePagos.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "trade_exports_sector_value": {
+    "description": "Exportaciones por sector, valor (ene-00, M)",
+    "description_en": "Exports by sector, value (Jan-00, M)",
+    "area": "external",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.trade_exports_sector_value",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/exp_ciiu_val.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/exp_ciiu_val.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "trade_exports_sector_volume": {
+    "description": "Exportaciones por sector, volumen (ene-05, M)",
+    "description_en": "Exports by sector, volume (Jan-05, M)",
+    "area": "external",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.trade_exports_sector_volume",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_exp_ciiu_ivf.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_exp_ciiu_ivf.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "trade_exports_sector_price": {
+    "description": "Exportaciones por sector, precio (ene-05, M)",
+    "description_en": "Exports by sector, price (Jan-05, M)",
+    "area": "external",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.trade_exports_sector_price",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_exp_ciiu_ip.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_exp_ciiu_ip.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "trade_exports_destination_value": {
+    "description": "Exportaciones por destino, valor (ene-00, M)",
+    "description_en": "Exports by destination, value (Jan-00, M)",
+    "area": "external",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.trade_exports_destination_value",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/exp_pais_val.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/exp_pais_val.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "trade_exports_destination_volume": {
+    "description": "Exportaciones por destino, volumen (ene-05, M)",
+    "description_en": "Exports by destination, volume (Jan-05, M)",
+    "area": "external",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.trade_exports_destination_volume",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_exp_pais_ivf.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_exp_pais_ivf.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "trade_exports_destination_price": {
+    "description": "Exportaciones por destino, precio (ene-05, M)",
+    "description_en": "Exports by destination, price (Jan-05, M)",
+    "area": "external",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.trade_exports_destination_price",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_exp_pais_ip.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_exp_pais_ip.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "trade_imports_category_value": {
+    "description": "Importaciones por categoría, valor (ene-00, M)",
+    "description_en": "Imports by category, value (Jan-00, M)",
+    "area": "external",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.trade_imports_category_value",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/imp_gce_val.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/imp_gce_val.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "trade_imports_category_volume": {
+    "description": "Importaciones por categoría, volumen (ene-05, M)",
+    "description_en": "Imports by category, volume (Jan-05, M)",
+    "area": "external",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.trade_imports_category_volume",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_imp_gce_ivf.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_imp_gce_ivf.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "trade_imports_category_price": {
+    "description": "Importaciones por categoría, precio (ene-05, M)",
+    "description_en": "Imports by category, price (Jan-05, M)",
+    "area": "external",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.trade_imports_category_price",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_imp_gce_ip.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_imp_gce_ip.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "trade_imports_origin_value": {
+    "description": "Importaciones por origen, valor (ene-00, M)",
+    "description_en": "Imports by origin, value (Jan-00, M)",
+    "area": "external",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.trade_imports_origin_value",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/imp_pais_val.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/imp_pais_val.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "trade_imports_origin_volume": {
+    "description": "Importaciones por origen, volumen (ene-05, M)",
+    "description_en": "Imports by origin, volume (Jan-05, M)",
+    "area": "external",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.trade_imports_origin_volume",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_imp_pais_ivf.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_imp_pais_ivf.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "trade_imports_origin_price": {
+    "description": "Importaciones por origen, precio (ene-05, M)",
+    "description_en": "Imports by origin, price (Jan-05, M)",
+    "area": "external",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.trade_imports_origin_price",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_imp_pais_ip.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_imp_pais_ip.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "rxr": {
+    "description": "Tipos de cambio reales, BCU (ene-00, M)",
+    "description_en": "Real exchange rates, BCU (Jan-00, M)",
+    "area": "external",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.rxr",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Indice_Cambio_Real/TCRE.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Indice_Cambio_Real/TCRE.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Cambio-Real-Efectivo.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "international_reserves": {
+    "description": "Reservas internacionales (26-jun-02, D)",
+    "description_en": "International reserves (26-jun-02, D)",
+    "area": "external",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.international_reserves",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/MonedayCredito/Activos-de-Reserva/reservas.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/MonedayCredito/Activos-de-Reserva/reservas.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "international_reserves_changes": {
+    "description": "Variación en las reservas del BCU por fuente (2-ene-13, D)",
+    "description_en": "Changes in BCU reserves by source (2-Jan-13, D)",
+    "area": "external",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.international_reserves_changes",
+    "sources": {
+      "downloads": {
+        "landing": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Informe-Diario-Pasivos-Monetarios.aspx",
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Informe%20Diario%20Pasivos%20Monetarios/infd_",
+        "missing": "https://docs.google.com/spreadsheets/d/1tXwv8SaigbBrfBSSCVGBjSs88f3dgTq4nIANPn7vjYI/export?format=xlsx&authuser=0"
+      },
+      "direct": [],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Informe-Diario-Pasivos-Monetarios.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "balance_of_payments_summary": {
+    "description": "Balanza de pagos resumida y flujos de capital (mar-12, T)",
+    "description_en": "Summarized balance of payments and capital flows (Mar-12, Q)",
+    "area": "external",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.balance_of_payments_summary",
+    "sources": {
+      "downloads": {},
+      "direct": [],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/BalanzadePagos.aspx"
+      ],
+      "provider": ["econuy en base a BCU"]
+    }
+  },
+  "trade_balance": {
+    "description": "Balanza comercial por país (ene-00, M [e])",
+    "description_en": "Trade balance by country (Jan-00, M [e])",
+    "area": "external",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.trade_balance",
+    "sources": {
+      "downloads": {},
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/exp_pais_val.xls",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/imp_pais_val.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+      ],
+      "provider": ["econuy en base a BCU"]
+    }
+  },
+  "terms_of_trade": {
+    "description": "Términos de intercambio (ene-05, M [e])",
+    "description_en": "Terms of trade (Jan-05, M [e])",
+    "area": "external",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.terms_of_trade",
+    "sources": {
+      "downloads": {},
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_exp_pais_ip.xls",
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_imp_pais_ip.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+      ],
+      "provider": ["econuy en base a BCU"]
+    }
+  },
+  "commodity_prices": {
+    "description": "Precios de commodities seleccionados (ene-02, M [e])",
+    "description_en": "Selected commodity prices (Jan-02, M [e])",
+    "area": "external",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.commodity_prices",
+    "sources": {
+      "downloads": {
+        "beef": "https://www.inac.uy/innovaportal/v/9799/10/innova.front/serie-semanal-ingreso-medio-de-exportacion---bovino-ovino-y-otros-productos",
+        "pulp": "https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600341?ordre=antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=12&anneeFin={year}",
+        "milk1": "https://www.inale.org/estadisticas/",
+        "milk2": "https://agriculture.ec.europa.eu/document/download/62d01488-33a0-4601-a841-ca48fa11d999_en?filename=eu-milk-historical-price-series_en_0.xlsx",
+        "imf": "https://www.imf.org/en/Research/commodity-prices"
+      },
+      "direct": [
+        "https://www.inac.uy/innovaportal/v/9799/10/innova.front/serie-semanal-ingreso-medio-de-exportacion---bovino-ovino-y-otros-productos",
+        "https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600341?ordre=antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=12&anneeFin=2023",
+        "https://data.nasdaq.com/api/v3/datasets/ODA/PWHEAMT_USD.csv?api_key=3TPxACcrxy9WsE871Lqe",
+        "https://agriculture.ec.europa.eu/document/download/62d01488-33a0-4601-a841-ca48fa11d999_en?filename=eu-milk-historical-price-series_en_0.xlsx"
+      ],
+      "indirect": [
+        "https://www.inac.uy/innovaportal/v/5541/10/innova.front/precios",
+        "https://www.insee.fr/fr/statistiques/serie/010600339",
+        "https://www.imf.org/en/Research/commodity-prices",
+        "https://www.inale.org/estadisticas/",
+        "https://agriculture.ec.europa.eu/data-and-analysis/markets/overviews/market-observatories/milk_es",
+        "https://www.imf.org/en/Research/commodity-prices"
+      ],
+      "provider": [
+        "econuy en base a INAC, INSEE, INALE, Comisión Europea y FMI"
+      ]
+    }
+  },
+  "commodity_index": {
+    "description": "Índice econuy de precios de commodities (ene-02, M [e])",
+    "description_en": "Econuy commodity price index (Jan-02, M [e])",
+    "area": "external",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.commodity_index",
+    "sources": {
+      "downloads": {},
+      "direct": [
+        "https://www.inac.uy/innovaportal/v/9799/10/innova.front/serie-semanal-ingreso-medio-de-exportacion---bovino-ovino-y-otros-productos",
+        "https://www.insee.fr/en/statistiques/serie/telecharger/010600339?ordre=antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=11&anneeFin=2023",
+        "https://www.quandl.com/api/v3/datasets/CHRIS/CME_S1.csv?api_key=3TPxACcrxy9WsE871Lqe",
+        "https://www.quandl.com/api/v3/datasets/CHRIS/CME_W1.csv?api_key=3TPxACcrxy9WsE871Lqe",
+        "https://agriculture.ec.europa.eu/data-and-analysis/markets/overviews/market-observatories/milk_es"
+      ],
+      "indirect": [
+        "https://www.inac.uy/innovaportal/v/5541/10/innova.front/precios",
+        "https://www.insee.fr/fr/statistiques/serie/010600339",
+        "https://www.quandl.com/data/CHRIS/CME_S1-Soybean-Futures-Continuous-Contract-1-S1-Front-Month",
+        "https://www.quandl.com/data/CHRIS/CME_W1-Wheat-Futures-Continuous-Contract-1-W1-Front-Month",
+        "https://www.inale.org/estadisticas/",
+        "https://agriculture.ec.europa.eu/data-and-analysis/markets/overviews/market-observatories/milk_es",
+        "https://www.imf.org/en/Research/commodity-prices",
+        "https://comtrade.un.org/"
+      ],
+      "provider": [
+        "econuy en base a INAC, INSEE, INALE, Comisión Europea, FMI y Naciones Unidas"
+      ]
+    }
+  },
+  "rxr_custom": {
+    "description": "Tipos de cambio reales, cálculos econuy (dic-79, M [e])",
+    "description_en": "Real exchange rates, econuy calculations (Dec-79, M [e])",
+    "area": "external",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "external.rxr_custom",
+    "sources": {
+      "downloads": {},
+      "direct": [],
+      "indirect": [
+        "https://data.imf.org/?sk=4c514d48-b6ba-49ed-8ab9-52b0c1a0179b",
+        "http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo",
+        "http://www.ine.gub.uy/web/guest/cotizacion-de-monedas2",
+        "https://www.ambito.com/contenidos/dolar-informal.html",
+        "http://www.bcra.gov.ar/PublicacionesEstadisticas/Principales_variables_datos.asp?serie=7931&detalle=Inflaci%F3n%20mensual%A0(variaci%F3n%20en%20%)",
+        "http://www.inflacionverdadera.com/argentina/",
+        "http://www.ipeadata.gov.br/Default.aspx",
+        "https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html?=&t=o-que-e"
+      ],
+      "provider": [
+        "econuy en base a INE, BCRA, Ipea, IBGE, FMI, Ámbito e Inflación Verdadera"
+      ]
+    }
+  },
+  "bank_deposits": {
+    "description": "Depósitos en el sistema bancario (dic-98, M)",
+    "description_en": "Bank deposits (Dec-98, M)",
+    "area": "financial",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "financial.bank_deposits",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Depositos.xlsx"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Depositos.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Series-estadisticas-Depositos.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "bank_credit": {
+    "description": "Créditos del sistema bancario al sector no financiero (dic-98, M)",
+    "description_en": "Bank credits to non-financial sector (Dec-98, M)",
+    "area": "financial",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "financial.bank_credit",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Creditos.xlsx"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Creditos.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Series-Estadisticas-Creditos.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "bank_interest_rates": {
+    "description": "Tasas de interés activas y pasivas (ene-98, M)",
+    "description_en": "Active and passive interest rates (Jan-98, M)",
+    "area": "financial",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "financial.bank_interest_rates",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/tasas.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/tasas.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Series-Estadisticas-Tasas.aspx"
+      ],
+      "provider": ["BCU"]
+    }
+  },
+  "call_rate": {
+    "description": "Tasa call a 1 día (02-ene-02, D)",
+    "description_en": "Call rate (02-Jan-02, D)",
+    "area": "financial",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "financial.call_rate",
+    "sources": {
+      "downloads": {
+        "main": "https://web.bevsa.com.uy/Mercado/MercadoDinero/CallHistoricoDiario.aspx"
+      },
+      "direct": [],
+      "indirect": [
+        "https://web.bevsa.com.uy/Mercado/MercadoDinero/CallHistoricoDiario.aspx"
+      ],
+      "provider": ["BEVSA"]
+    }
+  },
+  "sovereign_risk_index": {
+    "description": "Uruguay Bond Index - riesgo soberano (01-ene-99, D)",
+    "description_en": "Uruguay Bond Index - sovereign risk (01-Jan-99, D)",
+    "area": "financial",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "financial.sovereign_risk_index",
+    "sources": {
+      "downloads": {
+        "historical": "https://www4.rafap.com.uy/internet/images/indicadores/UBI_Historico.xls",
+        "current": "https://www4.rafap.com.uy/internet/servlet/hextubicd"
+      },
+      "direct": [],
+      "indirect": ["https://www.rafap.com.uy/mvdcms/Institucional/UBI-uc89"],
+      "provider": ["República AFAP"]
+    }
+  },
+  "sovereign_bond_yields": {
+    "description": "Rendimiento de bonos soberanos (02-jun-03, D [e])",
+    "description_en": "Sovereign bond yields (02-Jun-03, D [e])",
+    "area": "financial",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "financial.sovereign_bond_yields",
+    "sources": {
+      "downloads": {
+        "usd": "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceITBGL.aspx",
+        "ui": "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceINDUI.aspx",
+        "uyu": "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceITLUP.aspx"
+      },
+      "direct": [],
+      "indirect": [
+        "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceITBGL.aspx",
+        "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceINDUI.aspx",
+        "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceITLUP.aspx"
+      ],
+      "provider": ["BEVSA"]
+    }
+  },
+  "income_household": {
+    "description": "Ingreso medio de los hogares sin valor ni aguinaldo (ene-06, M)",
+    "description_en": "Average household income (Jan-06, M)",
+    "area": "income",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "income.income_household",
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/Ingresos%20de%20las%20personas%20y%20los%20hogares.rar"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/Ingresos%20de%20las%20personas%20y%20los%20hogares.rar"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ech-ingresos-personas-hogares"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "income_capita": {
+    "description": "Ingreso medio per cápita sin valor locativo ni aguinaldo (ene-06, M)",
+    "description_en": "Average per capita income (Jan-06, M)",
+    "area": "income",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "income.income_capita",
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/Ingresos%20de%20las%20personas%20y%20los%20hogares.rar"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/Ingresos%20de%20las%20personas%20y%20los%20hogares.rar"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ech-ingresos-personas-hogares"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "global_gdp": {
+    "description": "PBI real desestacionalizado de EE.UU., Unión Europea, Japón y China (mar-47, T)",
+    "description_en": "Real GDP of the United States, Europe, Japan and China (Mar-47, Q)",
+    "area": "global",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "global_.global_gdp",
+    "sources": {
+      "downloads": {
+        "fred": "https://api.stlouisfed.org/fred/series/observations?series_id=",
+        "chn_oecd": "https://stats.oecd.org/SDMX-JSON/data/QNA/CHN.B1_GE.GYSA+GPSA.Q/all?startTime=1960-Q1&endTime=",
+        "chn_obs": "https://docs.google.com/spreadsheets/d/1JwHqYSyBCOj9E60X0JCnPIn4WEzfu6rcPN8Xg76AhyU/export?format=xlsx&authuser=0"
+      },
+      "direct": [],
+      "indirect": [
+        "https://fred.stlouisfed.org/",
+        "https://stats.oecd.org/Index.aspx",
+        "https://data.stats.gov.cn/english/easyquery.htm?cn=B01"
+      ],
+      "provider": ["econuy en base a FRB St. Louis, OECD y NBS China"]
+    }
+  },
+  "global_stock_markets": {
+    "description": "Índices bursátiles de EE.UU., Unión Europea, Japón y China (30-dic-27, D)",
+    "description_en": "Stock markets of the United States, Europe, Japan and China (30-Dec-27, D)",
+    "area": "global",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "global_.global_stock_markets",
+    "sources": {
+      "downloads": {
+        "spy": "https://query1.finance.yahoo.com/v7/finance/download/%5EGSPC?period1=-1325635200&period2={timestamp}&interval=1d&events=history&includeAdjustedClose=true",
+        "n100": "https://query1.finance.yahoo.com/v7/finance/download/%5EN100?period1=946598400&period2={timestamp}&interval=1d&events=history&includeAdjustedClose=true",
+        "sse": "https://query1.finance.yahoo.com/v7/finance/download/000001.SS?period1=867715200&period2={timestamp}&interval=1d&events=history&includeAdjustedClose=true",
+        "nikkei": "https://query1.finance.yahoo.com/v7/finance/download/%5EN225?period1=-157507200&period2={timestamp}&interval=1d&events=history&includeAdjustedClose=true"
+      },
+      "direct": [],
+      "indirect": [
+        "https://finance.yahoo.com/quote/%5EGSPC/history/",
+        "https://finance.yahoo.com/quote/%5EN100/history/",
+        "https://finance.yahoo.com/quote/000001.SS/history/",
+        "https://finance.yahoo.com/quote/%5EN225/history/"
+      ],
+      "provider": ["Yahoo Finance"]
+    }
+  },
+  "global_policy_rates": {
+    "description": "Tasas de interés de política monetaria de EE.UU., Eurozona, Japón y China (01-ene-46, D)",
+    "description_en": "Monetary policy interest rates of the United States, Eurozone, Japan and China (01-Jan-46, D)",
+    "area": "global",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "global_.global_policy_rates",
+    "sources": {
+      "downloads": {
+        "main": "https://data.bis.org/static/bulk/WS_CBPOL_csv_row.zip"
+      },
+      "direct": ["https://data.bis.org/static/bulk/WS_CBPOL_csv_row.zip"],
+      "indirect": ["https://data.bis.org/topics/CBPOL/data"],
+      "provider": ["BIS"]
+    }
+  },
+  "global_long_bond_rates": {
+    "description": "Tasas de interés de largo plazo (10 años) de EE.UU., Alemania, Francia, España, Italia, Reino Unido, Japón y China (02-ene-62, D)",
+    "description_en": "Long term interest rates (10 years) of the United States, Germany, France, Spain, Italy, United Kingdom, Japan and China (02-Jan-62, D)",
+    "area": "global",
+    "custom": true,
+    "disabled": true,
+    "auxiliary": false,
+    "function": "global_.global_long_bond_rates"
+  },
+  "global_nxr": {
+    "description": "Cotización de monedas de EE.UU., Eurozona, Japón y China (04-ene-71, D)",
+    "description_en": "Exchange rates of the United States, Eurozone, Japan and China (04-Jan-71, D)",
+    "area": "global",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "global_.global_nxr",
+    "sources": {
+      "downloads": {
+        "dollar": "https://query1.finance.yahoo.com/v7/finance/download/DX-Y.NYB?period1=31795200&period2={timestamp}&interval=1d&events=history&includeAdjustedClose=true",
+        "eur": "https://query1.finance.yahoo.com/v7/finance/download/USDEUR=X?period1=1070150400&period2={timestamp}&interval=1d&events=history&includeAdjustedClose=true",
+        "jpy": "https://query1.finance.yahoo.com/v7/finance/download/USDJPY=X?period1=846547200&period2={timestamp}&interval=1d&events=history&includeAdjustedClose=true",
+        "cny": "https://query1.finance.yahoo.com/v7/finance/download/USDCNY=X?period1=991180800&period2={timestamp}&interval=1d&events=history&includeAdjustedClose=true"
+      },
+      "direct": [],
+      "indirect": [
+        "https://finance.yahoo.com/quote/DX-Y.NYB?/history/",
+        "https://finance.yahoo.com/quote/USDEUR=X/history/",
+        "https://finance.yahoo.com/quote/USDJPY=X/history/",
+        "https://finance.yahoo.com/quote/USDCNY=X/history/"
+      ],
+      "provider": ["Yahoo Finance"]
+    }
+  },
+  "regional_gdp": {
+    "description": "PBI real desestacionalizado de Argentina y Brasil (mar-93, T)",
+    "description_en": "Real GDP of Argentina and Brazil (Mar-93, Q)",
+    "area": "regional",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "regional.regional_gdp",
+    "sources": {
+      "downloads": {
+        "arg_new": "https://www.indec.gob.ar/indec/web/Nivel4-Tema-3-9-47",
+        "arg_old": "https://www.indec.gob.ar/ftp/nuevaweb/cuadros/17/cuadro12.xls",
+        "bra": "https://ftp.ibge.gov.br/Contas_Nacionais/Contas_Nacionais_Trimestrais/Tabelas_Completas/Tab_Compl_CNT.zip"
+      },
+      "direct": [],
+      "indirect": [
+        "https://www.indec.gob.ar/indec/web/Nivel4-Tema-3-9-47",
+        "https://www.indec.gob.ar/indec/web/Institucional-Indec-InformacionDeArchivo-5",
+        "https://sidra.ibge.gov.br/tabela/1621#/n1/all/v/all/p/all/c11255/90687,90691,90696,90705,90707,93404,93405,93406,93407,93408/d/v584%201/l/v,c11255,t+p/resultado"
+      ],
+      "provider": ["INDEC", "IBGE"]
+    }
+  },
+  "regional_monthly_gdp": {
+    "description": "PBI real mensual desestacionalizado de Argentina y Brasil (ene-03, M)",
+    "description_en": "Real monthly seasonally adjusted GDP of Argentina and Brazil (Jan-03, M)",
+    "area": "regional",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "regional.regional_monthly_gdp",
+    "sources": {
+      "downloads": {
+        "arg": "https://www.indec.gob.ar/ftp/cuadros/economia/sh_emae_mensual_base2004.xls",
+        "bra": "http://api.bcb.gov.br/dados/serie/bcdata.sgs.24364/dados?formato=csv"
+      },
+      "direct": [],
+      "indirect": [
+        "https://www.indec.gob.ar/indec/web/Nivel4-Tema-3-9-48",
+        "https://dadosabertos.bcb.gov.br/dataset/24364-indice-de-atividade-economica-do-banco-central-ibc-br---com-ajuste-sazonal"
+      ],
+      "provider": ["INDEC", "BCB"]
+    }
+  },
+  "regional_cpi": {
+    "description": "Índice de precios al consumo de Argentina y Brasil (ene-70, M)",
+    "description_en": "Consumer price index of Argentina and Brazil (Jan-70, M)",
+    "area": "regional",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "regional.regional_cpi",
+    "sources": {
+      "downloads": {
+        "ar": "http://www.bcra.gov.ar/PublicacionesEstadisticas/Principales_variables_datos.asp",
+        "ar_payload": "fecha_desde=1970-01-01&fecha_hasta={date1}&B1=Enviar&primeravez=1&fecha_desde=19600101&fecha_hasta={date2}&serie=7931&serie1=0&serie2=0&serie3=0&serie4=0&detalle=Inflaci%F3n+mensual%A0%28variaci%F3n+en+%29",
+        "ar_unofficial": "http://www.inflacionverdadera.com/Argentina_inflation.xls",
+        "bra": "https://servicodados.ibge.gov.br/api/v1/conjunturais?&d=s&user=ibge&t=1737&v=63&p=197001-{date}&ng=1(1)&c="
+      },
+      "direct": [],
+      "indirect": [
+        "http://www.bcra.gov.ar/PublicacionesEstadisticas/Principales_variables_datos.asp",
+        "http://www.inflacionverdadera.com/",
+        "https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html?=&t=o-que-e"
+      ],
+      "provider": ["econuy en base a BRCA, Inflación Verdadera e IBGE"]
+    }
+  },
+  "regional_embi_spreads": {
+    "description": "EMBI spread (JP Morgan) de Argentina, Brasil y Global (11-dic-98, D)",
+    "description_en": "EMBI spread (JP Morgan) of Argentina, Brazil and Global (11-Dec-98, D)",
+    "area": "regional",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "regional.regional_embi_spreads",
+    "sources": {
+      "downloads": {
+        "main": "https://cdn.bancentral.gov.do/documents/entorno-internacional/documents/Serie_Historica_Spread_del_EMBI.xlsx"
+      },
+      "direct": [
+        "https://cdn.bancentral.gov.do/documents/entorno-internacional/documents/Serie_Historica_Spread_del_EMBI.xlsx"
+      ],
+      "indirect": [
+        "https://www.bancentral.gov.do/a/d/2585-entorno-internacional"
+      ],
+      "provider": ["BCRD"]
+    }
+  },
+  "regional_embi_yields": {
+    "description": "EMBI yield (JP Morgan) de Argentina, Brasil y Global (11-dic-98, D)",
+    "description_en": "EMBI yield (JP Morgan) of Argentina, Brazil and Global (11-Dec-98, D)",
+    "area": "regional",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "regional.regional_embi_yields",
+    "sources": {
+      "downloads": {
+        "treasury": "https://query1.finance.yahoo.com/v7/finance/download/%5ETNX?period1=-252374400&period2={timestamp}&interval=1d&events=history&includeAdjustedClose=true"
+      },
+      "direct": [],
+      "indirect": [
+        "https://finance.yahoo.com/quote/%5ETNX/history?p=%5ETNX",
+        "https://www.bancentral.gov.do/a/d/2585-entorno-internacional"
+      ],
+      "provider": ["econuy en base a Yahoo Finance y BCRD"]
+    }
+  },
+  "regional_nxr": {
+    "description": "Tipo de cambio nominal diario de Argentina y Brasil (9-abr-02, D)",
+    "description_en": "Nominal daily exchange rate of Argentina and Brazil (09-Apr-02, D)",
+    "area": "regional",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "regional.regional_nxr",
+    "sources": {
+      "downloads": {
+        "ar": "https://mercados.ambito.com/dolar/oficial/historico-general/09-04-2002/{date}",
+        "ar_unofficial": "https://mercados.ambito.com/dolar/informal/historico-general/09-04-2002/{date}",
+        "bra": "http://www.ipeadata.gov.br/api/odata4/ValoresSerie(SERCODIGO='GM366_ERV366')"
+      },
+      "direct": [],
+      "indirect": [
+        "https://www.ambito.com/contenidos/dolar-oficial.html",
+        "https://www.ambito.com/contenidos/dolar-informal.html",
+        "http://www.ipeadata.gov.br/Default.aspx"
+      ],
+      "provider": ["Ámbito", "Ipea"]
+    }
+  },
+  "regional_policy_rates": {
+    "description": "Tasas de interés de política monetaria de Argentina y Brasil (4-jun-86, D)",
+    "description_en": "Monetary policy interest rates of Argentina and Brazil (04-Jun-86, D)",
+    "area": "regional",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "regional.regional_policy_rates",
+    "sources": {
+      "downloads": {
+        "main": "https://data.bis.org/static/bulk/WS_CBPOL_csv_row.zip"
+      },
+      "direct": ["https://data.bis.org/static/bulk/WS_CBPOL_csv_row.zip"],
+      "indirect": ["https://data.bis.org/topics/CBPOL/data"],
+      "provider": ["BIS"]
+    }
+  },
+  "regional_stock_markets": {
+    "description": "Índices bursátiles en USD de Argentina y Brasil (9-abr-02, D)",
+    "description_en": "Stock markets in USD of Argentina and Brazil (09-Apr-02, D)",
+    "area": "regional",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "regional.regional_stock_markets",
+    "sources": {
+      "downloads": {
+        "arg": "https://query1.finance.yahoo.com/v7/finance/download/%5EMERV?period1=844732800&period2={timestamp}&interval=1d&events=history&includeAdjustedClose=true",
+        "bra": "https://query1.finance.yahoo.com/v7/finance/download/%5EBVSP?period1=735868800&period2={timestamp}&interval=1d&events=history&includeAdjustedClose=true"
+      },
+      "direct": [],
+      "indirect": [
+        "https://finance.yahoo.com/quote/%5EMERV/history?p=%5EMERV",
+        "https://finance.yahoo.com/quote/%5EBVSP/history?p=%5EBVSP"
+      ],
+      "provider": ["Yahoo Finance"]
+    }
+  },
+  "regional_rxr": {
+    "description": "Tipo de cambio real vs. EE.UU. de Argentina y Brasil (dic-70, M)",
+    "description_en": "Real exchange rate vs. the United States of Argentina and Brazil (Dec-70, M)",
+    "area": "regional",
+    "custom": true,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "regional.regional_rxr",
+    "sources": {
+      "downloads": {},
+      "direct": [],
+      "indirect": [
+        "https://data.imf.org/?sk=4c514d48-b6ba-49ed-8ab9-52b0c1a0179b",
+        "https://www.ambito.com/contenidos/dolar-informal.html",
+        "http://www.bcra.gov.ar/PublicacionesEstadisticas/Principales_variables_datos.asp?serie=7931&detalle=Inflaci%F3n%20mensual%A0(variaci%F3n%20en%20%)",
+        "http://www.inflacionverdadera.com/argentina/",
+        "http://www.ipeadata.gov.br/Default.aspx",
+        "https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html?=&t=o-que-e"
+      ],
+      "provider": [
+        "econuy en base a BCRA, Ámbito, Ipea, IBGE, FMI e Inflación Verdadera"
+      ]
+    }
+  }
+}

@@ -13,7 +13,7 @@ from scipy.stats import stats
 
 from econuy.core import Pipeline
 from econuy.utils import metadata, get_project_root
-from econuy.utils.sources import urls
+from econuy.utils.ops import get_name_from_function, get_download_sources
 
 
 @retry(
@@ -29,8 +29,10 @@ def cpi() -> pd.DataFrame:
     Monthly CPI : pd.DataFrame
 
     """
-    name = "cpi"
-    raw = pd.read_excel(urls[name]["dl"]["main"], usecols="C").dropna(axis=0, how="any")
+    name = get_name_from_function()
+    sources = get_download_sources(name)
+
+    raw = pd.read_excel(sources["main"], usecols="C").dropna(axis=0, how="any")
     output = raw.set_index(
         pd.date_range(start="1937-07-31", freq="M", periods=len(raw))
     ).rename_axis(None)
@@ -64,9 +66,10 @@ def cpi_divisions() -> pd.DataFrame:
     Monthly CPI by division : pd.DataFrame
 
     """
-    name = "cpi_divisions"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
     raw = (
-        pd.read_excel(urls[name]["dl"]["main"], usecols="A:D")
+        pd.read_excel(sources["main"], usecols="A:D")
         .dropna(axis=0, how="any")
         .assign(date=lambda x: x["Año"].astype(str) + x["Mes"].astype(str).str.pad(2, "left", "0"))
         .pivot(columns="División", values="Indice Total País", index="date")
@@ -189,14 +192,15 @@ def inflation_expectations() -> pd.DataFrame:
     Monthly inflation expectations : pd.DataFrame
 
     """
-    name = "inflation_expectations"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
     try:
-        raw = pd.read_excel(urls[name]["dl"]["main"], skiprows=9)
+        raw = pd.read_excel(sources["main"], skiprows=9)
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(urls[name]["dl"]["main"], verify=certs_path)
+            r = requests.get(sources["main"], verify=certs_path)
             raw = pd.read_excel(r.content, skiprows=9)
     raw = raw.dropna(how="all", axis=1).dropna(thresh=4)
     mask = raw.iloc[-12:].isna().all()
@@ -331,9 +335,10 @@ def ppi() -> pd.DataFrame:
     Monthly PPI : pd.DataFrame
 
     """
-    name = "ppi"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
-    raw = pd.read_excel(urls[name]["dl"]["main"], skiprows=7, index_col=0).dropna()
+    raw = pd.read_excel(sources["main"], skiprows=7, index_col=0).dropna()
 
     raw.columns = [
         "Índice general",
@@ -379,7 +384,8 @@ def nxr_monthly(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
         Sell rate, monthly average and end of period.
 
     """
-    name = "nxr_monthly"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
     if pipeline is None:
         pipeline = Pipeline()
@@ -394,7 +400,7 @@ def nxr_monthly(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     )
 
     historical = pd.read_excel(
-        urls[name]["dl"]["historical"], skiprows=4, index_col=0, usecols="A,C,F"
+        sources["historical"], skiprows=4, index_col=0, usecols="A,C,F"
     ).dropna(how="any", axis=0)
     historical.columns = ["Tipo de cambio venta, fin de período", "Tipo de cambio venta, promedio"]
     historical.index = pd.to_datetime(historical.index) + MonthEnd(1)
@@ -432,9 +438,10 @@ def nxr_daily() -> pd.DataFrame:
         Sell rate.
 
     """
-    name = "nxr_daily"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
-    raw = pd.read_excel(urls[name]["dl"]["main"], skiprows=7, usecols="A:E").dropna(thresh=2)
+    raw = pd.read_excel(sources["main"], skiprows=7, usecols="A:E").dropna(thresh=2)
     raw["Unnamed: 1"] = (
         raw["Unnamed: 1"]
         .str.slice(stop=3)

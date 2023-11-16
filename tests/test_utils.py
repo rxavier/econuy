@@ -26,13 +26,13 @@ def test_sqlutil():
     sqlutil.read(con=TEST_CON, table_name="nxr_daily", start_date="2011-01-14")
     sqlutil.read(
         con=TEST_CON,
-        table_name="reserves_changes",
+        table_name="international_reserves_changes",
         end_date="2012-01-01",
         cols=["1. Compras netas de moneda extranjera"],
     )
 
 
 def test_sources():
-    source_1 = _get_sources("balance_gps")
-    source_2 = _get_sources("balance_nfps")
+    source_1 = _get_sources("fiscal_balance_global_public_sector")
+    source_2 = _get_sources("fiscal_balance_nonfinancial_public_sector")
     assert source_1 == source_2

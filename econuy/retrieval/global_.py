@@ -13,7 +13,7 @@ from pandas.tseries.offsets import MonthEnd
 
 from econuy.transform import decompose, rebase
 from econuy.utils import metadata
-from econuy.utils.sources import urls
+from econuy.utils.ops import get_download_sources, get_name_from_function
 
 
 FRED_API_KEY = "f5700348a7dd3a997c88af6d35608a12"
@@ -24,7 +24,7 @@ FRED_API_KEY = "f5700348a7dd3a997c88af6d35608a12"
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def gdp() -> pd.DataFrame:
+def global_gdp() -> pd.DataFrame:
     """Get seasonally adjusted real quarterly GDP for select countries.
 
     Countries/aggregates are US, EU-27, Japan and China.
@@ -34,10 +34,11 @@ def gdp() -> pd.DataFrame:
     Quarterly real GDP in seasonally adjusted terms : pd.DataFrame
 
     """
-    name = "global_gdp"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
     chn_y = dt.datetime.now().year + 1
-    chn_r = requests.get(f"{urls[name]['dl']['chn_oecd']}{chn_y}-Q4")
+    chn_r = requests.get(f"{sources['chn_oecd']}{chn_y}-Q4")
     chn_json = chn_r.json()
     chn_datasets = []
     for dataset, start in zip(["0", "1"], ["2011-03-31", "1993-03-31"]):
@@ -52,7 +53,7 @@ def gdp() -> pd.DataFrame:
     chn_qoq = chn_datasets[0]
     chn_yoy = chn_datasets[1]
     chn_obs = (
-        pd.read_excel(urls["global_gdp"]["dl"]["chn_obs"], index_col=0)
+        pd.read_excel(sources["chn_obs"], index_col=0)
         .dropna(how="all", axis=1)
         .dropna(how="all", axis=0)
     )
@@ -74,9 +75,7 @@ def gdp() -> pd.DataFrame:
 
     gdps = []
     for series in ["GDPC1", "CLVMNACSCAB1GQEU272020", "JPNRGDPEXP"]:
-        r = requests.get(
-            f"{urls[name]['dl']['fred']}{series}&api_key=" f"{FRED_API_KEY}&file_type=json"
-        )
+        r = requests.get(f"{sources['fred']}{series}&api_key=" f"{FRED_API_KEY}&file_type=json")
         aux = pd.DataFrame.from_records(r.json()["observations"])
         aux = aux[["date", "value"]].set_index("date")
         aux.index = pd.to_datetime(aux.index)
@@ -114,7 +113,7 @@ def gdp() -> pd.DataFrame:
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def stocks() -> pd.DataFrame:
+def global_stock_markets() -> pd.DataFrame:
     """Get stock market index data.
 
     Indexes selected are S&P 500, Euronext 100, Nikkei 225 and Shanghai
@@ -125,11 +124,17 @@ def stocks() -> pd.DataFrame:
     Daily stock market index in USD : pd.DataFrame
 
     """
-    name = "global_stocks"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
     yahoo = []
     for series in ["spy", "n100", "nikkei", "sse"]:
-        aux = pd.read_csv(urls[name]["dl"][series], index_col=0, usecols=[0, 4], parse_dates=True)
+        aux = pd.read_csv(
+            sources[series].format(timestamp=dt.datetime.now().timestamp().__round__()),
+            index_col=0,
+            usecols=[0, 4],
+            parse_dates=True,
+        )
         aux.columns = [series]
         yahoo.append(aux)
     output = pd.concat(yahoo, axis=1).interpolate(method="linear", limit_area="inside")
@@ -155,7 +160,7 @@ def stocks() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def policy_rates() -> pd.DataFrame:
+def global_policy_rates() -> pd.DataFrame:
     """Get central bank policy interest rates data.
 
     Countries/aggregates selected are US, Euro Area, Japan and China.
@@ -165,9 +170,10 @@ def policy_rates() -> pd.DataFrame:
     Daily policy interest rates : pd.DataFrame
 
     """
-    name = "global_policy_rates"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
-    r = requests.get(urls[name]["dl"]["main"])
+    r = requests.get(sources["main"])
     temp_dir = tempfile.TemporaryDirectory()
     with zipfile.ZipFile(BytesIO(r.content), "r") as f:
         f.extractall(path=temp_dir.name)
@@ -297,7 +303,7 @@ def policy_rates() -> pd.DataFrame:
     max_calls_total=12,
     retry_window_after_first_call_in_seconds=60,
 )
-def nxr() -> pd.DataFrame:
+def global_nxr() -> pd.DataFrame:
     """Get currencies data.
 
     Selected currencies are the US dollar index, USDEUR, USDJPY and USDCNY.
@@ -307,11 +313,17 @@ def nxr() -> pd.DataFrame:
     Daily currencies : pd.DataFrame
 
     """
-    name = "global_nxr"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
     output = []
     for series in ["dollar", "eur", "jpy", "cny"]:
-        aux = pd.read_csv(urls[name]["dl"][series], index_col=0, usecols=[0, 4], parse_dates=True)
+        aux = pd.read_csv(
+            sources[series].format(timestamp=dt.datetime.now().timestamp().__round__()),
+            index_col=0,
+            usecols=[0, 4],
+            parse_dates=True,
+        )
         aux.columns = [series]
         if series == "dollar":
             aux.dropna(inplace=True)

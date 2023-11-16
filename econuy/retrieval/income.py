@@ -8,7 +8,7 @@ import requests
 from opnieuw import retry
 
 from econuy.utils import metadata
-from econuy.utils.sources import urls
+from econuy.utils.ops import get_name_from_function, get_download_sources
 
 
 @retry(
@@ -24,11 +24,12 @@ def income_household() -> pd.DataFrame:
     Monthly average household income : pd.DataFrame
 
     """
-    name = "income_household"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
     temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
     with open(temp_rar, "wb") as f:
-        r = requests.get(urls[name]["dl"]["main"])
+        r = requests.get(sources["main"])
         f.write(r.content)
     with tempfile.TemporaryDirectory() as temp_dir:
         patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
@@ -81,11 +82,12 @@ def income_capita() -> pd.DataFrame:
     Monthly average per capita income : pd.DataFrame
 
     """
-    name = "income_capita"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
     temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
     with open(temp_rar, "wb") as f:
-        r = requests.get(urls[name]["dl"]["main"])
+        r = requests.get(sources["main"])
         f.write(r.content)
     with tempfile.TemporaryDirectory() as temp_dir:
         patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)

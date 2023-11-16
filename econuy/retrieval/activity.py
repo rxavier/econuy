@@ -17,7 +17,7 @@ from pandas.tseries.offsets import MonthEnd
 from econuy import transform
 from econuy.core import Pipeline
 from econuy.utils import metadata, get_project_root
-from econuy.utils.sources import urls
+from econuy.utils.ops import get_download_sources, get_name_from_function
 
 
 @retry(
@@ -33,13 +33,14 @@ def monthly_gdp() -> pd.DataFrame:
     Monthly GDP : pd.DataFrame
 
     """
-    name = "monthly_gdp"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
     try:
-        output = pd.read_excel(urls[name]["dl"]["main"], usecols="B:D")
+        output = pd.read_excel(sources["main"], usecols="B:D")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(urls[name]["dl"]["main"], verify=certs_path)
+            r = requests.get(sources["main"], verify=certs_path)
             output = pd.read_excel(r.content, usecols="B:D")
     output.index = pd.date_range(start="2016-01-31", freq="M", periods=len(output))
     output.columns = [
@@ -64,7 +65,7 @@ def monthly_gdp() -> pd.DataFrame:
     return output
 
 
-def _natacc_retriever(
+def _national_accounts_retriever(
     url: str,
     nrows: int,
     skiprows: int,
@@ -117,7 +118,7 @@ def _natacc_retriever(
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def natacc_ind_con_nsa() -> pd.DataFrame:
+def national_accounts_supply_constant_nsa() -> pd.DataFrame:
     """Get supply-side national accounts data in NSA constant prices, 2005-.
 
     Returns
@@ -125,6 +126,8 @@ def natacc_ind_con_nsa() -> pd.DataFrame:
     National accounts, supply side, constant prices, NSA : pd.DataFrame
 
     """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
     colnames = [
         "Agropecuario, pesca y minería",
         "Industrias manufactureras",
@@ -140,8 +143,8 @@ def natacc_ind_con_nsa() -> pd.DataFrame:
         "Impuestos menos subvenciones",
         "Producto bruto interno",
     ]
-    return _natacc_retriever(
-        url=urls["natacc_ind_con_nsa"]["dl"]["main"],
+    return _national_accounts_retriever(
+        url=sources["main"],
         nrows=13,
         skiprows=7,
         inf_adj="Const. 2016",
@@ -156,7 +159,7 @@ def natacc_ind_con_nsa() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def natacc_gas_con_nsa() -> pd.DataFrame:
+def national_accounts_demand_constant_nsa() -> pd.DataFrame:
     """Get demand-side national accounts data in NSA constant prices, 2005-.
 
     Returns
@@ -164,6 +167,8 @@ def natacc_gas_con_nsa() -> pd.DataFrame:
     National accounts, demand side, constant prices, NSA : pd.DataFrame
 
     """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
     colnames = [
         "Gasto de consumo: total",
         "Gasto de consumo: hogares",
@@ -175,8 +180,8 @@ def natacc_gas_con_nsa() -> pd.DataFrame:
         "Importaciones de bienes y servicios",
         "Producto bruto interno",
     ]
-    return _natacc_retriever(
-        url=urls["natacc_gas_con_nsa"]["dl"]["main"],
+    return _national_accounts_retriever(
+        url=sources["main"],
         nrows=9,
         skiprows=7,
         inf_adj="Const. 2016",
@@ -191,7 +196,7 @@ def natacc_gas_con_nsa() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def natacc_gas_cur_nsa() -> pd.DataFrame:
+def national_accounts_demand_current_nsa() -> pd.DataFrame:
     """Get demand-side national accounts data in NSA current prices.
 
     Returns
@@ -199,6 +204,8 @@ def natacc_gas_cur_nsa() -> pd.DataFrame:
     National accounts, demand side, current prices, NSA : pd.DataFrame
 
     """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
     colnames = [
         "Gasto de consumo: total",
         "Gasto de consumo: hogares",
@@ -210,8 +217,8 @@ def natacc_gas_cur_nsa() -> pd.DataFrame:
         "Importaciones de bienes y servicios",
         "Producto bruto interno",
     ]
-    return _natacc_retriever(
-        url=urls["natacc_gas_cur_nsa"]["dl"]["main"],
+    return _national_accounts_retriever(
+        url=sources["main"],
         nrows=9,
         skiprows=7,
         inf_adj="No",
@@ -226,7 +233,7 @@ def natacc_gas_cur_nsa() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def natacc_ind_cur_nsa() -> pd.DataFrame:
+def national_accounts_supply_current_nsa() -> pd.DataFrame:
     """Get supply-side national accounts data in NSA current prices, 2005-.
 
     Returns
@@ -234,6 +241,8 @@ def natacc_ind_cur_nsa() -> pd.DataFrame:
     National accounts, supply side, current prices, NSA : pd.DataFrame
 
     """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
     colnames = [
         "Agropecuario, pesca y minería",
         "Industrias manufactureras",
@@ -249,8 +258,8 @@ def natacc_ind_cur_nsa() -> pd.DataFrame:
         "Impuestos menos subvenciones",
         "Producto bruto interno",
     ]
-    return _natacc_retriever(
-        url=urls["natacc_ind_cur_nsa"]["dl"]["main"],
+    return _national_accounts_retriever(
+        url=sources["main"],
         nrows=13,
         skiprows=7,
         inf_adj="No",
@@ -265,7 +274,7 @@ def natacc_ind_cur_nsa() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def gdp_con_idx_sa() -> pd.DataFrame:
+def gdp_index_constant_sa() -> pd.DataFrame:
     """Get supply-side national accounts data in SA real index, 1997-.
 
     Returns
@@ -273,9 +282,11 @@ def gdp_con_idx_sa() -> pd.DataFrame:
     National accounts, supply side, real index, SA : pd.DataFrame
 
     """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
     colnames = ["Producto bruto interno"]
-    return _natacc_retriever(
-        url=urls["gdp_con_idx_sa"]["dl"]["main"],
+    return _national_accounts_retriever(
+        url=sources["main"],
         nrows=1,
         skiprows=7,
         inf_adj="Const. 2016",
@@ -290,7 +301,7 @@ def gdp_con_idx_sa() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def natacc_ind_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
+def national_accounts_supply_constant_nsa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
     """Get supply-side national accounts data in NSA constant prices, 1988-.
 
     Three datasets with different base years, 1983, 2005 and 2016, are spliced
@@ -301,9 +312,11 @@ def natacc_ind_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     National accounts, supply side, constant prices, NSA : pd.DataFrame
 
     """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
     if pipeline is None:
         pipeline = Pipeline()
-    pipeline.get("natacc_ind_con_nsa")
+    pipeline.get("national_accounts_supply_constant_nsa")
     data_16 = pipeline.dataset.copy()
     data_16.columns = data_16.columns.get_level_values(0)
     data_16["Otros servicios"] = (
@@ -338,8 +351,8 @@ def natacc_ind_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
         "Impuestos menos subvenciones",
         "Producto bruto interno",
     ]
-    data_05 = _natacc_retriever(
-        url=urls["natacc_ind_con_nsa_long"]["dl"]["2005"],
+    data_05 = _national_accounts_retriever(
+        url=sources["2005"],
         nrows=12,
         skiprows=9,
         inf_adj="Const. 2005",
@@ -390,7 +403,7 @@ def natacc_ind_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     try:
         data_83 = (
             pd.read_excel(
-                urls["natacc_ind_con_nsa_long"]["dl"]["1983"],
+                sources["1983"],
                 skiprows=10,
                 nrows=8,
                 index_col=1,
@@ -401,7 +414,7 @@ def natacc_ind_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(urls["natacc_ind_con_nsa_long"]["dl"]["1983"], verify=certs_path)
+            r = requests.get(sources["1983"], verify=certs_path)
             data_83 = (
                 pd.read_excel(
                     r.content,
@@ -459,7 +472,7 @@ def natacc_ind_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def natacc_gas_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
+def national_accounts_demand_constant_nsa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
     """Get demand-side national accounts data in NSA constant prices, 1988-.
 
     Three datasets with different base years, 1983, 2005 and 2016, are spliced
@@ -470,9 +483,12 @@ def natacc_gas_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     National accounts, demand side, constant prices, NSA : pd.DataFrame
 
     """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
+
     if pipeline is None:
         pipeline = Pipeline()
-    pipeline.get("natacc_gas_con_nsa")
+    pipeline.get("national_accounts_demand_constant_nsa")
     data_16 = pipeline.dataset.copy()
     data_16.columns = data_16.columns.get_level_values(0)
     data_16.drop(["Variación de existencias"], axis=1, inplace=True)
@@ -489,8 +505,8 @@ def natacc_gas_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
         "Importaciones",
         "Producto bruto interno",
     ]
-    data_05 = _natacc_retriever(
-        url=urls["natacc_gas_con_nsa_long"]["dl"]["2005"],
+    data_05 = _national_accounts_retriever(
+        url=sources["2005"],
         nrows=10,
         skiprows=9,
         inf_adj="Const. 2005",
@@ -512,7 +528,7 @@ def natacc_gas_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     try:
         data_83 = (
             pd.read_excel(
-                urls["natacc_gas_con_nsa_long"]["dl"]["1983"],
+                sources["1983"],
                 skiprows=10,
                 nrows=11,
                 index_col=1,
@@ -523,7 +539,7 @@ def natacc_gas_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(urls["natacc_gas_con_nsa_long"]["dl"]["1983"], verify=certs_path)
+            r = requests.get(sources["1983"], verify=certs_path)
             data_83 = (
                 pd.read_excel(
                     r.content,
@@ -570,20 +586,22 @@ def natacc_gas_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def gdp_con_idx_sa_long(pipeline: Pipeline = None) -> pd.DataFrame:
-    """Get demand-side national accounts data in NSA constant prices, 1988-.
+def gdp_index_constant_sa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
+    """Get GDP data in SA constant prices, 1988-.
 
     Three datasets with different base years, 1983, 2005 and 2016, are spliced
     in order to get to the result DataFrame.
 
     Returns
     -------
-    National accounts, demand side, constant prices, NSA : pd.DataFrame
+    GDP, constant prices, SA : pd.DataFrame
 
     """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
     if pipeline is None:
         pipeline = Pipeline()
-    pipeline.get("gdp_con_idx_sa")
+    pipeline.get("gdp_index_constant_sa")
     data_16 = pipeline.dataset.copy()
     data_16.columns = data_16.columns.get_level_values(0)
 
@@ -600,8 +618,8 @@ def gdp_con_idx_sa_long(pipeline: Pipeline = None) -> pd.DataFrame:
         "Impuestos menos subvenciones",
         "Producto bruto interno",
     ]
-    data_05 = _natacc_retriever(
-        url=urls["gdp_con_idx_sa_long"]["dl"]["2005"],
+    data_05 = _national_accounts_retriever(
+        url=sources["2005"],
         nrows=12,
         skiprows=9,
         inf_adj="Const. 2005",
@@ -622,7 +640,7 @@ def gdp_con_idx_sa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     try:
         data_83 = (
             pd.read_excel(
-                urls["gdp_con_idx_sa_long"]["dl"]["1983"],
+                sources["1983"],
                 skiprows=10,
                 nrows=8,
                 index_col=1,
@@ -633,7 +651,7 @@ def gdp_con_idx_sa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(urls["gdp_con_idx_sa_long"]["dl"]["1983"], verify=certs_path)
+            r = requests.get(sources["1983"], verify=certs_path)
             data_83 = (
                 pd.read_excel(
                     r.content,
@@ -678,7 +696,7 @@ def gdp_con_idx_sa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def gdp_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
+def gdp_constant_nsa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
     """Get GDP data in NSA constant prices, 1988-.
 
     Three datasets with two different base years, 1983 and 2016, are
@@ -690,16 +708,18 @@ def gdp_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     GDP, constant prices, NSA : pd.DataFrame
 
     """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
     if pipeline is None:
         pipeline = Pipeline()
-    pipeline.get("natacc_ind_con_nsa")
+    pipeline.get("national_accounts_supply_constant_nsa")
     data_16 = pipeline.dataset.copy()
     data_16.columns = data_16.columns.get_level_values(0)
     data_16 = data_16[["Producto bruto interno"]]
 
     colnames = ["Producto bruto interno"]
-    data_97 = _natacc_retriever(
-        url=urls["gdp_con_nsa_long"]["dl"]["1997"],
+    data_97 = _national_accounts_retriever(
+        url=sources["1997"],
         nrows=1,
         skiprows=6,
         inf_adj="Const. 2016",
@@ -712,17 +732,11 @@ def gdp_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     aux = pd.concat([data_97, data_16], axis=0)
 
     try:
-        data_83 = (
-            pd.read_excel(
-                urls["gdp_con_nsa_long"]["dl"]["1983"], skiprows=10, nrows=8, index_col=1
-            )
-            .iloc[:, 1:]
-            .T
-        )
+        data_83 = pd.read_excel(sources["1983"], skiprows=10, nrows=8, index_col=1).iloc[:, 1:].T
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(urls["gdp_con_nsa_long"]["dl"]["1983"], verify=certs_path)
+            r = requests.get(sources["1983"], verify=certs_path)
             data_83 = (
                 pd.read_excel(
                     r.content,
@@ -767,7 +781,7 @@ def gdp_con_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def gdp_cur_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
+def gdp_current_nsa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
     """Get GDP data in NSA current prices, 1997-.
 
     It uses the BCU's working paper for retropolated GDP in current and constant prices for
@@ -778,16 +792,18 @@ def gdp_cur_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     GDP, current prices, NSA : pd.DataFrame
 
     """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
     if pipeline is None:
         pipeline = Pipeline()
-    pipeline.get("natacc_ind_cur_nsa")
+    pipeline.get("national_accounts_supply_current_nsa")
     data_16 = pipeline.dataset.copy()
     data_16.columns = data_16.columns.get_level_values(0)
     data_16 = data_16[["Producto bruto interno"]]
 
     colnames = ["Producto bruto interno"]
-    data_97 = _natacc_retriever(
-        url=urls["gdp_cur_nsa_long"]["dl"]["1997"],
+    data_97 = _national_accounts_retriever(
+        url=sources["1997"],
         nrows=1,
         skiprows=6,
         inf_adj="No",
@@ -818,7 +834,7 @@ def gdp_cur_nsa_long(pipeline: Pipeline = None) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def _lin_gdp(pipeline: Optional[Pipeline] = None):
+def _monthly_interpolated_gdp(pipeline: Optional[Pipeline] = None):
     """Get nominal GDP data in UYU and USD with forecasts.
 
     Update nominal GDP data for use in the `transform.convert_gdp()` function.
@@ -840,7 +856,7 @@ def _lin_gdp(pipeline: Optional[Pipeline] = None):
     if pipeline is None:
         pipeline = Pipeline()
 
-    pipeline.get(name="gdp_cur_nsa_long")
+    pipeline.get(name="gdp_current_nsa_extended")
     data_uyu = pipeline.dataset
     # TODO: use Pipeline methods for these
     data_uyu = transform.rolling(data_uyu, window=4, operation="sum")
@@ -902,10 +918,11 @@ def industrial_production() -> pd.DataFrame:
     Monthly industrial production index : pd.DataFrame
 
     """
-    name = "industrial_production"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
-    raw = pd.read_excel(urls[name]["dl"]["main"], skiprows=4, usecols="C:DQ", na_values="(s)")
-    weights = pd.read_csv(urls[name]["dl"]["weights"]).dropna(how="all")
+    raw = pd.read_excel(sources["main"], skiprows=4, usecols="C:DQ", na_values="(s)")
+    weights = pd.read_csv(sources["weights"]).dropna(how="all")
     weights[["División", "Grupo", "Agrupación / Clase"]] = weights[
         ["División", "Grupo", "Agrupación / Clase"]
     ].astype(str)
@@ -956,7 +973,7 @@ def industrial_production() -> pd.DataFrame:
     return output
 
 
-def core_industrial(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+def core_industrial_production(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """
     Get total industrial production, industrial production excluding oil
     refinery and core industrial production.
@@ -971,8 +988,6 @@ def core_industrial(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     Measures of industrial production : pd.DataFrame
 
     """
-    # name = "core_industrial"
-
     if pipeline is None:
         pipeline = Pipeline()
 
@@ -1020,7 +1035,7 @@ def core_industrial(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def cattle() -> pd.DataFrame:
+def cattle_slaughter() -> pd.DataFrame:
     """Get weekly cattle slaughter data.
 
     Returns
@@ -1028,9 +1043,10 @@ def cattle() -> pd.DataFrame:
     Weekly cattle slaughter : pd.DataFrame
 
     """
-    name = "cattle"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
-    output = pd.read_excel(urls[name]["dl"]["main"], skiprows=8, usecols="C:H")
+    output = pd.read_excel(sources["main"], skiprows=8, usecols="C:H")
     output.index = pd.date_range(start="2005-01-02", freq="W", periods=len(output))
     output.rename_axis(None, inplace=True)
 
@@ -1053,17 +1069,18 @@ def cattle() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def milk() -> pd.DataFrame:
-    """Get monthly milk production in farms data.
+def milk_shipments() -> pd.DataFrame:
+    """Get monthly milk shipments from farms data.
 
     Returns
     -------
-    Monhtly milk production in farms : pd.DataFrame
+    Monhtly milk shipments from farms : pd.DataFrame
 
     """
-    name = "milk"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
-    r = requests.get(urls[name]["dl"]["main"])
+    r = requests.get(sources["main"])
     soup = BeautifulSoup(r.content, features="lxml")
     link = soup.find_all(href=re.compile(".xls"))[0]
     raw = (
@@ -1097,7 +1114,7 @@ def milk() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def diesel() -> pd.DataFrame:
+def diesel_sales() -> pd.DataFrame:
     """
     Get diesel sales by department data.
 
@@ -1109,11 +1126,12 @@ def diesel() -> pd.DataFrame:
     Monthly diesel dales : pd.DataFrame
 
     """
-    name = "diesel"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
     temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
     with open(temp_rar, "wb") as f:
-        r = requests.get(urls[name]["dl"]["main"])
+        r = requests.get(sources["main"])
         soup = BeautifulSoup(r.content, features="lxml")
         rar_url = soup.find_all(href=re.compile("gas%20oil"))[0]
         f.write(requests.get(rar_url["href"]).content)
@@ -1148,7 +1166,7 @@ def diesel() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def gasoline() -> pd.DataFrame:
+def gasoline_sales() -> pd.DataFrame:
     """
     Get gasoline sales by department data.
 
@@ -1160,11 +1178,12 @@ def gasoline() -> pd.DataFrame:
     Monthly gasoline dales : pd.DataFrame
 
     """
-    name = "gasoline"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
     temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
     with open(temp_rar, "wb") as f:
-        r = requests.get(urls[name]["dl"]["main"])
+        r = requests.get(sources["main"])
         soup = BeautifulSoup(r.content, features="lxml")
         rar_url = soup.find_all(href=re.compile("gasolina"))[0]
         f.write(requests.get(rar_url["href"]).content)
@@ -1199,7 +1218,7 @@ def gasoline() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def electricity() -> pd.DataFrame:
+def electricity_sales() -> pd.DataFrame:
     """
     Get electricity sales by sector data.
 
@@ -1211,11 +1230,12 @@ def electricity() -> pd.DataFrame:
     Monthly electricity dales : pd.DataFrame
 
     """
-    name = "electricity"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
     temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
     with open(temp_rar, "wb") as f:
-        r = requests.get(urls[name]["dl"]["main"])
+        r = requests.get(sources["main"])
         soup = BeautifulSoup(r.content, features="lxml")
         rar_url = soup.find_all(href=re.compile("Facturaci[%A-z0-9]+sector"))[0]
         f.write(requests.get(rar_url["href"]).content)

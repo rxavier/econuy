@@ -3,7 +3,6 @@ import logging
 import copy
 import traceback
 from datetime import datetime
-from inspect import getmodule
 from os import PathLike
 from pathlib import Path
 from typing import Optional, Union, Sequence, Dict, List
@@ -13,8 +12,9 @@ from sqlalchemy.engine.base import Connection, Engine
 
 from econuy import transform
 from econuy.core import Pipeline
-from econuy.utils import datasets, logutil, ops
+from econuy.utils import logutil, ops
 from econuy.utils.exceptions import RetryLimitError
+from econuy.utils.ops import DATASETS
 
 
 class Session(object):
@@ -199,8 +199,8 @@ class Session(object):
         else:
             return copy.copy(self)
 
-    @staticmethod
-    def available_datasets(functions: bool = False) -> Dict[str, Dict]:
+    @property
+    def available_datasets() -> Dict[str, Dict]:  # functions: bool = False
         """Return available ``dataset`` arguments for use in
         :mod:`~econuy.session.Session.get`.
 
@@ -208,24 +208,11 @@ class Session(object):
         -------
         Dataset : Dict[str, Dict]
         """
-        original = datasets.original()
-        custom = datasets.custom()
-
-        original_final, custom_final = {}, {}
-        for d, f in zip([original, custom], [original_final, custom_final]):
-            for k, v in d.items():
-                if not functions:
-                    f.update({k: v["description"]})
-                else:
-                    f.update({k: v})
-
-        output = {"original": original_final, "custom": custom_final}
-        aux = copy.deepcopy(output)
-        for k in aux["custom"].keys():
-            # Avoid auxiliary datasets in Session methods (like _lin_gdp)
-            if k.startswith("_"):
-                output["custom"].pop(k, None)
-        return output
+        return {
+            name: metadata
+            for name, metadata in DATASETS.items()
+            if not metadata["disabled"] and not metadata["auxiliary"]
+        }
 
     def _select_datasets(self, select: Union[str, int, Sequence[str], Sequence[int]]) -> List[str]:
         """Generate list of dataset names based on selection.
@@ -335,7 +322,10 @@ class Session(object):
         """
         if isinstance(names, str):
             names = [names]
-        if any(x not in self.pipeline.available_datasets().keys() for x in names):
+        if any(
+            x not in list(self.pipeline.available_datasets.keys()) + ["_monthly_interpolated_gdp"]
+            for x in names
+        ):
             raise ValueError("Invalid dataset selected.")
 
         # Deepcopy the Pipeline so that its dataset attribute is not
@@ -393,38 +383,42 @@ class Session(object):
             "all",
             "original",
             "custom",
-            "economic_activity",
+            "activity",
             "prices",
-            "fiscal_accounts",
+            "fiscal",
             "labor",
-            "external_sector",
-            "financial_sector",
+            "external",
+            "financial",
             "income",
-            "international",
+            "global_",
             "regional",
         ]
         if names not in valid_datasets:
             raise ValueError(f"'names' can only be one of " f"{', '.join(valid_datasets)}.")
-        available_datasets = self.available_datasets(functions=True)
-        original_datasets = list(available_datasets["original"].keys())
-        custom_datasets = list(available_datasets["custom"].keys())
+        original_datasets = {
+            name: metadata
+            for name, metadata in self.available_datasets.items()
+            if not metadata["custom"]
+        }
+        custom_datasets = {
+            name: metadata
+            for name, metadata in self.available_datasets.items()
+            if metadata["custom"]
+        }
 
         if names == "original":
-            self.get(names=original_datasets)
+            self.get(names=list(original_datasets))
         elif names == "custom":
-            self.get(names=custom_datasets)
+            self.get(names=list(custom_datasets))
         elif names == "all":
-            self.get(names=original_datasets + custom_datasets)
+            self.get(names=list(self.available_datasets))
         else:
-            original_area_datasets = []
-            for k, v in available_datasets["original"].items():
-                if names in getmodule(v["function"]).__name__:
-                    original_area_datasets.append(k)
-            custom_area_datasets = []
-            for k, v in available_datasets["custom"].items():
-                if names in getmodule(v["function"]).__name__:
-                    custom_area_datasets.append(k)
-            self.get(names=original_area_datasets + custom_area_datasets)
+            datasets = [
+                name
+                for name, metadata in self.available_datasets.items()
+                if names == metadata["area"]
+            ]
+            self.get(names=datasets)
 
         return
 
@@ -633,10 +627,7 @@ class Session(object):
         ]
         if len(indicator_names) > len(set(indicator_names)) or force_suffix is True:
             for n, d in zip(proc_select, selected_datasets):
-                try:
-                    full_name = self.available_datasets()["original"][n]
-                except KeyError:
-                    full_name = self.available_datasets()["custom"][n]
+                full_name = self.available_datasets[n]["description"]
                 d.columns = d.columns.set_levels(
                     f"{full_name}_" + d.columns.get_level_values(0), level=0
                 )

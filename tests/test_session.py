@@ -8,7 +8,8 @@ from sqlalchemy import create_engine, inspect, text
 
 from econuy.core import Pipeline
 from econuy.session import Session
-from econuy.utils import sqlutil, datasets, ops
+from econuy.utils import sqlutil, ops
+from econuy.utils.ops import DATASETS
 
 
 CUR_DIR = path.abspath(path.dirname(__file__))
@@ -18,9 +19,9 @@ sqlutil.insert_csvs(con=TEST_CON, directory=TEST_DIR)
 
 
 def remove_temporary_files_folders():
-    avoid = (
-        list(datasets.original().keys()) + list(datasets.custom().keys()) + ["commodity_weights"]
-    )
+    avoid = [name for name, metadata in DATASETS.items() if metadata["disabled"] is False] + [
+        "commodity_weights"
+    ]
     avoid_csv = [f"{x}.csv" for x in avoid]
 
     for f in listdir(TEST_DIR):
@@ -129,13 +130,13 @@ def test_logging_error(caplog):
 @pytest.mark.parametrize("freq_resample,freq_result", [("A-DEC", "A-DEC"), ("M", "Q-DEC")])
 def test_concat(freq_resample, freq_result):
     s = Session(location=TEST_CON, download=False)
-    s.get(["natacc_ind_con_nsa", "public_debt_gps"])
-    s.resample(select="natacc_ind_con_nsa", rule=freq_resample)
+    s.get(["national_accounts_demand_constant_nsa", "public_debt_global_public_sector"])
+    s.resample(select="national_accounts_demand_constant_nsa", rule=freq_resample)
     s.concat(select="all", concat_name="test")
     df = s.datasets["concat_test"]
     combined_cols = (
-        s.datasets["natacc_ind_con_nsa"]
-        .columns.append(s.datasets["public_debt_gps"].columns)
+        s.datasets["national_accounts_demand_constant_nsa"]
+        .columns.append(s.datasets["public_debt_global_public_sector"].columns)
         .get_level_values(0)
     )
     assert pd.infer_freq(df.index) == freq_result

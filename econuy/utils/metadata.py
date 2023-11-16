@@ -3,8 +3,6 @@ import warnings
 
 import pandas as pd
 
-from econuy.utils.sources import urls
-
 
 def _set(
     df: pd.DataFrame,
@@ -153,9 +151,11 @@ def _get_sources(
     dataset: str, html_urls: bool = True
 ) -> Tuple[List[Optional[str]], List[str], List[str]]:
     """Given a dataset name, return source URLs and provider."""
-    direct = urls[dataset]["source"]["direct"]
-    indirect = urls[dataset]["source"]["indirect"]
-    provider = urls[dataset]["source"]["provider"]
+    from econuy.utils.ops import DATASETS
+
+    direct = DATASETS[dataset]["sources"]["direct"]
+    indirect = DATASETS[dataset]["sources"]["indirect"]
+    provider = DATASETS[dataset]["sources"]["provider"]
 
     if html_urls is True:
         direct_html = []

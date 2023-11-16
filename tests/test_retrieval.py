@@ -16,7 +16,7 @@ def trim_rows(input: str, output: str, rows: int = 10):
 
 
 p = Pipeline()
-all_datasets = list(p.available_datasets())
+all_datasets = list(p.available_datasets)
 
 
 @pytest.mark.parametrize(

@@ -10,11 +10,11 @@ from os import PathLike, path
 from typing import Union, Optional
 from urllib import error
 from urllib.error import HTTPError, URLError
-from requests.exceptions import SSLError
 
 import numpy as np
 import pandas as pd
 import requests
+from dateutil.relativedelta import relativedelta
 from bs4 import BeautifulSoup
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd, YearEnd
@@ -24,20 +24,20 @@ from econuy import transform
 from econuy.retrieval import regional
 from econuy.core import Pipeline
 from econuy.utils import ops, metadata, get_project_root
-from econuy.utils.sources import urls
-from econuy.utils.extras import trade_metadata, reserves_cols, bop_cols
+from econuy.utils.ops import get_download_sources, get_name_from_function
+from econuy.utils.extras import TRADE_METADATA, RESERVES_COLUMNS, BOP_COLUMNS
 
 
 def _trade_retriever(name: str) -> pd.DataFrame:
     """Helper function. See any of the `trade_...()` functions."""
-    short_name = name[6:]
-    meta = trade_metadata[short_name]
+    sources = get_download_sources(name)
+    meta = TRADE_METADATA[name]
     try:
-        xls = pd.ExcelFile(urls[name]["dl"]["main"])
+        xls = pd.ExcelFile(sources["main"])
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(urls[name]["dl"]["main"], verify=certs_path)
+            r = requests.get(sources["main"], verify=certs_path)
             xls = pd.ExcelFile(r.content)
     sheets = []
     start_col = meta["start_col"]
@@ -50,7 +50,7 @@ def _trade_retriever(name: str) -> pd.DataFrame:
         )
         raw.index = pd.to_datetime(raw.index, errors="coerce") + MonthEnd(0)
         proc = raw[raw.index.notnull()].dropna(thresh=5, axis=1)
-        if name != "trade_m_sect_val":
+        if name != "trade_imports_category_value":
             try:
                 proc = proc.loc[:, meta["colnames"].keys()]
             except KeyError:
@@ -87,7 +87,7 @@ def _trade_retriever(name: str) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_x_prod_val() -> pd.DataFrame:
+def trade_exports_sector_value() -> pd.DataFrame:
     """Get export values by product.
 
     Returns
@@ -95,7 +95,8 @@ def trade_x_prod_val() -> pd.DataFrame:
     Export values by product : pd.DataFrame
 
     """
-    return _trade_retriever(name="trade_x_prod_val")
+    name = get_name_from_function()
+    return _trade_retriever(name)
 
 
 @retry(
@@ -103,7 +104,7 @@ def trade_x_prod_val() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_x_prod_vol() -> pd.DataFrame:
+def trade_exports_sector_volume() -> pd.DataFrame:
     """Get export volumes by product.
 
     Returns
@@ -111,7 +112,8 @@ def trade_x_prod_vol() -> pd.DataFrame:
     Export volumes by product : pd.DataFrame
 
     """
-    return _trade_retriever(name="trade_x_prod_vol")
+    name = get_name_from_function()
+    return _trade_retriever(name)
 
 
 @retry(
@@ -119,7 +121,7 @@ def trade_x_prod_vol() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_x_prod_pri() -> pd.DataFrame:
+def trade_exports_sector_price() -> pd.DataFrame:
     """Get export prices by product.
 
     Returns
@@ -127,7 +129,8 @@ def trade_x_prod_pri() -> pd.DataFrame:
     Export prices by product : pd.DataFrame
 
     """
-    return _trade_retriever(name="trade_x_prod_pri")
+    name = get_name_from_function()
+    return _trade_retriever(name)
 
 
 @retry(
@@ -135,7 +138,7 @@ def trade_x_prod_pri() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_x_dest_val() -> pd.DataFrame:
+def trade_exports_destination_value() -> pd.DataFrame:
     """Get export values by destination.
 
     Returns
@@ -143,7 +146,8 @@ def trade_x_dest_val() -> pd.DataFrame:
     Export values by destination : pd.DataFrame
 
     """
-    return _trade_retriever(name="trade_x_dest_val")
+    name = get_name_from_function()
+    return _trade_retriever(name)
 
 
 @retry(
@@ -151,7 +155,7 @@ def trade_x_dest_val() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_x_dest_vol() -> pd.DataFrame:
+def trade_exports_destination_volume() -> pd.DataFrame:
     """Get export volumes by destination.
 
     Returns
@@ -159,7 +163,8 @@ def trade_x_dest_vol() -> pd.DataFrame:
     Export volumes by destination : pd.DataFrame
 
     """
-    return _trade_retriever(name="trade_x_dest_vol")
+    name = get_name_from_function()
+    return _trade_retriever(name)
 
 
 @retry(
@@ -167,7 +172,7 @@ def trade_x_dest_vol() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_x_dest_pri() -> pd.DataFrame:
+def trade_exports_destination_price() -> pd.DataFrame:
     """Get export prices by destination.
 
     Returns
@@ -175,7 +180,8 @@ def trade_x_dest_pri() -> pd.DataFrame:
     Export prices by destination : pd.DataFrame
 
     """
-    return _trade_retriever(name="trade_x_dest_pri")
+    name = get_name_from_function()
+    return _trade_retriever(name)
 
 
 @retry(
@@ -183,7 +189,7 @@ def trade_x_dest_pri() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_m_sect_val() -> pd.DataFrame:
+def trade_imports_category_value() -> pd.DataFrame:
     """Get import values by sector.
 
     Returns
@@ -191,7 +197,8 @@ def trade_m_sect_val() -> pd.DataFrame:
     Import values by sector : pd.DataFrame
 
     """
-    return _trade_retriever(name="trade_m_sect_val")
+    name = get_name_from_function()
+    return _trade_retriever(name)
 
 
 @retry(
@@ -199,7 +206,7 @@ def trade_m_sect_val() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_m_sect_vol() -> pd.DataFrame:
+def trade_imports_category_volume() -> pd.DataFrame:
     """Get import volumes by sector.
 
     Returns
@@ -207,7 +214,8 @@ def trade_m_sect_vol() -> pd.DataFrame:
     Import volumes by sector : pd.DataFrame
 
     """
-    return _trade_retriever(name="trade_m_sect_vol")
+    name = get_name_from_function()
+    return _trade_retriever(name)
 
 
 @retry(
@@ -215,7 +223,7 @@ def trade_m_sect_vol() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_m_sect_pri() -> pd.DataFrame:
+def trade_imports_category_price() -> pd.DataFrame:
     """Get import prices by sector.
 
     Returns
@@ -223,7 +231,8 @@ def trade_m_sect_pri() -> pd.DataFrame:
     Import prices by sector : pd.DataFrame
 
     """
-    return _trade_retriever(name="trade_m_sect_pri")
+    name = get_name_from_function()
+    return _trade_retriever(name)
 
 
 @retry(
@@ -231,7 +240,7 @@ def trade_m_sect_pri() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_m_orig_val() -> pd.DataFrame:
+def trade_imports_origin_value() -> pd.DataFrame:
     """Get import values by origin.
 
     Returns
@@ -239,7 +248,8 @@ def trade_m_orig_val() -> pd.DataFrame:
     Import values by origin : pd.DataFrame
 
     """
-    return _trade_retriever(name="trade_m_orig_val")
+    name = get_name_from_function()
+    return _trade_retriever(name)
 
 
 @retry(
@@ -247,7 +257,7 @@ def trade_m_orig_val() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_m_orig_vol() -> pd.DataFrame:
+def trade_imports_origin_volume() -> pd.DataFrame:
     """Get import volumes by origin.
 
     Returns
@@ -255,7 +265,8 @@ def trade_m_orig_vol() -> pd.DataFrame:
     Import volumes by origin : pd.DataFrame
 
     """
-    return _trade_retriever(name="trade_m_orig_vol")
+    name = get_name_from_function()
+    return _trade_retriever(name)
 
 
 @retry(
@@ -263,7 +274,7 @@ def trade_m_orig_vol() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_m_orig_pri() -> pd.DataFrame:
+def trade_imports_origin_price() -> pd.DataFrame:
     """Get import prices by origin.
 
     Returns
@@ -271,7 +282,8 @@ def trade_m_orig_pri() -> pd.DataFrame:
     Import prices by origin : pd.DataFrame
 
     """
-    return _trade_retriever(name="trade_m_orig_pri")
+    name = get_name_from_function()
+    return _trade_retriever(name)
 
 
 def trade_balance(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
@@ -290,9 +302,9 @@ def trade_balance(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """
     if pipeline is None:
         pipeline = Pipeline()
-    pipeline.get("trade_x_dest_val")
+    pipeline.get("trade_exports_destination_value")
     exports = pipeline.dataset.rename(columns={"Total exportaciones": "Total"})
-    pipeline.get("trade_m_orig_val")
+    pipeline.get("trade_imports_origin_value")
     imports = pipeline.dataset.rename(columns={"Total importaciones": "Total"})
     net = exports - imports
     net.rename_axis(None, inplace=True)
@@ -316,9 +328,9 @@ def terms_of_trade(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """
     if pipeline is None:
         pipeline = Pipeline()
-    pipeline.get("trade_x_dest_pri")
+    pipeline.get("trade_exports_destination_price")
     exports = pipeline.dataset.rename(columns={"Total exportaciones": "Total"})
-    pipeline.get("trade_m_orig_pri")
+    pipeline.get("trade_imports_origin_price")
     imports = pipeline.dataset.rename(columns={"Total importaciones": "Total"})
 
     tot = exports / imports
@@ -468,13 +480,14 @@ def commodity_prices() -> pd.DataFrame:
         Prices and price indexes of relevant commodities for Uruguay.
 
     """
-    url = urls["commodity_prices"]["dl"]
+    name = get_name_from_function()
+    sources = get_download_sources(name)
     try:
-        raw_beef = pd.read_excel(url["beef"], header=4, index_col=0).dropna(how="all")
+        raw_beef = pd.read_excel(sources["beef"], header=4, index_col=0).dropna(how="all")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files", "inac_certs.pem")
-            r = requests.get(url["beef"], verify=certificate)
+            r = requests.get(sources["beef"], verify=certificate)
             raw_beef = pd.read_excel(BytesIO(r.content), header=4, index_col=0).dropna(how="all")
         else:
             raise err
@@ -498,7 +511,7 @@ def commodity_prices() -> pd.DataFrame:
     # soybean = soy_wheat[0]
     # wheat = soy_wheat[1]
 
-    milk_r = requests.get(url["milk1"])
+    milk_r = requests.get(sources["milk1"])
     milk_soup = BeautifulSoup(milk_r.content, "html.parser")
     links = milk_soup.find_all(href=re.compile("Europa"))
     xls = links[0]["href"]
@@ -516,7 +529,7 @@ def commodity_prices() -> pd.DataFrame:
     proc_milk = proc_milk.iloc[:, 2].to_frame().divide(10).dropna()
 
     prev_milk = pd.read_excel(
-        url["milk2"],
+        sources["milk2"],
         sheet_name="Raw Milk Prices",
         index_col=0,
         skiprows=6,
@@ -542,7 +555,7 @@ def commodity_prices() -> pd.DataFrame:
     prev_milk.columns, proc_milk.columns = ["Price"], ["Price"]
     milk = pd.concat([prev_milk, proc_milk])
 
-    raw_pulp_r = requests.get(url["pulp"])
+    raw_pulp_r = requests.get(sources["pulp"].format(year=dt.date.today().year))
     temp_dir = tempfile.TemporaryDirectory()
     with zipfile.ZipFile(BytesIO(raw_pulp_r.content), "r") as f:
         f.extractall(path=temp_dir.name)
@@ -554,7 +567,7 @@ def commodity_prices() -> pd.DataFrame:
     proc_pulp = proc_pulp.div(eurusd.reindex(proc_pulp.index).values)
     pulp = proc_pulp
 
-    r_imf = requests.get(url["imf"])
+    r_imf = requests.get(sources["imf"])
     imf = re.findall("external-data[A-z]+.ashx", r_imf.text)[0]
     imf = f"https://imf.org/-/media/Files/Research/CommodityPrices/Monthly/{imf}"
     raw_imf = pd.read_excel(imf).dropna(how="all", axis=1).dropna(how="all", axis=0)
@@ -675,7 +688,7 @@ def commodity_index(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def rxr_official() -> pd.DataFrame:
+def rxr() -> pd.DataFrame:
     """Get official (BCU) real exchange rates.
 
     Returns
@@ -684,14 +697,14 @@ def rxr_official() -> pd.DataFrame:
         Available: global, regional, extraregional, Argentina, Brazil, US.
 
     """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
     try:
-        raw = pd.read_excel(
-            urls["rxr_official"]["dl"]["main"], skiprows=8, usecols="B:N", index_col=0
-        )
+        raw = pd.read_excel(sources["main"], skiprows=8, usecols="B:N", index_col=0)
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(urls["rxr_official"]["dl"]["main"], verify=certs_path)
+            r = requests.get(sources["main"], verify=certs_path)
             raw = pd.read_excel(r.content, skiprows=8, usecols="B:N", index_col=0)
     proc = raw.dropna(how="any")
     proc.columns = [
@@ -790,7 +803,7 @@ def rxr_custom(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     max_calls_total=10,
     retry_window_after_first_call_in_seconds=90,
 )
-def bop() -> pd.DataFrame:
+def balance_of_payments() -> pd.DataFrame:
     """Get balance of payments.
 
     Returns
@@ -798,18 +811,18 @@ def bop() -> pd.DataFrame:
     Quarterly balance of payments : pd.DataFrame
 
     """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
     try:
         raw = (
-            pd.read_excel(
-                urls["bop"]["dl"]["main"], skiprows=7, index_col=0, sheet_name="Cuadro Nº 1"
-            )
+            pd.read_excel(sources["main"], skiprows=7, index_col=0, sheet_name="Cuadro Nº 1")
             .dropna(how="all")
             .T
         )
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(urls["bop"]["dl"]["main"], verify=certs_path)
+            r = requests.get(sources["main"], verify=certs_path)
             raw = (
                 pd.read_excel(r.content, skiprows=7, index_col=0, sheet_name="Cuadro Nº 1")
                 .dropna(how="all")
@@ -827,7 +840,7 @@ def bop() -> pd.DataFrame:
         ],
         axis=1,
     )
-    output.columns = [x[:58] + "..." if len(x) > 60 else x for x in bop_cols]
+    output.columns = [x[:58] + "..." if len(x) > 60 else x for x in BOP_COLUMNS]
 
     metadata._set(
         output,
@@ -848,7 +861,7 @@ def bop() -> pd.DataFrame:
     max_calls_total=10,
     retry_window_after_first_call_in_seconds=90,
 )
-def bop_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+def balance_of_payments_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """Get a balance of payments summary and capital flows calculations.
 
     Returns
@@ -859,7 +872,7 @@ def bop_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     if pipeline is None:
         pipeline = Pipeline()
 
-    pipeline.get("bop")
+    pipeline.get("balance_of_payments")
     bop = pipeline.dataset.copy()
     output = pd.DataFrame(index=bop.index)
     output["Cuenta corriente"] = bop["Cuenta Corriente"]
@@ -929,7 +942,7 @@ def bop_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def reserves() -> pd.DataFrame:
+def international_reserves() -> pd.DataFrame:
     """Get international reserves data.
 
     Returns
@@ -937,14 +950,16 @@ def reserves() -> pd.DataFrame:
     Daily international reserves : pd.DataFrame
 
     """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
     try:
         raw = pd.read_excel(
-            urls["reserves"]["dl"]["main"], usecols="D:J", index_col=0, skiprows=5, na_values="n/d"
+            sources["main"], usecols="D:J", index_col=0, skiprows=5, na_values="n/d"
         )
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(urls["reserves"]["dl"]["main"], verify=certs_path)
+            r = requests.get(sources["main"], verify=certs_path)
             raw = pd.read_excel(r.content, usecols="D:J", index_col=0, skiprows=5, na_values="n/d")
     proc = raw.dropna(thresh=1)
     reserves = proc[proc.index.notnull()]
@@ -958,7 +973,7 @@ def reserves() -> pd.DataFrame:
     ]
     reserves = reserves.apply(pd.to_numeric, errors="coerce")
     reserves = reserves.loc[~reserves.index.duplicated(keep="first")]
-    reserves.rename_axis(None, inplace=True)
+    reserves.index = pd.to_datetime(reserves.index)
     reserves.rename_axis(None, inplace=True)
 
     metadata._set(
@@ -980,7 +995,7 @@ def reserves() -> pd.DataFrame:
     max_calls_total=10,
     retry_window_after_first_call_in_seconds=90,
 )
-def reserves_changes(
+def international_reserves_changes(
     pipeline: Optional[Pipeline] = None, previous_data: pd.DataFrame = pd.DataFrame()
 ) -> pd.DataFrame:
     """Get international reserves changes data.
@@ -998,7 +1013,8 @@ def reserves_changes(
     Monthly international reserves changes : pd.DataFrame
 
     """
-    name = "reserves_changes"
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
     if pipeline is None:
         pipeline = Pipeline()
@@ -1006,48 +1022,41 @@ def reserves_changes(
         first_year = 2013
     else:
         first_year = previous_data.index[-1].year
-    current_year = dt.datetime.now().year
+
     mapping = dict(
         zip(
             ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Set", "Oct", "Nov", "Dic"],
             [str(x).zfill(2) for x in range(1, 13)],
         )
     )
+    inverse_mapping = {v: k for k, v in mapping.items()}
     mapping.update({"Sep": "09"})
-    try:
-        r = requests.get(
-            "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Informe-Diario-Pasivos-Monetarios.aspx"
-        )
-    except (URLError, SSLError) as err:
-        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(
-                "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Informe-Diario-Pasivos-Monetarios.aspx",
-                verify=certs_path,
-            )
-    latest = re.findall(
-        f"infd_[A-z]+{2023}.xls",
-        r.text,
-    )[0].split(
-        "_"
-    )[1]
 
+    current_year = dt.date.today().year
     months = []
     for year in range(first_year, current_year + 1):
         if year < current_year:
             filename = f"dic{year}.xls"
         else:
-            filename = latest
+            current_month = inverse_mapping[str(dt.date.today().month).zfill(2)]
+            last_month = inverse_mapping[
+                str((dt.date.today() + relativedelta(months=-1)).month).zfill(2)
+            ]
+            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+            filename = f"{current_month}{year}.xls"
+            r = requests.get(f"{sources['main']}{filename}", verify=certs_path)
+            if r.status_code == 404:
+                filename = f"{last_month}{year}.xls"
         try:
             data = pd.read_excel(
-                f"{urls[name]['dl']['main']}{filename}",
+                f"{sources['main']}{filename}",
                 skiprows=2,
                 sheet_name="ACTIVOS DE RESERVA",
             )
         except URLError as err:
             if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
                 certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-                r = requests.get(f"{urls[name]['dl']['main']}{filename}", verify=certs_path)
+                r = requests.get(f"{sources['main']}{filename}", verify=certs_path)
                 data = pd.read_excel(
                     r.content,
                     skiprows=2,
@@ -1078,7 +1087,7 @@ def reserves_changes(
         elif year == 2013:
             index = index.fillna(dt.datetime(year, 12, 31))
         data["date"] = index
-        data.columns = ["date"] + reserves_cols
+        data.columns = ["date"] + RESERVES_COLUMNS
         months.append(data)
     reserves = (
         pd.concat(months, sort=False, ignore_index=True)
