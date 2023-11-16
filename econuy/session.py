@@ -208,24 +208,6 @@ class Session(object):
         -------
         Dataset : Dict[str, Dict]
         """
-        # original = datasets.original()
-        # custom = datasets.custom()
-
-        # original_final, custom_final = {}, {}
-        # for d, f in zip([original, custom], [original_final, custom_final]):
-        #     for k, v in d.items():
-        #         if not functions:
-        #             f.update({k: v["description"]})
-        #         else:
-        #             f.update({k: v})
-
-        # output = {"original": original_final, "custom": custom_final}
-        # aux = copy.deepcopy(output)
-        # for k in aux["custom"].keys():
-        #     # Avoid auxiliary datasets in Session methods (like _lin_gdp)
-        #     if k.startswith("_"):
-        #         output["custom"].pop(k, None)
-        # return output
         return {
             name: metadata
             for name, metadata in DATASETS.items()
@@ -434,7 +416,7 @@ class Session(object):
             datasets = [
                 name
                 for name, metadata in self.available_datasets.items()
-                if names == metadata["function"].split(".")[0]
+                if names == metadata["area"]
             ]
             self.get(names=datasets)
 
