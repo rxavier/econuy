@@ -1,7 +1,6 @@
 import datetime as dt
 import re
 import tempfile
-import time
 import zipfile
 from pathlib import Path
 from io import BytesIO
@@ -377,43 +376,12 @@ def _commodity_weights(
         if not output.equals(pd.DataFrame()):
             return output
 
-    base_url = "https://comtradeapi.un.org/public/v1/preview/C/A/SS?period"
-    prods = ",".join(
-        [
-            "0011",
-            "0111",
-            "01251",
-            "01252",
-            "0176",
-            "022",
-            "041",
-            "042",
-            "043",
-            "2222",
-            "24",
-            "25",
-            "268",
-            "97",
-        ]
+    raw = pd.read_csv(
+        "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/comtrade.csv"
     )
-    start = 1992
-    year_pairs = []
-    while start < dt.datetime.now().year - 12:
-        stop = start + 11
-        year_pairs.append(range(start, stop))
-        start = stop
-    year_pairs.append(range(year_pairs[-1].stop, dt.datetime.now().year - 1))
-    reqs = []
-    for pair in year_pairs:
-        years = ",".join(str(x) for x in pair)
-        full_url = f"{base_url}={years}&reporterCode=&partnerCode=858&flowCode=m&cmdCode={prods}&customsCode=c00&motCode=0&partner2Code=0&aggregateBy=reportercode&breakdownMode=classic&includeDesc=True&countOnlyFalse"
-        un_r = requests.get(full_url)
-        reqs.append(pd.DataFrame(un_r.json()["data"]))
-        time.sleep(3)
-    raw = pd.concat(reqs, axis=0)
 
-    table = raw.groupby(["period", "cmdDesc"]).sum().reset_index()
-    table = table.pivot(index="period", columns="cmdDesc", values="primaryValue")
+    table = raw.groupby(["RefYear", "CmdDesc"]).sum().reset_index()
+    table = table.pivot(index="RefYear", columns="CmdDesc", values="PrimaryValue")
     table.fillna(0, inplace=True)
 
     # output = roll.resample("M").bfill()
