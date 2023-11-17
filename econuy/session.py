@@ -201,7 +201,7 @@ class Session(object):
             return copy.copy(self)
 
     @property
-    def available_datasets() -> Dict[str, Dict]:  # functions: bool = False
+    def available_datasets(self) -> Dict[str, Dict]:  # functions: bool = False
         """Return available ``dataset`` arguments for use in
         :mod:`~econuy.session.Session.get`.
 
