@@ -115,11 +115,7 @@ class Pipeline(object):
         whether the dataset has been modified in some way or if its as provided
         by the source
         """
-        return {
-            name: metadata
-            for name, metadata in DATASETS.items()
-            if not metadata["disabled"] and not metadata["auxiliary"]
-        }
+        return {name: metadata for name, metadata in DATASETS.items() if not metadata["disabled"]}
 
     def __repr__(self):
         return f"Pipeline(location={self.location})\n" f"Current dataset: {self.name}"
@@ -158,7 +154,7 @@ class Pipeline(object):
             If an invalid string is given to the ``name`` argument.
 
         """
-        if name not in list(self.available_datasets.keys()) + ["_monthly_interpolated_gdp"]:
+        if name not in self.available_datasets.keys():
             raise ValueError("Invalid dataset selected.")
 
         if self.location is None:

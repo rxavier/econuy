@@ -323,10 +323,7 @@ class Session(object):
         """
         if isinstance(names, str):
             names = [names]
-        if any(
-            x not in list(self.pipeline.available_datasets.keys()) + ["_monthly_interpolated_gdp"]
-            for x in names
-        ):
+        if any(x not in self.pipeline.available_datasets.keys() for x in names):
             raise ValueError("Invalid dataset selected.")
 
         # Deepcopy the Pipeline so that its dataset attribute is not
