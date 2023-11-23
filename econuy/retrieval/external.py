@@ -10,7 +10,6 @@ from typing import Union, Optional
 from urllib import error
 from urllib.error import HTTPError, URLError
 
-import numpy as np
 import pandas as pd
 import requests
 from dateutil.relativedelta import relativedelta
@@ -451,23 +450,22 @@ def commodity_prices() -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
     try:
-        raw_beef = pd.read_excel(sources["beef"], header=4, index_col=0).dropna(how="all")
+        raw_beef = pd.read_excel(sources["beef"], header=4, index_col=0, thousands=".").dropna(
+            how="all"
+        )
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files", "inac_certs.pem")
             r = requests.get(sources["beef"], verify=certificate)
-            raw_beef = pd.read_excel(BytesIO(r.content), header=4, index_col=0).dropna(how="all")
+            raw_beef = pd.read_excel(
+                BytesIO(r.content), header=4, index_col=0, thousands="."
+            ).dropna(how="all")
         else:
             raise err
 
     raw_beef.columns = raw_beef.columns.str.strip()
     proc_beef = raw_beef["Ing. Prom./Ton."].to_frame()
     proc_beef.index = pd.date_range(start="2002-01-04", periods=len(proc_beef), freq="W-SAT")
-    proc_beef["Ing. Prom./Ton."] = np.where(
-        proc_beef > np.mean(proc_beef) + np.std(proc_beef) * 2,
-        proc_beef / 1000,
-        proc_beef,
-    )
     beef = proc_beef.resample("M").mean()
 
     # soy_wheat = []
