@@ -8,9 +8,9 @@ from datetime import datetime
 import pandas as pd
 from sqlalchemy.engine.base import Engine, Connection
 
-from econuy.utils import ops
+from econuy.utils import operations
 from econuy import transform
-from econuy.utils.ops import DATASETS
+from econuy.utils.operations import DATASETS
 
 
 class Pipeline(object):
@@ -73,8 +73,8 @@ class Pipeline(object):
         self._dataset = pd.DataFrame()
         self._download_commodity_weights = False
 
-    def _get_function(self, name: str) -> Callable:
-        """Get function from transform module."""
+    def _get_retrieval_function(self, name: str) -> Callable:
+        """Parse function string and return function."""
         function_string = self.available_datasets[name]["function"]
         module, function = function_string.split(".")
         path_prefix = "econuy.retrieval."
@@ -115,11 +115,7 @@ class Pipeline(object):
         whether the dataset has been modified in some way or if its as provided
         by the source
         """
-        return {
-            name: metadata
-            for name, metadata in DATASETS.items()
-            if not metadata["disabled"] and not metadata["auxiliary"]
-        }
+        return {name: metadata for name, metadata in DATASETS.items() if not metadata["disabled"]}
 
     def __repr__(self):
         return f"Pipeline(location={self.location})\n" f"Current dataset: {self.name}"
@@ -142,7 +138,7 @@ class Pipeline(object):
         else:
             return copy.copy(self)
 
-    def get(self, name: str):
+    def get(self, name: str) -> Pipeline:
         """
         Main download method.
 
@@ -158,13 +154,13 @@ class Pipeline(object):
             If an invalid string is given to the ``name`` argument.
 
         """
-        if name not in list(self.available_datasets.keys()) + ["_monthly_interpolated_gdp"]:
+        if name not in self.available_datasets.keys():
             raise ValueError("Invalid dataset selected.")
 
         if self.location is None:
             prev_data = pd.DataFrame()
         else:
-            prev_data = ops._io(
+            prev_data = operations._io(
                 operation="read",
                 data_loc=self.location,
                 name=name,
@@ -196,20 +192,22 @@ class Pipeline(object):
                 # Some datasets require retrieving other datasets. Passing the
                 # class instance allows running these retrieval operations
                 # with the same parameters (for example, save file formats).
-                new_data = self._get_function(name)(pipeline=self)
+                new_data = self._get_retrieval_function(name)(pipeline=self)
             elif name in ["international_reserves_changes"]:
                 # Datasets that require many requests (mostly daily data) benefit
                 # from having previous data, so they can start requests
                 # from the last available date.
-                new_data = self._get_function(name)(pipeline=self, previous_data=prev_data)
+                new_data = self._get_retrieval_function(name)(
+                    pipeline=self, previous_data=prev_data
+                )
             else:
-                new_data = self._get_function(name)()
-            data = ops._revise(new_data=new_data, prev_data=prev_data, revise_rows="nodup")
+                new_data = self._get_retrieval_function(name)()
+            data = operations._revise(new_data=new_data, prev_data=prev_data, revise_rows="nodup")
             self._dataset = data
         self._name = name
         if self.always_save and (self.download or prev_data.empty) and self.location is not None:
             self.save()
-        return
+        return self
 
     def resample(
         self,
@@ -217,7 +215,7 @@ class Pipeline(object):
         operation: str = "sum",
         interpolation: str = "linear",
         warn: bool = False,
-    ):
+    ) -> Pipeline:
         """
         Wrapper for the `resample method <https://pandas.pydata.org/pandas-docs
         stable/reference/api/pandas.DataFrame.resample.html>`_ in Pandas that
@@ -269,9 +267,9 @@ class Pipeline(object):
             self.dataset, rule=rule, operation=operation, interpolation=interpolation, warn=warn
         )
         self._dataset = output
-        return
+        return self
 
-    def chg_diff(self, operation: str = "chg", period: str = "last"):
+    def chg_diff(self, operation: str = "chg", period: str = "last") -> Pipeline:
         """Wrapper for the `pct_change <https://pandas.pydata.org/pandas-docs/stable/
         reference/api/pandas.DataFrame.pct_change.html>`_ and `diff <https://pandas
         .pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.diff.html>`_
@@ -318,7 +316,7 @@ class Pipeline(object):
             )
         output = transform.chg_diff(self.dataset, operation=operation, period=period)
         self._dataset = output
-        return
+        return self
 
     def decompose(
         self,
@@ -332,7 +330,7 @@ class Pipeline(object):
         search_parents: int = 0,
         ignore_warnings: bool = True,
         **kwargs,
-    ):
+    ) -> Pipeline:
         """Apply seasonal decomposition.
 
         Decompose the series in a Pandas dataframe using either X13 ARIMA, Loess
@@ -421,14 +419,14 @@ class Pipeline(object):
             **kwargs,
         )
         self._dataset = output
-        return
+        return self
 
     def convert(
         self,
         flavor: str,
         start_date: Union[str, datetime, None] = None,
         end_date: Union[str, datetime, None] = None,
-    ):
+    ) -> Pipeline:
         """Convert dataframe from UYU to USD, from UYU to real UYU or
         from UYU/USD to % GDP.
 
@@ -509,14 +507,14 @@ class Pipeline(object):
             output = transform.convert_gdp(self.dataset, errors=self.errors, pipeline=self)
 
         self._dataset = output
-        return
+        return self
 
     def rebase(
         self,
         start_date: Union[str, datetime],
         end_date: Union[str, datetime, None] = None,
         base: Union[float, int] = 100.0,
-    ):
+    ) -> Pipeline:
         """Rebase all dataframe columns to a date or range of dates.
 
         Parameters
@@ -543,9 +541,9 @@ class Pipeline(object):
             self.dataset, start_date=start_date, end_date=end_date, base=base
         )
         self._dataset = output
-        return
+        return self
 
-    def rolling(self, window: Optional[int] = None, operation: str = "sum"):
+    def rolling(self, window: Optional[int] = None, operation: str = "sum") -> Pipeline:
         """
         Wrapper for the `rolling method <https://pandas.pydata.org/pandas-docs/
         stable/reference/api/pandas.DataFrame.rolling.html>`_ in Pandas that
@@ -586,7 +584,7 @@ class Pipeline(object):
             )
         output = transform.rolling(self.dataset, window=window, operation=operation)
         self._dataset = output
-        return
+        return self
 
     def save(self):
         """Write held dataset.
@@ -602,7 +600,7 @@ class Pipeline(object):
         if self.location is None:
             raise ValueError("No save location defined.")
         else:
-            ops._io(
+            operations._io(
                 operation="save",
                 data_loc=self.location,
                 name=self.name,

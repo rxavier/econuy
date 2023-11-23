@@ -4,15 +4,15 @@ from pathlib import Path
 import pytest
 
 from econuy.core import Pipeline
-from econuy.utils import get_project_root, metadata, ops
+from econuy.utils import get_project_root, metadata, operations
 
 
 def trim_rows(input: str, output: str, rows: int = 10):
     for f in os.listdir(input):
         if f.endswith(".csv") and "commodity_weights" not in f:
-            df = ops._read(Path(input, f), file_fmt="csv", multiindex="included")
+            df = operations._read(Path(input, f), file_fmt="csv", multiindex="included")
             df = df.reindex(df.index[:-rows])
-            ops._save(df, Path(output, f))
+            operations._save(df, Path(output, f))
 
 
 p = Pipeline()
@@ -32,7 +32,7 @@ def test_retrieval(dataset):
     p = Pipeline(location=location, always_save=False)
     p.get(dataset)
     test_path = Path(location, f"{dataset}.csv")
-    test = ops._read(test_path)
+    test = operations._read(test_path)
     metadata._set(test)
     compare = p.dataset.reindex(test.index)
     div = test / compare

@@ -16,7 +16,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 
 from econuy.utils import metadata, get_project_root
 from econuy.utils.chromedriver import _build
-from econuy.utils.ops import get_download_sources, get_name_from_function
+from econuy.utils.operations import get_download_sources, get_name_from_function
 
 
 @retry(

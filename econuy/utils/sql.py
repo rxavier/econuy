@@ -65,7 +65,7 @@ def read(
                 cols_sql = [column(cols)]
                 cols_sql.append(column("index"))
             else:
-                cols_sql = ["*"]
+                cols_sql = "*"
             command = select(*cols_sql).select_from(table(table_name))
             dates = column("index")
             if start_date is not None:

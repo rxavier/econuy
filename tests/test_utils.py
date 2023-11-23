@@ -3,7 +3,7 @@ from os import path
 from sqlalchemy import create_engine
 
 from econuy.utils.metadata import _get_sources
-from econuy.utils import sqlutil
+from econuy.utils import sql
 
 try:
     from tests.test_session import remove_temporary_files_folders
@@ -14,17 +14,15 @@ except ImportError:
 CUR_DIR = path.abspath(path.dirname(__file__))
 TEST_DIR = path.join(CUR_DIR, "test-data")
 TEST_CON = create_engine("sqlite://").connect()
-sqlutil.insert_csvs(con=TEST_CON, directory=TEST_DIR)
+sql.insert_csvs(con=TEST_CON, directory=TEST_DIR)
 
 
 def test_sqlutil():
     remove_temporary_files_folders()
-    sqlutil.read(con=TEST_CON, command="SELECT * FROM nxr_daily")
-    sqlutil.read(
-        con=TEST_CON, table_name="nxr_daily", start_date="2011-01-14", end_date="2012-01-15"
-    )
-    sqlutil.read(con=TEST_CON, table_name="nxr_daily", start_date="2011-01-14")
-    sqlutil.read(
+    sql.read(con=TEST_CON, command="SELECT * FROM nxr_daily")
+    sql.read(con=TEST_CON, table_name="nxr_daily", start_date="2011-01-14", end_date="2012-01-15")
+    sql.read(con=TEST_CON, table_name="nxr_daily", start_date="2011-01-14")
+    sql.read(
         con=TEST_CON,
         table_name="international_reserves_changes",
         end_date="2012-01-01",

@@ -8,7 +8,7 @@ import requests
 from opnieuw import retry
 
 from econuy.utils import metadata
-from econuy.utils.ops import get_name_from_function, get_download_sources
+from econuy.utils.operations import get_name_from_function, get_download_sources
 
 
 @retry(

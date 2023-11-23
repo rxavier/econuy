@@ -13,7 +13,7 @@ from scipy.stats import stats
 
 from econuy.core import Pipeline
 from econuy.utils import metadata, get_project_root
-from econuy.utils.ops import get_name_from_function, get_download_sources
+from econuy.utils.operations import get_name_from_function, get_download_sources
 
 
 @retry(

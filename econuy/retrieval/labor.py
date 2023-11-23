@@ -12,7 +12,7 @@ from pandas.tseries.offsets import MonthEnd
 from econuy import transform
 from econuy.core import Pipeline
 from econuy.utils import metadata
-from econuy.utils.ops import get_name_from_function, get_download_sources
+from econuy.utils.operations import get_name_from_function, get_download_sources
 
 
 @retry(

@@ -151,7 +151,7 @@ def _get_sources(
     dataset: str, html_urls: bool = True
 ) -> Tuple[List[Optional[str]], List[str], List[str]]:
     """Given a dataset name, return source URLs and provider."""
-    from econuy.utils.ops import DATASETS
+    from econuy.utils.operations import DATASETS
 
     direct = DATASETS[dataset]["sources"]["direct"]
     indirect = DATASETS[dataset]["sources"]["indirect"]

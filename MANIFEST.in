@@ -1,2 +1,3 @@
 include econuy/utils/files/*
 include econuy/tests/test-data/*
+include econuy/retrieval/datasets.json

@@ -1,7 +1,6 @@
 import datetime as dt
 import re
 import tempfile
-import time
 import zipfile
 from pathlib import Path
 from io import BytesIO
@@ -11,7 +10,6 @@ from typing import Union, Optional
 from urllib import error
 from urllib.error import HTTPError, URLError
 
-import numpy as np
 import pandas as pd
 import requests
 from dateutil.relativedelta import relativedelta
@@ -23,8 +21,8 @@ from sqlalchemy.engine.base import Engine, Connection
 from econuy import transform
 from econuy.retrieval import regional
 from econuy.core import Pipeline
-from econuy.utils import ops, metadata, get_project_root
-from econuy.utils.ops import get_download_sources, get_name_from_function
+from econuy.utils import operations, metadata, get_project_root
+from econuy.utils.operations import get_download_sources, get_name_from_function
 from econuy.utils.extras import TRADE_METADATA, RESERVES_COLUMNS, BOP_COLUMNS
 
 
@@ -371,49 +369,18 @@ def _commodity_weights(
 
     """
     if download is False and location is not None:
-        output = ops._io(
+        output = operations._io(
             operation="read", data_loc=location, name="commodity_weights", multiindex=None
         )
         if not output.equals(pd.DataFrame()):
             return output
 
-    base_url = "https://comtradeapi.un.org/public/v1/preview/C/A/SS?period"
-    prods = ",".join(
-        [
-            "0011",
-            "0111",
-            "01251",
-            "01252",
-            "0176",
-            "022",
-            "041",
-            "042",
-            "043",
-            "2222",
-            "24",
-            "25",
-            "268",
-            "97",
-        ]
+    raw = pd.read_csv(
+        "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/comtrade.csv"
     )
-    start = 1992
-    year_pairs = []
-    while start < dt.datetime.now().year - 12:
-        stop = start + 11
-        year_pairs.append(range(start, stop))
-        start = stop
-    year_pairs.append(range(year_pairs[-1].stop, dt.datetime.now().year - 1))
-    reqs = []
-    for pair in year_pairs:
-        years = ",".join(str(x) for x in pair)
-        full_url = f"{base_url}={years}&reporterCode=&partnerCode=858&flowCode=m&cmdCode={prods}&customsCode=c00&motCode=0&partner2Code=0&aggregateBy=reportercode&breakdownMode=classic&includeDesc=True&countOnlyFalse"
-        un_r = requests.get(full_url)
-        reqs.append(pd.DataFrame(un_r.json()["data"]))
-        time.sleep(3)
-    raw = pd.concat(reqs, axis=0)
 
-    table = raw.groupby(["period", "cmdDesc"]).sum().reset_index()
-    table = table.pivot(index="period", columns="cmdDesc", values="primaryValue")
+    table = raw.groupby(["RefYear", "CmdDesc"]).sum().reset_index()
+    table = table.pivot(index="RefYear", columns="CmdDesc", values="PrimaryValue")
     table.fillna(0, inplace=True)
 
     # output = roll.resample("M").bfill()
@@ -449,13 +416,13 @@ def _commodity_weights(
     output = output.rolling(window=3, min_periods=3).mean().bfill()
 
     if location is not None:
-        previous_data = ops._io(
+        previous_data = operations._io(
             operation="read", data_loc=location, name="commodity_weights", multiindex=None
         )
-        output = ops._revise(new_data=output, prev_data=previous_data, revise_rows="nodup")
+        output = operations._revise(new_data=output, prev_data=previous_data, revise_rows="nodup")
 
     if location is not None:
-        ops._io(
+        operations._io(
             operation="save",
             data_loc=location,
             data=output,
@@ -483,23 +450,22 @@ def commodity_prices() -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
     try:
-        raw_beef = pd.read_excel(sources["beef"], header=4, index_col=0).dropna(how="all")
+        raw_beef = pd.read_excel(sources["beef"], header=4, index_col=0, thousands=".").dropna(
+            how="all"
+        )
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files", "inac_certs.pem")
             r = requests.get(sources["beef"], verify=certificate)
-            raw_beef = pd.read_excel(BytesIO(r.content), header=4, index_col=0).dropna(how="all")
+            raw_beef = pd.read_excel(
+                BytesIO(r.content), header=4, index_col=0, thousands="."
+            ).dropna(how="all")
         else:
             raise err
 
     raw_beef.columns = raw_beef.columns.str.strip()
     proc_beef = raw_beef["Ing. Prom./Ton."].to_frame()
     proc_beef.index = pd.date_range(start="2002-01-04", periods=len(proc_beef), freq="W-SAT")
-    proc_beef["Ing. Prom./Ton."] = np.where(
-        proc_beef > np.mean(proc_beef) + np.std(proc_beef) * 2,
-        proc_beef / 1000,
-        proc_beef,
-    )
     beef = proc_beef.resample("M").mean()
 
     # soy_wheat = []

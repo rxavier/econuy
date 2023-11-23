@@ -20,7 +20,7 @@ from econuy.core import Pipeline
 from econuy.transform import rebase, resample
 from econuy.utils import metadata
 from econuy.utils.chromedriver import _build
-from econuy.utils.ops import get_download_sources, get_name_from_function
+from econuy.utils.operations import get_download_sources, get_name_from_function
 
 
 @retry(
@@ -387,11 +387,8 @@ def regional_policy_rates() -> pd.DataFrame:
         path_temp = path.join(temp_dir.name, "WS_CBPOL_csv_row.csv")
         raw = pd.read_csv(path_temp, index_col=0)
     output = raw.loc[:, lambda x: x.columns.str.contains("D:Daily")]
-    output = (
-        output.loc[:, output.iloc[0].isin(["AR:Argentina", "BR:Brazil"])]
-        .iloc[8:]
-        .dropna(how="all")
-    )
+    output.columns = output.iloc[0]
+    output = output.loc[:, ["AR:Argentina", "BR:Brazil"]].iloc[8:].dropna(how="all")
     output.columns = ["Argentina", "Brasil"]
     output = output.apply(pd.to_numeric, errors="coerce").interpolate(
         method="linear", limit_area="inside"
