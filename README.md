@@ -21,7 +21,7 @@ The most basic econuy workflow goes like this:
 from econuy.core import Pipeline
 
 p = Pipeline()
-p.get("labor_rates")
+p.get("cpi")
 ```
 
 # Installation
@@ -109,9 +109,7 @@ When writing, metadata can be included as dataset headers (Pandas MultiIndex col
 from econuy.core import Pipeline
 
 p = Pipeline()
-p.get("balance_nfps")
-p.convert(flavor="usd")
-p.resample(rule="A-DEC", operation="sum")
+p.get("fiscal_balance_global_public_sector").convert(flavor="usd").resample(rule="A-DEC", operation="sum")
 ```
 
 ### Saving the current dataset
@@ -132,8 +130,7 @@ Transformation and saving methods support a `select` parameter that determines w
 from econuy.session import Session
 
 s = Session(location="your/directory")
-s.get(["cpi", "nxr_monthly"])
-s.get("commodity_index")
+s.get(["cpi", "nxr_monthly"]).get("commodity_index")
 s.rolling(window=12, operation="mean", select=["nxr_monthly", "commodity_index"])
 ```
 

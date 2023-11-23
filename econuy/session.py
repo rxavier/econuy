@@ -303,7 +303,7 @@ class Session(object):
 
         return output
 
-    def get(self, names: Union[str, Sequence[str]]):
+    def get(self, names: Union[str, Sequence[str]]) -> Session:
         """
         Main download method.
 
@@ -355,9 +355,9 @@ class Session(object):
             self._retries = 1
             return
         self._retries = 1
-        return
+        return self
 
-    def get_bulk(self, names: str):
+    def get_bulk(self, names: str) -> Session:
         """
         Get datasets in bulk.
 
@@ -418,7 +418,7 @@ class Session(object):
             ]
             self.get(names=datasets)
 
-        return
+        return self
 
     def resample(
         self,
@@ -427,7 +427,7 @@ class Session(object):
         interpolation: Union[str, List] = "linear",
         warn: Union[bool, List] = False,
         select: Union[str, int, Sequence[str], Sequence[int]] = "all",
-    ):
+    ) -> Session:
         """
         Resample to target frequencies.
 
@@ -446,14 +446,14 @@ class Session(object):
         )
 
         self._datasets = output
-        return
+        return self
 
     def chg_diff(
         self,
         operation: Union[str, List] = "chg",
         period: Union[str, List] = "last",
         select: Union[str, int, Sequence[str], Sequence[int]] = "all",
-    ):
+    ) -> Session:
         """
         Calculate pct change or difference.
 
@@ -467,7 +467,7 @@ class Session(object):
         )
 
         self._datasets = output
-        return
+        return self
 
     def decompose(
         self,
@@ -482,7 +482,7 @@ class Session(object):
         ignore_warnings: Union[bool, List] = True,
         select: Union[str, int, Sequence[str], Sequence[int]] = "all",
         **kwargs,
-    ):
+    ) -> Session:
         """
         Apply seasonal decomposition.
 
@@ -513,7 +513,7 @@ class Session(object):
         )
 
         self._datasets = output
-        return
+        return self
 
     def convert(
         self,
@@ -521,7 +521,7 @@ class Session(object):
         start_date: Union[str, datetime, None, List] = None,
         end_date: Union[str, datetime, None, List] = None,
         select: Union[str, int, Sequence[str], Sequence[int]] = "all",
-    ):
+    ) -> Session:
         """Convert to other units.
 
         See Also
@@ -546,7 +546,7 @@ class Session(object):
             )
 
         self._datasets = output
-        return
+        return self
 
     def rebase(
         self,
@@ -554,7 +554,7 @@ class Session(object):
         end_date: Union[str, datetime, None, List] = None,
         base: Union[float, List] = 100.0,
         select: Union[str, int, Sequence[str], Sequence[int]] = "all",
-    ):
+    ) -> Session:
         """
         Scale to a period or range of periods.
 
@@ -571,14 +571,14 @@ class Session(object):
             base=base,
         )
         self._datasets = output
-        return
+        return self
 
     def rolling(
         self,
         window: Union[int, List, None] = None,
         operation: Union[str, List] = "sum",
         select: Union[str, int, Sequence[str], Sequence[int]] = "all",
-    ):
+    ) -> Session:
         """
         Calculate rolling averages or sums.
 
@@ -591,14 +591,14 @@ class Session(object):
             select=select, transformation="rolling", window=window, operation=operation
         )
         self._datasets = output
-        return
+        return self
 
     def concat(
         self,
         select: Union[str, int, Sequence[str], Sequence[int]] = "all",
         concat_name: Optional[str] = None,
         force_suffix: bool = False,
-    ):
+    ) -> Session:
         """
         Concatenate datasets in :attr:`datasets` and add as a new dataset.
 
@@ -664,7 +664,7 @@ class Session(object):
         else:
             pass
         self._datasets.update({concat_name: combined})
-        return
+        return self
 
     def save(self, select: Union[str, int, Sequence[str], Sequence[int]] = "all"):
         """Write datasets.
