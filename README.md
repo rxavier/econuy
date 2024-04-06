@@ -130,8 +130,7 @@ Transformation and saving methods support a `select` parameter that determines w
 from econuy.session import Session
 
 s = Session(location="your/directory")
-s.get(["cpi", "nxr_monthly"]).get("commodity_index")
-s.rolling(window=12, operation="mean", select=["nxr_monthly", "commodity_index"])
+s.get(["cpi", "nxr_monthly"]).get("commodity_index").rolling(window=12, operation="mean", select=["nxr_monthly", "commodity_index"])
 ```
 
 `Session.get_bulk()` makes it easy to get several datasets in one line.
@@ -158,10 +157,6 @@ s.get_bulk("fiscal_accounts")
 
 The [patool](https://github.com/wummel/patool) package is used in order to access data provided in `.rar` format. This package requires that you have the `unrar` binaries in your system, which in most cases you should already have. You can can get them from [here](https://www.rarlab.com/rar_add.htm) if you don't.
 
-### Selenium webdrivers
-
-Some retrieval functions need Selenium to be configured in order to scrape data. These functions include a `driver` parameter in which a Selenium Webdriver can be passed, or they will attempt to configure a Chrome webdriver, even downloading the chromedriver binary if needed. This still requires an existing Chrome installation.
-
 ----
 
 # Caveats and plans
@@ -169,10 +164,3 @@ Some retrieval functions need Selenium to be configured in order to scrape data.
 ## Caveats
 
 This project is heavily based on getting data from online sources that could change without notice, causing methods that download data to fail. While I try to stay on my toes and fix these quickly, it helps if you create an issue when you find one of these (or even submit a fix!).
-
-## Plans
-
-* Implement a CLI.
-* ~~Provide methods to make keeping an updated database easy~~. `Session.get_bulk()` mostly covers this.
-* ~~Visualization.~~ (I have decided that visualization should be up to the end-user. However, the [webapp](https://econ.uy) is available for this purpose).
-* Translations for dataset descriptions and metadata.
