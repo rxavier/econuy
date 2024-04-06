@@ -55,7 +55,11 @@ def read(
     else:
         if all(v is None for v in [cols, start_date, end_date]):
             output = pd.read_sql(
-                sql=table_name, con=con, index_col="index", parse_dates="index", **kwargs
+                sql=table_name,
+                con=con,
+                index_col="index",
+                parse_dates="index",
+                **kwargs,
             )
         else:
             if isinstance(cols, Iterable) and not isinstance(cols, str):
@@ -70,7 +74,9 @@ def read(
             dates = column("index")
             if start_date is not None:
                 if end_date is not None:
-                    command = command.where(and_(dates >= f"{start_date}", dates <= f"{end_date}"))
+                    command = command.where(
+                        and_(dates >= f"{start_date}", dates <= f"{end_date}")
+                    )
                 else:
                     command = command.where(dates >= f"{start_date}")
             elif end_date is not None:
@@ -93,7 +99,10 @@ def read(
 
 
 def df_to_sql(
-    df: pd.DataFrame, name: str, con: sqla.engine.base.Connection, if_exists: str = "replace"
+    df: pd.DataFrame,
+    name: str,
+    con: sqla.engine.base.Connection,
+    if_exists: str = "replace",
 ) -> None:
     """Flatten MultiIndex index columns before creating SQL table
     from dataframe."""
@@ -108,7 +117,9 @@ def df_to_sql(
     return
 
 
-def insert_csvs(con: sqla.engine.base.Connection, directory: Union[str, Path, PathLike]) -> None:
+def insert_csvs(
+    con: sqla.engine.base.Connection, directory: Union[str, Path, PathLike]
+) -> None:
     """Insert all CSV files in data directory into a SQL database."""
     if path.isfile(directory):
         directory = path.dirname(directory)
@@ -125,10 +136,17 @@ def insert_csvs(con: sqla.engine.base.Connection, directory: Union[str, Path, Pa
             )
         except ParserError:
             data = pd.read_csv(
-                full_path, index_col=0, float_precision="high", parse_dates=True, encoding="latin1"
+                full_path,
+                index_col=0,
+                float_precision="high",
+                parse_dates=True,
+                encoding="latin1",
             )
         df_to_sql(
-            df=data, name=Path(file).with_suffix("").as_posix(), con=con, if_exists="replace"
+            df=data,
+            name=Path(file).with_suffix("").as_posix(),
+            con=con,
+            if_exists="replace",
         )
         print(f"Inserted {file} into {con.engine.url}.")
 

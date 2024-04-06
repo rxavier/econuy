@@ -24,16 +24,15 @@ def income_household() -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-
     raw = (
         pd.read_excel(sources["main"], skiprows=5)
         .dropna(thresh=5)
         .loc[lambda x: x["Mes, Trimestre y Año"].str.contains("/[0-9]{2}", regex=True)]
     )
 
-    output = raw.set_index(pd.date_range(start="2006-03-31", freq="QE-DEC", periods=len(raw))).iloc[
-        :, 1:
-    ]
+    output = raw.set_index(
+        pd.date_range(start="2006-03-31", freq="QE-DEC", periods=len(raw))
+    ).iloc[:, 1:]
 
     output.columns = [
         "Total país",
@@ -82,9 +81,9 @@ def income_capita() -> pd.DataFrame:
         .loc[lambda x: x["Mes, Trimestre y Año "].str.contains("/[0-9]{2}", regex=True)]
     )
 
-    output = raw.set_index(pd.date_range(start="2006-03-31", freq="QE-DEC", periods=len(raw))).iloc[
-        :, 1:
-    ]
+    output = raw.set_index(
+        pd.date_range(start="2006-03-31", freq="QE-DEC", periods=len(raw))
+    ).iloc[:, 1:]
 
     output.columns = [
         "Total país",

@@ -52,29 +52,38 @@ def global_gdp() -> pd.DataFrame:
         chn_datasets.append(df)
     chn_qoq = chn_datasets[0]
     chn_yoy = chn_datasets[1]
-    chn_obs = (
-        pd.read_csv(sources["chn_obs"], index_col=0, parse_dates=[0],
-                      usecols=[0, 1])
+    chn_obs = pd.read_csv(
+        sources["chn_obs"], index_col=0, parse_dates=[0], usecols=[0, 1]
     )
-    chn_obs = chn_obs.loc[(chn_obs.index > "2011-01-01") & (chn_obs.index < "2016-01-01")]
+    chn_obs = chn_obs.loc[
+        (chn_obs.index > "2011-01-01") & (chn_obs.index < "2016-01-01")
+    ]
     chn_yoy["volume"] = chn_obs
     for row in reversed(range(len(chn_yoy.loc[chn_yoy.index < "2011-01-01"]))):
         if pd.isna(chn_yoy.iloc[row, 1]):
-            chn_yoy.iloc[row, 1] = chn_yoy.iloc[row + 4, 1] / (1 + chn_yoy.iloc[row + 4, 0] / 100)
+            chn_yoy.iloc[row, 1] = chn_yoy.iloc[row + 4, 1] / (
+                1 + chn_yoy.iloc[row + 4, 0] / 100
+            )
     chn_yoy = chn_yoy[["volume"]].loc[chn_yoy.index < "2016-01-01"]
     metadata._set(chn_yoy)
     chn_sa = decompose(
-        chn_yoy[["volume"]].loc[chn_yoy.index < "2016-01-01"], component="seas", method="x13"
+        chn_yoy[["volume"]].loc[chn_yoy.index < "2016-01-01"],
+        component="seas",
+        method="x13",
     )
     chn_sa = pd.concat([chn_sa, chn_qoq], axis=1)
     for row in range(len(chn_sa)):
         if not pd.isna(chn_sa.iloc[row, 1]):
-            chn_sa.iloc[row, 0] = chn_sa.iloc[row - 1, 0] * (1 + chn_sa.iloc[row, 1] / 100)
+            chn_sa.iloc[row, 0] = chn_sa.iloc[row - 1, 0] * (
+                1 + chn_sa.iloc[row, 1] / 100
+            )
     chn = chn_sa.iloc[:, [0]].div(10)
 
     gdps = []
     for series in ["GDPC1", "CLVMNACSCAB1GQEU272020", "JPNRGDPEXP"]:
-        r = requests.get(f"{sources['fred']}{series}&api_key=" f"{FRED_API_KEY}&file_type=json")
+        r = requests.get(
+            f"{sources['fred']}{series}&api_key=" f"{FRED_API_KEY}&file_type=json"
+        )
         aux = pd.DataFrame.from_records(r.json()["observations"])
         aux = aux[["date", "value"]].set_index("date")
         aux.index = pd.to_datetime(aux.index)
@@ -102,7 +111,9 @@ def global_gdp() -> pd.DataFrame:
         ts_type="Flujo",
         cumperiods=1,
     )
-    metadata._modify_multiindex(output, levels=[3], new_arrays=[["USD", "EUR", "JPY", "CNY"]])
+    metadata._modify_multiindex(
+        output, levels=[3], new_arrays=[["USD", "EUR", "JPY", "CNY"]]
+    )
 
     return output
 
@@ -137,7 +148,12 @@ def global_stock_markets() -> pd.DataFrame:
         aux.columns = [series]
         yahoo.append(aux)
     output = pd.concat(yahoo, axis=1).interpolate(method="linear", limit_area="inside")
-    output.columns = ["S&P 500", "Euronext 100", "Nikkei 225", "Shanghai Stock Exchange Composite"]
+    output.columns = [
+        "S&P 500",
+        "Euronext 100",
+        "Nikkei 225",
+        "Shanghai Stock Exchange Composite",
+    ]
     output.rename_axis(None, inplace=True)
     metadata._set(
         output,
@@ -148,7 +164,9 @@ def global_stock_markets() -> pd.DataFrame:
         ts_type="-",
         cumperiods=1,
     )
-    metadata._modify_multiindex(output, levels=[3], new_arrays=[["USD", "EUR", "JPY", "CNY"]])
+    metadata._modify_multiindex(
+        output, levels=[3], new_arrays=[["USD", "EUR", "JPY", "CNY"]]
+    )
     output = rebase(output, start_date="2019-01-02")
 
     return output
@@ -190,9 +208,7 @@ def global_policy_rates() -> pd.DataFrame:
 
     output = output[["Estados Unidos", "Eurozona", "Japón", "China"]]
     output.index = pd.to_datetime(output.index)
-    output = output.interpolate(
-        method="linear", limit_direction="forward"
-    )
+    output = output.interpolate(method="linear", limit_direction="forward")
     output.rename_axis(None, inplace=True)
 
     metadata._set(
@@ -205,7 +221,9 @@ def global_policy_rates() -> pd.DataFrame:
         ts_type="-",
         cumperiods=1,
     )
-    metadata._modify_multiindex(output, levels=[3], new_arrays=[["USD", "EUR", "JPY", "CNY"]])
+    metadata._modify_multiindex(
+        output, levels=[3], new_arrays=[["USD", "EUR", "JPY", "CNY"]]
+    )
 
     return output
 
@@ -327,7 +345,9 @@ def global_nxr() -> pd.DataFrame:
         if series == "dollar":
             aux.dropna(inplace=True)
         output.append(aux)
-    output = output[0].join(output[1:]).interpolate(method="linear", limit_area="inside")
+    output = (
+        output[0].join(output[1:]).interpolate(method="linear", limit_area="inside")
+    )
     output.columns = ["Índice Dólar", "Euro", "Yen", "Renminbi"]
     output.rename_axis(None, inplace=True)
 

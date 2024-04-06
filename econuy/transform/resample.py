@@ -25,12 +25,18 @@ def resample(
     if operation not in ["sum", "mean", "upsample", "last"]:
         raise ValueError("Invalid 'operation' option.")
     if "Acum. períodos" not in df.columns.names:
-        raise ValueError("Input dataframe's multiindex requires the " "'Acum. períodos' level.")
+        raise ValueError(
+            "Input dataframe's multiindex requires the " "'Acum. períodos' level."
+        )
 
     all_metadata = df.columns.droplevel("Indicador")
     if all(x == all_metadata[0] for x in all_metadata):
         return _resample(
-            df=df, rule=rule, operation=operation, interpolation=interpolation, warn=warn
+            df=df,
+            rule=rule,
+            operation=operation,
+            interpolation=interpolation,
+            warn=warn,
         )
     else:
         columns = []

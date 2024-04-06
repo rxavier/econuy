@@ -170,7 +170,10 @@ def tax_revenue() -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
     r = requests.get(sources["main"])
-    url = re.findall("https://[A-z0-9-/\.]+Recaudaci%C3%B3n%20por%20impuesto%20-%20Series%20mensuales.xlsx", r.text)[0]
+    url = re.findall(
+        "https://[A-z0-9-/\.]+Recaudaci%C3%B3n%20por%20impuesto%20-%20Series%20mensuales.xlsx",
+        r.text,
+    )[0]
     raw = (
         pd.read_excel(url)
         .iloc[:, 2:]
@@ -179,9 +182,9 @@ def tax_revenue() -> pd.DataFrame:
         .set_index("SELECCIONE IMPUESTO")
         .rename_axis(None)
     )
-    raw.index = pd.to_datetime(raw.index, format="%Y-%m-%d HH:MM:SS", errors="coerce") + MonthEnd(
-        0
-    )
+    raw.index = pd.to_datetime(
+        raw.index, format="%Y-%m-%d HH:MM:SS", errors="coerce"
+    ) + MonthEnd(0)
     output = raw.loc[~pd.isna(raw.index), ~raw.columns.str.contains("Unnamed")]
     output.columns = taxes_columns
     output = output.div(1000000)
@@ -190,7 +193,9 @@ def tax_revenue() -> pd.DataFrame:
     for col in latest.columns:
         for date in latest.index:
             prev_year = date + MonthEnd(-12)
-            output.loc[date, col] = output.loc[prev_year, col] * (1 + latest.loc[date, col] / 100)
+            output.loc[date, col] = output.loc[prev_year, col] * (
+                1 + latest.loc[date, col] / 100
+            )
     output = pd.concat([output, latest], sort=False)
     output = output.loc[~output.index.duplicated(keep="first")]
 
@@ -374,7 +379,9 @@ def public_assets() -> pd.DataFrame:
     return _public_debt_retriever()["public_assets"]
 
 
-def net_public_debt_global_public_sector(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+def net_public_debt_global_public_sector(
+    pipeline: Optional[Pipeline] = None,
+) -> pd.DataFrame:
     """
     Get net public debt excluding deposits at the central bank.
 
@@ -459,7 +466,9 @@ def fiscal_balance_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     proc = pd.DataFrame(index=gps.index)
 
     proc["Ingresos: GC-BPS"] = gc["Ingresos: GC-BPS"]
-    proc["Ingresos: GC-BPS ex. FSS"] = gc["Ingresos: GC-BPS"] - gc["Ingresos: FSS - Cincuentones"]
+    proc["Ingresos: GC-BPS ex. FSS"] = (
+        gc["Ingresos: GC-BPS"] - gc["Ingresos: FSS - Cincuentones"]
+    )
     proc["Ingresos: GC"] = gc["Ingresos: GC"]
     proc["Ingresos: DGI"] = gc["Ingresos: DGI"]
     proc["Ingresos: Comercio ext."] = gc["Ingresos: Comercio ext."]
@@ -468,7 +477,9 @@ def fiscal_balance_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     )
     proc["Ingresos: BPS"] = gc["Ingresos: BPS neto"]
     proc["Ingresos: FSS - Cincuentones"] = gc["Ingresos: FSS - Cincuentones"]
-    proc["Ingresos: BPS ex FSS"] = gc["Ingresos: BPS neto"] - gc["Ingresos: FSS - Cincuentones"]
+    proc["Ingresos: BPS ex FSS"] = (
+        gc["Ingresos: BPS neto"] - gc["Ingresos: FSS - Cincuentones"]
+    )
     proc["Egresos: Primarios GC-BPS"] = gc["Egresos: GC-BPS"] - gc["Intereses: Total"]
     proc["Egresos: Primarios corrientes GC-BPS"] = (
         proc["Egresos: Primarios GC-BPS"] - gc["Egresos: Inversión"].squeeze()
@@ -496,13 +507,17 @@ def fiscal_balance_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
         proc["Resultado: Primario GC-BPS ex FSS"] - proc["Intereses: GC-BPS ex FSS"]
     )
 
-    proc["Resultado: Primario corriente EEPP"] = nfps["Ingresos: Res. primario corriente EEPP"]
+    proc["Resultado: Primario corriente EEPP"] = nfps[
+        "Ingresos: Res. primario corriente EEPP"
+    ]
     proc["Egresos: Inversiones EEPP"] = pe["Egresos: Inversiones"]
     proc["Resultado: Primario EEPP"] = (
         proc["Resultado: Primario corriente EEPP"] - proc["Egresos: Inversiones EEPP"]
     )
     proc["Intereses: EEPP"] = pe["Intereses"]
-    proc["Resultado: Global EEPP"] = proc["Resultado: Primario EEPP"] - proc["Intereses: EEPP"]
+    proc["Resultado: Global EEPP"] = (
+        proc["Resultado: Primario EEPP"] - proc["Intereses: EEPP"]
+    )
 
     proc["Resultado: Primario intendencias"] = nfps["Resultado: Primario intendencias"]
     proc["Intereses: Intendencias"] = nfps["Intereses: Intendencias"]
@@ -512,7 +527,9 @@ def fiscal_balance_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
 
     proc["Resultado: Primario BSE"] = nfps["Resultado: Primario BSE"]
     proc["Intereses: BSE"] = nfps["Intereses: BSE"]
-    proc["Resultado: Global BSE"] = proc["Resultado: Primario BSE"] - proc["Intereses: BSE"]
+    proc["Resultado: Global BSE"] = (
+        proc["Resultado: Primario BSE"] - proc["Intereses: BSE"]
+    )
 
     proc["Resultado: Primario resto SPNF"] = (
         proc["Resultado: Primario EEPP"]
@@ -520,7 +537,9 @@ def fiscal_balance_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
         + proc["Resultado: Primario BSE"]
     )
     proc["Intereses: Resto SPNF"] = (
-        proc["Intereses: EEPP"] + proc["Intereses: Intendencias"] + proc["Intereses: BSE"]
+        proc["Intereses: EEPP"]
+        + proc["Intereses: Intendencias"]
+        + proc["Intereses: BSE"]
     )
     proc["Resultado: Global resto SPNF"] = (
         proc["Resultado: Global EEPP"]
@@ -549,8 +568,12 @@ def fiscal_balance_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
         proc["Resultado: Primario SPNF ex FSS"] + proc["Resultado: Primario BCU"]
     )
     proc["Intereses: SPC"] = proc["Intereses: SPNF"] + proc["Intereses: BCU"]
-    proc["Intereses: SPC ex FSS"] = proc["Intereses: SPNF ex FSS"] + proc["Intereses: BCU"]
-    proc["Resultado: Global SPC"] = proc["Resultado: Global SPNF"] + proc["Resultado: Global BCU"]
+    proc["Intereses: SPC ex FSS"] = (
+        proc["Intereses: SPNF ex FSS"] + proc["Intereses: BCU"]
+    )
+    proc["Resultado: Global SPC"] = (
+        proc["Resultado: Global SPNF"] + proc["Resultado: Global BCU"]
+    )
     proc["Resultado: Global SPC ex FSS"] = (
         proc["Resultado: Global SPNF ex FSS"] + proc["Resultado: Global BCU"]
     )

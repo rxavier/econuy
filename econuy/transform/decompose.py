@@ -58,7 +58,9 @@ def decompose(
     if component not in ["trend", "seas", "both"]:
         raise ValueError("component can only be 'trend', 'seas' or 'both'.")
     if "Seas. Adj." not in df.columns.names:
-        raise ValueError("Input dataframe's multiindex requires the " "'Seas. Adj.' level.")
+        raise ValueError(
+            "Input dataframe's multiindex requires the " "'Seas. Adj.' level."
+        )
 
     binary_path = None
     if method == "x13":
@@ -73,9 +75,13 @@ def decompose(
         else:
             binary_path = None
         if isinstance(binary_path, str) and path.isfile(binary_path) is False:
-            raise FileNotFoundError("X13 binary missing. Try using 'x13_binary=search'.")
+            raise FileNotFoundError(
+                "X13 binary missing. Try using 'x13_binary=search'."
+            )
 
-    checks = [x not in ["Tendencia", "SA"] for x in df.columns.get_level_values("Seas. Adj.")]
+    checks = [
+        x not in ["Tendencia", "SA"] for x in df.columns.get_level_values("Seas. Adj.")
+    ]
     passing = df.loc[:, checks]
     not_passing = df.loc[:, [not x for x in checks]]
     if any(checks):
@@ -223,7 +229,8 @@ def _decompose(
                             seas_adjs = results.seasadj.reindex(df_proc.index).T
                         except X13Error:
                             warnings.warn(
-                                "No combination of parameters " "successful. Filling with NaN.",
+                                "No combination of parameters "
+                                "successful. Filling with NaN.",
                                 UserWarning,
                             )
                             trends = error_handler(df=col_df, errors=errors)
@@ -235,7 +242,9 @@ def _decompose(
                     else:
                         results = seasonal_decompose(col_df, extrapolate_trend="freq")
                     trends = results.trend.reindex(df_proc.index).T
-                    seas_adjs = (results.observed - results.seasonal).reindex(df_proc.index).T
+                    seas_adjs = (
+                        (results.observed - results.seasonal).reindex(df_proc.index).T
+                    )
 
         else:
             if method == "loess":

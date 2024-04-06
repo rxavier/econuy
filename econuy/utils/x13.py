@@ -30,7 +30,9 @@ def _get_binary(file_path: Union[str, os.PathLike, None] = None) -> None:
         else:
             system_string += "-x64"
     if system_string not in urls.keys():
-        raise ValueError("X13 binaries are only available for Windows, Darwin (macOS) or Linux.")
+        raise ValueError(
+            "X13 binaries are only available for Windows, Darwin (macOS) or Linux."
+        )
 
     r = requests.get(urls[system_string])
     binary_path = Path(file_path, f"x13as{suffix}")
@@ -57,7 +59,9 @@ def _search_binary(
         i += 1
         start_path = os.path.dirname(start_path)
     try:
-        final_path = [x for x in Path(start_path).rglob(search_term)][0].absolute().as_posix()
+        final_path = (
+            [x for x in Path(start_path).rglob(search_term)][0].absolute().as_posix()
+        )
     except IndexError:
         print("X13 binary not found. Downloading appropiate binary for your system...")
         final_path = _get_binary(file_path=download_path).absolute().as_posix()

@@ -57,12 +57,18 @@ def regional_gdp(driver: WebDriver = None) -> pd.DataFrame:
     full_url = f"https://www.indec.gob.ar{url}"
     arg = pd.read_excel(full_url, skiprows=3, usecols="C").dropna(how="all")
     arg.index = pd.date_range(start="2004-03-31", freq="QE-DEC", periods=len(arg))
-    arg_old = pd.read_excel(sources["arg_old"], skiprows=7, usecols="D").dropna(how="all")
-    arg_old.index = pd.date_range(start="1993-03-31", freq="QE-DEC", periods=len(arg_old))
+    arg_old = pd.read_excel(sources["arg_old"], skiprows=7, usecols="D").dropna(
+        how="all"
+    )
+    arg_old.index = pd.date_range(
+        start="1993-03-31", freq="QE-DEC", periods=len(arg_old)
+    )
     arg = pd.concat([arg, arg_old], axis=1)
     for row in reversed(range(len(arg))):
         if pd.isna(arg.iloc[row, 0]):
-            arg.iloc[row, 0] = arg.iloc[row, 1] / arg.iloc[row + 1, 1] * arg.iloc[row + 1, 0]
+            arg.iloc[row, 0] = (
+                arg.iloc[row, 1] / arg.iloc[row + 1, 1] * arg.iloc[row + 1, 0]
+            )
     arg = arg.iloc[:, [0]]
 
     r = requests.get(sources["bra"])
@@ -226,7 +232,9 @@ def regional_embi_spreads() -> pd.DataFrame:
     output = (
         raw.loc[~pd.isna(raw.index)]
         .mul(100)
-        .rename(columns={"Global": "EMBI Global"})[["Argentina", "Brasil", "EMBI Global"]]
+        .rename(columns={"Global": "EMBI Global"})[
+            ["Argentina", "Brasil", "EMBI Global"]
+        ]
     )
     output.index = pd.to_datetime(output.index)
     output = output.apply(pd.to_numeric, errors="coerce")
@@ -320,7 +328,9 @@ def regional_nxr() -> pd.DataFrame:
 
     arg = []
     for dollar in ["ar", "ar_unofficial"]:
-        r = requests.get(sources[dollar].format(date=dt.datetime.now().strftime("%d-%m-%Y")))
+        r = requests.get(
+            sources[dollar].format(date=dt.datetime.now().strftime("%d-%m-%Y"))
+        )
         aux = pd.DataFrame(r.json())[[0, 2]]
         aux.set_index(0, drop=True, inplace=True)
         aux.drop("Fecha", inplace=True)
@@ -481,7 +491,9 @@ def regional_rxr(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     proc = _ifs(pipeline=pipeline)
 
     output = pd.DataFrame()
-    output["Argentina"] = proc["Argentina - oficial"] * proc["US.PCPI_IX"] / proc["ARG CPI"]
+    output["Argentina"] = (
+        proc["Argentina - oficial"] * proc["US.PCPI_IX"] / proc["ARG CPI"]
+    )
     output["Brasil"] = proc["Brasil"] * proc["US.PCPI_IX"] / proc["BRA CPI"]
     output.rename_axis(None, inplace=True)
     metadata._set(
@@ -494,7 +506,9 @@ def regional_rxr(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
         cumperiods=1,
     )
     metadata._modify_multiindex(output, levels=[3], new_arrays=[["ARS/USD", "BRL/USD"]])
-    output = rebase(output, start_date="2019-01-01", end_date="2019-01-31").dropna(how="all")
+    output = rebase(output, start_date="2019-01-01", end_date="2019-01-31").dropna(
+        how="all"
+    )
 
     return output
 
@@ -526,7 +540,9 @@ def _ifs(pipeline: Pipeline = None) -> pd.DataFrame:
     ifs = []
     for country in ["US", "BR", "AR"]:
         for indicator in ["PCPI_IX", "ENDA_XDC_USD_RATE"]:
-            base_url = f"{url_}.{country}.{indicator}.{url_extra}{dt.datetime.now().year}"
+            base_url = (
+                f"{url_}.{country}.{indicator}.{url_extra}{dt.datetime.now().year}"
+            )
             r_json = requests.get(base_url).json()
             data = r_json["CompactData"]["DataSet"]["Series"]["Obs"]
             try:
@@ -535,7 +551,9 @@ def _ifs(pipeline: Pipeline = None) -> pd.DataFrame:
             except ValueError:
                 data = pd.DataFrame(
                     np.nan,
-                    index=pd.date_range(start="1970-01-01", end=dt.datetime.now(), freq="M"),
+                    index=pd.date_range(
+                        start="1970-01-01", end=dt.datetime.now(), freq="M"
+                    ),
                     columns=[f"{country}.{indicator}"],
                 )
             if "@OBS_STATUS" in data.columns:

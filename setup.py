@@ -13,7 +13,11 @@ packages = find_packages(".", exclude=["*.test", "*.test.*"])
 with open("requirements.in", "r") as f:
     requirements = [line.strip() for line in f.readlines() if not line.startswith("#")]
 with open("requirements-dev.in", "r") as f:
-    dev_requirements = [line.strip() for line in f.readlines() if not line.startswith("-c") and not line.startswith("#")]
+    dev_requirements = [
+        line.strip()
+        for line in f.readlines()
+        if not line.startswith("-c") and not line.startswith("#")
+    ]
 
 here = os.path.abspath(os.path.dirname(__file__))
 

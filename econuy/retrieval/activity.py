@@ -60,7 +60,9 @@ def monthly_gdp() -> pd.DataFrame:
         ts_type="Flujo",
         cumperiods=1,
     )
-    metadata._modify_multiindex(output, levels=[6], new_arrays=[["NSA", "SA", "Tendencia"]])
+    metadata._modify_multiindex(
+        output, levels=[6], new_arrays=[["NSA", "SA", "Tendencia"]]
+    )
 
     return output
 
@@ -301,7 +303,9 @@ def gdp_index_constant_sa() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def national_accounts_supply_constant_nsa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
+def national_accounts_supply_constant_nsa_extended(
+    pipeline: Pipeline = None,
+) -> pd.DataFrame:
     """Get supply-side national accounts data in NSA constant prices, 1988-.
 
     Three datasets with different base years, 1983, 2005 and 2016, are spliced
@@ -385,7 +389,9 @@ def national_accounts_supply_constant_nsa_extended(pipeline: Pipeline = None) ->
         if aux.loc[quarter, :].isna().all():
             next_quarter = quarter + MonthEnd(3)
             aux.loc[quarter, :] = (
-                aux.loc[next_quarter, :] * data_05.loc[quarter, :] / data_05.loc[next_quarter, :]
+                aux.loc[next_quarter, :]
+                * data_05.loc[quarter, :]
+                / data_05.loc[next_quarter, :]
             )
     aux = aux[
         [
@@ -425,7 +431,9 @@ def national_accounts_supply_constant_nsa_extended(pipeline: Pipeline = None) ->
                 .iloc[:, 1:]
                 .T
             )
-    data_83.index = pd.date_range(start="1988-03-31", freq="QE-DEC", periods=len(data_83))
+    data_83.index = pd.date_range(
+        start="1988-03-31", freq="QE-DEC", periods=len(data_83)
+    )
     data_83["Impuestos menos subvenciones"] = np.nan
     data_83 = data_83[
         [
@@ -472,7 +480,9 @@ def national_accounts_supply_constant_nsa_extended(pipeline: Pipeline = None) ->
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def national_accounts_demand_constant_nsa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
+def national_accounts_demand_constant_nsa_extended(
+    pipeline: Pipeline = None,
+) -> pd.DataFrame:
     """Get demand-side national accounts data in NSA constant prices, 1988-.
 
     Three datasets with different base years, 1983, 2005 and 2016, are spliced
@@ -523,7 +533,9 @@ def national_accounts_demand_constant_nsa_extended(pipeline: Pipeline = None) ->
         if aux.loc[quarter, :].isna().all():
             next_quarter = quarter + MonthEnd(3)
             aux.loc[quarter, :] = (
-                aux.loc[next_quarter, :] * data_05.loc[quarter, :] / data_05.loc[next_quarter, :]
+                aux.loc[next_quarter, :]
+                * data_05.loc[quarter, :]
+                / data_05.loc[next_quarter, :]
             )
     try:
         data_83 = (
@@ -550,9 +562,13 @@ def national_accounts_demand_constant_nsa_extended(pipeline: Pipeline = None) ->
                 .iloc[:, 1:]
                 .T
             )
-    data_83.index = pd.date_range(start="1988-03-31", freq="QE-DEC", periods=len(data_83))
+    data_83.index = pd.date_range(
+        start="1988-03-31", freq="QE-DEC", periods=len(data_83)
+    )
     data_83.drop(
-        ["Sector público", "Sector privado", "Variación de existencias"], axis=1, inplace=True
+        ["Sector público", "Sector privado", "Variación de existencias"],
+        axis=1,
+        inplace=True,
     )
     data_83.columns = aux.columns
 
@@ -635,7 +651,9 @@ def gdp_index_constant_sa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
         if aux.loc[quarter, :].isna().all():
             next_quarter = quarter + MonthEnd(3)
             aux.loc[quarter, :] = (
-                aux.loc[next_quarter, :] * data_05.loc[quarter, :] / data_05.loc[next_quarter, :]
+                aux.loc[next_quarter, :]
+                * data_05.loc[quarter, :]
+                / data_05.loc[next_quarter, :]
             )
     try:
         data_83 = (
@@ -662,7 +680,9 @@ def gdp_index_constant_sa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
                 .iloc[:, 1:]
                 .T
             )
-    data_83.index = pd.date_range(start="1988-03-31", freq="QE-DEC", periods=len(data_83))
+    data_83.index = pd.date_range(
+        start="1988-03-31", freq="QE-DEC", periods=len(data_83)
+    )
     data_83 = data_83[["PRODUCTO INTERNO BRUTO"]]
     data_83.columns = aux.columns
 
@@ -732,7 +752,11 @@ def gdp_constant_nsa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
     aux = pd.concat([data_97, data_16], axis=0)
 
     try:
-        data_83 = pd.read_excel(sources["1983"], skiprows=10, nrows=8, index_col=1).iloc[:, 1:].T
+        data_83 = (
+            pd.read_excel(sources["1983"], skiprows=10, nrows=8, index_col=1)
+            .iloc[:, 1:]
+            .T
+        )
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
@@ -747,7 +771,9 @@ def gdp_constant_nsa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
                 .iloc[:, 1:]
                 .T
             )
-    data_83.index = pd.date_range(start="1988-03-31", freq="QE-DEC", periods=len(data_83))
+    data_83.index = pd.date_range(
+        start="1988-03-31", freq="QE-DEC", periods=len(data_83)
+    )
     data_83 = data_83[["PRODUCTO INTERNO BRUTO"]]
     data_83.columns = ["Producto bruto interno"]
 
@@ -891,7 +917,9 @@ def _monthly_interpolated_gdp(pipeline: Optional[Pipeline] = None):
             .divide(imf_data.iloc[0])
         )
         next_fcast = next_fcast.rename(
-            index={dt.datetime(last_year - 1, 12, 31): dt.datetime(last_year + 1, 12, 31)}
+            index={
+                dt.datetime(last_year - 1, 12, 31): dt.datetime(last_year + 1, 12, 31)
+            }
         )
         gdp = pd.concat([gdp, fcast, next_fcast], axis=0)
         results.append(gdp)
@@ -1091,7 +1119,10 @@ def milk_shipments() -> pd.DataFrame:
         .dropna()
         .rename_axis(None)
     )
-    output = raw.set_index(pd.date_range(start="2002-01-31", freq="M", periods=len(raw))) * 1000
+    output = (
+        raw.set_index(pd.date_range(start="2002-01-31", freq="M", periods=len(raw)))
+        * 1000
+    )
     output = output.apply(pd.to_numeric)
     output.columns = ["Remisión de leche a planta"]
 

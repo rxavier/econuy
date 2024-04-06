@@ -8,6 +8,4 @@ def _build():
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--no-sandbox")
-    return webdriver.Chrome(
-            options=chrome_options
-        )
+    return webdriver.Chrome(options=chrome_options)

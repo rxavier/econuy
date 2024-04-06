@@ -215,7 +215,14 @@ def bank_interest_rates() -> pd.DataFrame:
             r = requests.get(sources["main"], verify=certs_path)
             xls = pd.ExcelFile(r.content)
 
-    sheets = ["Activas $", "Activas UI", "Activas U$S", "Pasivas $", "Pasivas UI", "Pasivas U$S"]
+    sheets = [
+        "Activas $",
+        "Activas UI",
+        "Activas U$S",
+        "Pasivas $",
+        "Pasivas UI",
+        "Pasivas U$S",
+    ]
     columns = ["B:C,G,K", "B:C,G,K", "B:C,H,L", "B:C,N,T", "B:C,P,W", "B:C,N,T"]
     sheet_data = []
     for sheet, columns in zip(sheets, columns):
@@ -223,7 +230,9 @@ def bank_interest_rates() -> pd.DataFrame:
             skip = 11
         else:
             skip = 10
-        data = pd.read_excel(xls, sheet_name=sheet, skiprows=skip, usecols=columns, index_col=0)
+        data = pd.read_excel(
+            xls, sheet_name=sheet, skiprows=skip, usecols=columns, index_col=0
+        )
         data.index = pd.to_datetime(data.index, errors="coerce")
         data = data.loc[~pd.isna(data.index)]
         data.index = data.index + MonthEnd(0)
@@ -358,7 +367,9 @@ def sovereign_risk_index() -> pd.DataFrame:
     output = pd.concat([historical, current])
     output = output.loc[~output.index.duplicated(keep="last")]
     output.sort_index(inplace=True)
-    output = output.apply(pd.to_numeric, errors="coerce").interpolate(limit_area="inside")
+    output = output.apply(pd.to_numeric, errors="coerce").interpolate(
+        limit_area="inside"
+    )
     output.rename_axis(None, inplace=True)
 
     metadata._set(
@@ -402,10 +413,14 @@ def call_rate(driver: Optional[WebDriver] = None) -> pd.DataFrame:
     if driver is None:
         driver = _build()
     driver.get(sources["main"])
-    start = driver.find_element(by="name", value="ctl00$ContentPlaceHolder1$dateDesde$dateInput")
+    start = driver.find_element(
+        by="name", value="ctl00$ContentPlaceHolder1$dateDesde$dateInput"
+    )
     start.clear()
     start.send_keys("01/01/2002")
-    end = driver.find_element(by="name", value="ctl00$ContentPlaceHolder1$dateHasta$dateInput")
+    end = driver.find_element(
+        by="name", value="ctl00$ContentPlaceHolder1$dateHasta$dateInput"
+    )
     end.clear()
     end.send_keys(dt.datetime.now().strftime("%d/%m/%Y"))
     submit = driver.find_element(by="id", value="ContentPlaceHolder1_LinkFiltrar")
@@ -474,7 +489,9 @@ def sovereign_bond_yields(driver: Optional[WebDriver] = None) -> pd.DataFrame:
         )
         start.clear()
         start.send_keys("01/01/2000")
-        end = driver.find_element(by="name", value="ctl00$ContentPlaceHolder1$dateHasta$dateInput")
+        end = driver.find_element(
+            by="name", value="ctl00$ContentPlaceHolder1$dateHasta$dateInput"
+        )
         end.clear()
         end.send_keys(dt.datetime.now().strftime("%d/%m/%Y"))
         submit = driver.find_element(by="id", value="ContentPlaceHolder1_LinkFiltrar")
@@ -511,7 +528,9 @@ def sovereign_bond_yields(driver: Optional[WebDriver] = None) -> pd.DataFrame:
         cumperiods=1,
     )
     metadata._modify_multiindex(
-        output, levels=[3, 4], new_arrays=[["USD", "UYU", "UYU"], ["No", "Const.", "No"]]
+        output,
+        levels=[3, 4],
+        new_arrays=[["USD", "UYU", "UYU"], ["No", "Const.", "No"]],
     )
 
     return output

@@ -115,7 +115,11 @@ class Pipeline(object):
         whether the dataset has been modified in some way or if its as provided
         by the source
         """
-        return {name: metadata for name, metadata in DATASETS.items() if not metadata["disabled"]}
+        return {
+            name: metadata
+            for name, metadata in DATASETS.items()
+            if not metadata["disabled"]
+        }
 
     def __repr__(self):
         return f"Pipeline(location={self.location})\n" f"Current dataset: {self.name}"
@@ -202,10 +206,16 @@ class Pipeline(object):
                 )
             else:
                 new_data = self._get_retrieval_function(name)()
-            data = operations._revise(new_data=new_data, prev_data=prev_data, revise_rows="nodup")
+            data = operations._revise(
+                new_data=new_data, prev_data=prev_data, revise_rows="nodup"
+            )
             self._dataset = data
         self._name = name
-        if self.always_save and (self.download or prev_data.empty) and self.location is not None:
+        if (
+            self.always_save
+            and (self.download or prev_data.empty)
+            and self.location is not None
+        ):
             self.save()
         return self
 
@@ -261,10 +271,15 @@ class Pipeline(object):
         """
         if self.dataset.empty:
             raise ValueError(
-                "Can't use transformation methods without " "retrieving a dataset first."
+                "Can't use transformation methods without "
+                "retrieving a dataset first."
             )
         output = transform.resample(
-            self.dataset, rule=rule, operation=operation, interpolation=interpolation, warn=warn
+            self.dataset,
+            rule=rule,
+            operation=operation,
+            interpolation=interpolation,
+            warn=warn,
         )
         self._dataset = output
         return self
@@ -312,7 +327,8 @@ class Pipeline(object):
         """
         if self.dataset.empty:
             raise ValueError(
-                "Can't use transformation methods without " "retrieving a dataset first."
+                "Can't use transformation methods without "
+                "retrieving a dataset first."
             )
         output = transform.chg_diff(self.dataset, operation=operation, period=period)
         self._dataset = output
@@ -396,12 +412,14 @@ class Pipeline(object):
         """
         if self.dataset.empty:
             raise ValueError(
-                "Can't use transformation methods without " "retrieving a dataset first."
+                "Can't use transformation methods without "
+                "retrieving a dataset first."
             )
         valid_component = ["seas", "trend"]
         if component not in valid_component:
             raise ValueError(
-                f"Only {', '.join(valid_component)} are allowed." f"See underlying 'decompose'."
+                f"Only {', '.join(valid_component)} are allowed."
+                f"See underlying 'decompose'."
             )
 
         output = transform.decompose(
@@ -488,13 +506,16 @@ class Pipeline(object):
         """
         if self.dataset.empty:
             raise ValueError(
-                "Can't use transformation methods without " "retrieving a dataset first."
+                "Can't use transformation methods without "
+                "retrieving a dataset first."
             )
         if flavor not in ["usd", "real", "gdp", "pcgdp"]:
             raise ValueError("'flavor' can be one of 'usd', 'real', " "or 'gdp'.")
 
         if flavor == "usd":
-            output = transform.convert_usd(self.dataset, errors=self.errors, pipeline=self)
+            output = transform.convert_usd(
+                self.dataset, errors=self.errors, pipeline=self
+            )
         elif flavor == "real":
             output = transform.convert_real(
                 self.dataset,
@@ -504,7 +525,9 @@ class Pipeline(object):
                 pipeline=self,
             )
         else:
-            output = transform.convert_gdp(self.dataset, errors=self.errors, pipeline=self)
+            output = transform.convert_gdp(
+                self.dataset, errors=self.errors, pipeline=self
+            )
 
         self._dataset = output
         return self
@@ -535,7 +558,8 @@ class Pipeline(object):
         """
         if self.dataset.empty:
             raise ValueError(
-                "Can't use transformation methods without " "retrieving a dataset first."
+                "Can't use transformation methods without "
+                "retrieving a dataset first."
             )
         output = transform.rebase(
             self.dataset, start_date=start_date, end_date=end_date, base=base
@@ -580,7 +604,8 @@ class Pipeline(object):
         """
         if self.dataset.empty:
             raise ValueError(
-                "Can't use transformation methods without " "retrieving a dataset first."
+                "Can't use transformation methods without "
+                "retrieving a dataset first."
             )
         output = transform.rolling(self.dataset, window=window, operation=operation)
         self._dataset = output

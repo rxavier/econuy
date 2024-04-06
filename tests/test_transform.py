@@ -99,7 +99,9 @@ def test_rolling(freq, ts_type, operation, window, pd_rol):
     ],
 )
 def test_resample(freq, ts_type, periods, cumperiods, rule, operation):
-    df = create_dummy_df(freq=freq, ts_type=ts_type, periods=periods, cumperiods=cumperiods)
+    df = create_dummy_df(
+        freq=freq, ts_type=ts_type, periods=periods, cumperiods=cumperiods
+    )
     s = Session()
     s._datasets["dummy"] = df
     s.resample(rule=rule, operation=operation, select=0)
@@ -137,9 +139,9 @@ def test_decompose(component, method, fallback, trading, outlier):
         columns=["Exponential"],
     )
     df["Real"] = df["Exponential"]
-    df.loc[df.index.month == 12, "Real"] = df.loc[df.index.month == 12, "Real"].multiply(
-        np.random.uniform(1.06, 1.14)
-    )
+    df.loc[df.index.month == 12, "Real"] = df.loc[
+        df.index.month == 12, "Real"
+    ].multiply(np.random.uniform(1.06, 1.14))
     df.loc[df.index.month == 6, "Real"] = df.loc[df.index.month == 6, "Real"].multiply(
         np.random.uniform(0.94, 0.96)
     )
@@ -193,7 +195,11 @@ def test_rebase(freq, start_date, end_date, base):
 )
 def test_convert_usd(freq, ts_type, periods, cumperiods):
     df = create_dummy_df(
-        freq=freq, periods=periods, ts_type=ts_type, currency="UYU", cumperiods=cumperiods
+        freq=freq,
+        periods=periods,
+        ts_type=ts_type,
+        currency="UYU",
+        cumperiods=cumperiods,
     )
     s = Session(location=TEST_DIR, download=False)
     s._datasets["dummy"] = df
@@ -274,7 +280,11 @@ def test_convert_real(freq, periods, ts_type, start_date, end_date):
 )
 def test_convert_gdp(freq, ts_type, periods, cumperiods, currency):
     df = create_dummy_df(
-        freq=freq, periods=periods, ts_type=ts_type, currency=currency, cumperiods=cumperiods
+        freq=freq,
+        periods=periods,
+        ts_type=ts_type,
+        currency=currency,
+        cumperiods=cumperiods,
     )
     s = Session(location=TEST_DIR, download=False)
     s._datasets["dummy"] = df

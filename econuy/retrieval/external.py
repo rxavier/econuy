@@ -347,7 +347,8 @@ def terms_of_trade(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     retry_window_after_first_call_in_seconds=90,
 )
 def _commodity_weights(
-    location: Union[str, PathLike, Engine, Connection, None] = None, download: bool = True
+    location: Union[str, PathLike, Engine, Connection, None] = None,
+    download: bool = True,
 ) -> pd.DataFrame:
     """Get commodity export weights for Uruguay.
 
@@ -370,7 +371,10 @@ def _commodity_weights(
     """
     if download is False and location is not None:
         output = operations._io(
-            operation="read", data_loc=location, name="commodity_weights", multiindex=None
+            operation="read",
+            data_loc=location,
+            name="commodity_weights",
+            multiindex=None,
         )
         if not output.equals(pd.DataFrame()):
             return output
@@ -417,9 +421,14 @@ def _commodity_weights(
 
     if location is not None:
         previous_data = operations._io(
-            operation="read", data_loc=location, name="commodity_weights", multiindex=None
+            operation="read",
+            data_loc=location,
+            name="commodity_weights",
+            multiindex=None,
         )
-        output = operations._revise(new_data=output, prev_data=previous_data, revise_rows="nodup")
+        output = operations._revise(
+            new_data=output, prev_data=previous_data, revise_rows="nodup"
+        )
 
     if location is not None:
         operations._io(
@@ -450,9 +459,9 @@ def commodity_prices() -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
     try:
-        raw_beef = pd.read_excel(sources["beef"], header=4, index_col=0, thousands=".").dropna(
-            how="all"
-        )
+        raw_beef = pd.read_excel(
+            sources["beef"], header=4, index_col=0, thousands="."
+        ).dropna(how="all")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files", "inac_certs.pem")
@@ -465,7 +474,9 @@ def commodity_prices() -> pd.DataFrame:
 
     raw_beef.columns = raw_beef.columns.str.strip()
     proc_beef = raw_beef["Ing. Prom./Ton."].to_frame()
-    proc_beef.index = pd.date_range(start="2002-01-04", periods=len(proc_beef), freq="W-SAT")
+    proc_beef.index = pd.date_range(
+        start="2002-01-04", periods=len(proc_beef), freq="W-SAT"
+    )
     beef = proc_beef.resample("ME").mean()
 
     # soy_wheat = []
@@ -491,7 +502,9 @@ def commodity_prices() -> pd.DataFrame:
     raw_milk.columns = ["Año/Mes"] + list(range(1, 13))
     proc_milk = pd.melt(raw_milk, id_vars=["Año/Mes"])
     proc_milk.sort_values(by=["Año/Mes", "variable"], inplace=True)
-    proc_milk.index = pd.date_range(start="2007-01-31", periods=len(proc_milk), freq="M")
+    proc_milk.index = pd.date_range(
+        start="2007-01-31", periods=len(proc_milk), freq="M"
+    )
     proc_milk = proc_milk.iloc[:, 2].to_frame().divide(10).dropna()
 
     prev_milk = pd.read_excel(
@@ -503,7 +516,10 @@ def commodity_prices() -> pd.DataFrame:
         na_values=["c", 0],
     )
     prev_milk = (
-        prev_milk[prev_milk.index.notna()].dropna(axis=0, how="all").mean(axis=1).to_frame()
+        prev_milk[prev_milk.index.notna()]
+        .dropna(axis=0, how="all")
+        .mean(axis=1)
+        .to_frame()
     )
     prev_milk = prev_milk.set_index(
         pd.date_range(start="1977-01-31", freq="M", periods=len(prev_milk))
@@ -525,10 +541,14 @@ def commodity_prices() -> pd.DataFrame:
     temp_dir = tempfile.TemporaryDirectory()
     with zipfile.ZipFile(BytesIO(raw_pulp_r.content), "r") as f:
         f.extractall(path=temp_dir.name)
-        path_temp = path.join(temp_dir.name, listdir(temp_dir.name)[0], "monthly_values.csv")
+        path_temp = path.join(
+            temp_dir.name, listdir(temp_dir.name)[0], "monthly_values.csv"
+        )
         raw_pulp = pd.read_csv(path_temp, sep=";").dropna(how="any")
     proc_pulp = raw_pulp.copy().sort_index(ascending=False)
-    proc_pulp.index = pd.date_range(start="1990-01-31", periods=len(proc_pulp), freq="M")
+    proc_pulp.index = pd.date_range(
+        start="1990-01-31", periods=len(proc_pulp), freq="M"
+    )
     proc_pulp = proc_pulp.drop(["Label", "Codes"], axis=1).astype(float)
     proc_pulp = proc_pulp.div(eurusd.reindex(proc_pulp.index).values)
     pulp = proc_pulp
@@ -547,7 +567,9 @@ def commodity_prices() -> pd.DataFrame:
     wool = wool.mean(axis=1).to_frame()
     barley = proc_imf[proc_imf.columns[proc_imf.columns.str.startswith("Barley")]]
     gold = proc_imf[proc_imf.columns[proc_imf.columns.str.startswith("Gold")]]
-    soybean = proc_imf[proc_imf.columns[proc_imf.columns.str.startswith("Soybeans, U.S.")]]
+    soybean = proc_imf[
+        proc_imf.columns[proc_imf.columns.str.startswith("Soybeans, U.S.")]
+    ]
     wheat = proc_imf[proc_imf.columns[proc_imf.columns.str.startswith("Wheat")]]
 
     complete = pd.concat(
@@ -738,8 +760,12 @@ def rxr_custom(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
 
     output = pd.DataFrame()
     output["UY_E_P"] = proc["UY_E"] / proc["UY_P"]
-    output["Uruguay-Argentina oficial"] = output["UY_E_P"] / proc["AR_E_O"] * proc["AR_P"]
-    output["Uruguay-Argentina informal"] = output["UY_E_P"] / proc["AR_E_U"] * proc["AR_P"]
+    output["Uruguay-Argentina oficial"] = (
+        output["UY_E_P"] / proc["AR_E_O"] * proc["AR_P"]
+    )
+    output["Uruguay-Argentina informal"] = (
+        output["UY_E_P"] / proc["AR_E_U"] * proc["AR_P"]
+    )
     output["Uruguay-Brasil"] = output["UY_E_P"] / proc["BR_E"] * proc["BR_P"]
     output["Uruguay-EE.UU."] = output["UY_E_P"] * proc["US_P"]
     output.drop("UY_E_P", axis=1, inplace=True)
@@ -757,7 +783,9 @@ def rxr_custom(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
         ts_type="-",
         cumperiods=1,
     )
-    output = transform.rebase(output, start_date="2010-01-01", end_date="2010-12-31", base=100)
+    output = transform.rebase(
+        output, start_date="2010-01-01", end_date="2010-12-31", base=100
+    )
     metadata._modify_multiindex(
         output, levels=[3], new_arrays=[["UYU/ARS", "UYU/ARS", "UYU/BRL", "UYU/USD"]]
     )
@@ -782,7 +810,9 @@ def balance_of_payments() -> pd.DataFrame:
     sources = get_download_sources(name)
     try:
         raw = (
-            pd.read_excel(sources["main"], skiprows=7, index_col=0, sheet_name="Cuadro Nº 1")
+            pd.read_excel(
+                sources["main"], skiprows=7, index_col=0, sheet_name="Cuadro Nº 1"
+            )
             .dropna(how="all")
             .T
         )
@@ -791,7 +821,9 @@ def balance_of_payments() -> pd.DataFrame:
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
             r = requests.get(sources["main"], verify=certs_path)
             raw = (
-                pd.read_excel(r.content, skiprows=7, index_col=0, sheet_name="Cuadro Nº 1")
+                pd.read_excel(
+                    r.content, skiprows=7, index_col=0, sheet_name="Cuadro Nº 1"
+                )
                 .dropna(how="all")
                 .T
             )
@@ -860,7 +892,9 @@ def balance_of_payments_summary(pipeline: Optional[Pipeline] = None) -> pd.DataF
     output["Inversión directa en el exterior"] = bop[
         "Inversión directa - Adquisición neta de activos financieros"
     ]
-    output["Inversión directa en Uruguay"] = bop["Inversión directa - Pasivos netos incurridos"]
+    output["Inversión directa en Uruguay"] = bop[
+        "Inversión directa - Pasivos netos incurridos"
+    ]
     output["Balance de inversión de cartera"] = bop["Inversión de cartera"]
     output["Inversión de cartera en el exterior"] = bop[
         "Inversión de cartera - Adquisición neta de activos fin"
@@ -868,12 +902,16 @@ def balance_of_payments_summary(pipeline: Optional[Pipeline] = None) -> pd.DataF
     output["Inversión de cartera en Uruguay"] = bop[
         "Inversión de cartera - Pasivos netos incurridos"
     ]
-    output["Saldo de derivados financieros"] = bop["Derivados financieros - distintos de reservas"]
+    output["Saldo de derivados financieros"] = bop[
+        "Derivados financieros - distintos de reservas"
+    ]
     output["Balance de otra inversión"] = bop["Otra inversión"]
     output["Otra inversión en el exterior"] = bop[
         "Otra inversión - Adquisición neta de activos financieros"
     ]
-    output["Otra inversión en Uruguay"] = bop["Otra inversión - Pasivos netos incurridos"]
+    output["Otra inversión en Uruguay"] = bop[
+        "Otra inversión - Pasivos netos incurridos"
+    ]
     output["Variación de activos de reserva"] = bop["Activos de Reserva BCU"]
     output["Errores y omisiones"] = bop["Errores y Omisiones"]
     output["Flujos brutos de capital"] = (
@@ -927,7 +965,9 @@ def international_reserves() -> pd.DataFrame:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
             r = requests.get(sources["main"], verify=certs_path)
-            raw = pd.read_excel(r.content, usecols="D:J", index_col=0, skiprows=5, na_values="n/d")
+            raw = pd.read_excel(
+                r.content, usecols="D:J", index_col=0, skiprows=5, na_values="n/d"
+            )
     proc = raw.dropna(thresh=1)
     reserves = proc[proc.index.notnull()]
     reserves.columns = [
@@ -992,7 +1032,20 @@ def international_reserves_changes(
 
     mapping = dict(
         zip(
-            ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Set", "Oct", "Nov", "Dic"],
+            [
+                "Ene",
+                "Feb",
+                "Mar",
+                "Abr",
+                "May",
+                "Jun",
+                "Jul",
+                "Ago",
+                "Set",
+                "Oct",
+                "Nov",
+                "Dic",
+            ],
             [str(x).zfill(2) for x in range(1, 13)],
         )
     )

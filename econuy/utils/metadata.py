@@ -55,14 +55,16 @@ def _set(
     except ValueError:
         if warn:
             warnings.warn(
-                "ValueError: Need at least 3 dates to infer frequency. " "Setting to '-'.",
+                "ValueError: Need at least 3 dates to infer frequency. "
+                "Setting to '-'.",
                 UserWarning,
             )
         inferred_freq = "-"
     if inferred_freq is None:
         if warn:
             warnings.warn(
-                "Metadata: frequency could not be inferred " "from the index. Setting to '-'.",
+                "Metadata: frequency could not be inferred "
+                "from the index. Setting to '-'.",
                 UserWarning,
             )
         inferred_freq = "-"
@@ -123,7 +125,9 @@ def _set(
         return
 
 
-def _modify_multiindex(df: pd.DataFrame, levels: List[int], new_arrays: List[List[str]]):
+def _modify_multiindex(
+    df: pd.DataFrame, levels: List[int], new_arrays: List[List[str]]
+):
     arrays = []
     for level in range(0, 9):
         arrays.append(list(df.columns.get_level_values(level)))

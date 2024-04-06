@@ -73,7 +73,10 @@ def cpi_divisions() -> pd.DataFrame:
     raw = (
         pd.read_excel(sources["main"], usecols="A:D")
         .dropna(axis=0, how="any")
-        .assign(date=lambda x: x["Año"].astype(str) + x["Mes"].astype(str).str.pad(2, "left", "0"))
+        .assign(
+            date=lambda x: x["Año"].astype(str)
+            + x["Mes"].astype(str).str.pad(2, "left", "0")
+        )
         .pivot(columns="División", values="Indice Total País", index="date")
     )
     output = raw.set_index(
@@ -396,15 +399,22 @@ def nxr_monthly(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     nxr_daily = pipeline.dataset
     output = pd.DataFrame(
         {
-            "Tipo de cambio venta, fin de período": nxr_daily.iloc[:, 0].resample("ME").last(),
-            "Tipo de cambio venta, promedio": nxr_daily.iloc[:, 0].resample("ME").mean(),
+            "Tipo de cambio venta, fin de período": nxr_daily.iloc[:, 0]
+            .resample("ME")
+            .last(),
+            "Tipo de cambio venta, promedio": nxr_daily.iloc[:, 0]
+            .resample("ME")
+            .mean(),
         }
     )
 
     historical = pd.read_excel(
         sources["historical"], skiprows=4, index_col=0, usecols="A,C,F"
     ).dropna(how="any", axis=0)
-    historical.columns = ["Tipo de cambio venta, fin de período", "Tipo de cambio venta, promedio"]
+    historical.columns = [
+        "Tipo de cambio venta, fin de período",
+        "Tipo de cambio venta, promedio",
+    ]
     historical.index = pd.to_datetime(historical.index) + MonthEnd(1)
     historical = historical.apply(pd.to_numeric, errors="coerce")
     historical = historical.loc[:"1999-12-31", :]
@@ -440,8 +450,14 @@ def nxr_daily() -> pd.DataFrame:
         Sell rate.
 
     """
-    starts = [dt.date(y, 1, 1).strftime("%d/%m/%Y") for y in range(2000, dt.date.today().year + 1)]
-    ends = [dt.date(y, 12, 31).strftime("%d/%m/%Y") for y in range(2000, dt.date.today().year + 1)]
+    starts = [
+        dt.date(y, 1, 1).strftime("%d/%m/%Y")
+        for y in range(2000, dt.date.today().year + 1)
+    ]
+    ends = [
+        dt.date(y, 12, 31).strftime("%d/%m/%Y")
+        for y in range(2000, dt.date.today().year + 1)
+    ]
     with ProcessPoolExecutor(8) as executor:
         results = list(executor.map(_make_nxr_bcu_request, starts, ends))
 
@@ -463,12 +479,12 @@ def nxr_daily() -> pd.DataFrame:
 
     return output
 
+
 def _make_nxr_bcu_request(start, end):
     certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
     sources = get_download_sources("nxr_daily")
     response = requests.get(
-        sources["main"].format(start=start, end=end),
-        verify=certs_path
+        sources["main"].format(start=start, end=end), verify=certs_path
     )
     try:
         if response.status_code == 200:

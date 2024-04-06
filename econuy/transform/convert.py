@@ -101,7 +101,9 @@ def convert_real(
     if errors not in ["raise", "coerce", "ignore"]:
         raise ValueError("'errors' must be one of 'raise', " "'coerce' or 'ignore'.")
     if "Inf. adj." not in df.columns.names:
-        raise ValueError("Input dataframe's multiindex requires the " "'Inf. adj.' level.")
+        raise ValueError(
+            "Input dataframe's multiindex requires the " "'Inf. adj.' level."
+        )
 
     if pipeline is None:
         from econuy.core import Pipeline
@@ -111,7 +113,8 @@ def convert_real(
     checks = [
         x == "UYU" and "Const." not in y
         for x, y in zip(
-            df.columns.get_level_values("Moneda"), df.columns.get_level_values("Inf. adj.")
+            df.columns.get_level_values("Moneda"),
+            df.columns.get_level_values("Inf. adj."),
         )
     ]
     if any(checks):
@@ -123,7 +126,9 @@ def convert_real(
         cpi_data = pipeline.dataset
         all_metadata = df.columns.droplevel("Indicador")
         if all(x == all_metadata[0] for x in all_metadata):
-            return _convert_real(df=df, start_date=start_date, end_date=end_date, cpi=cpi_data)
+            return _convert_real(
+                df=df, start_date=start_date, end_date=end_date, cpi=cpi_data
+            )
         else:
             columns = []
             for column_name, check in zip(df.columns, checks):
@@ -133,7 +138,10 @@ def convert_real(
                     columns.append(error_handler(df=df_column, errors=errors, msg=msg))
                 else:
                     converted = _convert_real(
-                        df=df_column, start_date=start_date, end_date=end_date, cpi=cpi_data
+                        df=df_column,
+                        start_date=start_date,
+                        end_date=end_date,
+                        cpi=cpi_data,
                     )
                     columns.append(converted)
             return pd.concat(columns, axis=1)
@@ -178,7 +186,9 @@ def _convert_real(
         m_start = start_date.strftime("%Y-%m")
         col_text = f"Const. {m_start}"
     else:
-        converted_df = df.div(cpi_to_use, axis=0) * cpi_to_use[start_date:end_date].mean()
+        converted_df = (
+            df.div(cpi_to_use, axis=0) * cpi_to_use[start_date:end_date].mean()
+        )
         m_start = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m")
         m_end = datetime.strptime(end_date, "%Y-%m-%d").strftime("%Y-%m")
         if m_start == m_end:
@@ -214,7 +224,9 @@ def convert_gdp(df: pd.DataFrame, pipeline=None, errors: str = "raise") -> pd.Da
 
     checks = [
         x not in ["Regional", "Global"] and "%PBI" not in y
-        for x, y in zip(df.columns.get_level_values("Área"), df.columns.get_level_values("Unidad"))
+        for x, y in zip(
+            df.columns.get_level_values("Área"), df.columns.get_level_values("Unidad")
+        )
     ]
     if any(checks):
         if not all(checks) and errors == "raise":
@@ -252,7 +264,9 @@ def _convert_gdp(df: pd.DataFrame, gdp: Optional[pd.DataFrame] = None) -> pd.Dat
     inferred_freq = pd.infer_freq(df.index)
     cum = int(df.columns.get_level_values("Acum. períodos")[0])
     if inferred_freq in ["M", "MS", "ME"]:
-        gdp = resample(gdp, rule=inferred_freq, operation="upsample", interpolation="linear")
+        gdp = resample(
+            gdp, rule=inferred_freq, operation="upsample", interpolation="linear"
+        )
         if cum != 12 and df.columns.get_level_values("Tipo")[0] == "Flujo":
             converter = int(12 / cum)
             df = rolling(df, window=converter, operation="sum")

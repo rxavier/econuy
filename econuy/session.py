@@ -215,7 +215,9 @@ class Session(object):
             if not metadata["disabled"] and not metadata["auxiliary"]
         }
 
-    def _select_datasets(self, select: Union[str, int, Sequence[str], Sequence[int]]) -> List[str]:
+    def _select_datasets(
+        self, select: Union[str, int, Sequence[str], Sequence[int]]
+    ) -> List[str]:
         """Generate list of dataset names based on selection.
 
         Parameters
@@ -236,7 +238,9 @@ class Session(object):
         """
         keys = list(self.datasets.keys())
         if isinstance(select, Sequence) and not isinstance(select, str):
-            if not all(isinstance(select[i], type(select[0])) for i in range(len(select))):
+            if not all(
+                isinstance(select[i], type(select[0])) for i in range(len(select))
+            ):
                 raise ValueError("`select` must be all `int` or all `str`")
             if isinstance(select[0], int):
                 proc_select = [keys[i] for i in select]
@@ -345,13 +349,16 @@ class Session(object):
             if self._retries < self.max_retries:
                 self._retries += 1
                 self.logger.info(
-                    f"Failed to retrieve {', '.join(failed)}. " f"Retrying (run {self._retries})."
+                    f"Failed to retrieve {', '.join(failed)}. "
+                    f"Retrying (run {self._retries})."
                 )
                 self.get(names=failed)
             else:
                 self.logger.info(f"Could not retrieve {', '.join(failed)}")
                 self._retries = 1
-                raise RetryLimitError(f"Maximum retries ({self.max_retries})" f" reached.")
+                raise RetryLimitError(
+                    f"Maximum retries ({self.max_retries})" f" reached."
+                )
             self._retries = 1
             return
         self._retries = 1
@@ -392,7 +399,9 @@ class Session(object):
             "regional",
         ]
         if names not in valid_datasets:
-            raise ValueError(f"'names' can only be one of " f"{', '.join(valid_datasets)}.")
+            raise ValueError(
+                f"'names' can only be one of " f"{', '.join(valid_datasets)}."
+            )
         original_datasets = {
             name: metadata
             for name, metadata in self.available_datasets.items()
@@ -494,7 +503,8 @@ class Session(object):
         valid_component = ["seas", "trend"]
         if component not in valid_component:
             raise ValueError(
-                f"Only {', '.join(valid_component)} are allowed." f"See underlying 'decompose'."
+                f"Only {', '.join(valid_component)} are allowed."
+                f"See underlying 'decompose'."
             )
 
         output = self._apply_transformation(
@@ -634,7 +644,18 @@ class Session(object):
         if all(freq == freqs[0] for freq in freqs):
             combined = pd.concat(selected_datasets, axis=1)
         else:
-            for freq_opt in ["A-DEC", "A", "YE-DEC", "QE-DEC", "QE-DEC", "Q", "M", "ME", "2W-SUN", "W-SUN"]:
+            for freq_opt in [
+                "A-DEC",
+                "A",
+                "YE-DEC",
+                "QE-DEC",
+                "QE-DEC",
+                "Q",
+                "M",
+                "ME",
+                "2W-SUN",
+                "W-SUN",
+            ]:
                 if freq_opt in freqs:
                     output = []
                     for df in selected_datasets:
@@ -645,13 +666,19 @@ class Session(object):
                             type_df = df.columns.get_level_values("Tipo")[0]
                             unit_df = df.columns.get_level_values("Unidad")[0]
                             if type_df == "Stock":
-                                df_match = transform.resample(df, rule=freq_opt, operation="last")
+                                df_match = transform.resample(
+                                    df, rule=freq_opt, operation="last"
+                                )
                             elif type_df == "Flujo" and not any(
                                 x in unit_df for x in ["%", "=", "Cambio"]
                             ):
-                                df_match = transform.resample(df, rule=freq_opt, operation="sum")
+                                df_match = transform.resample(
+                                    df, rule=freq_opt, operation="sum"
+                                )
                             else:
-                                df_match = transform.resample(df, rule=freq_opt, operation="mean")
+                                df_match = transform.resample(
+                                    df, rule=freq_opt, operation="mean"
+                                )
                         output.append(df_match)
                     combined = pd.concat(output, axis=1)
                     break

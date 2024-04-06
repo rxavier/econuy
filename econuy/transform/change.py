@@ -4,7 +4,9 @@ from econuy.utils import metadata
 from econuy.transform import rolling
 
 
-def chg_diff(df: pd.DataFrame, operation: str = "chg", period: str = "last") -> pd.DataFrame:
+def chg_diff(
+    df: pd.DataFrame, operation: str = "chg", period: str = "last"
+) -> pd.DataFrame:
     """
     Calculate pct change or difference.
 
@@ -32,7 +34,9 @@ def chg_diff(df: pd.DataFrame, operation: str = "chg", period: str = "last") -> 
         return pd.concat(columns, axis=1)
 
 
-def _chg_diff(df: pd.DataFrame, operation: str = "chg", period: str = "last") -> pd.DataFrame:
+def _chg_diff(
+    df: pd.DataFrame, operation: str = "chg", period: str = "last"
+) -> pd.DataFrame:
     inferred_freq = pd.infer_freq(df.index)
 
     type_change = {
@@ -41,7 +45,10 @@ def _chg_diff(df: pd.DataFrame, operation: str = "chg", period: str = "last") ->
             "diff": [lambda x: x.diff(periods=1), "Cambio"],
         },
         "inter": {
-            "chg": [lambda x: x.pct_change(periods=last_year), "% variación interanual"],
+            "chg": [
+                lambda x: x.pct_change(periods=last_year),
+                "% variación interanual",
+            ],
             "diff": [lambda x: x.diff(periods=last_year), "Cambio interanual"],
         },
         "annual": {

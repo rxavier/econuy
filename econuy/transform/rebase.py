@@ -27,7 +27,9 @@ def rebase(
         columns = []
         for column_name in df.columns:
             df_column = df[[column_name]]
-            converted = _rebase(df=df_column, end_date=end_date, start_date=start_date, base=base)
+            converted = _rebase(
+                df=df_column, end_date=end_date, start_date=start_date, base=base
+            )
             columns.append(converted)
         return pd.concat(columns, axis=1)
 
@@ -39,7 +41,9 @@ def _rebase(
     base: float = 100.0,
 ) -> pd.DataFrame:
     if end_date is None:
-        start_date = df.iloc[df.index.get_indexer([start_date], method="nearest")].index[0]
+        start_date = df.iloc[
+            df.index.get_indexer([start_date], method="nearest")
+        ].index[0]
         indexed = df.apply(lambda x: x / x.loc[start_date] * base)
         if isinstance(start_date, str):
             start_date = datetime.strptime(start_date, "%Y-%m-%d")

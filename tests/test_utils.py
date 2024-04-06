@@ -20,7 +20,12 @@ sql.insert_csvs(con=TEST_CON, directory=TEST_DIR)
 def test_sqlutil():
     remove_temporary_files_folders()
     sql.read(con=TEST_CON, command="SELECT * FROM nxr_daily")
-    sql.read(con=TEST_CON, table_name="nxr_daily", start_date="2011-01-14", end_date="2012-01-15")
+    sql.read(
+        con=TEST_CON,
+        table_name="nxr_daily",
+        start_date="2011-01-14",
+        end_date="2012-01-15",
+    )
     sql.read(con=TEST_CON, table_name="nxr_daily", start_date="2011-01-14")
     sql.read(
         con=TEST_CON,

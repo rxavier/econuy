@@ -57,7 +57,11 @@ def _read(
                     metadata._set(previous_data)
                 else:
                     previous_data = pd.read_csv(
-                        data_loc, index_col=0, header=0, float_precision="high", encoding="latin1"
+                        data_loc,
+                        index_col=0,
+                        header=0,
+                        float_precision="high",
+                        encoding="latin1",
                     )
             else:
                 if multiindex == "included":
@@ -67,20 +71,26 @@ def _read(
                     metadata._set(previous_data)
                 elif multiindex == "separate":
                     excel = pd.ExcelFile(data_loc)
-                    previous_data = pd.read_excel(excel, index_col=0, header=0, sheet_name="Data")
+                    previous_data = pd.read_excel(
+                        excel, index_col=0, header=0, sheet_name="Data"
+                    )
                     header = (
                         pd.read_excel(excel, sheet_name="Metadata", index_col=0)
                         .rename_axis("Indicador")
                         .T
                     )
-                    previous_data.columns = pd.MultiIndex.from_frame(header.reset_index())
+                    previous_data.columns = pd.MultiIndex.from_frame(
+                        header.reset_index()
+                    )
                     metadata._set(previous_data)
                 else:
                     previous_data = pd.read_excel(
                         data_loc, index_col=0, header=0, sheet_name="Data"
                     )
             try:
-                previous_data.index = pd.to_datetime(previous_data.index, format=date_format)
+                previous_data.index = pd.to_datetime(
+                    previous_data.index, format=date_format
+                )
             except ValueError:
                 previous_data.index = pd.to_datetime(previous_data.index, format=None)
 
@@ -140,7 +150,9 @@ def _save(
     return
 
 
-def _revise(new_data: pd.DataFrame, prev_data: pd.DataFrame, revise_rows: Union[int, str]):
+def _revise(
+    new_data: pd.DataFrame, prev_data: pd.DataFrame, revise_rows: Union[int, str]
+):
     """Replace n rows of data at the end of a dataframe with new data."""
     if len(prev_data) == 0:
         return new_data
@@ -218,7 +230,9 @@ def _io(
             full_update_loc = (Path(data_loc) / name).with_suffix(suffix)
         else:
             full_update_loc = data_loc
-        return _read(full_update_loc, table_name=name, multiindex=multiindex, file_fmt=file_fmt)
+        return _read(
+            full_update_loc, table_name=name, multiindex=multiindex, file_fmt=file_fmt
+        )
 
     elif operation == "save":
         if isinstance(data_loc, (str, PathLike)):

@@ -43,7 +43,7 @@ def _rolling(
         "YE-DEC": 1,
         "Q": 4,
         "QE-DEC": 4,
-        "QE-DEC": 4,
+        "Q-DEC": 4,
         "M": 12,
         "ME": 12,
         "MS": 12,
@@ -62,7 +62,8 @@ def _rolling(
 
     if df.columns.get_level_values("Tipo")[0] == "Stock":
         warnings.warn(
-            "Rolling operations should not be " "calculated on stock variables", UserWarning
+            "Rolling operations should not be " "calculated on stock variables",
+            UserWarning,
         )
 
     if window is None:
