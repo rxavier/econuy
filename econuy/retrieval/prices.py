@@ -36,7 +36,7 @@ def cpi() -> pd.DataFrame:
 
     raw = pd.read_excel(sources["main"], usecols="C").dropna(axis=0, how="any")
     output = raw.set_index(
-        pd.date_range(start="1937-07-31", freq="M", periods=len(raw))
+        pd.date_range(start="1937-07-31", freq="ME", periods=len(raw))
     ).rename_axis(None)
     output.columns = ["Índice de precios al consumo"]
     output = output.apply(pd.to_numeric, errors="coerce")
@@ -80,7 +80,7 @@ def cpi_divisions() -> pd.DataFrame:
         .pivot(columns="División", values="Indice Total País", index="date")
     )
     output = raw.set_index(
-        pd.date_range(start="2010-12-31", freq="M", periods=len(raw))
+        pd.date_range(start="2010-12-31", freq="ME", periods=len(raw))
     ).rename_axis(None)
     colnames = [
         "ALIMENTOS Y BEBIDAS NO ALCOHÓLICAS",
@@ -166,7 +166,7 @@ def cpi_divisions() -> pd.DataFrame:
 #             raw.append(data)
 #             nmonths = nmonths + len(data)
 #     output = pd.concat(raw)
-#     output.index = pd.date_range("2011-01-31", freq="M", periods=len(output))
+#     output.index = pd.date_range("2011-01-31", freq="ME", periods=len(output))
 #     output.rename_axis(None, inplace=True)
 #     output = output.apply(pd.to_numeric, errors="coerce")
 
@@ -225,7 +225,7 @@ def inflation_expectations() -> pd.DataFrame:
     output.columns = output.columns + " - " + output.iloc[0]
     output = output.iloc[1:]
     output.rename_axis(None, inplace=True)
-    output.index = pd.date_range(start="2004-01-31", freq="M", periods=len(output))
+    output.index = pd.date_range(start="2004-01-31", freq="ME", periods=len(output))
     output = output.apply(pd.to_numeric, errors="coerce")
 
     metadata._set(
@@ -276,7 +276,7 @@ def inflation_expectations() -> pd.DataFrame:
 #         "Agua corriente",
 #         "Servicio telefónico",
 #     ]
-#     cpi_1997.index = pd.date_range(start="1997-03-31", freq="M", periods=len(cpi_1997))
+#     cpi_1997.index = pd.date_range(start="1997-03-31", freq="ME", periods=len(cpi_1997))
 #     cpi_1997.rename_axis(None, inplace=True)
 
 #     with pd.ExcelFile(urls[name]["dl"]["2019"]) as excel:
@@ -307,7 +307,7 @@ def inflation_expectations() -> pd.DataFrame:
 #             ]
 #             cpi_2010.append(data)
 #         cpi_2010 = pd.concat(cpi_2010)
-#         cpi_2010.index = pd.date_range(start="2010-12-31", freq="M", periods=len(cpi_2010))
+#         cpi_2010.index = pd.date_range(start="2010-12-31", freq="ME", periods=len(cpi_2010))
 
 #     output = pd.concat([cpi_1997 / cpi_1997.iloc[-1] * 100, cpi_2010])
 #     output = output.loc[~output.index.duplicated(keep="last")]
@@ -578,7 +578,7 @@ stats._contains_nan = _new_contains_nan
 #     complete_10 = pd.concat(sheets)
 #     complete_10 = complete_10.iloc[:, 1:]
 #     complete_10.columns = [weights["Item"], weights.index]
-#     complete_10.index = pd.date_range(start="2010-12-31", periods=len(complete_10), freq="M")
+#     complete_10.index = pd.date_range(start="2010-12-31", periods=len(complete_10), freq="ME")
 #     diff_8 = complete_10.loc[
 #         :, complete_10.columns.get_level_values(level=1).str.len() == 8
 #     ].pct_change()
@@ -595,7 +595,7 @@ stats._contains_nan = _new_contains_nan
 #         .drop(columns=["Rubro", "Agrupación, subrubro, familia", "Artículo"])
 #     )
 #     prod_97 = prod_97.loc[:, list(cpi_details["1997_base"].keys())]
-#     prod_97.index = pd.date_range(start="1997-03-31", periods=len(prod_97), freq="M")
+#     prod_97.index = pd.date_range(start="1997-03-31", periods=len(prod_97), freq="ME")
 #     weights_97 = (
 #         weights_97[weights_97["Descripción"].isin(cpi_details["1997_weights"])]
 #         .set_index("Descripción")

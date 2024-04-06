@@ -10,7 +10,6 @@ import pandas as pd
 import numpy as np
 import patoolib
 import requests
-from bs4 import BeautifulSoup
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 
@@ -42,7 +41,7 @@ def monthly_gdp() -> pd.DataFrame:
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
             r = requests.get(sources["main"], verify=certs_path)
             output = pd.read_excel(r.content, usecols="B:D")
-    output.index = pd.date_range(start="2016-01-31", freq="M", periods=len(output))
+    output.index = pd.date_range(start="2016-01-31", freq="ME", periods=len(output))
     output.columns = [
         "Indicador mensual de actividad económica",
         "Indicador mensual de actividad económica (desestacionalizado)",
@@ -955,7 +954,7 @@ def industrial_production() -> pd.DataFrame:
         ["División", "Grupo", "Agrupación / Clase"]
     ].astype(str)
     output = raw.dropna(how="all")
-    output.index = pd.date_range(start="2018-01-31", freq="M", periods=len(output))
+    output.index = pd.date_range(start="2018-01-31", freq="ME", periods=len(output))
 
     column_names = []
     for c in output.columns[2:]:
@@ -1109,10 +1108,9 @@ def milk_shipments() -> pd.DataFrame:
     sources = get_download_sources(name)
 
     r = requests.get(sources["main"])
-    soup = BeautifulSoup(r.content, features="html.parser")
-    link = soup.find_all(href=re.compile(".xls"))[0]
+    url = re.findall(r'href="(.+\.xls)', r.text)[0]
     raw = (
-        pd.read_excel(link["href"], skiprows=11, skipfooter=4)
+        pd.read_excel(url, skiprows=11, skipfooter=4)
         .iloc[2:, 3:]
         .melt()
         .iloc[:, [1]]
@@ -1120,7 +1118,7 @@ def milk_shipments() -> pd.DataFrame:
         .rename_axis(None)
     )
     output = (
-        raw.set_index(pd.date_range(start="2002-01-31", freq="M", periods=len(raw)))
+        raw.set_index(pd.date_range(start="2002-01-31", freq="ME", periods=len(raw)))
         * 1000
     )
     output = output.apply(pd.to_numeric)
@@ -1163,9 +1161,11 @@ def diesel_sales() -> pd.DataFrame:
     temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
     with open(temp_rar, "wb") as f:
         r = requests.get(sources["main"])
-        soup = BeautifulSoup(r.content, features="html.parser")
-        rar_url = soup.find_all(href=re.compile("gas%20oil"))[0]
-        f.write(requests.get(rar_url["href"]).content)
+        rar_url = re.findall(
+            r"https://www.gub.uy/ministerio-industria-energia-mineria/sites/ministerio-industria-energia-mineria/files/[0-9\-]+/Venta%20de%20gas%20oil%20por%20departamento.rar",
+            r.text,
+        )[0]
+        f.write(requests.get(rar_url).content)
     with tempfile.TemporaryDirectory() as temp_dir:
         patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
         xls = [x for x in listdir(temp_dir) if x.endswith(".xls")][0]
@@ -1173,7 +1173,7 @@ def diesel_sales() -> pd.DataFrame:
         raw = pd.read_excel(
             path_temp, sheet_name="vta gas oil por depto", skiprows=2, usecols="C:W"
         )
-        raw.index = pd.date_range(start="2004-01-31", freq="M", periods=len(raw))
+        raw.index = pd.date_range(start="2004-01-31", freq="ME", periods=len(raw))
         raw.columns = list(raw.columns.str.replace("\n", " "))[:-1] + ["Total"]
         output = raw
     output.rename_axis(None, inplace=True)
@@ -1215,9 +1215,11 @@ def gasoline_sales() -> pd.DataFrame:
     temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
     with open(temp_rar, "wb") as f:
         r = requests.get(sources["main"])
-        soup = BeautifulSoup(r.content, features="html.parser")
-        rar_url = soup.find_all(href=re.compile("gasolina"))[0]
-        f.write(requests.get(rar_url["href"]).content)
+        rar_url = re.findall(
+            r"https://www.gub.uy/ministerio-industria-energia-mineria/sites/ministerio-industria-energia-mineria/files/[0-9\-]+/Venta%20de%20gasolinas%20por%20departamento.rar",
+            r.text,
+        )[0]
+        f.write(requests.get(rar_url).content)
     with tempfile.TemporaryDirectory() as temp_dir:
         patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
         xls = [x for x in listdir(temp_dir) if x.endswith(".xls")][0]
@@ -1225,7 +1227,7 @@ def gasoline_sales() -> pd.DataFrame:
         raw = pd.read_excel(
             path_temp, sheet_name="vta gasolinas por depto", skiprows=2, usecols="C:W"
         )
-        raw.index = pd.date_range(start="2004-01-31", freq="M", periods=len(raw))
+        raw.index = pd.date_range(start="2004-01-31", freq="ME", periods=len(raw))
         raw.columns = list(raw.columns.str.replace("\n", " "))[:-1] + ["Total"]
         output = raw
     output.rename_axis(None, inplace=True)
@@ -1267,15 +1269,17 @@ def electricity_sales() -> pd.DataFrame:
     temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
     with open(temp_rar, "wb") as f:
         r = requests.get(sources["main"])
-        soup = BeautifulSoup(r.content, features="html.parser")
-        rar_url = soup.find_all(href=re.compile("Facturaci[%A-z0-9]+sector"))[0]
-        f.write(requests.get(rar_url["href"]).content)
+        rar_url = re.findall(
+            r"https://www.gub.uy/ministerio-industria-energia-mineria/sites/ministerio-industria-energia-mineria/files/[0-9\-]+/Facturaci%C3%B3n%20de%20energ%C3%ADa%20el%C3%A9ctrica%20por%20sector.rar",
+            r.text,
+        )[0]
+        f.write(requests.get(rar_url).content)
     with tempfile.TemporaryDirectory() as temp_dir:
         patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
         xls = [x for x in listdir(temp_dir) if x.endswith(".xls")][0]
         path_temp = path.join(temp_dir, xls)
         raw = pd.read_excel(path_temp, sheet_name="fact ee", skiprows=2, usecols="C:J")
-        raw.index = pd.date_range(start="2000-01-31", freq="M", periods=len(raw))
+        raw.index = pd.date_range(start="2000-01-31", freq="ME", periods=len(raw))
         raw.columns = raw.columns.str.capitalize()
         output = raw
     output.rename_axis(None, inplace=True)

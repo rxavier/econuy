@@ -3,7 +3,6 @@ openpyxl
 xlrd
 statsmodels
 httpx
-BeautifulSoup4
 lxml
 selenium
 patool

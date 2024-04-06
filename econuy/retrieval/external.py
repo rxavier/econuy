@@ -13,7 +13,6 @@ from urllib.error import HTTPError, URLError
 import pandas as pd
 import requests
 from dateutil.relativedelta import relativedelta
-from bs4 import BeautifulSoup
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd, YearEnd
 from sqlalchemy.engine.base import Engine, Connection
@@ -489,9 +488,11 @@ def commodity_prices() -> pd.DataFrame:
     # wheat = soy_wheat[1]
 
     milk_r = requests.get(sources["milk1"])
-    milk_soup = BeautifulSoup(milk_r.content, "html.parser")
-    links = milk_soup.find_all(href=re.compile("Europa"))
-    xls = links[0]["href"]
+    xls = re.findall(
+        r"https://www.inale.org/wp-content/uploads/[0-9\/]+/Precios-exportacion-de-Europa.xls",
+        milk_r.text,
+        flags=re.IGNORECASE,
+    )[0]
     raw_milk = pd.read_excel(
         requests.utils.quote(xls).replace("%3A", ":"),
         skiprows=13,
@@ -503,7 +504,7 @@ def commodity_prices() -> pd.DataFrame:
     proc_milk = pd.melt(raw_milk, id_vars=["Año/Mes"])
     proc_milk.sort_values(by=["Año/Mes", "variable"], inplace=True)
     proc_milk.index = pd.date_range(
-        start="2007-01-31", periods=len(proc_milk), freq="M"
+        start="2007-01-31", periods=len(proc_milk), freq="ME"
     )
     proc_milk = proc_milk.iloc[:, 2].to_frame().divide(10).dropna()
 
@@ -522,7 +523,7 @@ def commodity_prices() -> pd.DataFrame:
         .to_frame()
     )
     prev_milk = prev_milk.set_index(
-        pd.date_range(start="1977-01-31", freq="M", periods=len(prev_milk))
+        pd.date_range(start="1977-01-31", freq="ME", periods=len(prev_milk))
     )
     eurusd_r = requests.get(
         "https://fx.sauder.ubc.ca/cgi/fxdata",
@@ -530,7 +531,7 @@ def commodity_prices() -> pd.DataFrame:
         f"{dt.datetime.now().year}&y=monthly&q=volume&f=html&o=",
     )
     eurusd = pd.read_html(eurusd_r.content)[0].drop("MMM YYYY", axis=1)
-    eurusd.index = pd.date_range(start="2001-01-31", periods=len(eurusd), freq="M")
+    eurusd.index = pd.date_range(start="2001-01-31", periods=len(eurusd), freq="ME")
     eurusd_milk = eurusd.reindex(prev_milk.index)
     prev_milk = prev_milk.divide(eurusd_milk.values).multiply(10)
     prev_milk = prev_milk.loc[prev_milk.index < min(proc_milk.index)]
@@ -547,7 +548,7 @@ def commodity_prices() -> pd.DataFrame:
         raw_pulp = pd.read_csv(path_temp, sep=";").dropna(how="any")
     proc_pulp = raw_pulp.copy().sort_index(ascending=False)
     proc_pulp.index = pd.date_range(
-        start="1990-01-31", periods=len(proc_pulp), freq="M"
+        start="1990-01-31", periods=len(proc_pulp), freq="ME"
     )
     proc_pulp = proc_pulp.drop(["Label", "Codes"], axis=1).astype(float)
     proc_pulp = proc_pulp.div(eurusd.reindex(proc_pulp.index).values)
@@ -559,7 +560,7 @@ def commodity_prices() -> pd.DataFrame:
     raw_imf = pd.read_excel(imf).dropna(how="all", axis=1).dropna(how="all", axis=0)
     raw_imf.columns = raw_imf.iloc[0, :]
     proc_imf = raw_imf.iloc[3:, 1:]
-    proc_imf.index = pd.date_range(start="1990-01-31", periods=len(proc_imf), freq="M")
+    proc_imf.index = pd.date_range(start="1990-01-31", periods=len(proc_imf), freq="ME")
     rice = proc_imf[proc_imf.columns[proc_imf.columns.str.contains("Rice")]]
     wood = proc_imf[proc_imf.columns[proc_imf.columns.str.contains("Sawnwood")]]
     wood = wood.mean(axis=1).to_frame()

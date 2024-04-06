@@ -6,7 +6,6 @@ from urllib.error import HTTPError, URLError
 
 import pandas as pd
 import requests
-from bs4 import BeautifulSoup
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from requests.exceptions import ConnectionError
@@ -27,10 +26,8 @@ def _balance_retriever() -> Dict[str, pd.DataFrame]:
     """Helper function. See any of the `balance_...()` functions."""
     sources = get_download_sources("fiscal_balance_global_public_sector")
     response = requests.get(sources["main"])
-    soup = BeautifulSoup(response.content, "html.parser")
-    links = soup.find_all(href=re.compile("\\.xlsx$"))
-    link = links[0]["href"]
-    xls = pd.ExcelFile(link)
+    url = re.findall(r"(http\S+Resultados.+\.xlsx)'", response.text)[0]
+    xls = pd.ExcelFile(url)
     output = {}
     for dataset, meta in FISCAL_SHEETS.items():
         data = (

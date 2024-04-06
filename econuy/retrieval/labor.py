@@ -29,7 +29,7 @@ def labor_rates() -> pd.DataFrame:
 
     labor_raw = pd.read_excel(sources["main"], skiprows=7).dropna(axis=0, thresh=2)
     labor = labor_raw[~labor_raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
-    labor.index = pd.date_range(start="2006-01-31", periods=len(labor), freq="M")
+    labor.index = pd.date_range(start="2006-01-31", periods=len(labor), freq="ME")
     labor = labor.drop(columns="Unnamed: 0")
     labor.columns = [
         "Tasa de actividad: total",
@@ -123,7 +123,7 @@ def hours_worked() -> pd.DataFrame:
     raw = pd.read_excel(sources["main"]).dropna(axis=0, thresh=2)
 
     output = raw[~raw.iloc[:, 0].str.contains("-|/|Total|Año", regex=True)].iloc[:, 1:]
-    output.index = pd.date_range(start="2011-01-31", periods=len(output), freq="M")
+    output.index = pd.date_range(start="2011-01-31", periods=len(output), freq="ME")
     output.columns = [
         "Total",
         "Industrias manufactureras",

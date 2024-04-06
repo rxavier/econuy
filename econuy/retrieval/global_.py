@@ -87,7 +87,7 @@ def global_gdp() -> pd.DataFrame:
         aux = pd.DataFrame.from_records(r.json()["observations"])
         aux = aux[["date", "value"]].set_index("date")
         aux.index = pd.to_datetime(aux.index)
-        aux.index = aux.index.shift(3, freq="M") + MonthEnd(0)
+        aux.index = aux.index.shift(3, freq="ME") + MonthEnd(0)
         aux.columns = [series]
         aux = aux.apply(pd.to_numeric, errors="coerce")
         if series == "GDPC1":

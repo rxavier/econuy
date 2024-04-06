@@ -9,7 +9,6 @@ from requests.exceptions import SSLError
 
 import pandas as pd
 import requests
-from bs4 import BeautifulSoup
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -356,8 +355,7 @@ def sovereign_risk_index() -> pd.DataFrame:
             sheet_name="Valores de Cierre Diarios",
         )
         r_current = requests.get(sources["current"], verify=False)
-    soup = BeautifulSoup(r_current.text, features="html.parser")
-    raw_string = soup.find_all(type="hidden")[0]["value"]
+    raw_string = re.findall(r"value='(.+)'", r_current.text)[0]
     raw_list = raw_string.split("],")
     raw_list = [re.sub(r'["\[\]]', "", line) for line in raw_list]
     index = [x.split(",")[0] for x in raw_list]

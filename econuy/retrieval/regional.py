@@ -12,7 +12,6 @@ import pandas as pd
 import numpy as np
 import requests
 from pandas.tseries.offsets import MonthEnd
-from bs4 import BeautifulSoup
 from opnieuw import retry
 from selenium.webdriver.remote.webdriver import WebDriver
 
@@ -51,9 +50,9 @@ def regional_gdp(driver: WebDriver = None) -> pd.DataFrame:
         driver = _build()
     driver.get(sources["arg_new"])
     time.sleep(5)
-    soup = BeautifulSoup(driver.page_source, "html.parser")
+    source = driver.page_source
     driver.quit()
-    url = soup.find_all(href=re.compile("desest"))[0]["href"]
+    url = re.findall(r"/ftp/cuadros/economia/.+desest.+\.xls", source)[0]
     full_url = f"https://www.indec.gob.ar{url}"
     arg = pd.read_excel(full_url, skiprows=3, usecols="C").dropna(how="all")
     arg.index = pd.date_range(start="2004-03-31", freq="QE-DEC", periods=len(arg))
@@ -119,10 +118,10 @@ def regional_monthly_gdp() -> pd.DataFrame:
     sources = get_download_sources(name)
 
     arg = pd.read_excel(sources["arg"], usecols="C", skiprows=3).dropna(how="all")
-    arg.index = pd.date_range(start="2004-01-31", freq="M", periods=len(arg))
+    arg.index = pd.date_range(start="2004-01-31", freq="ME", periods=len(arg))
 
     bra = pd.read_csv(sources["bra"], sep=";", index_col=0, decimal=",")
-    bra.index = pd.date_range(start="2003-01-31", freq="M", periods=len(bra))
+    bra.index = pd.date_range(start="2003-01-31", freq="ME", periods=len(bra))
 
     output = pd.concat([arg, bra], axis=1)
     output.columns = ["Argentina", "Brasil"]
@@ -190,7 +189,7 @@ def regional_cpi() -> pd.DataFrame:
 
     bra_r = requests.get(sources["bra"].format(date=dt.datetime.now().strftime("%Y%m")))
     bra = pd.DataFrame(bra_r.json())[["v"]]
-    bra.index = pd.date_range(start="1979-12-31", freq="M", periods=len(bra))
+    bra.index = pd.date_range(start="1979-12-31", freq="ME", periods=len(bra))
     bra = bra.apply(pd.to_numeric, errors="coerce")
     bra = bra.divide(100).add(1).cumprod()
 
@@ -552,7 +551,7 @@ def _ifs(pipeline: Pipeline = None) -> pd.DataFrame:
                 data = pd.DataFrame(
                     np.nan,
                     index=pd.date_range(
-                        start="1970-01-01", end=dt.datetime.now(), freq="M"
+                        start="1970-01-01", end=dt.datetime.now(), freq="ME"
                     ),
                     columns=[f"{country}.{indicator}"],
                 )
