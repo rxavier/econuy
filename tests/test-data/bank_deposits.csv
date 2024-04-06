@@ -1,12 +1,12 @@
-Indicador,Depósitos: S. privado - MN,Depósitos: S. privado - ME,Depósitos: S. privado - total,Depósitos: S. público - MN,Depósitos: S. público - ME,Depósitos: S. público - total,Depósitos: Total - MN,Depósitos: Total - ME,Depósitos: Total - total,Depósitos: S. privado - MN vista,Depósitos: S. privado - MN plazo,Depósitos: S. privado - ME vista,Depósitos: S. privado - ME plazo,Depósitos: S. privado - total vista,Depósitos: S. privado - total plazo,Depósitos: S. privado - residente,Depósitos: S. privado - no residente
-Área,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero
-Frecuencia,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M
+Indicador,Depï¿½sitos: S. privado - MN,Depï¿½sitos: S. privado - ME,Depï¿½sitos: S. privado - total,Depï¿½sitos: S. pï¿½blico - MN,Depï¿½sitos: S. pï¿½blico - ME,Depï¿½sitos: S. pï¿½blico - total,Depï¿½sitos: Total - MN,Depï¿½sitos: Total - ME,Depï¿½sitos: Total - total,Depï¿½sitos: S. privado - MN vista,Depï¿½sitos: S. privado - MN plazo,Depï¿½sitos: S. privado - ME vista,Depï¿½sitos: S. privado - ME plazo,Depï¿½sitos: S. privado - total vista,Depï¿½sitos: S. privado - total plazo,Depï¿½sitos: S. privado - residente,Depï¿½sitos: S. privado - no residente
+ï¿½rea,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero
+Frecuencia,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME
 Moneda,USD,USD,USD,USD,USD,USD,USD,USD,USD,USD,USD,USD,USD,USD,USD,USD,USD
 Inf. adj.,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No
 Unidad,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones
 Seas. Adj.,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA
 Tipo,Stock,Stock,Stock,Stock,Stock,Stock,Stock,Stock,Stock,Stock,Stock,Stock,Stock,Stock,Stock,Stock,Stock
-Acum. períodos,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+Acum. perï¿½odos,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 1998-12-31,1618.0,9291.0,10908.0,100.0,54.0,153.0,1718.0,9345.0,11061.0,865.0,754.0,3360.0,5929.0,4225.0,6683.0,6160.0,3131.0
 1999-01-31,1622.0,9447.0,11069.0,116.0,59.0,175.0,1738.0,9506.0,11244.0,857.0,764.0,3358.0,6088.0,4215.0,6853.0,6347.0,3101.0
 1999-02-28,1629.0,9555.0,11183.0,115.0,54.0,169.0,1744.0,9609.0,11352.0,848.0,780.0,3393.0,6161.0,4242.0,6942.0,6447.0,3106.0

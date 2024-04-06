@@ -1,12 +1,12 @@
-Indicador,Residencial,Primario,Industrial,Electr. gas y agua,Construcción,Comercio y servicios,Alumbrado público,Total
-Área,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica
-Frecuencia,M,M,M,M,M,M,M,M
+Indicador,Residencial,Primario,Industrial,Electr. gas y agua,Construcciï¿½n,Comercio y servicios,Alumbrado pï¿½blico,Total
+ï¿½rea,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica
+Frecuencia,ME,ME,ME,ME,ME,ME,ME,ME
 Moneda,-,-,-,-,-,-,-,-
 Inf. adj.,No,No,No,No,No,No,No,No
 Unidad,MWh,MWh,MWh,MWh,MWh,MWh,MWh,MWh
 Seas. Adj.,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA
 Tipo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo
-Acum. períodos,1,1,1,1,1,1,1,1
+Acum. perï¿½odos,1,1,1,1,1,1,1,1
 2000-01-31,243185.0,26017.32,112211.0,15954.0,1752.0,128345.0,14769.07,542233.39
 2000-02-29,222020.326,30061.0,117173.0,18477.0,1775.0,138399.0,15871.0,543776.326
 2000-03-31,233924.0,24702.0,114967.0,15723.0,1701.0,132807.0,15608.0,539432.0

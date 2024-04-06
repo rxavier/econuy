@@ -1,12 +1,12 @@
-Indicador,Artigas,Canelones balneario,Canelones resto,Cerro Largo,Colonia,Durazno,Flores,Florida,Lavalleja,Maldonado,Montevideo,Paysandú,Río Negro,Rivera,Rocha,Salto,San José,Soriano,Tacuarembó,Treinta y Tres,Total
-Área,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica,Actividad económica
-Frecuencia,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M
+Indicador,Artigas,Canelones balneario,Canelones resto,Cerro Largo,Colonia,Durazno,Flores,Florida,Lavalleja,Maldonado,Montevideo,Paysandï¿½,Rï¿½o Negro,Rivera,Rocha,Salto,San Josï¿½,Soriano,Tacuarembï¿½,Treinta y Tres,Total
+ï¿½rea,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica,Actividad econï¿½mica
+Frecuencia,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME
 Moneda,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-
 Inf. adj.,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No
 Unidad,m3,m3,m3,m3,m3,m3,m3,m3,m3,m3,m3,m3,m3,m3,m3,m3,m3,m3,m3,m3,m3
 Seas. Adj.,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA
 Tipo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo
-Acum. períodos,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+Acum. perï¿½odos,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 2004-01-31,301.543,1780.971,1813.419,438.291,1049.296,277.399,195.244,351.598,390.206,5461.464,9211.167,586.29,286.459,338.761,1046.197,603.996,622.597,586.823,510.738,258.772,26111.231
 2004-02-29,294.812,1665.394,1690.472,445.994,976.895,275.23,174.421,353.683,372.444,3631.048,9435.249,603.469,285.447,300.276,824.637,569.74,608.641,514.232,491.685,246.68,23760.449000000004
 2004-03-31,292.656,1397.468,1689.49,436.186,972.764,281.939,176.754,365.901,375.455,2099.197,10726.426,676.771,273.918,295.897,468.838,614.246,597.469,485.799,489.377,252.804,22969.355000000003

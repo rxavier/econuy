@@ -1,0 +1,12 @@
+pandas
+openpyxl
+xlrd
+statsmodels
+httpx
+BeautifulSoup4
+lxml
+selenium
+patool
+sqlalchemy
+python-dotenv
+opnieuw

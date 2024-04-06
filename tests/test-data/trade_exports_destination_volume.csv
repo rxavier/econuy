@@ -1,12 +1,12 @@
-Indicador,Total exportaciones,América: total,América: ALADI,América: Argentina,América: Brasil,América: Paraguay,América: MERCOSUR 4 países,América: Venezuela,América: MERCOSUR 5 países,América: Chile,América: México,América: Canadá,América: Estados Unidos,Europa: total,Europa: Unión Europea - total,Europa: UE - Alemania,Europa: UE - España,Europa: UE - Francia,Europa: UE - Italia,Europa: UE - Países Bajos,Europa: UE - Reino Unido,Europa: otros,Europa: otros - Rusia,Resto del mundo: total
-Área,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo
-Frecuencia,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M
+Indicador,Total exportaciones,Amï¿½rica: total,Amï¿½rica: ALADI,Amï¿½rica: Argentina,Amï¿½rica: Brasil,Amï¿½rica: Paraguay,Amï¿½rica: MERCOSUR 4 paï¿½ses,Amï¿½rica: Venezuela,Amï¿½rica: MERCOSUR 5 paï¿½ses,Amï¿½rica: Chile,Amï¿½rica: Mï¿½xico,Amï¿½rica: Canadï¿½,Amï¿½rica: Estados Unidos,Europa: total,Europa: Uniï¿½n Europea - total,Europa: UE - Alemania,Europa: UE - Espaï¿½a,Europa: UE - Francia,Europa: UE - Italia,Europa: UE - Paï¿½ses Bajos,Europa: UE - Reino Unido,Europa: otros,Europa: otros - Rusia,Resto del mundo: total
+ï¿½rea,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo
+Frecuencia,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME
 Moneda,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-
 Inf. adj.,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No
 Unidad,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100
 Seas. Adj.,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA
 Tipo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo
-Acum. períodos,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+Acum. perï¿½odos,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 2005-01-31,86.0,89.0,78.6,81.1,86.5,58.9,82.6,63.5,,70.2,57.3,117.3,106.9,74.1,80.0,75.8,92.9,75.7,98.9,64.6,82.4,65.6,53.8,87.5
 2005-02-28,84.7,90.1,81.6,75.4,98.6,68.9,88.6,25.9,,62.2,58.9,85.8,100.9,76.1,78.4,82.9,76.0,108.5,106.3,69.9,59.3,44.3,51.0,77.0
 2005-03-31,84.9,86.0,96.7,88.0,100.8,82.3,95.1,27.0,,89.3,107.4,103.5,67.5,85.1,80.3,90.0,55.0,130.3,101.1,80.1,81.9,104.4,108.5,80.9

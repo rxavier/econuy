@@ -1,12 +1,12 @@
 Indicador,Resultado: Primario SPNF,Intereses: SPNF,Resultado: Global SPNF,Resultado: Primario BCU,Intereses: BCU,Resultado: Global BCU,Resultado: Primario SPC,Resultado: Global SPC
-Área,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público
-Frecuencia,M,M,M,M,M,M,M,M
+ï¿½rea,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico
+Frecuencia,ME,ME,ME,ME,ME,ME,ME,ME
 Moneda,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU
 Inf. adj.,No,No,No,No,No,No,No,No
 Unidad,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones
 Seas. Adj.,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA
 Tipo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo
-Acum. períodos,1,1,1,1,1,1,1,1
+Acum. perï¿½odos,1,1,1,1,1,1,1,1
 31/1/1999,826.578428,652.214963,174.363465,-36.822,80.0833044,-116.9053044,789.756428,57.45816057
 28/2/1999,-57.92620685,246.140568,-304.0667749,-41.37065054,86.46115768,-127.8318082,-99.29685739,-431.8985831
 31/3/1999,-105.8917375,438.527255,-544.4189925,-43.79296913,-17.7865828,-26.00638633,-149.6847066,-570.4253788

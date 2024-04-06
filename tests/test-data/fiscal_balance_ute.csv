@@ -1,12 +1,12 @@
 Indicador,Ingresos,Ingresos: Venta bienes y servicios,Ingresos: Otros,Ingresos: Transferencias GC,Egresos,Egresos: Corrientes,Egresos: Remuneraciones,Egresos: Compras bienes y servicios,Intereses,Egresos: DGI,Egresos: BPS,Egresos: No corrientes,Egresos: Inversiones,Egresos: Dividendo,Resultado: Global
-Área,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público
-Frecuencia,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M
+ï¿½rea,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico
+Frecuencia,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME
 Moneda,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU
 Inf. adj.,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No
 Unidad,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones
 Seas. Adj.,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA
 Tipo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo
-Acum. períodos,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+Acum. perï¿½odos,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 1999-01-31,790.6043000000001,720.8603,8.333200000000001,61.4108,674.7716999999999,636.3702999999999,115.4605,106.0838,245.5402,104.8695,64.4163,38.4014,38.4014,0.0,115.83260000000018
 1999-02-28,751.0702,717.0758000000001,17.9562,16.0382,596.2913,489.5025,71.32419999999999,159.93679999999998,7.1948,189.8109,61.235800000000005,106.7888,106.7888,0.0,154.77890000000002
 1999-03-31,781.2776,754.535,10.4977,16.2449,879.4089,520.2667,132.434,167.9352,11.6087,165.7898,42.499,174.9206,174.9206,184.2216,-98.1313

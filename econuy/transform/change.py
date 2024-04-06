@@ -50,11 +50,11 @@ def _chg_diff(df: pd.DataFrame, operation: str = "chg", period: str = "last") ->
         },
     }
 
-    if inferred_freq == "M":
+    if inferred_freq in ["ME", "ME"]:
         last_year = 12
-    elif inferred_freq == "Q" or inferred_freq == "Q-DEC":
+    elif inferred_freq in ["Q", "QE-DEC", "QE-DEC"]:
         last_year = 4
-    elif inferred_freq == "A" or inferred_freq == "A-DEC":
+    elif inferred_freq in ["A", "A-DEC", "YE-DEC"]:
         last_year = 1
     else:
         raise ValueError(

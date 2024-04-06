@@ -634,7 +634,7 @@ class Session(object):
         if all(freq == freqs[0] for freq in freqs):
             combined = pd.concat(selected_datasets, axis=1)
         else:
-            for freq_opt in ["A-DEC", "A", "Q-DEC", "Q", "M", "2W-SUN", "W-SUN"]:
+            for freq_opt in ["A-DEC", "A", "YE-DEC", "QE-DEC", "QE-DEC", "Q", "M", "ME", "2W-SUN", "W-SUN"]:
                 if freq_opt in freqs:
                     output = []
                     for df in selected_datasets:

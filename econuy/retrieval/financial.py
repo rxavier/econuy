@@ -347,7 +347,7 @@ def sovereign_risk_index() -> pd.DataFrame:
             sheet_name="Valores de Cierre Diarios",
         )
         r_current = requests.get(sources["current"], verify=False)
-    soup = BeautifulSoup(r_current.text, features="lxml")
+    soup = BeautifulSoup(r_current.text, features="html.parser")
     raw_string = soup.find_all(type="hidden")[0]["value"]
     raw_list = raw_string.split("],")
     raw_list = [re.sub(r'["\[\]]', "", line) for line in raw_list]

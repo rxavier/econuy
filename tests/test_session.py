@@ -127,7 +127,7 @@ def test_logging_error(caplog):
     caplog.clear()
 
 
-@pytest.mark.parametrize("freq_resample,freq_result", [("A-DEC", "A-DEC"), ("M", "Q-DEC")])
+@pytest.mark.parametrize("freq_resample,freq_result", [("YE-DEC", "YE-DEC"), ("ME", "QE-DEC")])
 def test_concat(freq_resample, freq_result):
     s = Session(location=TEST_CON, download=False)
     s.get(["national_accounts_demand_constant_nsa", "public_debt_global_public_sector"])

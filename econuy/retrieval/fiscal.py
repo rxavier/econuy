@@ -251,7 +251,7 @@ def _public_debt_retriever() -> Dict[str, pd.DataFrame]:
         nrows=(dt.datetime.now().year - 1999) * 4,
     )
     gps = gps_raw.dropna(thresh=2)
-    gps.index = pd.date_range(start="1999-12-31", periods=len(gps), freq="Q-DEC")
+    gps.index = pd.date_range(start="1999-12-31", periods=len(gps), freq="QE-DEC")
     gps.columns = colnames
 
     nfps_raw = pd.read_excel(xls, sheet_name="SPNM bruta", usecols="B:O", index_col=0)
@@ -259,7 +259,7 @@ def _public_debt_retriever() -> Dict[str, pd.DataFrame]:
         "9. Deuda Bruta del Sector Público no " "monetario por plazo y  moneda."
     )
     nfps = nfps_raw.iloc[loc + 5 :, :].dropna(how="any")
-    nfps.index = pd.date_range(start="1999-12-31", periods=len(nfps), freq="Q-DEC")
+    nfps.index = pd.date_range(start="1999-12-31", periods=len(nfps), freq="QE-DEC")
     nfps_extra_raw = pd.read_excel(
         xls,
         sheet_name="SPNM bruta",
@@ -280,7 +280,7 @@ def _public_debt_retriever() -> Dict[str, pd.DataFrame]:
         skiprows=(dt.datetime.now().year - 1999) * 8 + 20,
     )
     cb = cb_raw.dropna(how="any")
-    cb.index = pd.date_range(start="1999-12-31", periods=len(cb), freq="Q-DEC")
+    cb.index = pd.date_range(start="1999-12-31", periods=len(cb), freq="QE-DEC")
     cb_extra_raw = pd.read_excel(
         xls,
         sheet_name="BCU bruta",
@@ -302,7 +302,7 @@ def _public_debt_retriever() -> Dict[str, pd.DataFrame]:
         nrows=(dt.datetime.now().year - 1999) * 4,
     )
     assets = assets_raw.dropna(how="any")
-    assets.index = pd.date_range(start="1999-12-31", periods=len(assets), freq="Q-DEC")
+    assets.index = pd.date_range(start="1999-12-31", periods=len(assets), freq="QE-DEC")
     assets.columns = ["Total activos", "Sector público no monetario", "BCU"]
 
     output = {
@@ -400,7 +400,7 @@ def net_public_debt_global_public_sector(pipeline: Optional[Pipeline] = None) ->
     pipeline.get("international_reserves")
     deposits = pipeline.dataset.loc[:, ["Obligaciones en ME con el sector financiero"]]
     deposits = (
-        transform.resample(deposits, rule="Q-DEC", operation="last")
+        transform.resample(deposits, rule="QE-DEC", operation="last")
         .reindex(gross_debt.index)
         .squeeze()
     )

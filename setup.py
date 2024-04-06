@@ -10,6 +10,10 @@ with open(ver_path) as ver_file:
 
 
 packages = find_packages(".", exclude=["*.test", "*.test.*"])
+with open("requirements.in", "r") as f:
+    requirements = [line.strip() for line in f.readlines() if not line.startswith("#")]
+with open("requirements-dev.in", "r") as f:
+    dev_requirements = [line.strip() for line in f.readlines() if not line.startswith("-c") and not line.startswith("#")]
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -31,40 +35,15 @@ setup(
         "Topic :: Office/Business :: Financial",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.10",
         "Operating System :: OS Independent",
     ],
     keywords=["uruguay", "economy", "economic", "statistics", "data"],
-    install_requires=[
-        "pandas",
-        "openpyxl",
-        "statsmodels",
-        "requests",
-        "beautifulsoup4",
-        "lxml",
-        "opnieuw",
-        "sqlalchemy",
-        "selenium",
-        "python-dotenv",
-        "patool",
-        "xlrd",
-    ],
+    install_requires=requirements,
     extras_require={
-        "dev": [
-            "sphinx",
-            "sphinx-autobuild",
-            "sphinx-autodoc-typehints",
-            "recommonmark",
-            "sphinx-rtd-theme",
-            "pytest",
-            "coverage",
-            "autopep8",
-            "pre-commit",
-            "jupyter",
-            "matplotlib",
-        ],
+        "dev": dev_requirements,
     },
     packages=packages,
     include_package_data=True,
-    python_requires=">=3.8",
+    python_requires=">=3.10",
 )

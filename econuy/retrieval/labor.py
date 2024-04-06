@@ -200,7 +200,7 @@ def labor_rates_persons(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     ages = list(range(14, 90)) + ["90 y más"]
     working_age = working_age.loc[ages].sum()
     working_age.index = pd.date_range(start="1996-06-30", end="2050-06-30", freq="A-JUN")
-    monthly_working_age = working_age.resample("M").interpolate("linear")
+    monthly_working_age = working_age.resample("ME").interpolate("linear")
     monthly_working_age = monthly_working_age.reindex(rates.index)
     persons = rates.iloc[:, [0, 1]].div(100).mul(monthly_working_age, axis=0)
     persons["Desempleados"] = rates.iloc[:, 2].div(100).mul(persons.iloc[:, 0])

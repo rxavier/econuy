@@ -425,7 +425,7 @@ def national_accounts_supply_constant_nsa_extended(pipeline: Pipeline = None) ->
                 .iloc[:, 1:]
                 .T
             )
-    data_83.index = pd.date_range(start="1988-03-31", freq="Q-DEC", periods=len(data_83))
+    data_83.index = pd.date_range(start="1988-03-31", freq="QE-DEC", periods=len(data_83))
     data_83["Impuestos menos subvenciones"] = np.nan
     data_83 = data_83[
         [
@@ -550,7 +550,7 @@ def national_accounts_demand_constant_nsa_extended(pipeline: Pipeline = None) ->
                 .iloc[:, 1:]
                 .T
             )
-    data_83.index = pd.date_range(start="1988-03-31", freq="Q-DEC", periods=len(data_83))
+    data_83.index = pd.date_range(start="1988-03-31", freq="QE-DEC", periods=len(data_83))
     data_83.drop(
         ["Sector público", "Sector privado", "Variación de existencias"], axis=1, inplace=True
     )
@@ -662,7 +662,7 @@ def gdp_index_constant_sa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
                 .iloc[:, 1:]
                 .T
             )
-    data_83.index = pd.date_range(start="1988-03-31", freq="Q-DEC", periods=len(data_83))
+    data_83.index = pd.date_range(start="1988-03-31", freq="QE-DEC", periods=len(data_83))
     data_83 = data_83[["PRODUCTO INTERNO BRUTO"]]
     data_83.columns = aux.columns
 
@@ -747,7 +747,7 @@ def gdp_constant_nsa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
                 .iloc[:, 1:]
                 .T
             )
-    data_83.index = pd.date_range(start="1988-03-31", freq="Q-DEC", periods=len(data_83))
+    data_83.index = pd.date_range(start="1988-03-31", freq="QE-DEC", periods=len(data_83))
     data_83 = data_83[["PRODUCTO INTERNO BRUTO"]]
     data_83.columns = ["Producto bruto interno"]
 
@@ -875,7 +875,6 @@ def _monthly_interpolated_gdp(pipeline: Optional[Pipeline] = None):
             f"{last_year - 1}&ey={last_year + 1}&ssm=0&scsm=1&scc=0&"
             f"ssd=1&ssc=0&sic=0&sort=country&ds=.&br=1"
         )
-        print(table_url)
         imf_data = pd.to_numeric(pd.read_html(table_url)[0].iloc[0, [5, 6, 7]])
         imf_data = imf_data.reset_index(drop=True)
         fcast = (
@@ -898,7 +897,7 @@ def _monthly_interpolated_gdp(pipeline: Optional[Pipeline] = None):
         results.append(gdp)
 
     output = pd.concat(results, axis=1)
-    output = output.resample("Q-DEC").interpolate("linear").dropna(how="all")
+    output = output.resample("QE-DEC").interpolate("linear").dropna(how="all")
     output.rename_axis(None, inplace=True)
 
     metadata._modify_multiindex(output, levels=[0], new_arrays=[["PBI UYU", "PBI USD"]])
@@ -1082,7 +1081,7 @@ def milk_shipments() -> pd.DataFrame:
     sources = get_download_sources(name)
 
     r = requests.get(sources["main"])
-    soup = BeautifulSoup(r.content, features="lxml")
+    soup = BeautifulSoup(r.content, features="html.parser")
     link = soup.find_all(href=re.compile(".xls"))[0]
     raw = (
         pd.read_excel(link["href"], skiprows=11, skipfooter=4)
@@ -1133,7 +1132,7 @@ def diesel_sales() -> pd.DataFrame:
     temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
     with open(temp_rar, "wb") as f:
         r = requests.get(sources["main"])
-        soup = BeautifulSoup(r.content, features="lxml")
+        soup = BeautifulSoup(r.content, features="html.parser")
         rar_url = soup.find_all(href=re.compile("gas%20oil"))[0]
         f.write(requests.get(rar_url["href"]).content)
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -1185,7 +1184,7 @@ def gasoline_sales() -> pd.DataFrame:
     temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
     with open(temp_rar, "wb") as f:
         r = requests.get(sources["main"])
-        soup = BeautifulSoup(r.content, features="lxml")
+        soup = BeautifulSoup(r.content, features="html.parser")
         rar_url = soup.find_all(href=re.compile("gasolina"))[0]
         f.write(requests.get(rar_url["href"]).content)
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -1237,7 +1236,7 @@ def electricity_sales() -> pd.DataFrame:
     temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
     with open(temp_rar, "wb") as f:
         r = requests.get(sources["main"])
-        soup = BeautifulSoup(r.content, features="lxml")
+        soup = BeautifulSoup(r.content, features="html.parser")
         rar_url = soup.find_all(href=re.compile("Facturaci[%A-z0-9]+sector"))[0]
         f.write(requests.get(rar_url["href"]).content)
     with tempfile.TemporaryDirectory() as temp_dir:

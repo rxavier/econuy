@@ -57,9 +57,12 @@ def _resample(
     pd_frequencies = {
         "A": 1,
         "A-DEC": 1,
+        "YE-DEC": 1,
         "Q": 4,
         "Q-DEC": 4,
+        "QE-DEC": 4,
         "M": 12,
+        "ME": 12,
         "W": 52.143,
         "W-SUN": 52.143,
         "2W": 26.071,

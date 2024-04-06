@@ -31,7 +31,7 @@ def income_household() -> pd.DataFrame:
         .loc[lambda x: x["Mes, Trimestre y Año"].str.contains("/[0-9]{2}", regex=True)]
     )
 
-    output = raw.set_index(pd.date_range(start="2006-03-31", freq="Q-DEC", periods=len(raw))).iloc[
+    output = raw.set_index(pd.date_range(start="2006-03-31", freq="QE-DEC", periods=len(raw))).iloc[
         :, 1:
     ]
 
@@ -82,7 +82,7 @@ def income_capita() -> pd.DataFrame:
         .loc[lambda x: x["Mes, Trimestre y Año "].str.contains("/[0-9]{2}", regex=True)]
     )
 
-    output = raw.set_index(pd.date_range(start="2006-03-31", freq="Q-DEC", periods=len(raw))).iloc[
+    output = raw.set_index(pd.date_range(start="2006-03-31", freq="QE-DEC", periods=len(raw))).iloc[
         :, 1:
     ]
 

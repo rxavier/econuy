@@ -1,12 +1,12 @@
 Indicador,"Tasas activas: $, promedio","Tasas activas: $, promedio empresas","Tasas activas: $, promedio familias","Tasas activas: UI, promedio","Tasas activas: UI, promedio empresas","Tasas activas: UI, promedio familias","Tasas activas: US$, promedio","Tasas activas: US$, promedio empresas","Tasas activas: US$, promedio familias","Tasas pasivas: $, promedio","Tasas pasivas: $, promedio empresas","Tasas pasivas: $, promedio familias","Tasas pasivas: UI, promedio","Tasas pasivas: UI, promedio empresas","Tasas pasivas: UI, promedio familias","Tasas pasivas: US$, promedio","Tasas pasivas: US$, promedio empresas","Tasas pasivas: US$, promedio familias"
-Área,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero
-Frecuencia,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M
+ï¿½rea,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero,Sector financiero
+Frecuencia,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME
 Moneda,UYU,UYU,UYU,UYU,UYU,UYU,USD,USD,USD,UYU,UYU,UYU,UYU,UYU,UYU,USD,USD,USD
 Inf. adj.,No,No,No,Const.,Const.,Const.,No,No,No,No,No,No,Const.,Const.,Const.,No,No,No
 Unidad,Tasa,Tasa,Tasa,Tasa,Tasa,Tasa,Tasa,Tasa,Tasa,Tasa,Tasa,Tasa,Tasa,Tasa,Tasa,Tasa,Tasa,Tasa
 Seas. Adj.,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA
 Tipo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo
-Acum. períodos,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+Acum. perï¿½odos,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 1998-01-31,46.64890201281708,39.59080033553104,64.16314870089302,,,,12.217420386465683,11.630742346695444,15.478418325719556,18.52363917885928,,,,,,5.010077310428559,,
 1998-02-28,46.621665145431024,40.07286926113865,63.01271740023456,,,,12.236031918843551,11.673706980635083,15.177645494964988,18.167691053434684,,,,,,4.981976966754802,,
 1998-03-31,45.782279345772736,39.63906982267845,61.13117596862352,,,,12.884999740015548,12.488209881262977,14.990880518257432,17.39270825301899,,,,,,4.982358589849387,,

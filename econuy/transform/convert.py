@@ -63,9 +63,9 @@ def _convert_usd(df: pd.DataFrame, nxr: Optional[pd.DataFrame] = None) -> pd.Dat
     inferred_freq = pd.infer_freq(df.index)
     if inferred_freq in ["D", "B", "C", "W", "W-SUN", None]:
         if df.columns.get_level_values("Tipo")[0] == "Flujo":
-            df = df.resample("M").sum()
+            df = df.resample("ME").sum()
         else:
-            df = df.resample("M").last()
+            df = df.resample("ME").last()
         inferred_freq = pd.infer_freq(df.index)
 
     if df.columns.get_level_values("Tipo")[0] == "Stock":
@@ -157,9 +157,9 @@ def _convert_real(
     inferred_freq = pd.infer_freq(df.index)
     if inferred_freq in ["D", "B", "C", "W", "W-SUN", None]:
         if df.columns.get_level_values("Tipo")[0] == "Flujo":
-            df = df.resample("M").sum()
+            df = df.resample("ME").sum()
         else:
-            df = df.resample("M").mean()
+            df = df.resample("ME").mean()
         inferred_freq = pd.infer_freq(df.index)
 
     metadata._set(cpi, ts_type="Flujo")
@@ -251,28 +251,28 @@ def _convert_gdp(df: pd.DataFrame, gdp: Optional[pd.DataFrame] = None) -> pd.Dat
 
     inferred_freq = pd.infer_freq(df.index)
     cum = int(df.columns.get_level_values("Acum. períodos")[0])
-    if inferred_freq in ["M", "MS"]:
+    if inferred_freq in ["M", "MS", "ME"]:
         gdp = resample(gdp, rule=inferred_freq, operation="upsample", interpolation="linear")
         if cum != 12 and df.columns.get_level_values("Tipo")[0] == "Flujo":
             converter = int(12 / cum)
             df = rolling(df, window=converter, operation="sum")
-    elif inferred_freq in ["Q", "Q-DEC"]:
+    elif inferred_freq in ["Q", "QE-DEC", "QE-DEC"]:
         gdp = gdp.resample(inferred_freq, convention="end").asfreq()
         if cum != 4 and df.columns.get_level_values("Tipo")[0] == "Flujo":
             converter = int(4 / cum)
             df = rolling(df, window=converter, operation="sum")
-    elif inferred_freq in ["A", "A-DEC"]:
+    elif inferred_freq in ["A", "A-DEC", "YE-DEC"]:
         gdp = gdp.resample(inferred_freq, convention="end").asfreq()
     elif inferred_freq in ["D", "B", "C", "W", "W-SUN", None]:
         if df.columns.get_level_values("Tipo")[0] == "Flujo":
-            df = df.resample("M").sum()
+            df = df.resample("ME").sum()
         else:
-            df = df.resample("M").mean()
-        gdp = resample(gdp, rule="M", operation="upsample", interpolation="linear")
+            df = df.resample("ME").mean()
+        gdp = resample(gdp, rule="ME", operation="upsample", interpolation="linear")
     else:
         raise ValueError(
             "Frequency of input dataframe not any of 'D', 'C', "
-            "'W', 'B', 'M', 'MS', 'Q', 'Q-DEC', 'A' or 'A-DEC'."
+            "'W', 'B', 'M', 'MS', 'Q', 'QE-DEC', 'A' or 'A-DEC'."
         )
 
     if df.columns.get_level_values("Moneda")[0] == "USD":

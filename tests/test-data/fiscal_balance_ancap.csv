@@ -1,12 +1,12 @@
-Indicador,Ingresos,Ingresos: Venta bienes y servicios,Ingresos: Otros,Ingresos: Transferencias GC,Egresos,Egresos: Corrientes,Egresos: Remuneraciones,Egresos: Compras bienes y servicios,Intereses,Egresos: DGI,Egresos: BPS,Egresos: No corrientes,Egresos: Inversiones,Egresos: Var. stock petróleo,Egresos: Otros,Egresos: Dividendo,Resultado: Global
-Área,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público
-Frecuencia,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M
+Indicador,Ingresos,Ingresos: Venta bienes y servicios,Ingresos: Otros,Ingresos: Transferencias GC,Egresos,Egresos: Corrientes,Egresos: Remuneraciones,Egresos: Compras bienes y servicios,Intereses,Egresos: DGI,Egresos: BPS,Egresos: No corrientes,Egresos: Inversiones,Egresos: Var. stock petrï¿½leo,Egresos: Otros,Egresos: Dividendo,Resultado: Global
+ï¿½rea,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico
+Frecuencia,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME
 Moneda,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU
 Inf. adj.,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No
 Unidad,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones
 Seas. Adj.,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA
 Tipo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo
-Acum. períodos,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+Acum. perï¿½odos,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 2001-01-31,1099.809,1091.1302,8.678799999999999,0.0,1106.9241000000002,1081.0848,31.7612,538.9924,0.0,489.7915,20.5397,25.8393,25.8393,-14.3648,40.2041,0.0,-7.115100000000211
 2001-02-28,984.7576,978.6358,6.1218,0.0,1158.1489,1067.9967,35.0365,488.8919,0.0,530.8401,13.2282,90.1522,90.1522,-16.5266,106.6788,0.0,-173.39130000000011
 2001-03-31,1191.5152,1178.1749,13.3403,0.0,1178.4404000000002,1067.3553000000002,57.656,499.7513,0.0,495.43660000000006,14.5114,111.0851,60.025,-38.7995,98.8245,51.0601,13.074799999999868

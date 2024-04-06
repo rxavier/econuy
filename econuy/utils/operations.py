@@ -145,7 +145,7 @@ def _revise(new_data: pd.DataFrame, prev_data: pd.DataFrame, revise_rows: Union[
     if len(prev_data) == 0:
         return new_data
     frequency = pd.infer_freq(prev_data.index)
-    freq_table = {"A": 3, "A-DEC": 3, "Q": 4, "Q-DEC": 4, "M": 12}
+    freq_table = {"A": 3, "A-DEC": 3, "Q": 4, "QE-DEC": 4, "M": 12}
     new_data = new_data.apply(pd.to_numeric, errors="coerce")
 
     if isinstance(revise_rows, str) and revise_rows in "noduplicate":

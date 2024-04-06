@@ -1,12 +1,12 @@
-Indicador,Total importaciones,Consumo: total,Consumo: alimentos y bebidas,Consumo: automotores,Consumo: duraderos,Consumo: otros,Capital: total,Intermedios: total,Intermedios: petróleo,Intermedios: total sin petróleo y energía eléctrica,Intermedios: alimentos y bebidas,Intermedios: transporte,Intermedios: otros
-Área,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo
-Frecuencia,M,M,M,M,M,M,M,M,M,M,M,M,M
+Indicador,Total importaciones,Consumo: total,Consumo: alimentos y bebidas,Consumo: automotores,Consumo: duraderos,Consumo: otros,Capital: total,Intermedios: total,Intermedios: petrï¿½leo,Intermedios: total sin petrï¿½leo y energï¿½a elï¿½ctrica,Intermedios: alimentos y bebidas,Intermedios: transporte,Intermedios: otros
+ï¿½rea,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo
+Frecuencia,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME
 Moneda,-,-,-,-,-,-,-,-,-,-,-,-,-
 Inf. adj.,No,No,No,No,No,No,No,No,No,No,No,No,No
 Unidad,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100,2005=100
 Seas. Adj.,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA
 Tipo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo
-Acum. períodos,1,1,1,1,1,1,1,1,1,1,1,1,1
+Acum. perï¿½odos,1,1,1,1,1,1,1,1,1,1,1,1,1
 2005-01-31,95.0,81.3,95.1,71.7,69.6,81.9,118.5,95.1,89.1,98.7,104.9,98.9,98.3
 2005-02-28,85.5,81.8,93.5,82.5,67.8,81.9,85.1,86.5,70.4,87.7,79.1,86.8,88.2
 2005-03-31,114.3,93.6,90.3,84.5,101.7,93.9,78.6,126.7,180.4,97.5,81.5,98.4,98.2

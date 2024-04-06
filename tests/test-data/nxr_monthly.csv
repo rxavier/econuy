@@ -1,12 +1,12 @@
-Indicador,"Tipo de cambio venta, fin de período","Tipo de cambio venta, promedio"
-Área,Precios,Precios
-Frecuencia,M,M
+Indicador,"Tipo de cambio venta, fin de perï¿½odo","Tipo de cambio venta, promedio"
+ï¿½rea,Precios,Precios
+Frecuencia,ME,ME
 Moneda,UYU/USD,UYU/USD
 Inf. adj.,No,No
 Unidad,-,-
 Seas. Adj.,NSA,NSA
 Tipo,-,-
-Acum. períodos,1,1
+Acum. perï¿½odos,1,1
 1972-04-30,,0.00085
 1972-05-31,,0.00086925
 1972-06-30,,0.00087294

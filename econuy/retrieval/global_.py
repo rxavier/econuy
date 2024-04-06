@@ -46,7 +46,7 @@ def global_gdp() -> pd.DataFrame:
         values = [x[0] for x in raw.values()]
         df = pd.DataFrame(
             data=values,
-            index=pd.date_range(start=start, freq="Q-DEC", periods=len(values)),
+            index=pd.date_range(start=start, freq="QE-DEC", periods=len(values)),
             columns=["China"],
         )
         chn_datasets.append(df)
@@ -260,7 +260,7 @@ def global_policy_rates() -> pd.DataFrame:
 #                 urls["global_long_rates"]["dl"]["main"], headers=investing_headers, data=params
 #             )
 #             aux.append(pd.read_html(r.content, match="Price", index_col=0,
-#                                     parse_dates=True, flavor="lxml")[0])
+#                                     parse_dates=True, flavor="html.parser")[0])
 #             start_date_dt = end_date_dt + dt.timedelta(days=1)
 #         aux = pd.concat(aux, axis=0)[["Price"]].sort_index()
 #         aux.columns = [country]

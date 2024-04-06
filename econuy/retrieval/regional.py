@@ -51,14 +51,14 @@ def regional_gdp(driver: WebDriver = None) -> pd.DataFrame:
         driver = _build()
     driver.get(sources["arg_new"])
     time.sleep(5)
-    soup = BeautifulSoup(driver.page_source, "lxml")
+    soup = BeautifulSoup(driver.page_source, "html.parser")
     driver.quit()
     url = soup.find_all(href=re.compile("desest"))[0]["href"]
     full_url = f"https://www.indec.gob.ar{url}"
     arg = pd.read_excel(full_url, skiprows=3, usecols="C").dropna(how="all")
-    arg.index = pd.date_range(start="2004-03-31", freq="Q-DEC", periods=len(arg))
+    arg.index = pd.date_range(start="2004-03-31", freq="QE-DEC", periods=len(arg))
     arg_old = pd.read_excel(sources["arg_old"], skiprows=7, usecols="D").dropna(how="all")
-    arg_old.index = pd.date_range(start="1993-03-31", freq="Q-DEC", periods=len(arg_old))
+    arg_old.index = pd.date_range(start="1993-03-31", freq="QE-DEC", periods=len(arg_old))
     arg = pd.concat([arg, arg_old], axis=1)
     for row in reversed(range(len(arg))):
         if pd.isna(arg.iloc[row, 0]):
@@ -73,7 +73,7 @@ def regional_gdp(driver: WebDriver = None) -> pd.DataFrame:
     bra = pd.read_excel(
         path_temp, usecols="Q", skiprows=3, sheet_name="Val encad preços 95 com ajuste"
     )
-    bra.index = pd.date_range(start="1996-03-31", freq="Q-DEC", periods=len(bra))
+    bra.index = pd.date_range(start="1996-03-31", freq="QE-DEC", periods=len(bra))
 
     output = pd.concat([arg, bra], axis=1).div(1000)
     output.columns = ["Argentina", "Brasil"]
@@ -547,7 +547,7 @@ def _ifs(pipeline: Pipeline = None) -> pd.DataFrame:
 
     pipeline.get("regional_nxr")
     xr = pipeline.dataset
-    xr = resample(xr, rule="M", operation="mean")
+    xr = resample(xr, rule="ME", operation="mean")
     xr.columns = xr.columns.get_level_values(0)
     pipeline.get("regional_cpi")
     prices = pipeline.dataset

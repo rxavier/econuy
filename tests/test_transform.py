@@ -50,9 +50,9 @@ def create_dummy_df(
 @pytest.mark.parametrize(
     "freq,ts_type,operation,period,pd_per,pd_rol",
     [
-        ("A-DEC", "Flujo", "chg", "last", 1, 1),
-        ("Q-DEC", "Stock", "diff", "inter", 4, 1),
-        ("M", "Flujo", "chg", "annual", 12, 12),
+        ("YE-DEC", "Flujo", "chg", "last", 1, 1),
+        ("QE-DEC", "Stock", "diff", "inter", 4, 1),
+        ("ME", "Flujo", "chg", "annual", 12, 12),
     ],
 )
 def test_chg_diff(freq, ts_type, operation, period, pd_per, pd_rol):
@@ -73,7 +73,7 @@ def test_chg_diff(freq, ts_type, operation, period, pd_per, pd_rol):
 
 @pytest.mark.parametrize(
     "freq,ts_type,operation,window,pd_rol",
-    [("M", "Flujo", "sum", 3, 3), ("Q-DEC", "Flujo", "mean", None, 4)],
+    [("M", "Flujo", "sum", 3, 3), ("QE-DEC", "Flujo", "mean", None, 4)],
 )
 def test_rolling(freq, ts_type, operation, window, pd_rol):
     df = create_dummy_df(freq=freq, ts_type=ts_type)
@@ -92,10 +92,10 @@ def test_rolling(freq, ts_type, operation, window, pd_rol):
 @pytest.mark.parametrize(
     "freq,ts_type,periods,cumperiods,rule,operation",
     [
-        ("M", "Flujo", 192, 1, "A-DEC", "sum"),
-        ("Q-DEC", "Flujo", 102, 2, "A-DEC", "mean"),
-        ("Q-DEC", "Stock", 102, 1, "A-DEC", "last"),
-        ("A-DEC", "Flujo", 102, 1, "M", "upsample"),
+        ("ME", "Flujo", 192, 1, "YE-DEC", "sum"),
+        ("QE-DEC", "Flujo", 102, 2, "YE-DEC", "mean"),
+        ("QE-DEC", "Stock", 102, 1, "YE-DEC", "last"),
+        ("YE-DEC", "Flujo", 102, 1, "ME", "upsample"),
     ],
 )
 def test_resample(freq, ts_type, periods, cumperiods, rule, operation):
@@ -105,20 +105,20 @@ def test_resample(freq, ts_type, periods, cumperiods, rule, operation):
     s.resample(rule=rule, operation=operation, select=0)
     compare = s._datasets["dummy"]
     if operation == "sum":
-        df = df.resample(rule=rule).sum()
+        resampled = df.resample(rule=rule).sum()
     elif operation == "mean":
-        df = df.resample(rule=rule).mean()
+        resampled = df.resample(rule=rule).mean()
     elif operation == "last":
-        df = df.resample(rule=rule).last()
+        resampled = df.resample(rule=rule).last()
     else:
-        df = df.resample(rule=rule).last().interpolate("linear")
+        resampled = df.resample(rule=rule).last().interpolate("linear")
 
-    pd_freqs = {"M": 12, "Q-DEC": 4, "A-DEC": 1}
+    pd_freqs = {"M": 12, "ME": 12, "QE-DEC": 4, "Q-DEC": 4, "A-DEC": 1, "YE-DEC": 1}
     if periods % pd_freqs[freq] != 0 and operation != "upsample":
         rows = periods // pd_freqs[freq]
-        df = df.iloc[:rows, :]
-    compare.index, compare.columns = df.index, df.columns
-    assert df.equals(compare)
+        resampled = resampled.iloc[:rows, :]
+    compare.index, compare.columns = resampled.index, resampled.columns
+    assert resampled.equals(compare)
 
 
 @pytest.mark.parametrize(
@@ -132,7 +132,7 @@ def test_resample(freq, ts_type, periods, cumperiods, rule, operation):
 )
 def test_decompose(component, method, fallback, trading, outlier):
     df = pd.DataFrame(
-        index=pd.date_range("2000-01-01", periods=100, freq="Q-DEC"),
+        index=pd.date_range("2000-01-01", periods=100, freq="QE-DEC"),
         data=np.random.exponential(2, 100).cumsum(),
         columns=["Exponential"],
     )
@@ -164,7 +164,7 @@ def test_decompose(component, method, fallback, trading, outlier):
 
 @pytest.mark.parametrize(
     "freq,start_date,end_date,base",
-    [("M", "2004-01-01", None, 100), ("Q-DEC", "2004-01-01", "2005-01-01", 100.1)],
+    [("M", "2004-01-01", None, 100), ("QE-DEC", "2004-01-01", "2005-01-01", 100.1)],
 )
 def test_rebase(freq, start_date, end_date, base):
     df = create_dummy_df(freq=freq)
@@ -188,7 +188,7 @@ def test_rebase(freq, start_date, end_date, base):
         ("D", "Flujo", 600, 1),
         ("M", "Stock", 48, 1),
         ("W-SUN", "Stock", 200, 1),
-        ("Q-DEC", "Flujo", 24, 4),
+        ("QE-DEC", "Flujo", 24, 4),
     ],
 )
 def test_convert_usd(freq, ts_type, periods, cumperiods):
@@ -205,9 +205,9 @@ def test_convert_usd(freq, ts_type, periods, cumperiods):
 
     if freq in ["D", "W", "B", "W-SUN"]:
         if ts_type == "Stock":
-            df = df.resample("M").last()
+            df = df.resample("ME").last()
         else:
-            df = df.resample("M").sum()
+            df = df.resample("ME").sum()
         proc_freq = "M"
 
     if ts_type == "Stock":
@@ -227,7 +227,7 @@ def test_convert_usd(freq, ts_type, periods, cumperiods):
     [
         ("M", 100, "Flujo", None, None),
         ("D", 1200, "Flujo", "2002-01-01", None),
-        ("Q-DEC", 40, "Stock", "2002-01-01", "2002-12-31"),
+        ("QE-DEC", 40, "Stock", "2002-01-01", "2002-12-31"),
     ],
 )
 def test_convert_real(freq, periods, ts_type, start_date, end_date):
@@ -242,9 +242,9 @@ def test_convert_real(freq, periods, ts_type, start_date, end_date):
 
     if freq in ["D", "W", "B", "W-SUN"]:
         if ts_type == "Stock":
-            df = df.resample("M").last()
+            df = df.resample("ME").last()
         else:
-            df = df.resample("M").sum()
+            df = df.resample("ME").sum()
         proc_freq = "M"
     save_index = df.index
     cpi = cpi.resample(rule=proc_freq).mean().iloc[:, 0]
@@ -269,7 +269,7 @@ def test_convert_real(freq, periods, ts_type, start_date, end_date):
         ("D", "Flujo", 600, 1, "UYU"),
         ("M", "Stock", 48, 1, "USD"),
         ("A-DEC", "Stock", 10, 1, "USD"),
-        ("Q-DEC", "Flujo", 24, 4, "UYU"),
+        ("QE-DEC", "Flujo", 24, 4, "UYU"),
     ],
 )
 def test_convert_gdp(freq, ts_type, periods, cumperiods, currency):
@@ -288,7 +288,7 @@ def test_convert_gdp(freq, ts_type, periods, cumperiods, currency):
         if cumperiods != 12 and ts_type == "Flujo":
             converter = int(12 / cumperiods)
             df = df.rolling(window=converter).sum()
-    elif freq in ["Q", "Q-DEC"]:
+    elif freq in ["Q", "QE-DEC"]:
         gdp = gdp.resample(freq, convention="end").asfreq()
         if cumperiods != 4 and ts_type == "Flujo":
             converter = int(4 / cumperiods)
@@ -297,10 +297,10 @@ def test_convert_gdp(freq, ts_type, periods, cumperiods, currency):
         gdp = gdp.resample(freq, convention="end").asfreq()
     else:
         if ts_type == "Flujo":
-            df = df.resample("M").sum()
+            df = df.resample("ME").sum()
         else:
-            df = df.resample("M").mean()
-        gdp = gdp.resample(rule="M").interpolate("linear")
+            df = df.resample("ME").mean()
+        gdp = gdp.resample(rule="ME").interpolate("linear")
 
     if currency == "USD":
         gdp = gdp.iloc[:, 1].to_frame()

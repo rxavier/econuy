@@ -396,8 +396,8 @@ def nxr_monthly(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     nxr_daily = pipeline.dataset
     output = pd.DataFrame(
         {
-            "Tipo de cambio venta, fin de período": nxr_daily.iloc[:, 0].resample("M").last(),
-            "Tipo de cambio venta, promedio": nxr_daily.iloc[:, 0].resample("M").mean(),
+            "Tipo de cambio venta, fin de período": nxr_daily.iloc[:, 0].resample("ME").last(),
+            "Tipo de cambio venta, promedio": nxr_daily.iloc[:, 0].resample("ME").mean(),
         }
     )
 

@@ -1,12 +1,12 @@
 Indicador,Ingresos: SPNF,Ingresos: Gobierno central,Ingresos: DGI,Ingresos: IRP,Ingresos: Comercio ext.,Ingresos: Otros,Ingresos: BPS,Ingresos: Res. primario corriente EEPP,Egresos: Primarios SPNF,Egresos: Primarios corrientes GC-BPS,Egresos: Remuneraciones,Egresos: No personales,Egresos: Pasividades,Egresos: Transferencias,Egresos: Inversiones,Resultado: Primario intendencias,Resultado: Primario BSE,Resultado: Primario SPNF,Intereses: Totales,Intereses: GC-BPS,Intereses: EEPP,Intereses: Intendencias,Intereses: BSE,Resultado: Global SPNF
-Área,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público
-Frecuencia,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M,M
+ï¿½rea,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico
+Frecuencia,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME
 Moneda,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU,UYU
 Inf. adj.,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No
 Unidad,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones
 Seas. Adj.,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA
 Tipo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo
-Acum. períodos,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+Acum. perï¿½odos,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 31/1/1999,6890.181267,4045.214363,3111.009,269.845,192.77,471.590363,1954.259804,890.7071,6043.947099,5299.05677,1092.981866,783.538237,2378.574375,1043.962292,744.890329,,-19.65574003,826.578428,652.214963,399.53,259.2715,,-6.586537,174.363465
 28/2/1999,5599.074808,3666.381534,2748.788,373.052,143.04,401.501534,1346.423374,586.2699,5624.159651,5123.652324,934.794196,836.200774,2427.101146,925.556208,500.507327,,-32.84136385,-57.92620685,246.140568,237.021,17.7122,,-8.592632,-304.0667749
 31/3/1999,5968.991188,4572.572245,3046.13,293.28,184.564,1048.598245,1353.103443,43.3155,6137.073226,5428.252987,1061.830097,772.848798,2455.285543,1138.288549,708.820239,,62.19030051,-105.8917375,438.527255,431.154,16.0067,,-8.633445,-544.4189925

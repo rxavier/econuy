@@ -1,12 +1,12 @@
 Indicador,Carne bovina,Pulpa de celulosa,Soja,Leche,Arroz,Madera,Lana,Cebada,Oro,Trigo
-Área,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo
-Frecuencia,M,M,M,M,M,M,M,M,M,M
+ï¿½rea,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo,Sector externo
+Frecuencia,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME
 Moneda,USD,USD,USD,USD,USD,USD,USD,USD,USD,USD
 Inf. adj.,No,No,No,No,No,No,No,No,No,No
 Unidad,USD por ton,USD por ton,USD por ton,USD por ton,USD por ton,USD por m3,US cent. por kg,USD por ton,USD por onza troy,USD por ton
 Seas. Adj.,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA
 Tipo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo,Flujo
-Acum. períodos,1,1,1,1,1,1,1,1,1,1
+Acum. perï¿½odos,1,1,1,1,1,1,1,1,1,1
 2002-01-31,1212.25,54.22686967887802,160.05776345625,292.4689633542123,191.130434782609,361.929909394953,521.8277582608695,99.271779717199,281.0,106.18919666666667
 2002-02-28,1135.0,52.50417943716913,160.19556609375,281.47935290623747,194.35,377.0042412587415,569.169905,99.0109763866696,295.2875,103.83760200000002
 2002-03-31,1119.8,51.12286147721393,168.69339540625,276.8242646865102,189.285714285714,361.82674109224104,568.3642676190475,98.9521307095644,294.0475,102.5515736666667

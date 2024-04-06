@@ -1,12 +1,12 @@
-Indicador,Total deuda,Plazo contractual: hasta 1 año,Plazo contractual: entre 1 y 5 años,Plazo contractual: más de 5 años,Plazo residual: hasta 1 año,Plazo residual: entre 1 y 5 años,Plazo residual: más de 5 años,Moneda: pesos,Moneda: dólares,Moneda: euros,Moneda: yenes,Moneda: DEG,Moneda: otras,Residencia: no residentes,Residencia: residentes
-Área,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público,Sector público
-Frecuencia,Q-DEC,Q-DEC,Q-DEC,Q-DEC,Q-DEC,Q-DEC,Q-DEC,Q-DEC,Q-DEC,Q-DEC,Q-DEC,Q-DEC,Q-DEC,Q-DEC,Q-DEC
+Indicador,Total deuda,Plazo contractual: hasta 1 aï¿½o,Plazo contractual: entre 1 y 5 aï¿½os,Plazo contractual: mï¿½s de 5 aï¿½os,Plazo residual: hasta 1 aï¿½o,Plazo residual: entre 1 y 5 aï¿½os,Plazo residual: mï¿½s de 5 aï¿½os,Moneda: pesos,Moneda: dï¿½lares,Moneda: euros,Moneda: yenes,Moneda: DEG,Moneda: otras,Residencia: no residentes,Residencia: residentes
+ï¿½rea,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico,Sector pï¿½blico
+Frecuencia,QE-DEC,QE-DEC,QE-DEC,QE-DEC,QE-DEC,QE-DEC,QE-DEC,QE-DEC,QE-DEC,QE-DEC,QE-DEC,QE-DEC,QE-DEC,QE-DEC,QE-DEC
 Moneda,USD,USD,USD,USD,USD,USD,USD,USD,USD,USD,USD,USD,USD,USD,USD
 Inf. adj.,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No
 Unidad,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones,Millones
 Seas. Adj.,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA
 Tipo,Stock,Stock,Stock,Stock,Stock,Stock,Stock,Stock,Stock,Stock,Stock,Stock,Stock,Stock,Stock
-Acum. períodos,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+Acum. perï¿½odos,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 1999-12-31,6574.584212490891,67.872,1439.3868124908906,5067.3253,803.124358119079,2742.145654371812,3029.3143,447.8260124908908,5949.0793,29.9451,136.8898,6.4574,4.3866,4733.3319,1841.2523124908907
 2000-03-31,6936.852792617979,64.7725,1567.4579926179777,5304.6224,885.2482852016853,2875.0241074162923,3176.5801,464.5236926179776,6294.9898,29.8823,136.6358,6.4438,4.3774,4832.475105675675,2104.3774869423023
 2000-06-30,7261.219620478511,22.0731,1590.6187204785124,5648.5279,899.1663733110331,3021.9771471674794,3340.0761,456.8720204785124,6624.7114,31.3079,136.9909,6.7512,4.5862,5062.3184,2198.9011204785124

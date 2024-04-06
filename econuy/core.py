@@ -301,7 +301,7 @@ class Pipeline(object):
         ------
         ValueError
             If the dataframe is not of frequency ``M`` (month), ``Q`` or
-            ``Q-DEC`` (quarter), or ``A`` or ``A-DEC`` (year).
+            ``QE-DEC`` (quarter), or ``A`` or ``A-DEC`` (year).
         ValueError
             If the ``operation`` parameter does not have a valid argument.
         ValueError
@@ -550,7 +550,7 @@ class Pipeline(object):
         integrates with econuy dataframes' metadata.
 
         If ``periods`` is ``None``, try to infer the frequency and set ``periods``
-        according to the following logic: ``{'A': 1, 'Q-DEC': 4, 'M': 12}``, that
+        according to the following logic: ``{'A': 1, 'QE-DEC': 4, 'M': 12}``, that
         is, each period will be calculated as the sum or mean of the last year.
 
         Parameters

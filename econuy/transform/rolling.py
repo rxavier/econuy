@@ -40,9 +40,12 @@ def _rolling(
     pd_frequencies = {
         "A": 1,
         "A-DEC": 1,
+        "YE-DEC": 1,
         "Q": 4,
-        "Q-DEC": 4,
+        "QE-DEC": 4,
+        "QE-DEC": 4,
         "M": 12,
+        "ME": 12,
         "MS": 12,
         "W": 52,
         "W-SUN": 52,

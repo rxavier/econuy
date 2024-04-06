@@ -466,7 +466,7 @@ def commodity_prices() -> pd.DataFrame:
     raw_beef.columns = raw_beef.columns.str.strip()
     proc_beef = raw_beef["Ing. Prom./Ton."].to_frame()
     proc_beef.index = pd.date_range(start="2002-01-04", periods=len(proc_beef), freq="W-SAT")
-    beef = proc_beef.resample("M").mean()
+    beef = proc_beef.resample("ME").mean()
 
     # soy_wheat = []
     # for link in [url["soybean"], url["wheat"]]:

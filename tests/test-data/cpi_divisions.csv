@@ -1,12 +1,12 @@
-Indicador,Alimentos y bebidas no alcohólicas,"Bebidas alcohólicas, tabaco y narcóticos",Ropa y calzado,"Vivienda, agua, electricidad, gas y otros combustibles","Mobiliario, enseres domésticos y demás artículos regulares de los hogares",Salud,Transporte,Información y comunicación,"Recreación, deporte y cultura",Servicios de educación,Restaurantes y servicios de alojamiento,Seguros y servicios financieros,"Cuidado personal, protección social y bienes diversos"
-Área,Precios,Precios,Precios,Precios,Precios,Precios,Precios,Precios,Precios,Precios,Precios,Precios,Precios
-Frecuencia,M,M,M,M,M,M,M,M,M,M,M,M,M
+Indicador,Alimentos y bebidas no alcohï¿½licas,"Bebidas alcohï¿½licas, tabaco y narcï¿½ticos",Ropa y calzado,"Vivienda, agua, electricidad, gas y otros combustibles","Mobiliario, enseres domï¿½sticos y demï¿½s artï¿½culos regulares de los hogares",Salud,Transporte,Informaciï¿½n y comunicaciï¿½n,"Recreaciï¿½n, deporte y cultura",Servicios de educaciï¿½n,Restaurantes y servicios de alojamiento,Seguros y servicios financieros,"Cuidado personal, protecciï¿½n social y bienes diversos"
+ï¿½rea,Precios,Precios,Precios,Precios,Precios,Precios,Precios,Precios,Precios,Precios,Precios,Precios,Precios
+Frecuencia,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME,ME
 Moneda,-,-,-,-,-,-,-,-,-,-,-,-,-
 Inf. adj.,No,No,No,No,No,No,No,No,No,No,No,No,No
 Unidad,2022-10=100,2022-10=100,2022-10=100,2022-10=100,2022-10=100,2022-10=100,2022-10=100,2022-10=100,2022-10=100,2022-10=100,2022-10=100,2022-10=100,2022-10=100
 Seas. Adj.,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA
 Tipo,-,-,-,-,-,-,-,-,-,-,-,-,-
-Acum. períodos,1,1,1,1,1,1,1,1,1,1,1,1,1
+Acum. perï¿½odos,1,1,1,1,1,1,1,1,1,1,1,1,1
 2010-12-31,35.18699629707308,37.36892904275201,57.23226961127666,39.02202993039052,36.49089389647733,35.69483970702528,40.5392626000483,62.29826057465053,41.26865160578736,30.85250495612731,33.7828326485374,38.58478923606592,36.6147692335109
 2011-01-31,35.9678340505297,37.44438754256584,56.72560376889894,39.38583528420755,37.2108537766109,36.07355081251366,40.93064075496187,62.18118816889076,41.84973026243192,31.04497358679552,34.06054669176285,39.51363848989511,36.90168999888876
 2011-02-28,36.30533377309548,37.62818538766081,56.84491763235749,40.16996465689007,37.69394195755874,36.27739751924104,41.12000606650349,62.38266276124575,42.04365669270033,32.2718411550716,34.28516838242827,39.59495885026637,37.15319199801994

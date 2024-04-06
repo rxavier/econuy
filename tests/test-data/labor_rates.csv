@@ -1,12 +1,12 @@
 Indicador,Tasa de actividad: total,Tasa de actividad: hombres,Tasa de actividad: mujeres,Tasa de empleo: total,Tasa de empleo: hombres,Tasa de empleo: mujeres,Tasa de desempleo: total,Tasa de desempleo: hombres,Tasa de desempleo: mujeres
-Área,Mercado laboral,Mercado laboral,Mercado laboral,Mercado laboral,Mercado laboral,Mercado laboral,Mercado laboral,Mercado laboral,Mercado laboral
-Frecuencia,M,M,M,M,M,M,M,M,M
+ï¿½rea,Mercado laboral,Mercado laboral,Mercado laboral,Mercado laboral,Mercado laboral,Mercado laboral,Mercado laboral,Mercado laboral,Mercado laboral
+Frecuencia,ME,ME,ME,ME,ME,ME,ME,ME,ME
 Moneda,-,-,-,-,-,-,-,-,-
 Inf. adj.,No,No,No,No,No,No,No,No,No
 Unidad,Tasa,Tasa,Tasa,Tasa,Tasa,Tasa,Tasa,Tasa,Tasa
 Seas. Adj.,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA,NSA
 Tipo,-,-,-,-,-,-,-,-,-
-Acum. períodos,1,1,1,1,1,1,1,1,1
+Acum. perï¿½odos,1,1,1,1,1,1,1,1,1
 2006-01-31,61.721896122595005,73.14768994649796,52.11394910902338,53.57724056652046,65.32257196953445,43.70059448693668,13.195731284562212,10.697696650006986,16.144150972872964
 2006-02-28,59.92361588379926,71.17885850285136,50.34051267306647,52.61946221352832,64.78692352597761,42.25966442716924,12.18910701990059,8.98010323756118,16.05237574431892
 2006-03-31,60.126527630181,71.59198764778846,50.338162541178605,53.03180625664208,65.38316281140852,42.48712796926252,11.799652587916258,8.67251355965498,15.596585523942291
