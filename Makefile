@@ -1,6 +1,5 @@
 deps-compile:
-	uv pip compile requirements.in >> requirements.txt
-	uv pip compile requirements-dev.in >> requirements-dev.txt
+	uv pip compile requirements.in -o requirements.txt && uv pip compile requirements-dev.in -c requirements.txt -o requirements-dev.txt
 
 deps-sync:
 	uv pip sync requirements.txt requirements-dev.txt
