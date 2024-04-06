@@ -53,9 +53,8 @@ def global_gdp() -> pd.DataFrame:
     chn_qoq = chn_datasets[0]
     chn_yoy = chn_datasets[1]
     chn_obs = (
-        pd.read_excel(sources["chn_obs"], index_col=0)
-        .dropna(how="all", axis=1)
-        .dropna(how="all", axis=0)
+        pd.read_csv(sources["chn_obs"], index_col=0, parse_dates=[0],
+                      usecols=[0, 1])
     )
     chn_obs = chn_obs.loc[(chn_obs.index > "2011-01-01") & (chn_obs.index < "2016-01-01")]
     chn_yoy["volume"] = chn_obs
@@ -180,20 +179,20 @@ def global_policy_rates() -> pd.DataFrame:
         path_temp = path.join(temp_dir.name, "WS_CBPOL_csv_row.csv")
         raw = pd.read_csv(path_temp, index_col=0)
     output = raw.loc[:, lambda x: x.columns.str.contains("D:Daily")]
+    output.columns = output.iloc[0]
     output = (
-        output.loc[
-            :, output.iloc[0].isin(["JP:Japan", "CN:China", "US:United States", "XM:Euro area"])
-        ]
+        output[["JP:Japan", "CN:China", "US:United States", "XM:Euro area"]]
         .iloc[8:]
         .dropna(how="all")
     )
     output.columns = ["Japón", "China", "Estados Unidos", "Eurozona"]
-    output = output.apply(pd.to_numeric, errors="coerce").interpolate(
-        method="linear", limit_area="inside"
-    )
+    output = output.apply(pd.to_numeric, errors="coerce")
 
     output = output[["Estados Unidos", "Eurozona", "Japón", "China"]]
     output.index = pd.to_datetime(output.index)
+    output = output.interpolate(
+        method="linear", limit_direction="forward"
+    )
     output.rename_axis(None, inplace=True)
 
     metadata._set(

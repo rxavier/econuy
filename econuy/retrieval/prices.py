@@ -1,4 +1,6 @@
 import warnings
+import datetime as dt
+from concurrent.futures import ProcessPoolExecutor
 from urllib.error import URLError, HTTPError
 from pathlib import Path
 from typing import Optional
@@ -405,7 +407,7 @@ def nxr_monthly(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     historical.columns = ["Tipo de cambio venta, fin de período", "Tipo de cambio venta, promedio"]
     historical.index = pd.to_datetime(historical.index) + MonthEnd(1)
     historical = historical.apply(pd.to_numeric, errors="coerce")
-    historical = historical.loc[:"2001-09-30", :]
+    historical = historical.loc[:"1999-12-31", :]
 
     output = pd.concat([historical, output])
     output.rename_axis(None, inplace=True)
@@ -438,25 +440,15 @@ def nxr_daily() -> pd.DataFrame:
         Sell rate.
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    starts = [dt.date(y, 1, 1).strftime("%d/%m/%Y") for y in range(2000, dt.date.today().year + 1)]
+    ends = [dt.date(y, 12, 31).strftime("%d/%m/%Y") for y in range(2000, dt.date.today().year + 1)]
+    with ProcessPoolExecutor(8) as executor:
+        results = list(executor.map(_make_nxr_bcu_request, starts, ends))
 
-    raw = pd.read_excel(sources["main"], skiprows=7, usecols="A:E").dropna(thresh=2)
-    raw["Unnamed: 1"] = (
-        raw["Unnamed: 1"]
-        .str.slice(stop=3)
-        .fillna(method="ffill")
-        .replace({"Dic": "Dec", "Ene": "Jan", "Abr": "Apr", "Ago": "Aug", "Set": "Sep"})
-    )
-    raw["Unnamed: 2"] = raw["Unnamed: 2"].fillna(method="ffill").astype(int)
-    raw.index = pd.to_datetime(
-        raw[["Unnamed: 2", "Unnamed: 1", "Unnamed: 0"]].astype(str).agg("-".join, axis=1),
-        format="%Y-%b-%d",
-    )
-    output = raw.loc["2001-10-01":, ["Unnamed: 4"]].rename(
-        columns={"Unnamed: 4": "Tipo de cambio venta"}
-    )
-    output.rename_axis(None, inplace=True)
+    raw = pd.concat([pd.read_excel(r, decimal=",") for r in results])
+    output = raw.set_index("Fecha")[["Venta"]]
+    output.index = pd.to_datetime(output.index, format="%d/%m/%Y")
+    output = output.rename_axis(None)
 
     metadata._set(
         output,
@@ -470,6 +462,23 @@ def nxr_daily() -> pd.DataFrame:
     )
 
     return output
+
+def _make_nxr_bcu_request(start, end):
+    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+    sources = get_download_sources("nxr_daily")
+    response = requests.get(
+        sources["main"].format(start=start, end=end),
+        verify=certs_path
+    )
+    try:
+        if response.status_code == 200:
+            return response.content
+        else:
+            print(response.reason)
+            return None
+    except Exception as e:
+        print(e)
+        return None
 
 
 # The `_contains_nan` function needs to be monkey-patched to avoid an error

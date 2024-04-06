@@ -5,7 +5,7 @@ import zipfile
 from pathlib import Path
 from io import BytesIO
 from json import JSONDecodeError
-from os import PathLike, path
+from os import PathLike, path, listdir
 from typing import Union, Optional
 from urllib import error
 from urllib.error import HTTPError, URLError
@@ -509,9 +509,9 @@ def commodity_prices() -> pd.DataFrame:
         pd.date_range(start="1977-01-31", freq="M", periods=len(prev_milk))
     )
     eurusd_r = requests.get(
-        "http://fx.sauder.ubc.ca/cgi/fxdata",
+        "https://fx.sauder.ubc.ca/cgi/fxdata",
         params=f"b=USD&c=EUR&rd=&fd=1&fm=1&fy=2001&ld=31&lm=12&ly="
-        f"{dt.datetime.now().year}&y=monthly&q=volume&f=html&o=&cu=on",
+        f"{dt.datetime.now().year}&y=monthly&q=volume&f=html&o=",
     )
     eurusd = pd.read_html(eurusd_r.content)[0].drop("MMM YYYY", axis=1)
     eurusd.index = pd.date_range(start="2001-01-31", periods=len(eurusd), freq="M")
@@ -525,7 +525,7 @@ def commodity_prices() -> pd.DataFrame:
     temp_dir = tempfile.TemporaryDirectory()
     with zipfile.ZipFile(BytesIO(raw_pulp_r.content), "r") as f:
         f.extractall(path=temp_dir.name)
-        path_temp = path.join(temp_dir.name, "monthly_values.csv")
+        path_temp = path.join(temp_dir.name, listdir(temp_dir.name)[0], "monthly_values.csv")
         raw_pulp = pd.read_csv(path_temp, sep=";").dropna(how="any")
     proc_pulp = raw_pulp.copy().sort_index(ascending=False)
     proc_pulp.index = pd.date_range(start="1990-01-31", periods=len(proc_pulp), freq="M")
@@ -534,7 +534,7 @@ def commodity_prices() -> pd.DataFrame:
     pulp = proc_pulp
 
     r_imf = requests.get(sources["imf"])
-    imf = re.findall("external-data[A-z]+.ashx", r_imf.text)[0]
+    imf = re.findall("external-data.+ashx", r_imf.text)[0]
     imf = f"https://imf.org/-/media/Files/Research/CommodityPrices/Monthly/{imf}"
     raw_imf = pd.read_excel(imf).dropna(how="all", axis=1).dropna(how="all", axis=0)
     raw_imf.columns = raw_imf.iloc[0, :]
@@ -745,6 +745,7 @@ def rxr_custom(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     output.drop("UY_E_P", axis=1, inplace=True)
     output = output.loc[output.index >= "1979-12-01"]
     output.rename_axis(None, inplace=True)
+    output = output.dropna(how="all")
 
     metadata._set(
         output,

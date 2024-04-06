@@ -875,6 +875,7 @@ def _monthly_interpolated_gdp(pipeline: Optional[Pipeline] = None):
             f"{last_year - 1}&ey={last_year + 1}&ssm=0&scsm=1&scc=0&"
             f"ssd=1&ssc=0&sic=0&sort=country&ds=.&br=1"
         )
+        print(table_url)
         imf_data = pd.to_numeric(pd.read_html(table_url)[0].iloc[0, [5, 6, 7]])
         imf_data = imf_data.reset_index(drop=True)
         fcast = (

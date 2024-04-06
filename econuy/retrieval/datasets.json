@@ -523,15 +523,15 @@
     "function": "prices.nxr_daily",
     "sources": {
       "downloads": {
-        "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/Cotizaci%C3%B3n%20de%20monedas/Cotizaci%C3%B3n%20monedas.xlsx"
+        "main": "https://www.bcu.gub.uy/_layouts/15/BCU.Cotizaciones/handler/FileHandler.ashx?op=downloadcotizacionesexcel&KeyValuePairs={{%22KeyValuePairs%22:{{%22Monedas%22:[{{%22Val%22:%222225%22,%22Text%22:%22DLS.%20USA%20BILLETE%22}}],%22FechaDesde%22:%22{start}%22,%22FechaHasta%22:%22{end}%22,%22Grupo%22:%222%22}}}}"
       },
       "direct": [
-        "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/Cotizaci%C3%B3n%20de%20monedas/Cotizaci%C3%B3n%20monedas.xlsx"
+
       ],
       "indirect": [
-        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/cotizacion-monedas"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Cotizaciones.aspx"
       ],
-      "provider": ["INE"]
+      "provider": ["BCU"]
     }
   },
   "cpi_measures": {
@@ -714,14 +714,12 @@
     "function": "fiscal.tax_revenue",
     "sources": {
       "downloads": {
-        "main": "https://www.dgi.gub.uy/wdgi/afiledownload?2,4,381,O,S,0,37376%3BS%3B2%3B126,",
+        "main": "https://www.gub.uy/direccion-general-impositiva/datos-y-estadisticas/estadisticas/recaudacion-anual-mensual-impuesto",
         "pdfs": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/retrieval/taxes_pdf.csv"
       },
-      "direct": [
-        "https://www.dgi.gub.uy/wdgi/afiledownload?2,4,381,O,S,0,37376%3BS%3B2%3B126,"
-      ],
+      "direct": [],
       "indirect": [
-        "https://www.dgi.gub.uy/wdgi/page?2,principal,dgi--datos-y-series-estadisticas--serie-de-datos--recaudacion-anual-y-mensual-por-impuesto,O,es,0,",
+        "https://www.gub.uy/direccion-general-impositiva/datos-y-estadisticas/estadisticas/recaudacion-anual-mensual-impuesto",
         "https://www.dgi.gub.uy/wdgi/page?2,principal,dgi--datos-y-series-estadisticas--informes-mensuales-de-la-recaudacion-{year},O,es,0,"
       ],
       "provider": ["DGI"]
@@ -860,10 +858,10 @@
     "function": "labor.labor_rates",
     "sources": {
       "downloads": {
-        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/Total%20nacional%20vigentes.rar"
+        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0103.xlsx"
       },
       "direct": [
-        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/Total%20nacional%20vigentes.rar"
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0103.xlsx"
       ],
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
@@ -881,10 +879,10 @@
     "function": "labor.hours_worked",
     "sources": {
       "downloads": {
-        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/Total%20nacional%20vigentes.rar"
+        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0703.xlsx"
       },
       "direct": [
-        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/Total%20nacional%20vigentes.rar"
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0703.xlsx"
       ],
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
@@ -1579,10 +1577,10 @@
     "function": "income.income_household",
     "sources": {
       "downloads": {
-        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/Ingresos%20de%20las%20personas%20y%20los%20hogares.rar"
+        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/ECHING10.xlsx"
       },
       "direct": [
-        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/Ingresos%20de%20las%20personas%20y%20los%20hogares.rar"
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/ECHING10.xlsx"
       ],
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ech-ingresos-personas-hogares"
@@ -1600,10 +1598,10 @@
     "function": "income.income_capita",
     "sources": {
       "downloads": {
-        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/Ingresos%20de%20las%20personas%20y%20los%20hogares.rar"
+        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/ECHING14.xlsx"
       },
       "direct": [
-        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/Ingresos%20de%20las%20personas%20y%20los%20hogares.rar"
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Ingresos%20de%20las%20personas%20y%20los%20hogares/ECHING14.xlsx"
       ],
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ech-ingresos-personas-hogares"
@@ -1623,7 +1621,7 @@
       "downloads": {
         "fred": "https://api.stlouisfed.org/fred/series/observations?series_id=",
         "chn_oecd": "https://stats.oecd.org/SDMX-JSON/data/QNA/CHN.B1_GE.GYSA+GPSA.Q/all?startTime=1960-Q1&endTime=",
-        "chn_obs": "https://docs.google.com/spreadsheets/d/1JwHqYSyBCOj9E60X0JCnPIn4WEzfu6rcPN8Xg76AhyU/export?format=xlsx&authuser=0"
+        "chn_obs": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/china_gdp_constant_q.csv"
       },
       "direct": [],
       "indirect": [

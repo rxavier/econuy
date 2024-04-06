@@ -1,11 +1,7 @@
-﻿import tempfile
-from pathlib import Path
-from typing import Optional
+﻿from typing import Optional
 from urllib.error import URLError, HTTPError
 
 import pandas as pd
-import requests
-import patoolib
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 
@@ -31,14 +27,7 @@ def labor_rates() -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
-    with open(temp_rar, "wb") as f:
-        r = requests.get(sources["main"])
-        f.write(r.content)
-    with tempfile.TemporaryDirectory() as temp_dir:
-        patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
-        excel_path = Path(temp_dir) / "ECH0103.xlsx"
-        labor_raw = pd.read_excel(excel_path, skiprows=39).dropna(axis=0, thresh=2)
+    labor_raw = pd.read_excel(sources["main"], skiprows=7).dropna(axis=0, thresh=2)
     labor = labor_raw[~labor_raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
     labor.index = pd.date_range(start="2006-01-31", periods=len(labor), freq="M")
     labor = labor.drop(columns="Unnamed: 0")
@@ -131,14 +120,7 @@ def hours_worked() -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
-    with open(temp_rar, "wb") as f:
-        r = requests.get(sources["main"])
-        f.write(r.content)
-    with tempfile.TemporaryDirectory() as temp_dir:
-        patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
-        excel_path = Path(temp_dir) / "ECH0703.xlsx"
-        raw = pd.read_excel(excel_path).dropna(axis=0, thresh=2)
+    raw = pd.read_excel(sources["main"]).dropna(axis=0, thresh=2)
 
     output = raw[~raw.iloc[:, 0].str.contains("-|/|Total|Año", regex=True)].iloc[:, 1:]
     output.index = pd.date_range(start="2011-01-31", periods=len(output), freq="M")

@@ -36,3 +36,4 @@ econuy/.env
 orig-data/
 .DS_Store
 x13as
+.python-version

@@ -45,15 +45,12 @@ setup(
         "opnieuw",
         "sqlalchemy",
         "selenium",
-        "chromedriver-autoinstaller>=0.6.0",
         "python-dotenv",
         "patool",
         "xlrd",
     ],
     extras_require={
-        "pgsql": ["psycopg2"],
         "dev": [
-            "psycopg2",
             "sphinx",
             "sphinx-autobuild",
             "sphinx-autodoc-typehints",

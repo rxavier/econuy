@@ -311,8 +311,6 @@ prompt-toolkit==3.0.40
     #   jupyter-console
 psutil==5.9.6
     # via ipykernel
-psycopg2==2.9.9
-    # via econuy (setup.py)
 ptyprocess==0.7.0
     # via
     #   pexpect

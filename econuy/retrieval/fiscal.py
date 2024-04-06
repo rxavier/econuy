@@ -169,10 +169,13 @@ def tax_revenue() -> pd.DataFrame:
     """
     name = get_name_from_function()
     sources = get_download_sources(name)
+    r = requests.get(sources["main"])
+    url = re.findall("https://[A-z0-9-/\.]+Recaudaci%C3%B3n%20por%20impuesto%20-%20Series%20mensuales.xlsx", r.text)[0]
     raw = (
-        pd.read_excel(sources["main"])
+        pd.read_excel(url)
         .iloc[:, 2:]
         .drop(index=[0, 1])
+        .drop(columns=["CONTROLES"])
         .set_index("SELECCIONE IMPUESTO")
         .rename_axis(None)
     )
