@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import Union
 
-import requests
+import httpx
 
 from econuy.utils import get_project_root
 
@@ -34,7 +34,7 @@ def _get_binary(file_path: Union[str, os.PathLike, None] = None) -> None:
             "X13 binaries are only available for Windows, Darwin (macOS) or Linux."
         )
 
-    r = requests.get(urls[system_string])
+    r = httpx.get(urls[system_string])
     binary_path = Path(file_path, f"x13as{suffix}")
     with open(binary_path, "wb") as f:
         f.write(r.content)

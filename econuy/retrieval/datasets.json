@@ -562,7 +562,7 @@
     "function": "fiscal.fiscal_balance_global_public_sector",
     "sources": {
       "downloads": {
-        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/estadisticas/informacion-resultados-del-sector-publico"
       },
       "direct": [],
       "indirect": [
@@ -1762,7 +1762,7 @@
     "function": "regional.regional_cpi",
     "sources": {
       "downloads": {
-        "ar": "http://www.bcra.gov.ar/PublicacionesEstadisticas/Principales_variables_datos.asp",
+        "ar": "https://www.bcra.gob.ar/PublicacionesEstadisticas/Principales_variables_datos.asp?fecha_desde=1970-01-01&fecha_desde=19700101&fecha_hasta={end_date}&fecha_hasta={end_date}&B1=Enviar&primeravez=1&serie=7931&serie1=0&serie2=0&serie3=0&serie4=0&detalle=Inflaci%EF%BF%BDn%20mensual%EF%BF%BD%28variaci%EF%BF%BDn%20en%20%29",
         "ar_payload": "fecha_desde=1970-01-01&fecha_hasta={date1}&B1=Enviar&primeravez=1&fecha_desde=19600101&fecha_hasta={date2}&serie=7931&serie1=0&serie2=0&serie3=0&serie4=0&detalle=Inflaci%F3n+mensual%A0%28variaci%F3n+en+%29",
         "ar_unofficial": "http://www.inflacionverdadera.com/Argentina_inflation.xls",
         "bra": "https://servicodados.ibge.gov.br/api/v1/conjunturais?&d=s&user=ibge&t=1737&v=63&p=197001-{date}&ng=1(1)&c="

@@ -5,10 +5,10 @@ from pathlib import Path
 from io import BytesIO
 from typing import Optional
 from urllib.error import HTTPError, URLError
-from requests.exceptions import SSLError
+from httpx import ConnectError
 
 import pandas as pd
-import requests
+import httpx
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -38,7 +38,7 @@ def bank_credit() -> pd.DataFrame:
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(sources["main"], verify=certs_path)
+            r = httpx.get(sources["main"], verify=certs_path)
             xls = pd.ExcelFile(r.content)
     tc = pd.read_excel(
         xls,
@@ -133,7 +133,7 @@ def bank_deposits() -> pd.DataFrame:
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(sources["main"], verify=certs_path)
+            r = httpx.get(sources["main"], verify=certs_path)
             xls = pd.ExcelFile(r.content)
     tc = pd.read_excel(
         xls,
@@ -211,7 +211,7 @@ def bank_interest_rates() -> pd.DataFrame:
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(sources["main"], verify=certs_path)
+            r = httpx.get(sources["main"], verify=certs_path)
             xls = pd.ExcelFile(r.content)
 
     sheets = [
@@ -344,9 +344,9 @@ def sovereign_risk_index() -> pd.DataFrame:
             index_col=0,
             sheet_name="Valores de Cierre Diarios",
         )
-        r_current = requests.get(sources["current"])
-    except (SSLError, URLError, HTTPError):
-        r_historical = requests.get(sources["historical"], verify=False)
+        r_current = httpx.get(sources["current"])
+    except (ConnectError, URLError, HTTPError):
+        r_historical = httpx.get(sources["historical"], verify=False)
         historical = pd.read_excel(
             BytesIO(r_historical.content),
             usecols="B:C",
@@ -354,7 +354,7 @@ def sovereign_risk_index() -> pd.DataFrame:
             index_col=0,
             sheet_name="Valores de Cierre Diarios",
         )
-        r_current = requests.get(sources["current"], verify=False)
+        r_current = httpx.get(sources["current"], verify=False)
     raw_string = re.findall(r"value='(.+)'", r_current.text)[0]
     raw_list = raw_string.split("],")
     raw_list = [re.sub(r'["\[\]]', "", line) for line in raw_list]

@@ -7,7 +7,7 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
-import requests
+import httpx
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from scipy.stats import stats
@@ -205,7 +205,7 @@ def inflation_expectations() -> pd.DataFrame:
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(sources["main"], verify=certs_path)
+            r = httpx.get(sources["main"], verify=certs_path)
             raw = pd.read_excel(r.content, skiprows=9)
     raw = raw.dropna(how="all", axis=1).dropna(thresh=4)
     mask = raw.iloc[-12:].isna().all()
@@ -483,7 +483,7 @@ def nxr_daily() -> pd.DataFrame:
 def _make_nxr_bcu_request(start, end):
     certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
     sources = get_download_sources("nxr_daily")
-    response = requests.get(
+    response = httpx.get(
         sources["main"].format(start=start, end=end), verify=certs_path
     )
     try:

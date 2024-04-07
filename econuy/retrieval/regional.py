@@ -10,7 +10,7 @@ from urllib.error import HTTPError, URLError
 
 import pandas as pd
 import numpy as np
-import requests
+import httpx
 from pandas.tseries.offsets import MonthEnd
 from opnieuw import retry
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -70,7 +70,7 @@ def regional_gdp(driver: WebDriver = None) -> pd.DataFrame:
             )
     arg = arg.iloc[:, [0]]
 
-    r = requests.get(sources["bra"])
+    r = httpx.get(sources["bra"])
     temp_dir = tempfile.TemporaryDirectory()
     with zipfile.ZipFile(BytesIO(r.content), "r") as f:
         f.extractall(path=temp_dir.name)
@@ -157,11 +157,9 @@ def regional_cpi() -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    arg = requests.get(
-        sources["ar"],
-        params=sources["ar_payload"].format(
-            date1=dt.datetime.now().strftime("%Y-%m-%d"),
-            date2=dt.datetime.now().strftime("%Y%m%d"),
+    arg = httpx.get(
+        sources["ar"].format(
+            end_date=dt.datetime.now().strftime("%Y-%m-%d"),
         ),
     )
     arg = pd.read_html(arg.content)[0]
@@ -187,7 +185,7 @@ def regional_cpi() -> pd.DataFrame:
     )
     arg = arg.divide(100).add(1).cumprod()
 
-    bra_r = requests.get(sources["bra"].format(date=dt.datetime.now().strftime("%Y%m")))
+    bra_r = httpx.get(sources["bra"].format(date=dt.datetime.now().strftime("%Y%m")))
     bra = pd.DataFrame(bra_r.json())[["v"]]
     bra.index = pd.date_range(start="1979-12-31", freq="ME", periods=len(bra))
     bra = bra.apply(pd.to_numeric, errors="coerce")
@@ -327,7 +325,7 @@ def regional_nxr() -> pd.DataFrame:
 
     arg = []
     for dollar in ["ar", "ar_unofficial"]:
-        r = requests.get(
+        r = httpx.get(
             sources[dollar].format(date=dt.datetime.now().strftime("%d-%m-%Y"))
         )
         aux = pd.DataFrame(r.json())[[0, 2]]
@@ -341,7 +339,7 @@ def regional_nxr() -> pd.DataFrame:
     arg = arg[0].join(arg[1], how="left")
     arg.columns = ["Argentina - oficial", "Argentina - informal"]
 
-    r = requests.get(sources["bra"])
+    r = httpx.get(sources["bra"])
     bra = pd.DataFrame(r.json())
     bra = [(x["VALDATA"], x["VALVALOR"]) for x in bra["value"]]
     bra = pd.DataFrame.from_records(bra).dropna(how="any")
@@ -389,7 +387,7 @@ def regional_policy_rates() -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    r = requests.get(sources["main"])
+    r = httpx.get(sources["main"])
     temp_dir = tempfile.TemporaryDirectory()
     with zipfile.ZipFile(BytesIO(r.content), "r") as f:
         f.extractall(path=temp_dir.name)
@@ -542,7 +540,7 @@ def _ifs(pipeline: Pipeline = None) -> pd.DataFrame:
             base_url = (
                 f"{url_}.{country}.{indicator}.{url_extra}{dt.datetime.now().year}"
             )
-            r_json = requests.get(base_url).json()
+            r_json = httpx.get(base_url).json()
             data = r_json["CompactData"]["DataSet"]["Series"]["Obs"]
             try:
                 data = pd.DataFrame(data)

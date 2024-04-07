@@ -7,7 +7,7 @@ from os import path
 from urllib.error import HTTPError, URLError
 
 import pandas as pd
-import requests
+import httpx
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 
@@ -38,7 +38,7 @@ def global_gdp() -> pd.DataFrame:
     sources = get_download_sources(name)
 
     chn_y = dt.datetime.now().year + 1
-    chn_r = requests.get(f"{sources['chn_oecd']}{chn_y}-Q4")
+    chn_r = httpx.get(f"{sources['chn_oecd']}{chn_y}-Q4")
     chn_json = chn_r.json()
     chn_datasets = []
     for dataset, start in zip(["0", "1"], ["2011-03-31", "1993-03-31"]):
@@ -81,7 +81,7 @@ def global_gdp() -> pd.DataFrame:
 
     gdps = []
     for series in ["GDPC1", "CLVMNACSCAB1GQEU272020", "JPNRGDPEXP"]:
-        r = requests.get(
+        r = httpx.get(
             f"{sources['fred']}{series}&api_key=" f"{FRED_API_KEY}&file_type=json"
         )
         aux = pd.DataFrame.from_records(r.json()["observations"])
@@ -190,7 +190,7 @@ def global_policy_rates() -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    r = requests.get(sources["main"])
+    r = httpx.get(sources["main"])
     temp_dir = tempfile.TemporaryDirectory()
     with zipfile.ZipFile(BytesIO(r.content), "r") as f:
         f.extractall(path=temp_dir.name)
@@ -247,7 +247,7 @@ def global_policy_rates() -> pd.DataFrame:
 #     name = "global_long_rates"
 
 #     bonds = []
-#     r = requests.get(f"{urls[name]['dl']['fred']}DGS10&api_key=" f"{FRED_API_KEY}&file_type=json")
+#     r = httpx.get(f"{urls[name]['dl']['fred']}DGS10&api_key=" f"{FRED_API_KEY}&file_type=json")
 #     us = pd.DataFrame.from_records(r.json()["observations"])
 #     us = us[["date", "value"]].set_index("date")
 #     us.index = pd.to_datetime(us.index)
@@ -274,7 +274,7 @@ def global_policy_rates() -> pd.DataFrame:
 #                 "sort_ord": "DESC",
 #                 "action": "historical_data",
 #             }
-#             r = requests.post(
+#             r = httpx.post(
 #                 urls["global_long_rates"]["dl"]["main"], headers=investing_headers, data=params
 #             )
 #             aux.append(pd.read_html(r.content, match="Price", index_col=0,

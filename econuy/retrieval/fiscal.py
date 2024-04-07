@@ -5,10 +5,10 @@ from typing import Dict, Optional
 from urllib.error import HTTPError, URLError
 
 import pandas as pd
-import requests
+import httpx
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
-from requests.exceptions import ConnectionError
+from httpx import ConnectError
 
 from econuy import transform
 from econuy.core import Pipeline
@@ -18,14 +18,14 @@ from econuy.utils.operations import get_name_from_function, get_download_sources
 
 
 @retry(
-    retry_on_exceptions=(HTTPError, ConnectionError),
+    retry_on_exceptions=(HTTPError, ConnectError),
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
 def _balance_retriever() -> Dict[str, pd.DataFrame]:
     """Helper function. See any of the `balance_...()` functions."""
     sources = get_download_sources("fiscal_balance_global_public_sector")
-    response = requests.get(sources["main"])
+    response = httpx.get(sources["main"])
     url = re.findall(r"(http\S+Resultados.+\.xlsx)'", response.text)[0]
     xls = pd.ExcelFile(url)
     output = {}
@@ -166,7 +166,7 @@ def tax_revenue() -> pd.DataFrame:
     """
     name = get_name_from_function()
     sources = get_download_sources(name)
-    r = requests.get(sources["main"])
+    r = httpx.get(sources["main"])
     url = re.findall(
         "https://[A-z0-9-/\.]+Recaudaci%C3%B3n%20por%20impuesto%20-%20Series%20mensuales.xlsx",
         r.text,
@@ -242,7 +242,7 @@ def _public_debt_retriever() -> Dict[str, pd.DataFrame]:
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(sources["main"], verify=certs_path)
+            r = httpx.get(sources["main"], verify=certs_path)
             xls = pd.ExcelFile(r.content)
     gps_raw = pd.read_excel(
         xls,

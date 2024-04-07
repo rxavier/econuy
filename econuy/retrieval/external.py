@@ -11,7 +11,7 @@ from urllib import error
 from urllib.error import HTTPError, URLError
 
 import pandas as pd
-import requests
+import httpx
 from dateutil.relativedelta import relativedelta
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd, YearEnd
@@ -34,7 +34,7 @@ def _trade_retriever(name: str) -> pd.DataFrame:
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(sources["main"], verify=certs_path)
+            r = httpx.get(sources["main"], verify=certs_path)
             xls = pd.ExcelFile(r.content)
     sheets = []
     start_col = meta["start_col"]
@@ -464,7 +464,7 @@ def commodity_prices() -> pd.DataFrame:
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certificate = Path(get_project_root(), "utils", "files", "inac_certs.pem")
-            r = requests.get(sources["beef"], verify=certificate)
+            r = httpx.get(sources["beef"], verify=certificate)
             raw_beef = pd.read_excel(
                 BytesIO(r.content), header=4, index_col=0, thousands="."
             ).dropna(how="all")
@@ -487,14 +487,14 @@ def commodity_prices() -> pd.DataFrame:
     # soybean = soy_wheat[0]
     # wheat = soy_wheat[1]
 
-    milk_r = requests.get(sources["milk1"])
+    milk_r = httpx.get(sources["milk1"])
     xls = re.findall(
         r"https://www.inale.org/wp-content/uploads/[0-9\/]+/Precios-exportacion-de-Europa.xls",
         milk_r.text,
         flags=re.IGNORECASE,
     )[0]
     raw_milk = pd.read_excel(
-        requests.utils.quote(xls).replace("%3A", ":"),
+        xls,
         skiprows=13,
         nrows=dt.datetime.now().year - 2006,
     )
@@ -525,7 +525,7 @@ def commodity_prices() -> pd.DataFrame:
     prev_milk = prev_milk.set_index(
         pd.date_range(start="1977-01-31", freq="ME", periods=len(prev_milk))
     )
-    eurusd_r = requests.get(
+    eurusd_r = httpx.get(
         "https://fx.sauder.ubc.ca/cgi/fxdata",
         params=f"b=USD&c=EUR&rd=&fd=1&fm=1&fy=2001&ld=31&lm=12&ly="
         f"{dt.datetime.now().year}&y=monthly&q=volume&f=html&o=",
@@ -538,7 +538,7 @@ def commodity_prices() -> pd.DataFrame:
     prev_milk.columns, proc_milk.columns = ["Price"], ["Price"]
     milk = pd.concat([prev_milk, proc_milk])
 
-    raw_pulp_r = requests.get(sources["pulp"].format(year=dt.date.today().year))
+    raw_pulp_r = httpx.get(sources["pulp"].format(year=dt.date.today().year))
     temp_dir = tempfile.TemporaryDirectory()
     with zipfile.ZipFile(BytesIO(raw_pulp_r.content), "r") as f:
         f.extractall(path=temp_dir.name)
@@ -554,7 +554,7 @@ def commodity_prices() -> pd.DataFrame:
     proc_pulp = proc_pulp.div(eurusd.reindex(proc_pulp.index).values)
     pulp = proc_pulp
 
-    r_imf = requests.get(sources["imf"])
+    r_imf = httpx.get(sources["imf"])
     imf = re.findall("external-data.+ashx", r_imf.text)[0]
     imf = f"https://imf.org/-/media/Files/Research/CommodityPrices/Monthly/{imf}"
     raw_imf = pd.read_excel(imf).dropna(how="all", axis=1).dropna(how="all", axis=0)
@@ -693,7 +693,7 @@ def rxr() -> pd.DataFrame:
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(sources["main"], verify=certs_path)
+            r = httpx.get(sources["main"], verify=certs_path)
             raw = pd.read_excel(r.content, skiprows=8, usecols="B:N", index_col=0)
     proc = raw.dropna(how="any")
     proc.columns = [
@@ -820,7 +820,7 @@ def balance_of_payments() -> pd.DataFrame:
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(sources["main"], verify=certs_path)
+            r = httpx.get(sources["main"], verify=certs_path)
             raw = (
                 pd.read_excel(
                     r.content, skiprows=7, index_col=0, sheet_name="Cuadro Nº 1"
@@ -965,7 +965,7 @@ def international_reserves() -> pd.DataFrame:
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = requests.get(sources["main"], verify=certs_path)
+            r = httpx.get(sources["main"], verify=certs_path)
             raw = pd.read_excel(
                 r.content, usecols="D:J", index_col=0, skiprows=5, na_values="n/d"
             )
@@ -1065,7 +1065,7 @@ def international_reserves_changes(
             ]
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
             filename = f"{current_month}{year}.xls"
-            r = requests.get(f"{sources['main']}{filename}", verify=certs_path)
+            r = httpx.get(f"{sources['main']}{filename}", verify=certs_path)
             if r.status_code == 404:
                 filename = f"{last_month}{year}.xls"
         try:
@@ -1077,7 +1077,7 @@ def international_reserves_changes(
         except URLError as err:
             if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
                 certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-                r = requests.get(f"{sources['main']}{filename}", verify=certs_path)
+                r = httpx.get(f"{sources['main']}{filename}", verify=certs_path)
                 data = pd.read_excel(
                     r.content,
                     skiprows=2,
