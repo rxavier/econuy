@@ -82,36 +82,45 @@ def cpi_divisions() -> pd.DataFrame:
     output = raw.set_index(
         pd.date_range(start="2010-12-31", freq="ME", periods=len(raw))
     ).rename_axis(None)
-    colnames = [
-        "ALIMENTOS Y BEBIDAS NO ALCOHÓLICAS",
-        "BEBIDAS ALCOHÓLICAS, TABACO Y NARCÓTICOS",
-        "ROPA Y CALZADO",
-        "VIVIENDA, AGUA, ELECTRICIDAD, GAS Y OTROS COMBUSTIBLES",
-        "MOBILIARIO, ENSERES DOMÉSTICOS y DEMÁS ARTÍCULOS REGULARES DE LOS HOGARES",
-        "SALUD",
-        "TRANSPORTE",
-        "INFORMACIÓN Y COMUNICACIÓN",
-        "RECREACIÓN, DEPORTE Y CULTURA",
-        "SERVICIOS DE EDUCACIÓN",
-        "RESTAURANTES Y SERVICIOS DE ALOJAMIENTO",
-        "SEGUROS Y SERVICIOS FINANCIEROS",
-        "CUIDADO PERSONAL, PROTECCIÓN SOCIAL Y BIENES DIVERSOS",
+    full_names = [
+        "Alimentos y bebidas no alcohólicas",
+        "Bebidas alcohólicas, tabaco y narcóticos",
+        "Ropa y calzado",
+        "Vivienda, agua, electricidad, gas y otros combustibles",
+        "Mobiliario, enseres domésticos y demás artículos regulares de los hogares",
+        "Salud",
+        "Transporte",
+        "Información y comunicación",
+        "Recreación, deporte y cultura",
+        "Servicios de educación",
+        "Restaurantes y servicios de alojamiento",
+        "Seguros y servicios financieros",
+        "Cuidado personal, protección social y bienes diversos",
     ]
-    output.columns = [x.capitalize() for x in colnames]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"full_name_es": x} for x in full_names]
+
     output = output.apply(pd.to_numeric, errors="coerce")
 
-    metadata._set(
-        output,
-        area="Precios",
-        currency="-",
-        inf_adj="No",
-        unit="2022-10=100",
-        seas_adj="NSA",
-        ts_type="-",
-        cumperiods=1,
-    )
+    from econuy.base import Metadata, Dataset
 
-    return output
+    base_metadata = {
+        "area": "prices",
+        "currency": "UYU",
+        "inflation_adjustment": None,
+        "unit": "2022-10=100",
+        "seasonal_adjustment": "NSA",
+        "frequency": "ME",
+        "time_series_type": None,
+        "cumulative_periods": 1,
+    }
+    metadata = Metadata.from_cast(
+        base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(output, metadata, name)
+
+    return dataset
 
 
 # @retry(
@@ -503,7 +512,7 @@ def _new_contains_nan(a, nan_policy="propagate"):
     policies = ["propagate", "raise", "omit"]
     if nan_policy not in policies:
         raise ValueError(
-            "nan_policy must be one of {%s}" % ", ".join("'%s'" % s for s in policies)
+            "nan_policy must be one of {%s}" % ", ".join("%s" % s for s in policies)
         )
     try:
         with np.errstate(invalid="ignore"):
