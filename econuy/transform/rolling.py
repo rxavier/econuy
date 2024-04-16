@@ -1,52 +1,26 @@
 import warnings
-from typing import Optional
+from typing import Optional, Tuple
 
 import pandas as pd
 
-from econuy.utils import metadata
-
-
-def rolling(
-    df: pd.DataFrame, window: Optional[int] = None, operation: str = "sum"
-) -> pd.DataFrame:
-    """
-    Calculate rolling averages or sums.
-
-    See Also
-    --------
-    :mod:`~econuy.core.Pipeline.rolling`.
-
-    """
-    if operation not in ["sum", "mean"]:
-        raise ValueError("Invalid 'operation' option.")
-    if "Tipo" not in df.columns.names:
-        raise ValueError("Input dataframe's multiindex requires the " "'Tipo' level.")
-
-    all_metadata = df.columns.droplevel("Indicador")
-    if all(x == all_metadata[0] for x in all_metadata):
-        return _rolling(df=df, window=window, operation=operation)
-    else:
-        columns = []
-        for column_name in df.columns:
-            df_column = df[[column_name]]
-            converted = _rolling(df=df_column, window=window, operation=operation)
-            columns.append(converted)
-        return pd.concat(columns, axis=1)
-
 
 def _rolling(
-    df: pd.DataFrame, window: Optional[int] = None, operation: str = "sum"
-) -> pd.DataFrame:
+    data: pd.DataFrame,
+    metadata: "Metadata",  # type: ignore # noqa: F821
+    window: Optional[int] = None,
+    operation: str = "sum",
+) -> Tuple[pd.DataFrame, "Metadata"]:  # type: ignore # noqa: F821
+    indicators = metadata.indicators
+    metadata = metadata.copy()
+    # We get the first one because we validated that all indicators have the same metadata, or pass them one by one
+    single_metadata = metadata[indicators[0]]
+    time_series_type = single_metadata["time_series_type"]
     pd_frequencies = {
-        "A": 1,
-        "A-DEC": 1,
+        "YE": 1,
         "YE-DEC": 1,
-        "Q": 4,
+        "QE": 4,
         "QE-DEC": 4,
-        "Q-DEC": 4,
-        "M": 12,
         "ME": 12,
-        "MS": 12,
         "W": 52,
         "W-SUN": 52,
         "2W": 26,
@@ -60,18 +34,17 @@ def _rolling(
         "mean": lambda x: x.rolling(window=window, min_periods=window).mean(),
     }
 
-    if df.columns.get_level_values("Tipo")[0] == "Stock":
+    if time_series_type == "Stock":
         warnings.warn(
             "Rolling operations should not be " "calculated on stock variables",
             UserWarning,
         )
 
     if window is None:
-        inferred_freq = pd.infer_freq(df.index)
+        inferred_freq = pd.infer_freq(data.index)
         window = pd_frequencies[inferred_freq]
 
-    rolling_df = df.apply(window_operation[operation])
+    rolling_df = data.apply(window_operation[operation])
+    metadata.update_dataset_metadata({"cumulative_periods": window})
 
-    metadata._set(rolling_df, cumperiods=window)
-
-    return rolling_df
+    return rolling_df, metadata

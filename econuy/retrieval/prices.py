@@ -106,7 +106,7 @@ def cpi_divisions() -> pd.DataFrame:
     from econuy.base import Metadata, Dataset
 
     base_metadata = {
-        "area": "prices",
+        "area": "Prices",
         "currency": "UYU",
         "inflation_adjustment": None,
         "unit": "2022-10=100",
@@ -115,9 +115,7 @@ def cpi_divisions() -> pd.DataFrame:
         "time_series_type": None,
         "cumulative_periods": 1,
     }
-    metadata = Metadata.from_cast(
-        base_metadata, output.columns, spanish_names
-    )
+    metadata = Metadata.from_cast(base_metadata, output.columns, spanish_names)
     dataset = Dataset(output, metadata, name)
 
     return dataset

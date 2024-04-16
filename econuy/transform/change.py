@@ -1,88 +1,65 @@
+from typing import Tuple
+
 import pandas as pd
-
-from econuy.utils import metadata
-from econuy.transform import rolling
-
-
-def chg_diff(
-    df: pd.DataFrame, operation: str = "chg", period: str = "last"
-) -> pd.DataFrame:
-    """
-    Calculate pct change or difference.
-
-    See Also
-    --------
-    :mod:`~econuy.core.Pipeline.chg_diff`.
-
-    """
-    if operation not in ["chg", "diff"]:
-        raise ValueError("Invalid 'operation' option.")
-    if period not in ["last", "inter", "annual"]:
-        raise ValueError("Invalid 'period' option.")
-    if "Tipo" not in df.columns.names:
-        raise ValueError("Input dataframe's multiindex requires the " "'Tipo' level.")
-
-    all_metadata = df.columns.droplevel("Indicador")
-    if all(x == all_metadata[0] for x in all_metadata):
-        return _chg_diff(df=df, operation=operation, period=period)
-    else:
-        columns = []
-        for column_name in df.columns:
-            df_column = df[[column_name]]
-            converted = _chg_diff(df=df_column, operation=operation, period=period)
-            columns.append(converted)
-        return pd.concat(columns, axis=1)
 
 
 def _chg_diff(
-    df: pd.DataFrame, operation: str = "chg", period: str = "last"
-) -> pd.DataFrame:
-    inferred_freq = pd.infer_freq(df.index)
+    data: pd.DataFrame,
+    metadata: "Metadata",  # type: ignore # noqa: F821
+    operation: str = "chg",
+    period: str = "last",
+) -> Tuple[pd.DataFrame, "Metadata"]:  # type: ignore # noqa: F821
+    from econuy.transform.rolling import _rolling
+
+    indicators = metadata.indicators
+    metadata = metadata.copy()
+    # We get the first one because we validated that all indicators have the same metadata, or pass them one by one
+    single_metadata = metadata[indicators[0]]
+    time_series_type = single_metadata["time_series_type"]
+    inferred_freq = pd.infer_freq(data.index)
 
     type_change = {
         "last": {
-            "chg": [lambda x: x.pct_change(periods=1), "% variación"],
-            "diff": [lambda x: x.diff(periods=1), "Cambio"],
+            "chg": [lambda x: x.pct_change(periods=1), "Pct. change"],
+            "diff": [lambda x: x.diff(periods=1), "Change"],
         },
         "inter": {
             "chg": [
                 lambda x: x.pct_change(periods=last_year),
-                "% variación interanual",
+                "Pct. change YoY",
             ],
-            "diff": [lambda x: x.diff(periods=last_year), "Cambio interanual"],
+            "diff": [lambda x: x.diff(periods=last_year), "Change YoY"],
         },
         "annual": {
-            "chg": [lambda x: x.pct_change(periods=last_year), "% variación anual"],
-            "diff": [lambda x: x.diff(periods=last_year), "Cambio anual"],
+            "chg": [lambda x: x.pct_change(periods=last_year), "Pct. change annual"],
+            "diff": [lambda x: x.diff(periods=last_year), "Change annual"],
         },
     }
 
-    if inferred_freq in ["ME", "ME"]:
+    if inferred_freq in ["ME"]:
         last_year = 12
-    elif inferred_freq in ["Q", "QE-DEC", "QE-DEC"]:
+    elif inferred_freq in ["QE", "QE-DEC"]:
         last_year = 4
-    elif inferred_freq in ["A", "A-DEC", "YE-DEC"]:
+    elif inferred_freq in ["YE", "YE-DEC"]:
         last_year = 1
     else:
         raise ValueError(
-            "The dataframe needs to have a frequency of M "
-            "(month end), Q (quarter end) or A (year end)"
+            "The dataframe needs to have a frequency of ME "
+            "(month end), QQ (quarter end) or YE (year end)"
         )
 
     if period == "annual":
-        if df.columns.get_level_values("Tipo")[0] == "Stock":
-            output = df.apply(type_change[period][operation][0])
+        if time_series_type == "Stock":
+            output = data.apply(type_change[period][operation][0])
         else:
-            output = rolling(df, operation="sum")
+            output, metadata = _rolling(data, metadata, operation="sum")
             output = output.apply(type_change[period][operation][0])
-
-        metadata._set(output, unit=type_change[period][operation][1])
-
     else:
-        output = df.apply(type_change[period][operation][0])
-        metadata._set(output, unit=type_change[period][operation][1])
+        output = data.apply(type_change[period][operation][0])
 
     if operation == "chg":
         output = output.multiply(100)
 
-    return output
+    metadata.update_dataset_metadata({"unit": type_change[period][operation][1]})
+
+    return output, metadata

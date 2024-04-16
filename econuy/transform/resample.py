@@ -1,17 +1,17 @@
 import warnings
-from typing import Union
+from typing import Union, Tuple
 
 import pandas as pd
 import numpy as np
 
 
 def _resample(
-    dataset,
+    data: pd.DataFrame,
+    metadata: "Metadata",  # type: ignore # noqa: F821
     rule: Union[pd.DateOffset, pd.Timedelta, str],
     operation: str = "sum",
     interpolation: str = "linear",
-    warn: bool = False,
-) -> pd.DataFrame:
+) -> Tuple[pd.DataFrame, "Metadata"]:  # type: ignore # noqa: F821
     pd_frequencies = {
         "A": 1,
         "A-DEC": 1,
@@ -28,9 +28,8 @@ def _resample(
         "B": 240,
         "D": 365,
     }
-    data = dataset.data
-    indicators = dataset.indicators
-    metadata = dataset.metadata.copy()
+    indicators = metadata.indicators
+    metadata = metadata.copy()
     # We get the first one because we validated that all indicators have the same metadata, or pass them one by one
     single_metadata = metadata[indicators[0]]
 
@@ -63,12 +62,11 @@ def _resample(
                 antimask = np.where(proc >= count, False, True)
                 resampled_df = resampled_df.mask(antimask, np.nan)
         except KeyError:
-            if warn:
-                warnings.warn(
-                    "No bin trimming performed because frequencies "
-                    "could not be assigned a numeric value",
-                    UserWarning,
-                )
+            warnings.warn(
+                "No bin trimming performed because frequencies "
+                "could not be assigned a numeric value",
+                UserWarning,
+            )
 
     resampled_df = resampled_df.dropna(how="all")
 
