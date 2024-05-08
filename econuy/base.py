@@ -1,5 +1,6 @@
 import copy
 import warnings
+from datetime import datetime
 from typing import List, Union, Optional
 
 import pandas as pd
@@ -7,6 +8,7 @@ import pandas as pd
 from econuy.transform.change import _chg_diff
 from econuy.transform.resample import _resample
 from econuy.transform.rolling import _rolling
+from econuy.transform.rebase import _rebase
 
 
 def cast_metadata(indicator_metadata: dict, names: list, full_names: list) -> dict:
@@ -534,6 +536,56 @@ class Dataset:
                     metadata=n_dataset.metadata,
                     operation=operation,
                     period=period,
+                )
+                transformed.append(transformed_col)
+                new_metadatas.append(new_metadata)
+            transformed = pd.concat(transformed, axis=1)
+            new_metadata = Metadata.from_metadatas(new_metadatas)
+        output = self.__class__(data=transformed, metadata=new_metadata, name=self.name)
+        return output
+
+    def rebase(self,     start_date: Union[str, datetime],
+    end_date: Union[str, datetime, None] = None,
+    base: float = 100.0,) -> "Dataset":
+        """Rebase dataset to a date or range of dates.
+
+        Parameters
+        ----------
+        start_date : string or datetime.datetime
+            Date to which series will be rebased.
+        end_date : string or datetime.datetime, default None
+            If specified, series will be rebased to the average between
+            ``start_date`` and ``end_date``.
+        base : float, default 100
+            Float for which ``start_date`` == ``base`` or average between
+            ``start_date`` and ``end_date`` == ``base``.
+
+        Returns
+        -------
+        ``Dataset``
+
+        """
+
+        if self.metadata.has_common_metadata:
+            transformed, new_metadata = _rebase(
+                data=self.data,
+                metadata=self.metadata,
+                start_date=start_date,
+                end_date=end_date,
+                base=base,
+            )
+
+        else:
+            transformed = []
+            new_metadatas = []
+            for column_name in self.data.columns:
+                n_dataset = self[column_name]
+                transformed_col, new_metadata = _rebase(
+                    data=n_dataset.data,
+                    metadata=n_dataset.metadata,
+                start_date=start_date,
+                end_date=end_date,
+                base=base,
                 )
                 transformed.append(transformed_col)
                 new_metadatas.append(new_metadata)

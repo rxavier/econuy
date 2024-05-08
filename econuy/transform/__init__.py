@@ -1,6 +1,6 @@
 # from econuy.transform.resample import resample
 # from econuy.transform.rolling import rolling
-from econuy.transform.rebase import rebase
+#from econuy.transform.rebase import rebase
 from econuy.transform.decompose import decompose
 
 # from econuy.transform.change import chg_diff

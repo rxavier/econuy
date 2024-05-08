@@ -34,20 +34,20 @@ def _resample(
     single_metadata = metadata[indicators[0]]
 
     if operation == "sum":
-        resampled_df = data.resample(rule).sum()
+        output = data.resample(rule).sum()
     elif operation == "mean":
-        resampled_df = data.resample(rule).mean()
+        output = data.resample(rule).mean()
     elif operation == "last":
-        resampled_df = data.resample(rule).last()
+        output = data.resample(rule).last()
     else:
-        resampled_df = data.resample(rule).last()
-        resampled_df = resampled_df.interpolate(method=interpolation)
+        output = data.resample(rule).last()
+        output = output.interpolate(method=interpolation)
 
     cum_periods = single_metadata["cumulative_periods"]
 
     if cum_periods != 1:
         input_notna = data.iloc[:, 0].count()
-        output_notna = resampled_df.iloc[:, 0].count()
+        output_notna = output.iloc[:, 0].count()
         cum_adj = round(output_notna / input_notna)
         metadata.update_dataset_metadata({"cumulative_periods": cum_adj})
 
@@ -60,7 +60,7 @@ def _resample(
                 count = int(base_freq / target_freq)
                 proc = data.resample(rule).count()
                 antimask = np.where(proc >= count, False, True)
-                resampled_df = resampled_df.mask(antimask, np.nan)
+                output = output.mask(antimask, np.nan)
         except KeyError:
             warnings.warn(
                 "No bin trimming performed because frequencies "
@@ -68,6 +68,6 @@ def _resample(
                 UserWarning,
             )
 
-    resampled_df = resampled_df.dropna(how="all")
+    output = output.dropna(how="all")
 
-    return resampled_df, metadata
+    return output, metadata

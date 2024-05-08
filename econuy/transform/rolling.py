@@ -44,7 +44,7 @@ def _rolling(
         inferred_freq = pd.infer_freq(data.index)
         window = pd_frequencies[inferred_freq]
 
-    rolling_df = data.apply(window_operation[operation])
+    output = data.apply(window_operation[operation])
     metadata.update_dataset_metadata({"cumulative_periods": window})
 
-    return rolling_df, metadata
+    return output, metadata
