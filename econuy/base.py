@@ -1,10 +1,11 @@
 import copy
-from typing import List
+import warnings
+from typing import List, Union, Optional
 
 import pandas as pd
 
 from econuy.transform.change import _chg_diff
-
+from econuy.transform.resample import _resample
 from econuy.transform.rolling import _rolling
 
 
@@ -238,6 +239,174 @@ class Dataset:
         self.data = data
         self.metadata = metadata
         self.name = name
+
+    def validate(self) -> None:
+        """
+        Validate the dataset.
+
+        Raises
+        ------
+        AssertionError
+            If the number of indicators does not match the number of columns in the data.
+            If any of the indicators are not in the data.
+            If the index of the data is not a DatetimeIndex.
+            If the data contains non-numeric values.
+
+        """
+        assert len(self.indicators) == len(self.data.columns)
+        assert all(indicator in self.data.columns for indicator in self.indicators)
+        assert isinstance(self.data.index, pd.DatetimeIndex)
+        assert self.data.dtypes.apply(pd.api.types.is_numeric_dtype).all()
+
+    def named_data(self, language: str = "es") -> pd.DataFrame:
+        """
+        Rename the data using the metadata.
+
+        Parameters
+        ----------
+        language : str, default "es"
+            The language to use for the metadata.
+
+        Returns
+        -------
+        pd.DataFrame
+            The data with the indicators renamed.
+
+        """
+        name_key = f"full_name_{language}"
+        return self.data.rename(
+            columns={
+                indicator: self.metadata[indicator][name_key]
+                for indicator in self.indicators
+            }
+        )
+
+    def infer_frequency(self) -> Optional[pd.Timedelta]:
+        """
+        Infer the frequency of the data.
+
+        Returns
+        -------
+        Optional[pd.Timedelta]
+            The inferred frequency of the data.
+
+        """
+        try:
+            inferred_freq = pd.infer_freq(self.data.index)
+        except ValueError:
+            warnings.warn(
+                "ValueError: Need at least 3 dates to infer frequency. "
+                "Setting to 'None'.",
+                UserWarning,
+                stacklevel=2,
+            )
+            inferred_freq = None
+        if inferred_freq is None:
+            warnings.warn(
+                "Metadata: frequency could not be inferred "
+                "from the index. Setting to 'None'.",
+                UserWarning,
+                stacklevel=2,
+            )
+            inferred_freq = None
+        return inferred_freq
+
+    def __getitem__(self, indicator) -> "Dataset":
+        metadata_dict = {indicator: self.metadata[indicator]}
+        return self.__class__(
+            data=self.data[[indicator]],
+            metadata=Metadata(metadata_dict),
+            name=self.name,
+        )
+
+    def __repr__(self) -> str:
+        return "\n".join(
+            [
+                f"Dataset: {self.name}",
+                f"Indicators: {self.indicators}",
+                f"Metadata: {self.metadata}",
+            ]
+        )
+
+    def resample(
+        self,
+        rule: Union[pd.DateOffset, pd.Timedelta, str],
+        operation: str = "sum",
+        interpolation: str = "linear",
+    ) -> "Dataset":
+        """
+        Wrapper for the `resample method <https://pandas.pydata.org/pandas-docs
+        stable/reference/api/pandas.DataFrame.resample.html>`_ in Pandas that
+        integrates with econuy dataframes' metadata.
+
+        Trim partial bins, i.e. do not calculate the resampled
+        period if it is not complete, unless the input dataframe has no defined
+        frequency, in which case no trimming is done.
+
+        Parameters
+        ----------
+        rule : pd.DateOffset, pd.Timedelta or str
+            Target frequency to resample to. See
+            `Pandas offset aliases <https://pandas.pydata.org/pandas-docs/stable/
+            user_guide/timeseries.html#offset-aliases>`_
+        operation : {'sum', 'mean', 'last', 'upsample'}
+            Operation to use for resampling.
+        interpolation : str, default 'linear'
+            Method to use when missing data are produced as a result of
+            resampling, for example when upsampling to a higher frequency. See
+            `Pandas interpolation methods <https://pandas.pydata.org/pandas-docs
+            /stable/reference/api/pandas.Series.interpolate.html>`_
+
+        Returns
+        -------
+        ``Dataset``
+
+        Raises
+        ------
+        ValueError
+            If ``operation`` is not one of available options.
+        ValueError
+            If the input dataframe's columns do not have the appropiate levels.
+
+        Warns
+        -----
+        UserWarning
+            If input frequencies cannot be assigned a numeric value, preventing
+            incomplete bin trimming.
+
+        """
+        if operation not in ["sum", "mean", "upsample", "last"]:
+            raise ValueError("Invalid 'operation' option.")
+
+        if self.metadata.has_common_metadata:
+            transformed, new_metadata = _resample(
+                data=self.data,
+                metadata=self.metadata,
+                rule=rule,
+                operation=operation,
+                interpolation=interpolation,
+            )
+        else:
+            transformed = []
+            new_metadatas = []
+            for column_name in self.data.columns:
+                n_dataset = self[column_name]
+                transformed_col, new_metadata = _resample(
+                    data=n_dataset.data,
+                    metadata=n_dataset.metadata,
+                    rule=rule,
+                    operation=operation,
+                    interpolation=interpolation,
+                )
+                transformed.append(transformed_col)
+                new_metadatas.append(new_metadata)
+            transformed = pd.concat(transformed, axis=1)
+            new_metadata = Metadata.from_metadatas(new_metadatas)
+
+        inferred_frequency = pd.infer_freq(transformed.index)
+        new_metadata.update_dataset_metadata({"frequency": inferred_frequency})
+        output = self.__class__(data=transformed, metadata=new_metadata, name=self.name)
+        return output
 
     def rolling(self, window: int, operation: str = "sum") -> "Dataset":
         """
