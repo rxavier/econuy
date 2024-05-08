@@ -1,11 +1,9 @@
-import warnings
 import copy
-from typing import Union, List, Optional
+from typing import List
 
 import pandas as pd
 
 from econuy.transform.change import _chg_diff
-from econuy.transform.resample import _resample
 
 from econuy.transform.rolling import _rolling
 
@@ -19,12 +17,44 @@ def cast_metadata(indicator_metadata: dict, names: list, full_names: list) -> di
 
 
 class Metadata(dict):
+    """
+    A class to represent a collection of metadata for a set of indicators.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    None
+
+    See Also
+    --------
+    :class:`dict`
+    """
+
     @property
-    def indicators(self):
+    def indicators(self) -> list:
+        """
+        Get the list of indicators in the metadata.
+
+        Returns
+        -------
+        list
+            The list of indicators.
+        """
         return list(self.keys())
 
     @property
-    def has_common_metadata(self):
+    def has_common_metadata(self) -> bool:
+        """
+        Check if all indicators have the same metadata.
+
+        Returns
+        -------
+        bool
+            True if all indicators have the same metadata, False otherwise.
+        """
         metadata_wo_full_names = self._drop_full_names(self)
         indicator_metadatas = list(metadata_wo_full_names.values())
         if len(indicator_metadatas) < 2:
@@ -34,7 +64,15 @@ class Metadata(dict):
             return all(reference == metadata for metadata in indicator_metadatas[1:])
 
     @property
-    def common_metadata_dict(self):
+    def common_metadata_dict(self) -> dict:
+        """
+        Get the common metadata dictionary.
+
+        Returns
+        -------
+        dict
+            The common metadata dictionary if all indicators have the same metadata, otherwise an empty dictionary.
+        """
         if self.has_common_metadata:
             metadata_wo_full_names = self._drop_full_names(self)
             return metadata_wo_full_names[self.indicators[0]]
@@ -42,7 +80,20 @@ class Metadata(dict):
             return {}
 
     @staticmethod
-    def _drop_full_names(metadata: dict):
+    def _drop_full_names(metadata: dict) -> dict:
+        """
+        Drop full names from the metadata.
+
+        Parameters
+        ----------
+        metadata : dict
+            The metadata to process.
+
+        Returns
+        -------
+        dict
+            The metadata with full names dropped.
+        """
         return {
             indicator: {
                 meta_name: meta
@@ -55,171 +106,140 @@ class Metadata(dict):
     def update_indicator_metadata(
         self, indicator: str, new_metadata: dict
     ) -> "Metadata":
+        """
+        Update the metadata for a specific indicator.
+
+        Parameters
+        ----------
+        indicator : str
+            The indicator to update.
+        new_metadata : dict
+            The new metadata to update with.
+
+        Returns
+        -------
+        Metadata
+            The updated metadata.
+        """
         self[indicator].update(new_metadata)
         return self
 
     def update_dataset_metadata(self, new_metadata: dict) -> "Metadata":
+        """
+        Update the metadata for all indicators.
+
+        Parameters
+        ----------
+        new_metadata : dict
+            The new metadata to update with.
+
+        Returns
+        -------
+        Metadata
+            The updated metadata.
+        """
         for indicator in self.indicators:
             self[indicator].update(new_metadata)
         return self
 
-    def copy(self):
+    def copy(self) -> "Metadata":
+        """
+        Create a copy of the metadata.
+
+        Returns
+        -------
+        Metadata
+            The copied metadata.
+        """
         return copy.deepcopy(self)
 
     @classmethod
-    def from_cast(cls, base_metadata: dict, names: list, full_names: list):
+    def from_cast(
+        cls, base_metadata: dict, names: list, full_names: list
+    ) -> "Metadata":
+        """
+        Create a metadata instance from a casted metadata.
+
+        Parameters
+        ----------
+        base_metadata : dict
+            The base metadata.
+        names : list
+            The names of the indicators.
+        full_names : list
+            The full names of the indicators.
+
+        Returns
+        -------
+        Metadata
+            The created metadata instance.
+        """
         return cls(cast_metadata(base_metadata, names, full_names))
 
     @classmethod
-    def from_metadatas(cls, metadatas: List[dict]):
+    def from_metadatas(cls, metadatas: List[dict]) -> "Metadata":
+        """
+        Create a metadata instance from a list of metadatas.
+
+        Parameters
+        ----------
+        metadatas : list
+            The list of metadatas.
+
+        Returns
+        -------
+        Metadata
+            The created metadata instance.
+        """
         metadatas_dict = {k: v for d in metadatas for k, v in d.items()}
         return cls(metadatas_dict)
 
 
 class Dataset:
-    def __init__(self, data: pd.DataFrame, metadata: Metadata, name: str):
-        self.data = data
-        self.metadata = metadata
-        self.name = name
-        self.indicators = self.metadata.indicators
-        self.validate()
+    """
+    A class to represent a collection of economic data.
 
-    def validate(self):
-        assert len(self.indicators) == len(self.data.columns)
-        assert all(indicator in self.data.columns for indicator in self.indicators)
-        assert isinstance(self.data.index, pd.DatetimeIndex)
-        assert self.data.dtypes.apply(pd.api.types.is_numeric_dtype).all()
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The economic data.
+    metadata : Metadata
+        The metadata of the data.
+    name : str
+        The name of the dataset.
 
-    def named_data(self, language: str = "es"):
-        name_key = f"full_name_{language}"
-        return self.data.rename(
-            columns={
-                indicator: self.metadata[indicator][name_key]
-                for indicator in self.indicators
-            }
-        )
+    Returns
+    -------
+    None
 
-    def infer_frequency(self):
-        try:
-            inferred_freq = pd.infer_freq(self.data.index)
-        except ValueError:
-            warnings.warn(
-                "ValueError: Need at least 3 dates to infer frequency. "
-                "Setting to 'None'.",
-                UserWarning,
-                stacklevel=2,
-            )
-            inferred_freq = None
-        if inferred_freq is None:
-            warnings.warn(
-                "Metadata: frequency could not be inferred "
-                "from the index. Setting to 'None'.",
-                UserWarning,
-                stacklevel=2,
-            )
-            inferred_freq = None
-        return inferred_freq
+    See Also
+    --------
+    :class:`pd.DataFrame`
+    :class:`Metadata`
+    """
 
-    def __getitem__(self, indicator):
-        metadata_dict = {indicator: self.metadata[indicator]}
-        return self.__class__(
-            data=self.data[[indicator]],
-            metadata=Metadata(metadata_dict),
-            name=self.name,
-        )
-
-    def __repr__(self):
-        return "\n".join(
-            [
-                f"Dataset: {self.name}",
-                f"Indicators: {self.indicators}",
-                f"Metadata: {self.metadata}",
-            ]
-        )
-
-    def resample(
-        self,
-        rule: Union[pd.DateOffset, pd.Timedelta, str],
-        operation: str = "sum",
-        interpolation: str = "linear",
-    ) -> "Dataset":
+    def __init__(self, data: pd.DataFrame, metadata: Metadata, name: str) -> None:
         """
-        Wrapper for the `resample method <https://pandas.pydata.org/pandas-docs
-        stable/reference/api/pandas.DataFrame.resample.html>`_ in Pandas that
-        integrates with econuy dataframes' metadata.
-
-        Trim partial bins, i.e. do not calculate the resampled
-        period if it is not complete, unless the input dataframe has no defined
-        frequency, in which case no trimming is done.
+        Initialize the dataset.
 
         Parameters
         ----------
-        rule : pd.DateOffset, pd.Timedelta or str
-            Target frequency to resample to. See
-            `Pandas offset aliases <https://pandas.pydata.org/pandas-docs/stable/
-            user_guide/timeseries.html#offset-aliases>`_
-        operation : {'sum', 'mean', 'last', 'upsample'}
-            Operation to use for resampling.
-        interpolation : str, default 'linear'
-            Method to use when missing data are produced as a result of
-            resampling, for example when upsampling to a higher frequency. See
-            `Pandas interpolation methods <https://pandas.pydata.org/pandas-docs
-            /stable/reference/api/pandas.Series.interpolate.html>`_
+        data : pd.DataFrame
+            The economic data.
+        metadata : Metadata
+            The metadata of the data.
+        name : str
+            The name of the dataset.
 
         Returns
         -------
-        ``Dataset``
-
-        Raises
-        ------
-        ValueError
-            If ``operation`` is not one of available options.
-        ValueError
-            If the input dataframe's columns do not have the appropiate levels.
-
-        Warns
-        -----
-        UserWarning
-            If input frequencies cannot be assigned a numeric value, preventing
-            incomplete bin trimming.
-
+        None
         """
-        if operation not in ["sum", "mean", "upsample", "last"]:
-            raise ValueError("Invalid 'operation' option.")
+        self.data = data
+        self.metadata = metadata
+        self.name = name
 
-        if self.metadata.has_common_metadata:
-            transformed, new_metadata = _resample(
-                data=self.data,
-                metadata=self.metadata,
-                rule=rule,
-                operation=operation,
-                interpolation=interpolation,
-            )
-        else:
-            transformed = []
-            new_metadatas = []
-            for column_name in self.data.columns:
-                n_dataset = self[column_name]
-                transformed_col, new_metadata = _resample(
-                    data=n_dataset.data,
-                    metadata=n_dataset.metadata,
-                    rule=rule,
-                    operation=operation,
-                    interpolation=interpolation,
-                )
-                transformed.append(transformed_col)
-                new_metadatas.append(new_metadata)
-            transformed = pd.concat(transformed, axis=1)
-            new_metadata = Metadata.from_metadatas(new_metadatas)
-
-        inferred_frequency = pd.infer_freq(transformed.index)
-        new_metadata.update_dataset_metadata({"frequency": inferred_frequency})
-        output = self.__class__(data=transformed, metadata=new_metadata, name=self.name)
-        return output
-
-    def rolling(
-        self, window: Optional[int] = None, operation: str = "sum"
-    ) -> "Dataset":
+    def rolling(self, window: int, operation: str = "sum") -> "Dataset":
         """
         Wrapper for the `rolling method <https://pandas.pydata.org/pandas-docs/
         stable/reference/api/pandas.DataFrame.rolling.html>`_ in Pandas that
@@ -297,8 +317,6 @@ class Dataset:
 
         Parameters
         ----------
-        df : pd.DataFrame
-            Input dataframe.
         operation : {'chg', 'diff'}
             ``chg`` for percent change or ``diff`` for differences.
         period : {'last', 'inter', 'annual'}
@@ -309,7 +327,7 @@ class Dataset:
 
         Returns
         -------
-        ``None``
+        ``Dataset``
 
         Raises
         ------
