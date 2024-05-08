@@ -16,6 +16,7 @@ from scipy.stats import stats
 from econuy.core import Pipeline
 from econuy.utils import metadata, get_project_root
 from econuy.utils.operations import get_name_from_function, get_download_sources
+from econuy.base import Dataset, Metadata
 
 
 @retry(
@@ -60,7 +61,7 @@ def cpi() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def cpi_divisions() -> pd.DataFrame:
+def cpi_divisions() -> Dataset:
     """Get CPI data by division.
 
     Returns
@@ -102,8 +103,6 @@ def cpi_divisions() -> pd.DataFrame:
     spanish_names = [{"full_name_es": x} for x in full_names]
 
     output = output.apply(pd.to_numeric, errors="coerce")
-
-    from econuy.base import Metadata, Dataset
 
     base_metadata = {
         "area": "Prices",

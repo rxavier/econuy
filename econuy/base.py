@@ -1,7 +1,6 @@
 import warnings
 import copy
-import pprint
-from typing import Union, Any, List, Optional
+from typing import Union, List, Optional
 
 import pandas as pd
 
@@ -19,17 +18,14 @@ def cast_metadata(indicator_metadata: dict, names: list, full_names: list) -> di
     }
 
 
-class Metadata:
-    def __init__(self, metadata: dict):
-        self.metadata = copy.deepcopy(metadata)
-
+class Metadata(dict):
     @property
     def indicators(self):
-        return list(self.metadata.keys())
+        return list(self.keys())
 
     @property
     def has_common_metadata(self):
-        metadata_wo_full_names = self._drop_full_names(self.metadata)
+        metadata_wo_full_names = self._drop_full_names(self)
         indicator_metadatas = list(metadata_wo_full_names.values())
         if len(indicator_metadatas) < 2:
             return True
@@ -40,7 +36,7 @@ class Metadata:
     @property
     def common_metadata_dict(self):
         if self.has_common_metadata:
-            metadata_wo_full_names = self._drop_full_names(self.metadata)
+            metadata_wo_full_names = self._drop_full_names(self)
             return metadata_wo_full_names[self.indicators[0]]
         else:
             return {}
@@ -59,25 +55,16 @@ class Metadata:
     def update_indicator_metadata(
         self, indicator: str, new_metadata: dict
     ) -> "Metadata":
-        self.metadata[indicator].update(new_metadata)
+        self[indicator].update(new_metadata)
         return self
 
     def update_dataset_metadata(self, new_metadata: dict) -> "Metadata":
         for indicator in self.indicators:
-            self.metadata[indicator].update(new_metadata)
+            self[indicator].update(new_metadata)
         return self
 
     def copy(self):
         return copy.deepcopy(self)
-
-    def __getitem__(self, name: str):
-        return self.metadata[name]
-
-    def __setitem__(self, name: str, value: Any):
-        self.metadata[name] = value
-
-    def __repr__(self):
-        return pprint.pformat(self.metadata)
 
     @classmethod
     def from_cast(cls, base_metadata: dict, names: list, full_names: list):
@@ -85,7 +72,7 @@ class Metadata:
 
     @classmethod
     def from_metadatas(cls, metadatas: List[dict]):
-        metadatas_dict = {k: v for d in metadatas for k, v in d.metadata.items()}
+        metadatas_dict = {k: v for d in metadatas for k, v in d.items()}
         return cls(metadatas_dict)
 
 
