@@ -1,5 +1,7 @@
 import copy
 import warnings
+import json
+from pathlib import Path
 from datetime import datetime
 from typing import List, Union, Optional
 
@@ -9,6 +11,8 @@ from econuy.transform.change import _chg_diff
 from econuy.transform.resample import _resample
 from econuy.transform.rolling import _rolling
 from econuy.transform.rebase import _rebase
+from econuy.utils.operations import get_data_dir
+#from econuy.transform.convert import _convert_gdp, _convert_real, _convert_usd
 
 
 def cast_metadata(indicator_metadata: dict, names: list, full_names: list) -> dict:
@@ -127,6 +131,27 @@ class Metadata(dict):
         self[indicator].update(new_metadata)
         return self
 
+    def update_indicator_metadata_value(
+        self, indicator: str, key: str, value: str,
+    ) -> "Metadata":
+        """
+        Update the metadata for a specific indicator.
+
+        Parameters
+        ----------
+        indicator : str
+            The indicator to update.
+        new_metadata : dict
+            The new metadata to update with.
+
+        Returns
+        -------
+        Metadata
+            The updated metadata.
+        """
+        self[indicator][key] = value
+        return self
+
     def update_dataset_metadata(self, new_metadata: dict) -> "Metadata":
         """
         Update the metadata for all indicators.
@@ -155,6 +180,14 @@ class Metadata(dict):
             The copied metadata.
         """
         return copy.deepcopy(self)
+
+    def save(self, name: str, data_dir: Union[str, Path, None] = None) -> None:
+        data_dir = data_dir or get_data_dir()
+        data_dir = Path(data_dir)
+        data_dir.mkdir(parents=True, exist_ok=True)
+        with open(data_dir / f"{name}_metadata.json", "w") as f:
+            json.dump(self, f)
+        return
 
     @classmethod
     def from_cast(
@@ -221,7 +254,7 @@ class Dataset:
     :class:`Metadata`
     """
 
-    def __init__(self, data: pd.DataFrame, metadata: Metadata, name: str) -> None:
+    def __init__(self, data: pd.DataFrame, metadata: Metadata, name: str, transformed: bool = False) -> None:
         """
         Initialize the dataset.
 
@@ -241,6 +274,8 @@ class Dataset:
         self.data = data
         self.metadata = metadata
         self.name = name
+        self.transformed = transformed
+        self.indicators = self.metadata.indicators
 
     def validate(self) -> None:
         """
@@ -282,6 +317,32 @@ class Dataset:
                 for indicator in self.indicators
             }
         )
+
+    def save(self, data_dir: Union[str, Path, None], name: Optional[str] = None) -> None:
+        """
+        Save the dataset to a directory.
+
+        Parameters
+        ----------
+        data_dir : str or Path
+            The directory to save the dataset to.
+        name : str, default None
+            The name to save the dataset as without suffixes.
+
+        Returns
+        -------
+        None
+
+        """
+        from econuy.utils.operations import get_data_dir
+
+        data_dir = data_dir or get_data_dir()
+        data_dir = Path(data_dir)
+        data_dir.mkdir(parents=True, exist_ok=True)
+        name = name or (f"{self.name}_transformed" if self.transformed else self.name)
+        self.data.to_csv(data_dir / f"{name}.csv")
+        self.metadata.save(name, data_dir)
+        return
 
     def infer_frequency(self) -> Optional[pd.Timedelta]:
         """
@@ -407,7 +468,7 @@ class Dataset:
 
         inferred_frequency = pd.infer_freq(transformed.index)
         new_metadata.update_dataset_metadata({"frequency": inferred_frequency})
-        output = self.__class__(data=transformed, metadata=new_metadata, name=self.name)
+        output = self.__class__(data=transformed, metadata=new_metadata, name=self.name, transformed=True)
         return output
 
     def rolling(self, window: int, operation: str = "sum") -> "Dataset":
@@ -471,7 +532,7 @@ class Dataset:
                 new_metadatas.append(new_metadata)
             transformed = pd.concat(transformed, axis=1)
             new_metadata = Metadata.from_metadatas(new_metadatas)
-        output = self.__class__(data=transformed, metadata=new_metadata, name=self.name)
+        output = self.__class__(data=transformed, metadata=new_metadata, name=self.name, transformed=True)
         return output
 
     def chg_diff(self, operation: str = "chg", period: str = "last") -> "Dataset":
@@ -541,7 +602,7 @@ class Dataset:
                 new_metadatas.append(new_metadata)
             transformed = pd.concat(transformed, axis=1)
             new_metadata = Metadata.from_metadatas(new_metadatas)
-        output = self.__class__(data=transformed, metadata=new_metadata, name=self.name)
+        output = self.__class__(data=transformed, metadata=new_metadata, name=self.name, transformed=True)
         return output
 
     def rebase(self,     start_date: Union[str, datetime],
@@ -591,5 +652,53 @@ class Dataset:
                 new_metadatas.append(new_metadata)
             transformed = pd.concat(transformed, axis=1)
             new_metadata = Metadata.from_metadatas(new_metadatas)
-        output = self.__class__(data=transformed, metadata=new_metadata, name=self.name)
+        output = self.__class__(data=transformed, metadata=new_metadata, name=self.name, transformed=True)
+        return output
+
+    def convert(self, flavor: str, start_date: Union[str, datetime],
+    end_date: Union[str, datetime, None] = None,) -> "Dataset":
+        """Rebase dataset to a date or range of dates.
+
+        Parameters
+        ----------
+        start_date : string or datetime.datetime
+            Date to which series will be rebased.
+        end_date : string or datetime.datetime, default None
+            If specified, series will be rebased to the average between
+            ``start_date`` and ``end_date``.
+        base : float, default 100
+            Float for which ``start_date`` == ``base`` or average between
+            ``start_date`` and ``end_date`` == ``base``.
+
+        Returns
+        -------
+        ``Dataset``
+
+        """
+        assert flavor in ["usd", "real", "gdp"], "Invalid 'flavor' option."
+
+        if self.metadata.has_common_metadata:
+            transformed, new_metadata = _rebase(
+                data=self.data,
+                metadata=self.metadata,
+                start_date=start_date,
+                end_date=end_date,
+            )
+
+        else:
+            transformed = []
+            new_metadatas = []
+            for column_name in self.data.columns:
+                n_dataset = self[column_name]
+                transformed_col, new_metadata = _rebase(
+                    data=n_dataset.data,
+                    metadata=n_dataset.metadata,
+                start_date=start_date,
+                end_date=end_date,
+                )
+                transformed.append(transformed_col)
+                new_metadatas.append(new_metadata)
+            transformed = pd.concat(transformed, axis=1)
+            new_metadata = Metadata.from_metadatas(new_metadatas)
+        output = self.__class__(data=transformed, metadata=new_metadata, name=self.name, transformed=True)
         return output

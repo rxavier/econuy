@@ -1,5 +1,6 @@
 import inspect
 import json
+import os
 from os import path, PathLike, mkdir
 from pathlib import Path
 from typing import Union, Optional, Dict
@@ -266,3 +267,26 @@ def get_name_from_function() -> str:
 
 def get_download_sources(name: str) -> Dict:
     return DATASETS[name]["sources"]["downloads"]
+
+
+def get_data_dir() -> Path:
+    data_dir = os.getenv("ECONUY_DATA_DIR", "") or Path.home() / ".cache" / "econuy"
+    data_dir = Path(data_dir)
+    os.environ["ECONUY_DATA_DIR"] = data_dir.as_posix()
+    data_dir.mkdir(parents=True, exist_ok=True, mode=0o755)
+    return data_dir
+
+
+def read_dataset(name: str, data_dir: Path) -> Optional["Dataset"]:  # noqa: F821
+    from econuy.base import Dataset, Metadata
+
+    dataset_path = (data_dir / name).with_suffix(".csv")
+    metadata_path = (data_dir / f"{name}_metadata").with_suffix(".json")
+    if not dataset_path.exists() or not metadata_path.exists():
+        return None
+
+    dataset = pd.read_csv(dataset_path, index_col=0, parse_dates=True)
+    with open(metadata_path, "r") as f:
+        metadata = Metadata(json.load(f))
+    dataset = Dataset(dataset, metadata, name)
+    return dataset

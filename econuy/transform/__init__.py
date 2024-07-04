@@ -4,16 +4,16 @@
 from econuy.transform.decompose import decompose
 
 # from econuy.transform.change import chg_diff
-from econuy.transform.convert import convert_usd, convert_real, convert_gdp
+#from econuy.transform.convert import convert_usd, convert_real, convert_gdp
 
 
 __all__ = [
     # "resample",
     # "rolling",
-    "rebase",
+    #"rebase",
     "decompose",
     # "chg_diff",
-    "convert_usd",
-    "convert_real",
-    "convert_gdp",
+    #"convert_usd",
+    #"convert_real",
+    #"convert_gdp",
 ]

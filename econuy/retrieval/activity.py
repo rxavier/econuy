@@ -1,6 +1,7 @@
 import datetime as dt
 import re
 import tempfile
+import time
 from pathlib import Path
 from os import listdir, path
 from typing import List, Optional
@@ -12,11 +13,16 @@ import patoolib
 import httpx
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 from econuy import transform
 from econuy.core import Pipeline
 from econuy.utils import metadata, get_project_root
 from econuy.utils.operations import get_download_sources, get_name_from_function
+from econuy.utils.chromedriver import _build
+from econuy.base import Dataset, Metadata
 
 
 @retry(
@@ -34,37 +40,48 @@ def monthly_gdp() -> pd.DataFrame:
     """
     name = get_name_from_function()
     sources = get_download_sources(name)
-    try:
-        output = pd.read_excel(sources["main"], usecols="B:D")
-    except URLError as err:
-        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = httpx.get(sources["main"], verify=certs_path)
-            output = pd.read_excel(r.content, usecols="B:D")
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        driver = _build(tmp_dir)
+        driver.get(sources["main"])
+        button = WebDriverWait(driver, 3).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, "button.dt-button.buttons-excel.buttons-html5")))
+        driver.execute_script("arguments[0].click()", button)
+        time.sleep(3)
+        driver.quit()
+        filepath = list(Path(tmp_dir).glob("*.xlsx"))[0]
+        output = pd.read_excel(filepath, index_col=0)
+
     output.index = pd.date_range(start="2016-01-31", freq="ME", periods=len(output))
-    output.columns = [
+    output = output.rename_axis(None)
+
+    full_names = [
         "Indicador mensual de actividad económica",
         "Indicador mensual de actividad económica (desestacionalizado)",
         "Indicador mensual de actividad económica (tendencia-ciclo)",
     ]
-    output.rename_axis(None, inplace=True)
+    spanish_names = [{"full_name_es": x} for x in full_names]
 
-    metadata._set(
-        output,
-        area="Actividad económica",
-        currency="UYU",
-        inf_adj="Const. 2016",
-        unit="2016=100",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
-    )
-    metadata._modify_multiindex(
-        output, levels=[6], new_arrays=[["NSA", "SA", "Tendencia"]]
-    )
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
 
-    return output
+    base_metadata = {
+        "area": "Economic activity",
+        "currency": "UYU",
+        "inflation_adjustment": "Constant prices 2016",
+        "unit": "2016=100",
+        "seasonal_adjustment": "",
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+    }
 
+    metadata = Metadata.from_cast(base_metadata, output.columns, spanish_names)
+    for indicator, adjustment in zip(ids, ["Not seasonally adjusted", "Seasonally adjusted", "Trend-cycle"]):
+        metadata = metadata.update_indicator_metadata_value(indicator, "seasonal_adjustment", adjustment)
+    dataset = Dataset(output, metadata, name)
+
+    return dataset
 
 def _national_accounts_retriever(
     url: str,
@@ -948,7 +965,7 @@ def industrial_production() -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    raw = pd.read_excel(sources["main"], skiprows=4, usecols="C:DQ", na_values="(s)")
+    raw = pd.read_excel(sources["main"], skiprows=4, usecols="D:DR", na_values="(s)")
     weights = pd.read_csv(sources["weights"]).dropna(how="all")
     weights[["División", "Grupo", "Agrupación / Clase"]] = weights[
         ["División", "Grupo", "Agrupación / Clase"]
@@ -960,12 +977,12 @@ def industrial_production() -> pd.DataFrame:
     for c in output.columns[2:]:
         c = str(c)
         match = weights.loc[weights["División"] == c, "Denominación"]
-        prefix = "Div_"
+        prefix = "División: "
         if isinstance(match, pd.Series) and match.empty:
-            prefix = "Gru_"
+            prefix = "Grupo: "
             match = weights.loc[weights["Grupo"] == c, "Denominación"]
             if isinstance(match, pd.Series) and match.empty:
-                prefix = "Cls_"
+                prefix = "Clase: "
                 match = weights.loc[weights["Agrupación / Clase"] == c, "Denominación"]
         try:
             match = match.iloc[0]
@@ -976,28 +993,32 @@ def industrial_production() -> pd.DataFrame:
         except AttributeError:
             match = c
         match = re.sub(r"[\(\)]", "-", match)
-        if len(match) > 60:
-            match = match[:58] + "..."
         column_names.append(match)
-    output.columns = [
+
+    output = output.apply(pd.to_numeric, errors="coerce").rename_axis(None)
+
+    full_names = [
         "Industrias manufactureras",
         "Industrias manufactureras sin refinería",
     ] + column_names
-    output = output.apply(pd.to_numeric, errors="coerce")
-    output.rename_axis(None, inplace=True)
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"full_name_es": x} for x in full_names]
 
-    metadata._set(
-        output,
-        area="Actividad económica",
-        currency="-",
-        inf_adj="No",
-        unit="2018=100",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
-    )
+    base_metadata = {
+        "area": "Economic activity",
+        "currency": "UYU",
+        "inflation_adjustment": None,
+        "unit": "2018=100",
+        "seasonal_adjustment": "Not seasonally adjusted",
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+    }
+    metadata = Metadata.from_cast(base_metadata, output.columns, spanish_names)
+    dataset = Dataset(output, metadata, name)
 
-    return output
+    return dataset
 
 
 def core_industrial_production(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:

@@ -114,11 +114,9 @@
     "function": "activity.monthly_gdp",
     "sources": {
       "downloads": {
-        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Documents/Anexo-IMAE.xlsx"
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Informe-del-Indicador-Mensual-de-Actividad-Economica-(IMAE).aspx"
       },
-      "direct": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Documents/Anexo-IMAE.xlsx"
-      ],
+      "direct": [],
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Informe-del-Indicador-Mensual-de-Actividad-Economica-(IMAE).aspx"
       ],

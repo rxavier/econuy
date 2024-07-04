@@ -1,22 +1,21 @@
-import warnings
+import io
 import datetime as dt
 from concurrent.futures import ProcessPoolExecutor
 from urllib.error import URLError, HTTPError
 from pathlib import Path
 from typing import Optional
 
-import numpy as np
 import pandas as pd
 import httpx
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
-from scipy.stats import stats
 
 
 from econuy.core import Pipeline
-from econuy.utils import metadata, get_project_root
+from econuy.utils import get_project_root
 from econuy.utils.operations import get_name_from_function, get_download_sources
 from econuy.base import Dataset, Metadata
+from econuy import load_dataset
 
 
 @retry(
@@ -39,21 +38,27 @@ def cpi() -> pd.DataFrame:
     output = raw.set_index(
         pd.date_range(start="1937-07-31", freq="ME", periods=len(raw))
     ).rename_axis(None)
-    output.columns = ["Índice de precios al consumo"]
     output = output.apply(pd.to_numeric, errors="coerce")
 
-    metadata._set(
-        output,
-        area="Precios",
-        currency="-",
-        inf_adj="No",
-        unit="2022-10=100",
-        seas_adj="NSA",
-        ts_type="-",
-        cumperiods=1,
-    )
+    full_names = ["Índice de precios al consumo"]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"full_name_es": x} for x in full_names]
 
-    return output
+    base_metadata = {
+        "area": "Prices",
+        "currency": "UYU",
+        "inflation_adjustment": None,
+        "unit": "2022-10=100",
+        "seasonal_adjustment": "Not seasonally adjusted",
+        "frequency": "ME",
+        "time_series_type": None,
+        "cumulative_periods": 1,
+    }
+    metadata = Metadata.from_cast(base_metadata, output.columns, spanish_names)
+    dataset = Dataset(output, metadata, name)
+
+    return dataset
 
 
 @retry(
@@ -83,6 +88,8 @@ def cpi_divisions() -> Dataset:
     output = raw.set_index(
         pd.date_range(start="2010-12-31", freq="ME", periods=len(raw))
     ).rename_axis(None)
+    output = output.apply(pd.to_numeric, errors="coerce")
+
     full_names = [
         "Alimentos y bebidas no alcohólicas",
         "Bebidas alcohólicas, tabaco y narcóticos",
@@ -102,14 +109,12 @@ def cpi_divisions() -> Dataset:
     output.columns = ids
     spanish_names = [{"full_name_es": x} for x in full_names]
 
-    output = output.apply(pd.to_numeric, errors="coerce")
-
     base_metadata = {
         "area": "Prices",
         "currency": "UYU",
         "inflation_adjustment": None,
         "unit": "2022-10=100",
-        "seasonal_adjustment": "NSA",
+        "seasonal_adjustment": "Not seasonally adjusted",
         "frequency": "ME",
         "time_series_type": None,
         "cumulative_periods": 1,
@@ -212,7 +217,7 @@ def inflation_expectations() -> pd.DataFrame:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
             r = httpx.get(sources["main"], verify=certs_path)
-            raw = pd.read_excel(r.content, skiprows=9)
+            raw = pd.read_excel(io.BytesIO(r.content), skiprows=9)
     raw = raw.dropna(how="all", axis=1).dropna(thresh=4)
     mask = raw.iloc[-12:].isna().all()
     output = raw.loc[:, ~mask]
@@ -227,25 +232,32 @@ def inflation_expectations() -> pd.DataFrame:
         + ["Inflación anual de los próximos 24 meses"] * 5
         + ["Inflación anual a dos años calendario"] * 5
     )
-    output.set_index("Fecha", inplace=True, drop=True)
+    output = output.set_index("Fecha", drop=True)
     output.columns = output.columns + " - " + output.iloc[0]
     output = output.iloc[1:]
-    output.rename_axis(None, inplace=True)
+    output = output.rename_axis(None)
     output.index = pd.date_range(start="2004-01-31", freq="ME", periods=len(output))
     output = output.apply(pd.to_numeric, errors="coerce")
 
-    metadata._set(
-        output,
-        area="Precios",
-        currency="-",
-        inf_adj="No",
-        unit="%",
-        seas_adj="NSA",
-        ts_type="-",
-        cumperiods=1,
-    )
+    full_names = output.columns
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"full_name_es": x} for x in full_names]
 
-    return output
+    base_metadata = {
+        "area": "Prices",
+        "currency": "UYU",
+        "inflation_adjustment": None,
+        "unit": "%",
+        "seasonal_adjustment": "Not seasonally adjusted",
+        "frequency": "ME",
+        "time_series_type": None,
+        "cumulative_periods": 1,
+    }
+    metadata = Metadata.from_cast(base_metadata, output.columns, spanish_names)
+    dataset = Dataset(output, metadata, name)
+
+    return dataset
 
 
 # @retry(
@@ -349,31 +361,35 @@ def ppi() -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    raw = pd.read_excel(sources["main"], skiprows=7, index_col=0).dropna()
+    raw = pd.read_excel(sources["main"], skiprows=7, index_col=0).dropna().rename_axis(None)
+    raw.index = raw.index + MonthEnd(1)
+    output = raw.apply(pd.to_numeric, errors="coerce")
 
-    raw.columns = [
+    full_names = [
         "Índice general",
         "Ganadería, agricultura y silvicultura",
         "Pesca",
         "Explotación de minas y canteras",
         "Industrias manufactureras",
     ]
-    raw.rename_axis(None, inplace=True)
-    raw.index = raw.index + MonthEnd(1)
-    output = raw.apply(pd.to_numeric, errors="coerce")
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"full_name_es": x} for x in full_names]
 
-    metadata._set(
-        output,
-        area="Precios",
-        currency="-",
-        inf_adj="No",
-        unit="2010-03=100",
-        seas_adj="NSA",
-        ts_type="-",
-        cumperiods=1,
-    )
+    base_metadata = {
+        "area": "Prices",
+        "currency": "UYU",
+        "inflation_adjustment": None,
+        "unit": "2010-03=100",
+        "seasonal_adjustment": "Not seasonally adjusted",
+        "frequency": "ME",
+        "time_series_type": None,
+        "cumulative_periods": 1,
+    }
+    metadata = Metadata.from_cast(base_metadata, output.columns, spanish_names)
+    dataset = Dataset(output, metadata, name)
 
-    return output
+    return dataset
 
 
 @retry(
@@ -398,17 +414,14 @@ def nxr_monthly(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    if pipeline is None:
-        pipeline = Pipeline()
+    daily_data = load_dataset("nxr_daily").data
 
-    pipeline.get("nxr_daily")
-    nxr_daily = pipeline.dataset
     output = pd.DataFrame(
         {
-            "Tipo de cambio venta, fin de período": nxr_daily.iloc[:, 0]
+            "Tipo de cambio venta, fin de período": daily_data.iloc[:, 0]
             .resample("ME")
             .last(),
-            "Tipo de cambio venta, promedio": nxr_daily.iloc[:, 0]
+            "Tipo de cambio venta, promedio": daily_data.iloc[:, 0]
             .resample("ME")
             .mean(),
         }
@@ -425,21 +438,27 @@ def nxr_monthly(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     historical = historical.apply(pd.to_numeric, errors="coerce")
     historical = historical.loc[:"1999-12-31", :]
 
-    output = pd.concat([historical, output])
-    output.rename_axis(None, inplace=True)
+    output = pd.concat([historical, output]).rename_axis(None)
 
-    metadata._set(
-        output,
-        area="Precios",
-        currency="UYU/USD",
-        inf_adj="No",
-        unit="-",
-        seas_adj="NSA",
-        ts_type="-",
-        cumperiods=1,
-    )
+    full_names = output.columns
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"full_name_es": x} for x in full_names]
 
-    return output
+    base_metadata = {
+        "area": "Prices",
+        "currency": None,
+        "inflation_adjustment": None,
+        "unit": "UYU/USD",
+        "seasonal_adjustment": "Not seasonally adjusted",
+        "frequency": "ME",
+        "time_series_type": None,
+        "cumulative_periods": 1,
+    }
+    metadata = Metadata.from_cast(base_metadata, output.columns, spanish_names)
+    dataset = Dataset(output, metadata, name)
+
+    return dataset
 
 
 @retry(
@@ -456,6 +475,7 @@ def nxr_daily() -> pd.DataFrame:
         Sell rate.
 
     """
+    name = "nxr_daily"
     starts = [
         dt.date(y, 1, 1).strftime("%d/%m/%Y")
         for y in range(2000, dt.date.today().year + 1)
@@ -467,23 +487,29 @@ def nxr_daily() -> pd.DataFrame:
     with ProcessPoolExecutor(8) as executor:
         results = list(executor.map(_make_nxr_bcu_request, starts, ends))
 
-    raw = pd.concat([pd.read_excel(r, decimal=",") for r in results])
-    output = raw.set_index("Fecha")[["Venta"]]
+    raw = pd.concat([pd.read_excel(io.BytesIO(r), decimal=",") for r in results])
+    output = raw.set_index("Fecha")[["Venta"]].rename_axis(None)
     output.index = pd.to_datetime(output.index, format="%d/%m/%Y")
-    output = output.rename_axis(None)
 
-    metadata._set(
-        output,
-        area="Precios",
-        currency="UYU/USD",
-        inf_adj="No",
-        unit="-",
-        seas_adj="NSA",
-        ts_type="-",
-        cumperiods=1,
-    )
+    full_names = ["Tipo de cambio Billete"]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"full_name_es": x} for x in full_names]
 
-    return output
+    base_metadata = {
+        "area": "Prices",
+        "currency": None,
+        "inflation_adjustment": None,
+        "unit": "UYU/USD",
+        "seasonal_adjustment": "Not seasonally adjusted",
+        "frequency": "ME",
+        "time_series_type": None,
+        "cumulative_periods": 1,
+    }
+    metadata = Metadata.from_cast(base_metadata, output.columns, spanish_names)
+    dataset = Dataset(output, metadata, name)
+
+    return dataset
 
 
 def _make_nxr_bcu_request(start, end):
@@ -501,39 +527,6 @@ def _make_nxr_bcu_request(start, end):
     except Exception as e:
         print(e)
         return None
-
-
-# The `_contains_nan` function needs to be monkey-patched to avoid an error
-# when checking whether a Series is True
-def _new_contains_nan(a, nan_policy="propagate"):
-    policies = ["propagate", "raise", "omit"]
-    if nan_policy not in policies:
-        raise ValueError(
-            "nan_policy must be one of {%s}" % ", ".join("%s" % s for s in policies)
-        )
-    try:
-        with np.errstate(invalid="ignore"):
-            # This [0] gets the value instead of the array, fixing the error
-            contains_nan = np.isnan(np.sum(a))[0]
-    except TypeError:
-        try:
-            contains_nan = np.nan in set(a.ravel())
-        except TypeError:
-            contains_nan = False
-            nan_policy = "omit"
-            warnings.warn(
-                "The input array could not be properly checked for "
-                "nan values. nan values will be ignored.",
-                RuntimeWarning,
-            )
-
-    if contains_nan and nan_policy == "raise":
-        raise ValueError("The input contains nan values")
-
-    return contains_nan, nan_policy
-
-
-stats._contains_nan = _new_contains_nan
 
 
 # @retry(
