@@ -6,7 +6,7 @@ import pandas as pd
 
 def _rebase(
     data: pd.DataFrame,
-    metadata: "Metadata", # type: ignore # noqa: F821
+    metadata: "Metadata",  # type: ignore # noqa: F821
     start_date: Union[str, datetime],
     end_date: Union[str, datetime, None] = None,
     base: float = 100.0,

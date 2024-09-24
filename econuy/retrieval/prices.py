@@ -55,7 +55,9 @@ def cpi() -> pd.DataFrame:
         "time_series_type": None,
         "cumulative_periods": 1,
     }
-    metadata = DatasetMetadata.from_cast(name, base_metadata, output.columns, spanish_names)
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
     dataset = Dataset(name, output, metadata)
 
     return dataset
@@ -119,7 +121,9 @@ def cpi_divisions() -> Dataset:
         "time_series_type": None,
         "cumulative_periods": 1,
     }
-    metadata = DatasetMetadata.from_cast(name, base_metadata, output.columns, spanish_names)
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
     dataset = Dataset(name, output, metadata)
 
     return dataset
@@ -254,7 +258,9 @@ def inflation_expectations() -> pd.DataFrame:
         "time_series_type": None,
         "cumulative_periods": 1,
     }
-    metadata = DatasetMetadata.from_cast(name, base_metadata, output.columns, spanish_names)
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
     dataset = Dataset(name, output, metadata)
 
     return dataset
@@ -361,7 +367,11 @@ def ppi() -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    raw = pd.read_excel(sources["main"], skiprows=7, index_col=0).dropna().rename_axis(None)
+    raw = (
+        pd.read_excel(sources["main"], skiprows=7, index_col=0)
+        .dropna()
+        .rename_axis(None)
+    )
     raw.index = raw.index + MonthEnd(1)
     output = raw.apply(pd.to_numeric, errors="coerce")
 
@@ -386,7 +396,9 @@ def ppi() -> pd.DataFrame:
         "time_series_type": None,
         "cumulative_periods": 1,
     }
-    metadata = DatasetMetadata.from_cast(name, base_metadata, output.columns, spanish_names)
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
     dataset = Dataset(name, output, metadata)
 
     return dataset
@@ -455,7 +467,9 @@ def nxr_monthly(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
         "time_series_type": None,
         "cumulative_periods": 1,
     }
-    metadata = DatasetMetadata.from_cast(name, base_metadata, output.columns, spanish_names)
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
     dataset = Dataset(name, output, metadata)
 
     return dataset
@@ -506,7 +520,9 @@ def nxr_daily() -> pd.DataFrame:
         "time_series_type": None,
         "cumulative_periods": 1,
     }
-    metadata = DatasetMetadata.from_cast(name, base_metadata, output.columns, spanish_names)
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
     dataset = Dataset(name, output, metadata)
 
     return dataset

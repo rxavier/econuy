@@ -45,7 +45,10 @@ def monthly_gdp() -> pd.DataFrame:
         driver = _build(tmp_dir)
         driver.get(sources["main"])
         button = WebDriverWait(driver, 3).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, "button.dt-button.buttons-excel.buttons-html5")))
+            EC.element_to_be_clickable(
+                (By.CSS_SELECTOR, "button.dt-button.buttons-excel.buttons-html5")
+            )
+        )
         driver.execute_script("arguments[0].click()", button)
         time.sleep(3)
         driver.quit()
@@ -76,12 +79,19 @@ def monthly_gdp() -> pd.DataFrame:
         "cumulative_periods": 1,
     }
 
-    metadata = DatasetMetadata.from_cast(name, base_metadata, output.columns, spanish_names)
-    for indicator, adjustment in zip(ids, ["Not seasonally adjusted", "Seasonally adjusted", "Trend-cycle"]):
-        metadata = metadata.update_indicator_metadata_value(indicator, "seasonal_adjustment", adjustment)
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    for indicator, adjustment in zip(
+        ids, ["Not seasonally adjusted", "Seasonally adjusted", "Trend-cycle"]
+    ):
+        metadata = metadata.update_indicator_metadata_value(
+            indicator, "seasonal_adjustment", adjustment
+        )
     dataset = Dataset(name, output, metadata)
 
     return dataset
+
 
 def _national_accounts_retriever(
     url: str,
@@ -1015,7 +1025,9 @@ def industrial_production() -> pd.DataFrame:
         "time_series_type": "Flow",
         "cumulative_periods": 1,
     }
-    metadata = DatasetMetadata.from_cast(name, base_metadata, output.columns, spanish_names)
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
     dataset = Dataset(name, output, metadata)
 
     return dataset

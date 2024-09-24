@@ -12,10 +12,12 @@ from econuy.transform.resample import _resample
 from econuy.transform.rolling import _rolling
 from econuy.transform.rebase import _rebase
 from econuy.utils.operations import get_data_dir
-#from econuy.transform.convert import _convert_gdp, _convert_real, _convert_usd
+# from econuy.transform.convert import _convert_gdp, _convert_real, _convert_usd
 
 
-def cast_metadata(indicator_metadata: dict, indicator_ids: list, full_names: list) -> dict:
+def cast_metadata(
+    indicator_metadata: dict, indicator_ids: list, full_names: list
+) -> dict:
     # TODO: Improve this hack
     return {
         name: {"names": full_name} | indicator_metadata
@@ -24,13 +26,18 @@ def cast_metadata(indicator_metadata: dict, indicator_ids: list, full_names: lis
 
 
 class DatasetMetadata:
-    def __init__(self, name: str, indicator_metadata: dict, created_at: Optional[datetime] = None) -> None:
+    def __init__(
+        self, name: str, indicator_metadata: dict, created_at: Optional[datetime] = None
+    ) -> None:
         self.name = name
         self.indicator_metadata = indicator_metadata
         self.created_at = created_at or datetime.now()
 
     def __getitem__(self, indicator) -> "DatasetMetadata":
-        return self.__class__(name=self.name, indicator_metadata={indicator: self.indicator_metadata[indicator]})
+        return self.__class__(
+            name=self.name,
+            indicator_metadata={indicator: self.indicator_metadata[indicator]},
+        )
 
     def __setitem__(self, indicator, metadata) -> None:
         self.indicators[indicator] = metadata
@@ -127,7 +134,10 @@ class DatasetMetadata:
         return self
 
     def update_indicator_metadata_value(
-        self, indicator: str, key: str, value: str,
+        self,
+        indicator: str,
+        key: str,
+        value: str,
     ) -> "DatasetMetadata":
         """
         Update the metadata for a specific indicator.
@@ -207,11 +217,15 @@ class DatasetMetadata:
         Metadata
             The created metadata instance.
         """
-        indicator_metadata = cast_metadata(base_metadata, indicator_ids, indicator_names)
+        indicator_metadata = cast_metadata(
+            base_metadata, indicator_ids, indicator_names
+        )
         return cls(name, indicator_metadata)
 
     @classmethod
-    def from_metadatas(cls, name: str, metadatas: List["DatasetMetadata"]) -> "DatasetMetadata":
+    def from_metadatas(
+        cls, name: str, metadatas: List["DatasetMetadata"]
+    ) -> "DatasetMetadata":
         """
         Create a metadata instance from a list of metadatas.
 
@@ -225,7 +239,9 @@ class DatasetMetadata:
         Metadata
             The created metadata instance.
         """
-        metadatas_dict = {k: v for d in metadatas for k, v in d.indicator_metadata.items()}
+        metadatas_dict = {
+            k: v for d in metadatas for k, v in d.indicator_metadata.items()
+        }
         return cls(name, metadatas_dict)
 
     @classmethod
@@ -245,7 +261,9 @@ class DatasetMetadata:
         """
         with open(path, "r") as f:
             metadata_dict = json.load(f)
-        metadata_dict["created_at"] = datetime.fromisoformat(metadata_dict["created_at"])
+        metadata_dict["created_at"] = datetime.fromisoformat(
+            metadata_dict["created_at"]
+        )
         return cls(**metadata_dict)
 
     def __repr__(self) -> str:
@@ -281,7 +299,13 @@ class Dataset:
     :class:`Metadata`
     """
 
-    def __init__(self, name: str, data: pd.DataFrame, metadata: DatasetMetadata, transformed: bool = False) -> None:
+    def __init__(
+        self,
+        name: str,
+        data: pd.DataFrame,
+        metadata: DatasetMetadata,
+        transformed: bool = False,
+    ) -> None:
         """
         Initialize the dataset.
 
@@ -341,12 +365,16 @@ class Dataset:
         """
         return self.data.rename(
             columns={
-                indicator: self.metadata.indicator_metadata[indicator]["names"][language]
+                indicator: self.metadata.indicator_metadata[indicator]["names"][
+                    language
+                ]
                 for indicator in self.indicators
             }
         )
 
-    def save(self, data_dir: Union[str, Path, None] = None, name: Optional[str] = None) -> None:
+    def save(
+        self, data_dir: Union[str, Path, None] = None, name: Optional[str] = None
+    ) -> None:
         """
         Save the dataset to a directory.
 
@@ -495,7 +523,9 @@ class Dataset:
 
         inferred_frequency = pd.infer_freq(transformed.index)
         new_metadata.update_dataset_metadata({"frequency": inferred_frequency})
-        output = self.__class__(data=transformed, metadata=new_metadata, name=self.name, transformed=True)
+        output = self.__class__(
+            data=transformed, metadata=new_metadata, name=self.name, transformed=True
+        )
         return output
 
     def rolling(self, window: int, operation: str = "sum") -> "Dataset":
@@ -559,7 +589,9 @@ class Dataset:
                 new_metadatas.append(new_metadata)
             transformed = pd.concat(transformed, axis=1)
             new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
-        output = self.__class__(data=transformed, metadata=new_metadata, name=self.name, transformed=True)
+        output = self.__class__(
+            data=transformed, metadata=new_metadata, name=self.name, transformed=True
+        )
         return output
 
     def chg_diff(self, operation: str = "chg", period: str = "last") -> "Dataset":
@@ -629,12 +661,17 @@ class Dataset:
                 new_metadatas.append(new_metadata)
             transformed = pd.concat(transformed, axis=1)
             new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
-        output = self.__class__(data=transformed, metadata=new_metadata, name=self.name, transformed=True)
+        output = self.__class__(
+            data=transformed, metadata=new_metadata, name=self.name, transformed=True
+        )
         return output
 
-    def rebase(self,     start_date: Union[str, datetime],
-    end_date: Union[str, datetime, None] = None,
-    base: float = 100.0,) -> "Dataset":
+    def rebase(
+        self,
+        start_date: Union[str, datetime],
+        end_date: Union[str, datetime, None] = None,
+        base: float = 100.0,
+    ) -> "Dataset":
         """Rebase dataset to a date or range of dates.
 
         Parameters
@@ -671,19 +708,25 @@ class Dataset:
                 transformed_col, new_metadata = _rebase(
                     data=n_dataset.data,
                     metadata=n_dataset.metadata,
-                start_date=start_date,
-                end_date=end_date,
-                base=base,
+                    start_date=start_date,
+                    end_date=end_date,
+                    base=base,
                 )
                 transformed.append(transformed_col)
                 new_metadatas.append(new_metadata)
             transformed = pd.concat(transformed, axis=1)
             new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
-        output = self.__class__(data=transformed, metadata=new_metadata, name=self.name, transformed=True)
+        output = self.__class__(
+            data=transformed, metadata=new_metadata, name=self.name, transformed=True
+        )
         return output
 
-    def convert(self, flavor: str, start_date: Union[str, datetime],
-    end_date: Union[str, datetime, None] = None,) -> "Dataset":
+    def convert(
+        self,
+        flavor: str,
+        start_date: Union[str, datetime],
+        end_date: Union[str, datetime, None] = None,
+    ) -> "Dataset":
         """Rebase dataset to a date or range of dates.
 
         Parameters
@@ -720,12 +763,14 @@ class Dataset:
                 transformed_col, new_metadata = _rebase(
                     data=n_dataset.data,
                     metadata=n_dataset.metadata,
-                start_date=start_date,
-                end_date=end_date,
+                    start_date=start_date,
+                    end_date=end_date,
                 )
                 transformed.append(transformed_col)
                 new_metadatas.append(new_metadata)
             transformed = pd.concat(transformed, axis=1)
             new_metadata = DatasetMetadata.from_metadatas(new_metadatas)
-        output = self.__class__(data=transformed, metadata=new_metadata, name=self.name, transformed=True)
+        output = self.__class__(
+            data=transformed, metadata=new_metadata, name=self.name, transformed=True
+        )
         return output
