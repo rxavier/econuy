@@ -278,7 +278,7 @@ def get_data_dir() -> Path:
 
 
 def read_dataset(name: str, data_dir: Path) -> Optional["Dataset"]:  # noqa: F821
-    from econuy.base import Dataset, Metadata
+    from econuy.base import Dataset, DatasetMetadata
 
     dataset_path = (data_dir / name).with_suffix(".csv")
     metadata_path = (data_dir / f"{name}_metadata").with_suffix(".json")
@@ -286,7 +286,6 @@ def read_dataset(name: str, data_dir: Path) -> Optional["Dataset"]:  # noqa: F82
         return None
 
     dataset = pd.read_csv(dataset_path, index_col=0, parse_dates=True)
-    with open(metadata_path, "r") as f:
-        metadata = Metadata(json.load(f))
-    dataset = Dataset(dataset, metadata, name)
+    metadata = DatasetMetadata.from_json(metadata_path)
+    dataset = Dataset(name, dataset, metadata)
     return dataset

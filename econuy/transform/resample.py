@@ -28,10 +28,10 @@ def _resample(
         "B": 240,
         "D": 365,
     }
-    indicators = metadata.indicators
+    indicators = metadata.indicator_ids
     metadata = metadata.copy()
     # We get the first one because we validated that all indicators have the same metadata, or pass them one by one
-    single_metadata = metadata[indicators[0]]
+    single_metadata = metadata.indicator_metadata[indicators[0]]
 
     if operation == "sum":
         output = data.resample(rule).sum()

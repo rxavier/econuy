@@ -14,7 +14,7 @@ from pandas.tseries.offsets import MonthEnd
 from econuy.core import Pipeline
 from econuy.utils import get_project_root
 from econuy.utils.operations import get_name_from_function, get_download_sources
-from econuy.base import Dataset, Metadata
+from econuy.base import Dataset, DatasetMetadata
 from econuy import load_dataset
 
 
@@ -40,10 +40,10 @@ def cpi() -> pd.DataFrame:
     ).rename_axis(None)
     output = output.apply(pd.to_numeric, errors="coerce")
 
-    full_names = ["Índice de precios al consumo"]
+    spanish_names = ["Índice de precios al consumo"]
     ids = [f"{name}_{i}" for i in range(output.shape[1])]
     output.columns = ids
-    spanish_names = [{"full_name_es": x} for x in full_names]
+    spanish_names = [{"es": x} for x in spanish_names]
 
     base_metadata = {
         "area": "Prices",
@@ -55,8 +55,8 @@ def cpi() -> pd.DataFrame:
         "time_series_type": None,
         "cumulative_periods": 1,
     }
-    metadata = Metadata.from_cast(base_metadata, output.columns, spanish_names)
-    dataset = Dataset(output, metadata, name)
+    metadata = DatasetMetadata.from_cast(name, base_metadata, output.columns, spanish_names)
+    dataset = Dataset(name, output, metadata)
 
     return dataset
 
@@ -90,7 +90,7 @@ def cpi_divisions() -> Dataset:
     ).rename_axis(None)
     output = output.apply(pd.to_numeric, errors="coerce")
 
-    full_names = [
+    spanish_names = [
         "Alimentos y bebidas no alcohólicas",
         "Bebidas alcohólicas, tabaco y narcóticos",
         "Ropa y calzado",
@@ -107,7 +107,7 @@ def cpi_divisions() -> Dataset:
     ]
     ids = [f"{name}_{i}" for i in range(output.shape[1])]
     output.columns = ids
-    spanish_names = [{"full_name_es": x} for x in full_names]
+    spanish_names = [{"es": x} for x in spanish_names]
 
     base_metadata = {
         "area": "Prices",
@@ -119,8 +119,8 @@ def cpi_divisions() -> Dataset:
         "time_series_type": None,
         "cumulative_periods": 1,
     }
-    metadata = Metadata.from_cast(base_metadata, output.columns, spanish_names)
-    dataset = Dataset(output, metadata, name)
+    metadata = DatasetMetadata.from_cast(name, base_metadata, output.columns, spanish_names)
+    dataset = Dataset(name, output, metadata)
 
     return dataset
 
@@ -239,10 +239,10 @@ def inflation_expectations() -> pd.DataFrame:
     output.index = pd.date_range(start="2004-01-31", freq="ME", periods=len(output))
     output = output.apply(pd.to_numeric, errors="coerce")
 
-    full_names = output.columns
+    spanish_names = output.columns
     ids = [f"{name}_{i}" for i in range(output.shape[1])]
     output.columns = ids
-    spanish_names = [{"full_name_es": x} for x in full_names]
+    spanish_names = [{"es": x} for x in spanish_names]
 
     base_metadata = {
         "area": "Prices",
@@ -254,8 +254,8 @@ def inflation_expectations() -> pd.DataFrame:
         "time_series_type": None,
         "cumulative_periods": 1,
     }
-    metadata = Metadata.from_cast(base_metadata, output.columns, spanish_names)
-    dataset = Dataset(output, metadata, name)
+    metadata = DatasetMetadata.from_cast(name, base_metadata, output.columns, spanish_names)
+    dataset = Dataset(name, output, metadata)
 
     return dataset
 
@@ -365,7 +365,7 @@ def ppi() -> pd.DataFrame:
     raw.index = raw.index + MonthEnd(1)
     output = raw.apply(pd.to_numeric, errors="coerce")
 
-    full_names = [
+    spanish_names = [
         "Índice general",
         "Ganadería, agricultura y silvicultura",
         "Pesca",
@@ -374,7 +374,7 @@ def ppi() -> pd.DataFrame:
     ]
     ids = [f"{name}_{i}" for i in range(output.shape[1])]
     output.columns = ids
-    spanish_names = [{"full_name_es": x} for x in full_names]
+    spanish_names = [{"es": x} for x in spanish_names]
 
     base_metadata = {
         "area": "Prices",
@@ -386,8 +386,8 @@ def ppi() -> pd.DataFrame:
         "time_series_type": None,
         "cumulative_periods": 1,
     }
-    metadata = Metadata.from_cast(base_metadata, output.columns, spanish_names)
-    dataset = Dataset(output, metadata, name)
+    metadata = DatasetMetadata.from_cast(name, base_metadata, output.columns, spanish_names)
+    dataset = Dataset(name, output, metadata)
 
     return dataset
 
@@ -440,10 +440,10 @@ def nxr_monthly(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
 
     output = pd.concat([historical, output]).rename_axis(None)
 
-    full_names = output.columns
+    spanish_names = output.columns
     ids = [f"{name}_{i}" for i in range(output.shape[1])]
     output.columns = ids
-    spanish_names = [{"full_name_es": x} for x in full_names]
+    spanish_names = [{"es": x} for x in spanish_names]
 
     base_metadata = {
         "area": "Prices",
@@ -455,8 +455,8 @@ def nxr_monthly(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
         "time_series_type": None,
         "cumulative_periods": 1,
     }
-    metadata = Metadata.from_cast(base_metadata, output.columns, spanish_names)
-    dataset = Dataset(output, metadata, name)
+    metadata = DatasetMetadata.from_cast(name, base_metadata, output.columns, spanish_names)
+    dataset = Dataset(name, output, metadata)
 
     return dataset
 
@@ -491,10 +491,10 @@ def nxr_daily() -> pd.DataFrame:
     output = raw.set_index("Fecha")[["Venta"]].rename_axis(None)
     output.index = pd.to_datetime(output.index, format="%d/%m/%Y")
 
-    full_names = ["Tipo de cambio Billete"]
+    spanish_names = ["Tipo de cambio Billete"]
     ids = [f"{name}_{i}" for i in range(output.shape[1])]
     output.columns = ids
-    spanish_names = [{"full_name_es": x} for x in full_names]
+    spanish_names = [{"es": x} for x in spanish_names]
 
     base_metadata = {
         "area": "Prices",
@@ -506,8 +506,8 @@ def nxr_daily() -> pd.DataFrame:
         "time_series_type": None,
         "cumulative_periods": 1,
     }
-    metadata = Metadata.from_cast(base_metadata, output.columns, spanish_names)
-    dataset = Dataset(output, metadata, name)
+    metadata = DatasetMetadata.from_cast(name, base_metadata, output.columns, spanish_names)
+    dataset = Dataset(name, output, metadata)
 
     return dataset
 

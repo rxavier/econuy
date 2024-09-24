@@ -43,7 +43,8 @@ def load_dataset(name: str, data_dir: Union[str, Path, None] = None, skip_cache:
 
 
 def check_updated_dataset(original: "Dataset", new: "Dataset") -> None:  # noqa: F821
-    assert original.metadata == new.metadata, "Datasets have different metadata"
+    assert original.metadata.name == new.metadata.name, "Datasets have different names"
+    assert original.metadata.indicator_metadata == new.metadata.indicator_metadata, "Datasets have different indicator metadata"
     assert original.data.shape[1] == new.data.shape[1], "Datasets have different number of columns"
     assert original.data.index[0] == new.data.index[0], "Datasets have different start date"
 

@@ -15,33 +15,28 @@ from econuy.utils.operations import get_data_dir
 #from econuy.transform.convert import _convert_gdp, _convert_real, _convert_usd
 
 
-def cast_metadata(indicator_metadata: dict, names: list, full_names: list) -> dict:
+def cast_metadata(indicator_metadata: dict, indicator_ids: list, full_names: list) -> dict:
     # TODO: Improve this hack
     return {
-        name: full_name | indicator_metadata
-        for name, full_name in zip(names, full_names)
+        name: {"names": full_name} | indicator_metadata
+        for name, full_name in zip(indicator_ids, full_names)
     }
 
 
-class Metadata(dict):
-    """
-    A class to represent a collection of metadata for a set of indicators.
+class DatasetMetadata:
+    def __init__(self, name: str, indicator_metadata: dict, created_at: Optional[datetime] = None) -> None:
+        self.name = name
+        self.indicator_metadata = indicator_metadata
+        self.created_at = created_at or datetime.now()
 
-    Parameters
-    ----------
-    None
+    def __getitem__(self, indicator) -> "DatasetMetadata":
+        return self.__class__(name=self.name, indicator_metadata={indicator: self.indicator_metadata[indicator]})
 
-    Returns
-    -------
-    None
-
-    See Also
-    --------
-    :class:`dict`
-    """
+    def __setitem__(self, indicator, metadata) -> None:
+        self.indicators[indicator] = metadata
 
     @property
-    def indicators(self) -> list:
+    def indicator_ids(self) -> list:
         """
         Get the list of indicators in the metadata.
 
@@ -50,7 +45,7 @@ class Metadata(dict):
         list
             The list of indicators.
         """
-        return list(self.keys())
+        return list(self.indicator_metadata.keys())
 
     @property
     def has_common_metadata(self) -> bool:
@@ -62,7 +57,7 @@ class Metadata(dict):
         bool
             True if all indicators have the same metadata, False otherwise.
         """
-        metadata_wo_full_names = self._drop_full_names(self)
+        metadata_wo_full_names = self._drop_full_names(self.indicator_metadata)
         indicator_metadatas = list(metadata_wo_full_names.values())
         if len(indicator_metadatas) < 2:
             return True
@@ -81,13 +76,13 @@ class Metadata(dict):
             The common metadata dictionary if all indicators have the same metadata, otherwise an empty dictionary.
         """
         if self.has_common_metadata:
-            metadata_wo_full_names = self._drop_full_names(self)
-            return metadata_wo_full_names[self.indicators[0]]
+            metadata_wo_full_names = self._drop_full_names(self.indicator_metadata)
+            return metadata_wo_full_names[self.indicator_ids[0]]
         else:
             return {}
 
     @staticmethod
-    def _drop_full_names(metadata: dict) -> dict:
+    def _drop_full_names(indicator_metadata: dict) -> dict:
         """
         Drop full names from the metadata.
 
@@ -104,15 +99,15 @@ class Metadata(dict):
         return {
             indicator: {
                 meta_name: meta
-                for meta_name, meta in indicator_metadata.items()
-                if "full_name" not in meta_name
+                for meta_name, meta in single_indicator_metadata.items()
+                if "name" not in meta_name
             }
-            for indicator, indicator_metadata in metadata.items()
+            for indicator, single_indicator_metadata in indicator_metadata.items()
         }
 
     def update_indicator_metadata(
-        self, indicator: str, new_metadata: dict
-    ) -> "Metadata":
+        self, indicator: str, single_indicator_metadata: dict
+    ) -> "DatasetMetadata":
         """
         Update the metadata for a specific indicator.
 
@@ -128,12 +123,12 @@ class Metadata(dict):
         Metadata
             The updated metadata.
         """
-        self[indicator].update(new_metadata)
+        self.indicator_metadata[indicator].update(single_indicator_metadata)
         return self
 
     def update_indicator_metadata_value(
         self, indicator: str, key: str, value: str,
-    ) -> "Metadata":
+    ) -> "DatasetMetadata":
         """
         Update the metadata for a specific indicator.
 
@@ -149,10 +144,10 @@ class Metadata(dict):
         Metadata
             The updated metadata.
         """
-        self[indicator][key] = value
+        self.indicator_metadata[indicator][key] = value
         return self
 
-    def update_dataset_metadata(self, new_metadata: dict) -> "Metadata":
+    def update_dataset_metadata(self, indicator_metadata: dict) -> "DatasetMetadata":
         """
         Update the metadata for all indicators.
 
@@ -166,11 +161,11 @@ class Metadata(dict):
         Metadata
             The updated metadata.
         """
-        for indicator in self.indicators:
-            self[indicator].update(new_metadata)
+        for indicator in self.indicator_metadata:
+            self.indicator_metadata[indicator].update(indicator_metadata)
         return self
 
-    def copy(self) -> "Metadata":
+    def copy(self) -> "DatasetMetadata":
         """
         Create a copy of the metadata.
 
@@ -185,14 +180,16 @@ class Metadata(dict):
         data_dir = data_dir or get_data_dir()
         data_dir = Path(data_dir)
         data_dir.mkdir(parents=True, exist_ok=True)
+        for_json = self.__dict__
+        for_json["created_at"] = for_json["created_at"].isoformat()
         with open(data_dir / f"{name}_metadata.json", "w") as f:
-            json.dump(self, f)
+            json.dump(for_json, f, indent=4)
         return
 
     @classmethod
     def from_cast(
-        cls, base_metadata: dict, names: list, full_names: list
-    ) -> "Metadata":
+        cls, name: str, base_metadata: dict, indicator_ids: list, indicator_names: list
+    ) -> "DatasetMetadata":
         """
         Create a metadata instance from a casted metadata.
 
@@ -210,10 +207,11 @@ class Metadata(dict):
         Metadata
             The created metadata instance.
         """
-        return cls(cast_metadata(base_metadata, names, full_names))
+        indicator_metadata = cast_metadata(base_metadata, indicator_ids, indicator_names)
+        return cls(name, indicator_metadata)
 
     @classmethod
-    def from_metadatas(cls, metadatas: List[dict]) -> "Metadata":
+    def from_metadatas(cls, name: str, metadatas: List["DatasetMetadata"]) -> "DatasetMetadata":
         """
         Create a metadata instance from a list of metadatas.
 
@@ -227,8 +225,37 @@ class Metadata(dict):
         Metadata
             The created metadata instance.
         """
-        metadatas_dict = {k: v for d in metadatas for k, v in d.items()}
-        return cls(metadatas_dict)
+        metadatas_dict = {k: v for d in metadatas for k, v in d.indicator_metadata.items()}
+        return cls(name, metadatas_dict)
+
+    @classmethod
+    def from_json(cls, path: Union[str, Path]) -> "DatasetMetadata":
+        """
+        Create a metadata instance from a JSON file.
+
+        Parameters
+        ----------
+        path : str or Path
+            The path to the JSON file.
+
+        Returns
+        -------
+        Metadata
+            The created metadata instance.
+        """
+        with open(path, "r") as f:
+            metadata_dict = json.load(f)
+        metadata_dict["created_at"] = datetime.fromisoformat(metadata_dict["created_at"])
+        return cls(**metadata_dict)
+
+    def __repr__(self) -> str:
+        return "\n".join(
+            [
+                f"Name: {self.name}",
+                f"Created at: {self.created_at}",
+                f"Indicator metadata: {self.indicator_metadata}",
+            ]
+        )
 
 
 class Dataset:
@@ -254,18 +281,20 @@ class Dataset:
     :class:`Metadata`
     """
 
-    def __init__(self, data: pd.DataFrame, metadata: Metadata, name: str, transformed: bool = False) -> None:
+    def __init__(self, name: str, data: pd.DataFrame, metadata: DatasetMetadata, transformed: bool = False) -> None:
         """
         Initialize the dataset.
 
         Parameters
         ----------
+        name : str
+            The name of the dataset.
         data : pd.DataFrame
             The economic data.
         metadata : Metadata
             The metadata of the data.
-        name : str
-            The name of the dataset.
+        transformed : bool
+            Whether the data has been transformed.
 
         Returns
         -------
@@ -275,7 +304,7 @@ class Dataset:
         self.metadata = metadata
         self.name = name
         self.transformed = transformed
-        self.indicators = self.metadata.indicators
+        self.indicators = self.metadata.indicator_ids
 
     def validate(self) -> None:
         """
@@ -310,15 +339,14 @@ class Dataset:
             The data with the indicators renamed.
 
         """
-        name_key = f"full_name_{language}"
         return self.data.rename(
             columns={
-                indicator: self.metadata[indicator][name_key]
+                indicator: self.metadata.indicator_metadata[indicator]["names"][language]
                 for indicator in self.indicators
             }
         )
 
-    def save(self, data_dir: Union[str, Path, None], name: Optional[str] = None) -> None:
+    def save(self, data_dir: Union[str, Path, None] = None, name: Optional[str] = None) -> None:
         """
         Save the dataset to a directory.
 
@@ -375,19 +403,18 @@ class Dataset:
         return inferred_freq
 
     def __getitem__(self, indicator) -> "Dataset":
-        metadata_dict = {indicator: self.metadata[indicator]}
+        metadata_dict = {indicator: self.metadata.indicator_metadata[indicator]}
         return self.__class__(
             data=self.data[[indicator]],
-            metadata=Metadata(metadata_dict),
+            metadata=DatasetMetadata(self.name, metadata_dict),
             name=self.name,
         )
 
     def __repr__(self) -> str:
         return "\n".join(
             [
-                f"Dataset: {self.name}",
+                f"Name: {self.name}",
                 f"Indicators: {self.indicators}",
-                f"Metadata: {self.metadata}",
             ]
         )
 
@@ -464,7 +491,7 @@ class Dataset:
                 transformed.append(transformed_col)
                 new_metadatas.append(new_metadata)
             transformed = pd.concat(transformed, axis=1)
-            new_metadata = Metadata.from_metadatas(new_metadatas)
+            new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
 
         inferred_frequency = pd.infer_freq(transformed.index)
         new_metadata.update_dataset_metadata({"frequency": inferred_frequency})
@@ -531,7 +558,7 @@ class Dataset:
                 transformed.append(transformed_col)
                 new_metadatas.append(new_metadata)
             transformed = pd.concat(transformed, axis=1)
-            new_metadata = Metadata.from_metadatas(new_metadatas)
+            new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
         output = self.__class__(data=transformed, metadata=new_metadata, name=self.name, transformed=True)
         return output
 
@@ -601,7 +628,7 @@ class Dataset:
                 transformed.append(transformed_col)
                 new_metadatas.append(new_metadata)
             transformed = pd.concat(transformed, axis=1)
-            new_metadata = Metadata.from_metadatas(new_metadatas)
+            new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
         output = self.__class__(data=transformed, metadata=new_metadata, name=self.name, transformed=True)
         return output
 
@@ -651,7 +678,7 @@ class Dataset:
                 transformed.append(transformed_col)
                 new_metadatas.append(new_metadata)
             transformed = pd.concat(transformed, axis=1)
-            new_metadata = Metadata.from_metadatas(new_metadatas)
+            new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
         output = self.__class__(data=transformed, metadata=new_metadata, name=self.name, transformed=True)
         return output
 
@@ -699,6 +726,6 @@ class Dataset:
                 transformed.append(transformed_col)
                 new_metadatas.append(new_metadata)
             transformed = pd.concat(transformed, axis=1)
-            new_metadata = Metadata.from_metadatas(new_metadatas)
+            new_metadata = DatasetMetadata.from_metadatas(new_metadatas)
         output = self.__class__(data=transformed, metadata=new_metadata, name=self.name, transformed=True)
         return output

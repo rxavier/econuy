@@ -22,7 +22,7 @@ from econuy.core import Pipeline
 from econuy.utils import metadata, get_project_root
 from econuy.utils.operations import get_download_sources, get_name_from_function
 from econuy.utils.chromedriver import _build
-from econuy.base import Dataset, Metadata
+from econuy.base import Dataset, DatasetMetadata
 
 
 @retry(
@@ -55,12 +55,12 @@ def monthly_gdp() -> pd.DataFrame:
     output.index = pd.date_range(start="2016-01-31", freq="ME", periods=len(output))
     output = output.rename_axis(None)
 
-    full_names = [
+    spanish_names = [
         "Indicador mensual de actividad económica",
         "Indicador mensual de actividad económica (desestacionalizado)",
         "Indicador mensual de actividad económica (tendencia-ciclo)",
     ]
-    spanish_names = [{"full_name_es": x} for x in full_names]
+    spanish_names = [{"es": x} for x in spanish_names]
 
     ids = [f"{name}_{i}" for i in range(output.shape[1])]
     output.columns = ids
@@ -76,10 +76,10 @@ def monthly_gdp() -> pd.DataFrame:
         "cumulative_periods": 1,
     }
 
-    metadata = Metadata.from_cast(base_metadata, output.columns, spanish_names)
+    metadata = DatasetMetadata.from_cast(name, base_metadata, output.columns, spanish_names)
     for indicator, adjustment in zip(ids, ["Not seasonally adjusted", "Seasonally adjusted", "Trend-cycle"]):
         metadata = metadata.update_indicator_metadata_value(indicator, "seasonal_adjustment", adjustment)
-    dataset = Dataset(output, metadata, name)
+    dataset = Dataset(name, output, metadata)
 
     return dataset
 
@@ -997,13 +997,13 @@ def industrial_production() -> pd.DataFrame:
 
     output = output.apply(pd.to_numeric, errors="coerce").rename_axis(None)
 
-    full_names = [
+    spanish_names = [
         "Industrias manufactureras",
         "Industrias manufactureras sin refinería",
     ] + column_names
     ids = [f"{name}_{i}" for i in range(output.shape[1])]
     output.columns = ids
-    spanish_names = [{"full_name_es": x} for x in full_names]
+    spanish_names = [{"es": x} for x in spanish_names]
 
     base_metadata = {
         "area": "Economic activity",
@@ -1015,8 +1015,8 @@ def industrial_production() -> pd.DataFrame:
         "time_series_type": "Flow",
         "cumulative_periods": 1,
     }
-    metadata = Metadata.from_cast(base_metadata, output.columns, spanish_names)
-    dataset = Dataset(output, metadata, name)
+    metadata = DatasetMetadata.from_cast(name, base_metadata, output.columns, spanish_names)
+    dataset = Dataset(name, output, metadata)
 
     return dataset
 

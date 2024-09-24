@@ -11,10 +11,10 @@ def _chg_diff(
 ) -> Tuple[pd.DataFrame, "Metadata"]:  # type: ignore # noqa: F821
     from econuy.transform.rolling import _rolling
 
-    indicators = metadata.indicators
+    indicators = metadata.indicator_ids
     metadata = metadata.copy()
     # We get the first one because we validated that all indicators have the same metadata, or pass them one by one
-    single_metadata = metadata[indicators[0]]
+    single_metadata = metadata.indicator_metadata[indicators[0]]
     time_series_type = single_metadata["time_series_type"]
     inferred_freq = pd.infer_freq(data.index)
 
