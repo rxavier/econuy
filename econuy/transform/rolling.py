@@ -46,5 +46,6 @@ def _rolling(
 
     output = data.apply(window_operation[operation])
     metadata.update_dataset_metadata({"cumulative_periods": window})
+    metadata.add_transformation_step({"rolling": {"window": window, "operation": operation}})
 
     return output, metadata

@@ -11,7 +11,6 @@ from econuy.transform.change import _chg_diff
 from econuy.transform.resample import _resample
 from econuy.transform.rolling import _rolling
 from econuy.transform.rebase import _rebase
-from econuy.utils.operations import get_data_dir
 # from econuy.transform.convert import _convert_gdp, _convert_real, _convert_usd
 
 
@@ -175,6 +174,24 @@ class DatasetMetadata:
             self.indicator_metadata[indicator].update(indicator_metadata)
         return self
 
+    def add_transformation_step(self, transformation: dict) -> "DatasetMetadata":
+        """
+        Add a transformation step to the metadata.
+
+        Parameters
+        ----------
+        transformation : dict
+            The transformation step to add.
+
+        Returns
+        -------
+        Metadata
+            The updated metadata.
+        """
+        for indicator in self.indicator_metadata:
+            self.indicator_metadata[indicator]["transformations"].append(transformation)
+        return self
+
     def copy(self) -> "DatasetMetadata":
         """
         Create a copy of the metadata.
@@ -187,6 +204,8 @@ class DatasetMetadata:
         return copy.deepcopy(self)
 
     def save(self, name: str, data_dir: Union[str, Path, None] = None) -> None:
+        from econuy.utils.operations import get_data_dir
+
         data_dir = data_dir or get_data_dir()
         data_dir = Path(data_dir)
         data_dir.mkdir(parents=True, exist_ok=True)

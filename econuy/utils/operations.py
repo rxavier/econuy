@@ -10,6 +10,7 @@ from sqlalchemy.engine.base import Connection, Engine
 from sqlalchemy.exc import ProgrammingError, OperationalError
 
 from econuy.utils import metadata, sql, get_project_root
+from econuy.base import Dataset, DatasetMetadata
 
 
 def _read(
@@ -277,9 +278,7 @@ def get_data_dir() -> Path:
     return data_dir
 
 
-def read_dataset(name: str, data_dir: Path) -> Optional["Dataset"]:  # noqa: F821
-    from econuy.base import Dataset, DatasetMetadata
-
+def read_dataset(name: str, data_dir: Path) -> Optional[Dataset]:  # noqa: F821
     dataset_path = (data_dir / name).with_suffix(".csv")
     metadata_path = (data_dir / f"{name}_metadata").with_suffix(".json")
     if not dataset_path.exists() or not metadata_path.exists():

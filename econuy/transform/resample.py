@@ -67,7 +67,7 @@ def _resample(
                 "could not be assigned a numeric value",
                 UserWarning,
             )
-
+    metadata.add_transformation_step({"resample": {"rule": rule, "operation": operation, "interpolation": interpolation}})
     output = output.dropna(how="all")
 
     return output, metadata

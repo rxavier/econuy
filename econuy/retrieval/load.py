@@ -6,13 +6,15 @@ import pandas as pd
 
 from econuy.utils.operations import DATASETS, read_dataset, get_data_dir
 
+from econuy.base import Dataset
+
 
 def load_dataset(
     name: str,
     data_dir: Union[str, Path, None] = None,
     skip_cache: bool = False,
     safe_overwrite: bool = True,
-) -> "Dataset":  # noqa: F821
+) -> Dataset:
     data_dir = data_dir or get_data_dir()
     data_dir = Path(data_dir)
     data_dir.mkdir(parents=True, exist_ok=True, mode=0o755)
@@ -46,7 +48,7 @@ def load_dataset(
     return dataset
 
 
-def check_updated_dataset(original: "Dataset", new: "Dataset") -> None:  # noqa: F821
+def check_updated_dataset(original: Dataset, new: Dataset) -> None:  # noqa: F821
     assert original.metadata.name == new.metadata.name, "Datasets have different names"
     assert (
         original.metadata.indicator_metadata == new.metadata.indicator_metadata

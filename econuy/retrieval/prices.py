@@ -3,7 +3,6 @@ import datetime as dt
 from concurrent.futures import ProcessPoolExecutor
 from urllib.error import URLError, HTTPError
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 import httpx
@@ -11,7 +10,6 @@ from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 
 
-from econuy.core import Pipeline
 from econuy.utils import get_project_root
 from econuy.utils.operations import get_name_from_function, get_download_sources
 from econuy.base import Dataset, DatasetMetadata
@@ -54,6 +52,7 @@ def cpi() -> pd.DataFrame:
         "frequency": "ME",
         "time_series_type": None,
         "cumulative_periods": 1,
+        "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
@@ -409,7 +408,7 @@ def ppi() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=30,
 )
-def nxr_monthly(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+def nxr_monthly() -> pd.DataFrame:
     """Get monthly nominal exchange rate data.
 
     Parameters
