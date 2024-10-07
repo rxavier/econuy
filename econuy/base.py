@@ -3,7 +3,7 @@ import warnings
 import json
 from pathlib import Path
 from datetime import datetime
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Literal
 
 import pandas as pd
 
@@ -11,6 +11,7 @@ from econuy.transform.change import _chg_diff
 from econuy.transform.resample import _resample
 from econuy.transform.rolling import _rolling
 from econuy.transform.rebase import _rebase
+from econuy.transform.convert import _convert_usd, _convert_gdp, _convert_real
 # from econuy.transform.convert import _convert_gdp, _convert_real, _convert_usd
 
 
@@ -449,12 +450,34 @@ class Dataset:
             inferred_freq = None
         return inferred_freq
 
-    def __getitem__(self, indicator) -> "Dataset":
-        metadata_dict = {indicator: self.metadata.indicator_metadata[indicator]}
+    def call_pandas_method(self, method: str, *args, **kwargs) -> "Dataset":
+        output = self.__class__(
+            data=self.data.__getattribute__(method)(*args, **kwargs),
+            metadata=self.metadata,
+            name=self.name,
+            transformed=self.transformed,
+        )
+        return output
+
+    def __getitem__(self, indicators: Union[str, List[str]]) -> "Dataset":
+        indicators = [indicators] if isinstance(indicators, str) else indicators
+        metadata_dict = {i: self.metadata.indicator_metadata[i] for i in indicators}
         return self.__class__(
-            data=self.data[[indicator]],
+            data=self.data[indicators],
             metadata=DatasetMetadata(self.name, metadata_dict),
             name=self.name,
+            transformed=self.transformed,
+        )
+
+    def select(self, indicators: Union[str, List[str]]) -> "Dataset":
+        return self.__getitem__(indicators)
+
+    def filter(self, start_date: Union[str, datetime, None] = None, end_date: Union[str, datetime, None] = None) -> "Dataset":
+        return self.__class__(
+            data=self.data.loc[start_date:end_date],
+            metadata=self.metadata,
+            name=self.name,
+            transformed=self.transformed,
         )
 
     def __repr__(self) -> str:
@@ -609,7 +632,7 @@ class Dataset:
             transformed = pd.concat(transformed, axis=1)
             new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
         output = self.__class__(
-            data=transformed, metadata=new_metadata, name=self.name, transformed=True
+            data=transformed, metadata=new_metadata, name=self.name, transformed=True,
         )
         return output
 
@@ -681,7 +704,7 @@ class Dataset:
             transformed = pd.concat(transformed, axis=1)
             new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
         output = self.__class__(
-            data=transformed, metadata=new_metadata, name=self.name, transformed=True
+            data=transformed, metadata=new_metadata, name=self.name, transformed=True,
         )
         return output
 
@@ -736,42 +759,72 @@ class Dataset:
             transformed = pd.concat(transformed, axis=1)
             new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
         output = self.__class__(
-            data=transformed, metadata=new_metadata, name=self.name, transformed=True
+            data=transformed, metadata=new_metadata, name=self.name, transformed=True,
         )
         return output
 
     def convert(
         self,
         flavor: str,
-        start_date: Union[str, datetime],
+        start_date: Union[str, datetime, None] = None,
         end_date: Union[str, datetime, None] = None,
+        error_handling: Literal["raise", "coerce", "ignore"] = "raise",
     ) -> "Dataset":
-        """Rebase dataset to a date or range of dates.
+        """Convert dataset from UYU to USD, from UYU to real UYU or
+        from UYU/USD to % GDP.
+
+        ``flavor=usd``: Convert a dataset from Uruguayan pesos to US dollars. Takes into
+        account whether the input datasets is flow or stock, in order to
+        choose end of period or monthly average NXR. Also take into account the
+        input dataframe's frequency and whether columns represent rolling averages
+        or sums.
+
+        ``flavor=real``: Convert a dataset columns to real prices. Takes into account the
+        input datasets's frequency and whether
+        columns represent rolling averages or sums. Allow choosing a single period,
+        a range of dates or no period as a base (i.e., period for which the
+        average/sum of input dataframe and output dataframe is the same).
+
+        ``flavor=gdp``: Convert a dataset to percentage of GDP. Takes into account the
+        input dataset's currency for chossing UYU or USD GDP. If frequency of input dataset is
+        higher than quarterly, GDP will be upsampled and linear interpolation will
+        be performed to complete missing data.
+        If input dataframe's "cumulative_periods" level is not 12 for monthly frequency or 4
+        for quarterly frequency, calculate rolling input dataframe.
+
+        In all cases, if input dataframe's frequency is higher than monthly
+        (daily, business, etc.), resample to monthly frequency.
 
         Parameters
         ----------
-        start_date : string or datetime.datetime
-            Date to which series will be rebased.
-        end_date : string or datetime.datetime, default None
-            If specified, series will be rebased to the average between
-            ``start_date`` and ``end_date``.
-        base : float, default 100
-            Float for which ``start_date`` == ``base`` or average between
-            ``start_date`` and ``end_date`` == ``base``.
+        flavor : str
+            ``usd`` for USD, ``real`` for real UYU, ``gdp`` for % GDP.
+        start_date : str, datetime.date or None, default None
+            Only used if ``flavor=real``. If set to a date-like string or a
+            date, and ``end_date`` is None, the base period will be
+            ``start_date``.
+        end_date : str, datetime.date or None, default None
+            Only used if ``flavor=real``. If ``start_date`` is set, calculate
+            so that the data is in constant prices of ``start_date-end_date``.
+        error_handling : {"raise", "coerce", "ignore"}, default "raise"
+            What to do when the input dataset can't be converted. Coercion will set to np.nan,
+            while "ignore" is a no-op. If "raise", will raise an error.
 
         Returns
         -------
         ``Dataset``
-
         """
         assert flavor in ["usd", "real", "gdp"], "Invalid 'flavor' option."
+        funcs = {"usd": _convert_usd, "real": _convert_real, "gdp": _convert_gdp}
+        func = funcs[flavor]
+        kwargs = {"start_date": start_date, "end_date": end_date} if flavor == "real" else {}
 
         if self.metadata.has_common_metadata:
-            transformed, new_metadata = _rebase(
+            transformed, new_metadata = func(
                 data=self.data,
                 metadata=self.metadata,
-                start_date=start_date,
-                end_date=end_date,
+                error_handling=error_handling,
+                **kwargs
             )
 
         else:
@@ -779,17 +832,17 @@ class Dataset:
             new_metadatas = []
             for column_name in self.data.columns:
                 n_dataset = self[column_name]
-                transformed_col, new_metadata = _rebase(
+                transformed_col, new_metadata = func(
                     data=n_dataset.data,
                     metadata=n_dataset.metadata,
-                    start_date=start_date,
-                    end_date=end_date,
+                    error_handling=error_handling,
+                    **kwargs
                 )
                 transformed.append(transformed_col)
                 new_metadatas.append(new_metadata)
             transformed = pd.concat(transformed, axis=1)
-            new_metadata = DatasetMetadata.from_metadatas(new_metadatas)
+            new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
         output = self.__class__(
-            data=transformed, metadata=new_metadata, name=self.name, transformed=True
+            data=transformed, metadata=new_metadata, name=self.name, transformed=True,
         )
         return output

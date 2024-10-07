@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 
+from econuy.utils.exceptions import InvalidTransformation
+
 
 def error_handler(df: pd.DataFrame, errors: str, msg: str = None) -> pd.DataFrame:
     if errors == "coerce":
@@ -10,4 +12,4 @@ def error_handler(df: pd.DataFrame, errors: str, msg: str = None) -> pd.DataFram
     elif errors == "raise":
         if msg is None:
             msg = ""
-        raise ValueError(msg)
+        raise InvalidTransformation(msg)

@@ -77,6 +77,7 @@ def monthly_gdp() -> pd.DataFrame:
         "frequency": "ME",
         "time_series_type": "Flow",
         "cumulative_periods": 1,
+        "transformations": [],
     }
 
     metadata = DatasetMetadata.from_cast(
@@ -1024,6 +1025,7 @@ def industrial_production() -> pd.DataFrame:
         "frequency": "ME",
         "time_series_type": "Flow",
         "cumulative_periods": 1,
+        "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names

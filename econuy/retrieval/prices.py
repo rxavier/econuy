@@ -119,6 +119,7 @@ def cpi_divisions() -> Dataset:
         "frequency": "ME",
         "time_series_type": None,
         "cumulative_periods": 1,
+        "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
@@ -256,6 +257,7 @@ def inflation_expectations() -> pd.DataFrame:
         "frequency": "ME",
         "time_series_type": None,
         "cumulative_periods": 1,
+        "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
@@ -394,6 +396,7 @@ def ppi() -> pd.DataFrame:
         "frequency": "ME",
         "time_series_type": None,
         "cumulative_periods": 1,
+        "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
@@ -465,6 +468,7 @@ def nxr_monthly() -> pd.DataFrame:
         "frequency": "ME",
         "time_series_type": None,
         "cumulative_periods": 1,
+        "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
@@ -518,6 +522,7 @@ def nxr_daily() -> pd.DataFrame:
         "frequency": "ME",
         "time_series_type": None,
         "cumulative_periods": 1,
+        "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
