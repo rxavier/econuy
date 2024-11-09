@@ -368,7 +368,7 @@ class Dataset:
         assert isinstance(self.data.index, pd.DatetimeIndex)
         assert self.data.dtypes.apply(pd.api.types.is_numeric_dtype).all()
 
-    def named_data(self, language: str = "es") -> pd.DataFrame:
+    def to_detailed(self, language: str = "es") -> pd.DataFrame:
         """
         Rename the data using the metadata.
 
@@ -383,14 +383,17 @@ class Dataset:
             The data with the indicators renamed.
 
         """
-        return self.data.rename(
-            columns={
-                indicator: self.metadata.indicator_metadata[indicator]["names"][
-                    language
-                ]
-                for indicator in self.indicators
-            }
-        )
+        column_metadatas = {indicator: {"name": self.metadata.indicator_metadata[indicator]["names"][language]} for indicator in self.indicators}
+        for ind, col_meta in column_metadatas.items():
+            col_meta.update(self.metadata.indicator_metadata[ind])
+            col_meta.pop("names")
+            col_meta.pop("transformations", None)
+        col_names = [x.replace("_", " ").capitalize() for x in column_metadatas[self.indicators[0]].keys()]
+        columns = pd.MultiIndex.from_tuples([tuple(column_metadatas[k].values()) for k in column_metadatas.keys()],
+                                            names=col_names)
+        detailed_data = self.data.copy()
+        detailed_data.columns = columns
+        return detailed_data
 
     def save(
         self, data_dir: Union[str, Path, None] = None, name: Optional[str] = None
