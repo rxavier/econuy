@@ -1,10 +1,8 @@
-from typing import Optional, Union, Literal
+from typing import Union, Literal
 from datetime import datetime
 
 import pandas as pd
 
-from econuy.transform import rolling, resample
-from econuy.utils import metadata
 from econuy.utils.transform import error_handler
 
 
@@ -121,101 +119,73 @@ def _convert_real(
     return converted_df, metadata
 
 
-def convert_gdp(df: pd.DataFrame, pipeline=None, errors: str = "raise") -> pd.DataFrame:
-    """Convert to other units.
+def _convert_gdp(
+    data: pd.DataFrame,
+    metadata: "Metadata",  # type: ignore # noqa: F821
+    error_handling: Literal["raise", "coerce", "ignore"] = "raise",
+) -> pd.DataFrame:
+    from econuy.retrieval.load import load_dataset
 
-    See Also
-    --------
-    :mod:`~econuy.core.Pipeline.convert`.
+    indicators = metadata.indicator_ids
+    metadata = metadata.copy()
+    # We get the first one because we validated that all indicators have the same metadata, or pass them one by one
+    single_metadata = metadata.indicator_metadata[indicators[0]]
 
-    """
-    if errors not in ["raise", "coerce", "ignore"]:
-        raise ValueError("'errors' must be one of 'raise', 'coerce' or " "'ignore'.")
-    if any(x not in df.columns.names for x in ["Área", "Unidad"]):
-        raise ValueError(
-            "Input dataframe's multiindex requires the 'Área' " "and 'Unidad' levels."
+    if single_metadata["currency"] not in ["UYU", "USD"]:
+        output = error_handler(data, errors=error_handling, msg="Currency is not UYU or USD")
+        return output, metadata
+    elif single_metadata["unit"] == "% GDP":
+        output = error_handler(
+            data, errors=error_handling, msg="Already in % GDP"
         )
-
-    if pipeline is None:
-        from econuy.core import Pipeline
-
-        pipeline = Pipeline()
-
-    checks = [
-        x not in ["Regional", "Global"] and "%PBI" not in y
-        for x, y in zip(
-            df.columns.get_level_values("Área"), df.columns.get_level_values("Unidad")
+        return output, metadata
+    elif single_metadata["inflation_adjustment"] is not None:
+        output = error_handler(
+            data, errors=error_handling, msg="Data is inflation adjusted"
         )
-    ]
-    if any(checks):
-        if not all(checks) and errors == "raise":
-            error_df = df.loc[:, [not check for check in checks]]
-            msg = f"{error_df.columns[0][0]} does not have the " f"appropiate metadata."
-            return error_handler(df=df, errors=errors, msg=msg)
-        pipeline.get(name="_monthly_interpolated_gdp")
-        gdp_data = pipeline.dataset
-        all_metadata = df.columns.droplevel("Indicador")
-        if all(x == all_metadata[0] for x in all_metadata):
-            return _convert_gdp(df=df, gdp=gdp_data)
-        else:
-            columns = []
-            for column_name, check in zip(df.columns, checks):
-                df_column = df[[column_name]]
-                if check is False:
-                    msg = f"{column_name[0]} does not have the " f"appropiate metadata."
-                    columns.append(error_handler(df=df_column, errors=errors, msg=msg))
-                else:
-                    converted = _convert_gdp(df=df_column, gdp=gdp_data)
-                    columns.append(converted)
-            return pd.concat(columns, axis=1)
-    else:
-        return error_handler(df=df, errors=errors)
+        return output, metadata
 
+    gdp = load_dataset("_monthly_interpolated_gdp").data
 
-def _convert_gdp(df: pd.DataFrame, gdp: Optional[pd.DataFrame] = None) -> pd.DataFrame:
-    if gdp is None:
-        from econuy.core import Pipeline
+    inferred_freq = pd.infer_freq(data.index)
+    target_freq = inferred_freq
+    cum_periods = single_metadata["cumulative_periods"]
+    ts_type = single_metadata["time_series_type"]
 
-        pipeline = Pipeline()
-        pipeline.get("_monthly_interpolated_gdp")
-        gdp = pipeline.dataset
-
-    inferred_freq = pd.infer_freq(df.index)
-    cum = int(df.columns.get_level_values("Acum. períodos")[0])
     if inferred_freq in ["M", "MS", "ME"]:
-        gdp = resample(
-            gdp, rule=inferred_freq, operation="upsample", interpolation="linear"
-        )
-        if cum != 12 and df.columns.get_level_values("Tipo")[0] == "Flujo":
-            converter = int(12 / cum)
-            df = rolling(df, window=converter, operation="sum")
+        gdp = gdp.resample(target_freq).interpolate("linear")
+        if cum_periods != 12 and ts_type == "Flow":
+            converter = int(12 / cum_periods)
+            data = data.rolling(window=converter).sum()
     elif inferred_freq in ["Q", "QE-DEC", "QE-DEC"]:
         gdp = gdp.resample(inferred_freq, convention="end").asfreq()
-        if cum != 4 and df.columns.get_level_values("Tipo")[0] == "Flujo":
-            converter = int(4 / cum)
-            df = rolling(df, window=converter, operation="sum")
+        if cum_periods != 4 and ts_type == "Flow":
+            converter = int(4 / cum_periods)
+            df = data.rolling(window=converter).sum()
     elif inferred_freq in ["A", "A-DEC", "YE-DEC"]:
         gdp = gdp.resample(inferred_freq, convention="end").asfreq()
     elif inferred_freq in ["D", "B", "C", "W", "W-SUN", None]:
-        if df.columns.get_level_values("Tipo")[0] == "Flujo":
-            df = df.resample("ME").sum()
+        if ts_type == "Flow":
+            data = data.resample("ME").sum()
         else:
-            df = df.resample("ME").mean()
-        gdp = resample(gdp, rule="ME", operation="upsample", interpolation="linear")
+            data = data.resample("ME").mean()
+        gdp = gdp.resample(target_freq).interpolate("linear")
     else:
         raise ValueError(
             "Frequency of input dataframe not any of 'D', 'C', "
             "'W', 'B', 'M', 'MS', 'Q', 'QE-DEC', 'A' or 'A-DEC'."
         )
 
-    if df.columns.get_level_values("Moneda")[0] == "USD":
+    currency = single_metadata["currency"]
+    if currency == "USD":
         gdp = gdp.iloc[:, 1].to_frame()
     else:
         gdp = gdp.iloc[:, 0].to_frame()
 
     gdp_to_use = gdp.reindex(df.index).iloc[:, 0]
-    converted_df = df.div(gdp_to_use, axis=0).multiply(100)
+    converted_df = data.div(gdp_to_use, axis=0).multiply(100)
 
-    metadata._set(converted_df, unit="% PBI")
+    metadata.update_dataset_metadata({"unit": "% GDP"})
+    metadata.add_transformation_step({"convert": {"flavor": "gdp"}})
 
-    return converted_df
+    return converted_df, metadata

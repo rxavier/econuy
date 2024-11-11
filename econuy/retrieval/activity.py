@@ -23,6 +23,7 @@ from econuy.utils import metadata, get_project_root
 from econuy.utils.operations import get_download_sources, get_name_from_function
 from econuy.utils.chromedriver import _build
 from econuy.base import Dataset, DatasetMetadata
+from econuy import load_dataset
 
 
 @retry(
@@ -157,7 +158,15 @@ def national_accounts_supply_constant_nsa() -> pd.DataFrame:
     """
     name = get_name_from_function()
     sources = get_download_sources(name)
-    colnames = [
+
+    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+    r = httpx.get(sources["main"], verify=certs_path)
+    raw = pd.read_excel(r.content, skiprows=7)
+    output = raw.dropna(how="all", axis=1).iloc[:, 2:].dropna(how="all").T
+    output.index = pd.date_range(start="2016-03-31", freq="QE-DEC", periods=len(output))
+    output = output.apply(pd.to_numeric, errors="coerce").rename_axis(None)
+
+    spanish_names = [
         "Agropecuario, pesca y minería",
         "Industrias manufactureras",
         "Energía eléctrica, gas y agua",
@@ -172,15 +181,27 @@ def national_accounts_supply_constant_nsa() -> pd.DataFrame:
         "Impuestos menos subvenciones",
         "Producto bruto interno",
     ]
-    return _national_accounts_retriever(
-        url=sources["main"],
-        nrows=13,
-        skiprows=7,
-        inf_adj="Const. 2016",
-        unit="Millones",
-        seas_adj="NSA",
-        colnames=colnames,
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Economic activity",
+        "currency": "UYU",
+        "inflation_adjustment": "Constant prices 2016",
+        "unit": "Million",
+        "seasonal_adjustment": "Not seasonally adjusted",
+        "frequency": "QE-DEC",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
 
 
 @retry(
@@ -198,7 +219,16 @@ def national_accounts_demand_constant_nsa() -> pd.DataFrame:
     """
     name = get_name_from_function()
     sources = get_download_sources(name)
-    colnames = [
+
+    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+    r = httpx.get(sources["main"], verify=certs_path)
+    raw = pd.read_excel(r.content, skiprows=7)
+    output = raw.dropna(how="all", axis=1).iloc[:, 2:].dropna(how="all").T
+    output.index = pd.date_range(start="2016-03-31", freq="QE-DEC", periods=len(output))
+    output = output.apply(pd.to_numeric, errors="coerce").rename_axis(None)
+    output[7] = output[7] * -1
+
+    spanish_names = [
         "Gasto de consumo: total",
         "Gasto de consumo: hogares",
         "Gasto de consumo: gobierno y ISFLH",
@@ -209,15 +239,27 @@ def national_accounts_demand_constant_nsa() -> pd.DataFrame:
         "Importaciones de bienes y servicios",
         "Producto bruto interno",
     ]
-    return _national_accounts_retriever(
-        url=sources["main"],
-        nrows=9,
-        skiprows=7,
-        inf_adj="Const. 2016",
-        unit="Millones",
-        seas_adj="NSA",
-        colnames=colnames,
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Economic activity",
+        "currency": "UYU",
+        "inflation_adjustment": "Constant prices 2016",
+        "unit": "Million",
+        "seasonal_adjustment": "Not seasonally adjusted",
+        "frequency": "QE-DEC",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
 
 
 @retry(
@@ -235,7 +277,16 @@ def national_accounts_demand_current_nsa() -> pd.DataFrame:
     """
     name = get_name_from_function()
     sources = get_download_sources(name)
-    colnames = [
+
+    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+    r = httpx.get(sources["main"], verify=certs_path)
+    raw = pd.read_excel(r.content, skiprows=7)
+    output = raw.dropna(how="all", axis=1).iloc[:, 2:].dropna(how="all").T
+    output.index = pd.date_range(start="2016-03-31", freq="QE-DEC", periods=len(output))
+    output = output.apply(pd.to_numeric, errors="coerce").rename_axis(None)
+    output["Importaciones de bienes y servicios"] = output["Importaciones de bienes y servicios"] * -1
+
+    spanish_names = [
         "Gasto de consumo: total",
         "Gasto de consumo: hogares",
         "Gasto de consumo: gobierno y ISFLH",
@@ -246,15 +297,27 @@ def national_accounts_demand_current_nsa() -> pd.DataFrame:
         "Importaciones de bienes y servicios",
         "Producto bruto interno",
     ]
-    return _national_accounts_retriever(
-        url=sources["main"],
-        nrows=9,
-        skiprows=7,
-        inf_adj="No",
-        unit="Millones",
-        seas_adj="NSA",
-        colnames=colnames,
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Economic activity",
+        "currency": "UYU",
+        "inflation_adjustment": None,
+        "unit": "Million",
+        "seasonal_adjustment": "Not seasonally adjusted",
+        "frequency": "QE-DEC",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
 
 
 @retry(
@@ -272,7 +335,15 @@ def national_accounts_supply_current_nsa() -> pd.DataFrame:
     """
     name = get_name_from_function()
     sources = get_download_sources(name)
-    colnames = [
+
+    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+    r = httpx.get(sources["main"], verify=certs_path)
+    raw = pd.read_excel(r.content, skiprows=7)
+    output = raw.dropna(how="all", axis=1).iloc[:, 2:].dropna(how="all").T
+    output.index = pd.date_range(start="2016-03-31", freq="QE-DEC", periods=len(output))
+    output = output.apply(pd.to_numeric, errors="coerce").rename_axis(None)
+
+    spanish_names = [
         "Agropecuario, pesca y minería",
         "Industrias manufactureras",
         "Energía eléctrica, gas y agua",
@@ -287,15 +358,28 @@ def national_accounts_supply_current_nsa() -> pd.DataFrame:
         "Impuestos menos subvenciones",
         "Producto bruto interno",
     ]
-    return _national_accounts_retriever(
-        url=sources["main"],
-        nrows=13,
-        skiprows=7,
-        inf_adj="No",
-        unit="Millones",
-        seas_adj="NSA",
-        colnames=colnames,
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Economic activity",
+        "currency": "UYU",
+        "inflation_adjustment": None,
+        "unit": "Million",
+        "seasonal_adjustment": "Not seasonally adjusted",
+        "frequency": "QE-DEC",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
+
 
 
 @retry(
@@ -313,16 +397,35 @@ def gdp_index_constant_sa() -> pd.DataFrame:
     """
     name = get_name_from_function()
     sources = get_download_sources(name)
-    colnames = ["Producto bruto interno"]
-    return _national_accounts_retriever(
-        url=sources["main"],
-        nrows=1,
-        skiprows=7,
-        inf_adj="Const. 2016",
-        unit="2016=100",
-        seas_adj="SA",
-        colnames=colnames,
+    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+    r = httpx.get(sources["main"], verify=certs_path)
+    raw = pd.read_excel(r.content, skiprows=7)
+    output = raw.dropna(how="all", axis=1).iloc[:, 2:].dropna(how="all").T
+    output.index = pd.date_range(start="2016-03-31", freq="QE-DEC", periods=len(output))
+    output = output.apply(pd.to_numeric, errors="coerce").rename_axis(None)
+
+    spanish_names = ["Producto bruto interno"]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Economic activity",
+        "currency": "UYU",
+        "inflation_adjustment": "Constant prices 2016",
+        "unit": "2016=100",
+        "seasonal_adjustment": "Seasonally adjusted",
+        "frequency": "QE-DEC",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
 
 
 @retry(
@@ -331,7 +434,6 @@ def gdp_index_constant_sa() -> pd.DataFrame:
     retry_window_after_first_call_in_seconds=60,
 )
 def national_accounts_supply_constant_nsa_extended(
-    pipeline: Pipeline = None,
 ) -> pd.DataFrame:
     """Get supply-side national accounts data in NSA constant prices, 1988-.
 
@@ -345,10 +447,9 @@ def national_accounts_supply_constant_nsa_extended(
     """
     name = get_name_from_function()
     sources = get_download_sources(name)
-    if pipeline is None:
-        pipeline = Pipeline()
-    pipeline.get("national_accounts_supply_constant_nsa")
-    data_16 = pipeline.dataset.copy()
+
+
+    data_16 = load_dataset("national_accounts_supply_constant_nsa").to_detailed()
     data_16.columns = data_16.columns.get_level_values(0)
     data_16["Otros servicios"] = (
         data_16["Servicios financieros"]
@@ -356,7 +457,7 @@ def national_accounts_supply_constant_nsa_extended(
         + data_16["Actividades de administración pública"]
         + data_16["Salud, educación, act. inmobiliarias y otros servicios"]
     )
-    data_16.drop(
+    data_16 = data_16.drop(
         [
             "Valor agregado a precios básicos",
             "Servicios financieros",
@@ -366,10 +467,9 @@ def national_accounts_supply_constant_nsa_extended(
             "Valor agregado a precios básicos",
         ],
         axis=1,
-        inplace=True,
     )
 
-    colnames = [
+    names_05 = [
         "Actividades primarias",
         "Act. prim.: Agricultura, ganadería, caza y silvicultura",
         "Industrias manufactureras",
@@ -382,16 +482,13 @@ def national_accounts_supply_constant_nsa_extended(
         "Impuestos menos subvenciones",
         "Producto bruto interno",
     ]
-    data_05 = _national_accounts_retriever(
-        url=sources["2005"],
-        nrows=12,
-        skiprows=9,
-        inf_adj="Const. 2005",
-        unit="Millones",
-        seas_adj="NSA",
-        colnames=colnames,
-    )
-    data_05.columns = data_05.columns.get_level_values(0)
+    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+    r = httpx.get(sources["2005"], verify=certs_path)
+    raw_05 = pd.read_excel(r.content, skiprows=9)
+    data_05 = raw_05.dropna(how="all", axis=1).iloc[:, 1:].set_index("Unnamed: 1").dropna(how="all").T
+    data_05.index = pd.date_range(start="1997-03-31", freq="QE-DEC", periods=len(data_05))
+    data_05 = data_05.apply(pd.to_numeric, errors="coerce").rename_axis(None)
+    data_05.columns = names_05
 
     # In the following lines I rename and reorder the Other activities
     # column, and explicitly drop SIFMI because I have no way of adding them.
@@ -400,14 +497,13 @@ def national_accounts_supply_constant_nsa_extended(
     # assuming that the share of SIFMI in each sector over time doesn't change,
     # which shouldn't affect growth rates.
     data_05["Otros servicios"] = data_05["Otras actividades"]
-    data_05.drop(
+    data_05 = data_05.drop(
         [
             "Act. prim.: Agricultura, ganadería, caza y silvicultura",
             "Otras actividades",
             "Otras actividades: SIFMI",
         ],
         axis=1,
-        inplace=True,
     )
     data_05.columns = data_16.columns
     aux_index = list(dict.fromkeys(list(data_05.index) + list(data_16.index)))
@@ -420,8 +516,7 @@ def national_accounts_supply_constant_nsa_extended(
                 * data_05.loc[quarter, :]
                 / data_05.loc[next_quarter, :]
             )
-    aux = aux[
-        [
+    spanish_names =         [
             "Agropecuario, pesca y minería",
             "Industrias manufactureras",
             "Energía eléctrica, gas y agua",
@@ -432,32 +527,18 @@ def national_accounts_supply_constant_nsa_extended(
             "Impuestos menos subvenciones",
             "Producto bruto interno",
         ]
-    ]
-    try:
-        data_83 = (
-            pd.read_excel(
-                sources["1983"],
-                skiprows=10,
-                nrows=8,
-                index_col=1,
-            )
-            .iloc[:, 1:]
-            .T
+    aux = aux[spanish_names]
+    r = httpx.get(sources["1983"], verify=certs_path)
+    data_83 = (
+        pd.read_excel(
+            r.content,
+            skiprows=10,
+            nrows=8,
+            index_col=1,
         )
-    except URLError as err:
-        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = httpx.get(sources["1983"], verify=certs_path)
-            data_83 = (
-                pd.read_excel(
-                    r.content,
-                    skiprows=10,
-                    nrows=8,
-                    index_col=1,
-                )
-                .iloc[:, 1:]
-                .T
-            )
+        .iloc[:, 1:]
+        .T
+    )
     data_83.index = pd.date_range(
         start="1988-03-31", freq="QE-DEC", periods=len(data_83)
     )
@@ -488,18 +569,27 @@ def national_accounts_supply_constant_nsa_extended(
                 / data_83.loc[next_quarter, :]
             )
 
-    metadata._set(
-        output,
-        area="Actividad económica",
-        currency="UYU",
-        inf_adj="Const. 2016",
-        unit="Millones",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
-    )
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
 
-    return output
+    base_metadata = {
+        "area": "Economic activity",
+        "currency": "UYU",
+        "inflation_adjustment": "Constant prices 2016",
+        "unit": "Million",
+        "seasonal_adjustment": "Not seasonally adjusted",
+        "frequency": "QE-DEC",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
 
 
 @retry(
@@ -507,9 +597,7 @@ def national_accounts_supply_constant_nsa_extended(
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def national_accounts_demand_constant_nsa_extended(
-    pipeline: Pipeline = None,
-) -> pd.DataFrame:
+def national_accounts_demand_constant_nsa_extended() -> pd.DataFrame:
     """Get demand-side national accounts data in NSA constant prices, 1988-.
 
     Three datasets with different base years, 1983, 2005 and 2016, are spliced
@@ -523,14 +611,11 @@ def national_accounts_demand_constant_nsa_extended(
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    if pipeline is None:
-        pipeline = Pipeline()
-    pipeline.get("national_accounts_demand_constant_nsa")
-    data_16 = pipeline.dataset.copy()
+    data_16 = load_dataset("national_accounts_demand_constant_nsa").to_detailed()
     data_16.columns = data_16.columns.get_level_values(0)
-    data_16.drop(["Variación de existencias"], axis=1, inplace=True)
+    data_16 = data_16.drop(["Variación de existencias"], axis=1)
 
-    colnames = [
+    spanish_names = [
         "Gasto de consumo final",
         "Gasto de consumo final de hogares",
         "Gasto de consumo final del gobierno general",
@@ -542,18 +627,18 @@ def national_accounts_demand_constant_nsa_extended(
         "Importaciones",
         "Producto bruto interno",
     ]
-    data_05 = _national_accounts_retriever(
-        url=sources["2005"],
-        nrows=10,
-        skiprows=9,
-        inf_adj="Const. 2005",
-        unit="Millones",
-        seas_adj="NSA",
-        colnames=colnames,
-    )
-    data_05.columns = data_05.columns.get_level_values(0)
-    data_05.drop(["Sector público", "Sector privado"], axis=1, inplace=True)
+    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+    r = httpx.get(sources["2005"], verify=certs_path)
+    raw_05 = pd.read_excel(r.content, skiprows=9)
+    data_05 = raw_05.dropna(how="all", axis=1).iloc[:, 1:].set_index("Unnamed: 1").dropna(how="all").T
+    data_05.index = pd.date_range(start="2005-03-31", freq="QE-DEC", periods=len(data_05))
+    data_05 = data_05.apply(pd.to_numeric, errors="coerce").rename_axis(None)
+    data_05.columns = spanish_names
+    data_05["Importaciones"] = data_05["Importaciones"] * -1
+
+    data_05 = data_05.drop(["Sector público", "Sector privado"], axis=1)
     data_05.columns = data_16.columns
+
     aux_index = list(dict.fromkeys(list(data_05.index) + list(data_16.index)))
     aux = data_16.reindex(aux_index)
     for quarter in reversed(aux_index):
@@ -564,31 +649,18 @@ def national_accounts_demand_constant_nsa_extended(
                 * data_05.loc[quarter, :]
                 / data_05.loc[next_quarter, :]
             )
-    try:
-        data_83 = (
-            pd.read_excel(
-                sources["1983"],
-                skiprows=10,
-                nrows=11,
-                index_col=1,
-            )
-            .iloc[:, 1:]
-            .T
+
+    r = httpx.get(sources["1983"], verify=certs_path)
+    data_83 = (
+        pd.read_excel(
+            r.content,
+            skiprows=10,
+            nrows=11,
+            index_col=1,
         )
-    except URLError as err:
-        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = httpx.get(sources["1983"], verify=certs_path)
-            data_83 = (
-                pd.read_excel(
-                    r.content,
-                    skiprows=10,
-                    nrows=11,
-                    index_col=1,
-                )
-                .iloc[:, 1:]
-                .T
-            )
+        .iloc[:, 1:]
+        .T
+    )
     data_83.index = pd.date_range(
         start="1988-03-31", freq="QE-DEC", periods=len(data_83)
     )
@@ -610,18 +682,27 @@ def national_accounts_demand_constant_nsa_extended(
                 / data_83.loc[next_quarter, :]
             )
 
-    metadata._set(
-        output,
-        area="Actividad económica",
-        currency="UYU",
-        inf_adj="Const. 2016",
-        unit="Millones",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
-    )
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
 
-    return output
+    base_metadata = {
+        "area": "Economic activity",
+        "currency": "UYU",
+        "inflation_adjustment": "Constant prices 2016",
+        "unit": "Million",
+        "seasonal_adjustment": "Not seasonally adjusted",
+        "frequency": "QE-DEC",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
 
 
 @retry(
@@ -629,7 +710,7 @@ def national_accounts_demand_constant_nsa_extended(
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def gdp_index_constant_sa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
+def gdp_index_constant_sa_extended() -> pd.DataFrame:
     """Get GDP data in SA constant prices, 1988-.
 
     Three datasets with different base years, 1983, 2005 and 2016, are spliced
@@ -642,13 +723,11 @@ def gdp_index_constant_sa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
     """
     name = get_name_from_function()
     sources = get_download_sources(name)
-    if pipeline is None:
-        pipeline = Pipeline()
-    pipeline.get("gdp_index_constant_sa")
-    data_16 = pipeline.dataset.copy()
+
+    data_16 = load_dataset("gdp_index_constant_sa").to_detailed()
     data_16.columns = data_16.columns.get_level_values(0)
 
-    colnames = [
+    names = [
         "Actividades primarias",
         "Act. prim.: Agricultura, ganadería, caza y silvicultura",
         "Industrias manufactureras",
@@ -661,16 +740,14 @@ def gdp_index_constant_sa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
         "Impuestos menos subvenciones",
         "Producto bruto interno",
     ]
-    data_05 = _national_accounts_retriever(
-        url=sources["2005"],
-        nrows=12,
-        skiprows=9,
-        inf_adj="Const. 2005",
-        unit="Millones",
-        seas_adj="SA",
-        colnames=colnames,
-    )
-    data_05.columns = data_05.columns.get_level_values(0)
+    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+    r = httpx.get(sources["2005"], verify=certs_path)
+    raw_05 = pd.read_excel(r.content, skiprows=9)
+    data_05 = raw_05.dropna(how="all", axis=1).iloc[:, 1:].set_index("Unnamed: 1").dropna(how="all").T
+    data_05.index = pd.date_range(start="1997-03-31", freq="QE-DEC", periods=len(data_05))
+    data_05 = data_05.apply(pd.to_numeric, errors="coerce").rename_axis(None)
+    data_05.columns = names
+
     data_05 = data_05[["Producto bruto interno"]]
     aux_index = list(dict.fromkeys(list(data_05.index) + list(data_16.index)))
     aux = data_16.reindex(aux_index)
@@ -682,31 +759,18 @@ def gdp_index_constant_sa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
                 * data_05.loc[quarter, :]
                 / data_05.loc[next_quarter, :]
             )
-    try:
-        data_83 = (
-            pd.read_excel(
-                sources["1983"],
-                skiprows=10,
-                nrows=8,
-                index_col=1,
-            )
-            .iloc[:, 1:]
-            .T
+
+    r = httpx.get(sources["1983"], verify=certs_path)
+    data_83 = (
+        pd.read_excel(
+            r.content,
+            skiprows=10,
+            nrows=8,
+            index_col=1,
         )
-    except URLError as err:
-        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = httpx.get(sources["1983"], verify=certs_path)
-            data_83 = (
-                pd.read_excel(
-                    r.content,
-                    skiprows=10,
-                    nrows=8,
-                    index_col=1,
-                )
-                .iloc[:, 1:]
-                .T
-            )
+        .iloc[:, 1:]
+        .T
+    )
     data_83.index = pd.date_range(
         start="1988-03-31", freq="QE-DEC", periods=len(data_83)
     )
@@ -724,18 +788,29 @@ def gdp_index_constant_sa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
                 / data_83.loc[next_quarter, :]
             )
 
-    metadata._set(
-        output,
-        area="Actividad económica",
-        currency="UYU",
-        inf_adj="Const. 2016",
-        unit="Millones",
-        seas_adj="SA",
-        ts_type="Flujo",
-        cumperiods=1,
-    )
+    spanish_names = ["Producto bruto interno"]
 
-    return output
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Economic activity",
+        "currency": "UYU",
+        "inflation_adjustment": "Constant prices 2016",
+        "unit": "2016=100",
+        "seasonal_adjustment": "Seasonally adjusted",
+        "frequency": "QE-DEC",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
 
 
 @retry(
@@ -743,7 +818,7 @@ def gdp_index_constant_sa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def gdp_constant_nsa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
+def gdp_constant_nsa_extended() -> pd.DataFrame:
     """Get GDP data in NSA constant prices, 1988-.
 
     Three datasets with two different base years, 1983 and 2016, are
@@ -757,47 +832,33 @@ def gdp_constant_nsa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
     """
     name = get_name_from_function()
     sources = get_download_sources(name)
-    if pipeline is None:
-        pipeline = Pipeline()
-    pipeline.get("national_accounts_supply_constant_nsa")
-    data_16 = pipeline.dataset.copy()
+
+    data_16 = load_dataset("national_accounts_supply_constant_nsa").to_detailed()
     data_16.columns = data_16.columns.get_level_values(0)
     data_16 = data_16[["Producto bruto interno"]]
 
-    colnames = ["Producto bruto interno"]
-    data_97 = _national_accounts_retriever(
-        url=sources["1997"],
-        nrows=1,
-        skiprows=6,
-        inf_adj="Const. 2016",
-        unit="Millones",
-        seas_adj="NSA",
-        colnames=colnames,
-    )
-    data_97.columns = data_97.columns.get_level_values(0)
+    names = ["Producto bruto interno"]
+    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+    r = httpx.get(sources["1997"], verify=certs_path)
+    raw_97 = pd.read_excel(r.content, skiprows=6)
+    data_97 = raw_97.dropna(how="all", axis=1).iloc[:, 1:].set_index("Unnamed: 1").dropna(how="all").T
+    data_97.index = pd.date_range(start="1997-03-31", freq="QE-DEC", periods=len(data_97))
+    data_97 = data_97.apply(pd.to_numeric, errors="coerce").rename_axis(None)
+    data_97.columns = names
 
     aux = pd.concat([data_97, data_16], axis=0)
 
-    try:
-        data_83 = (
-            pd.read_excel(sources["1983"], skiprows=10, nrows=8, index_col=1)
-            .iloc[:, 1:]
-            .T
+    r = httpx.get(sources["1983"], verify=certs_path)
+    data_83 = (
+        pd.read_excel(
+            r.content,
+            skiprows=10,
+            nrows=8,
+            index_col=1,
         )
-    except URLError as err:
-        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = httpx.get(sources["1983"], verify=certs_path)
-            data_83 = (
-                pd.read_excel(
-                    r.content,
-                    skiprows=10,
-                    nrows=8,
-                    index_col=1,
-                )
-                .iloc[:, 1:]
-                .T
-            )
+        .iloc[:, 1:]
+        .T
+    )
     data_83.index = pd.date_range(
         start="1988-03-31", freq="QE-DEC", periods=len(data_83)
     )
@@ -815,18 +876,29 @@ def gdp_constant_nsa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
                 / data_83.loc[next_quarter, :]
             )
 
-    metadata._set(
-        output,
-        area="Actividad económica",
-        currency="UYU",
-        inf_adj="Const. 2016",
-        unit="Millones",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
-    )
+    spanish_names = ["Producto bruto interno"]
 
-    return output
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Economic activity",
+        "currency": "UYU",
+        "inflation_adjustment": "Constant prices 2016",
+        "unit": "Millions",
+        "seasonal_adjustment": "Not seasonally adjusted",
+        "frequency": "QE-DEC",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
 
 
 @retry(
@@ -834,7 +906,7 @@ def gdp_constant_nsa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def gdp_current_nsa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
+def gdp_current_nsa_extended() -> pd.DataFrame:
     """Get GDP data in NSA current prices, 1997-.
 
     It uses the BCU's working paper for retropolated GDP in current and constant prices for
@@ -847,39 +919,44 @@ def gdp_current_nsa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
     """
     name = get_name_from_function()
     sources = get_download_sources(name)
-    if pipeline is None:
-        pipeline = Pipeline()
-    pipeline.get("national_accounts_supply_current_nsa")
-    data_16 = pipeline.dataset.copy()
+
+    data_16 = load_dataset("national_accounts_supply_current_nsa").to_detailed()
     data_16.columns = data_16.columns.get_level_values(0)
     data_16 = data_16[["Producto bruto interno"]]
 
-    colnames = ["Producto bruto interno"]
-    data_97 = _national_accounts_retriever(
-        url=sources["1997"],
-        nrows=1,
-        skiprows=6,
-        inf_adj="No",
-        unit="Millones",
-        seas_adj="NSA",
-        colnames=colnames,
-    )
-    data_97.columns = data_97.columns.get_level_values(0)
+    names = ["Producto bruto interno"]
+    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+    r = httpx.get(sources["1997"], verify=certs_path)
+    raw_97 = pd.read_excel(r.content, skiprows=6)
+    data_97 = raw_97.dropna(how="all", axis=1).iloc[:, 1:].set_index("Unnamed: 1").dropna(how="all").T
+    data_97.index = pd.date_range(start="1997-03-31", freq="QE-DEC", periods=len(data_97))
+    data_97 = data_97.apply(pd.to_numeric, errors="coerce").rename_axis(None)
+    data_97.columns = names
 
     output = pd.concat([data_97, data_16], axis=0)
 
-    metadata._set(
-        output,
-        area="Actividad económica",
-        currency="UYU",
-        inf_adj="No",
-        unit="Millones",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
-    )
+    spanish_names = ["Producto bruto interno"]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
 
-    return output
+    base_metadata = {
+        "area": "Economic activity",
+        "currency": "UYU",
+        "inflation_adjustment": None,
+        "unit": "Millions",
+        "seasonal_adjustment": "Not seasonally adjusted",
+        "frequency": "QE-DEC",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
 
 
 @retry(
@@ -887,7 +964,7 @@ def gdp_current_nsa_extended(pipeline: Pipeline = None) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def _monthly_interpolated_gdp(pipeline: Optional[Pipeline] = None):
+def gdp_denominator():
     """Get nominal GDP data in UYU and USD with forecasts.
 
     Update nominal GDP data for use in the `transform.convert_gdp()` function.
@@ -906,14 +983,12 @@ def _monthly_interpolated_gdp(pipeline: Optional[Pipeline] = None):
         Quarterly GDP in UYU and USD with 1 year forecasts.
 
     """
-    if pipeline is None:
-        pipeline = Pipeline()
+    name = get_name_from_function()
 
-    pipeline.get(name="gdp_current_nsa_extended")
-    data_uyu = pipeline.dataset
-    # TODO: use Pipeline methods for these
-    data_uyu = transform.rolling(data_uyu, window=4, operation="sum")
-    data_usd = transform.convert_usd(data_uyu, pipeline=pipeline)
+    data_uyu = load_dataset("gdp_current_nsa_extended").rolling(window=4, operation="sum")
+    data_usd = data_uyu.convert("usd")
+    data_uyu, data_usd = data_uyu.data, data_usd.data
+
 
     data = [data_uyu, data_usd]
     last_year = data_uyu.index.max().year
@@ -924,7 +999,7 @@ def _monthly_interpolated_gdp(pipeline: Optional[Pipeline] = None):
     for table, gdp in zip(["NGDP", "NGDPD"], data):
         table_url = (
             f"https://www.imf.org/en/Publications/WEO/weo-database/"
-            f"2021/April/weo-report?c=298,&s={table},&sy="
+            f"2024/October/weo-report?c=298,&s={table},&sy="
             f"{last_year - 1}&ey={last_year + 1}&ssm=0&scsm=1&scc=0&"
             f"ssd=1&ssc=0&sic=0&sort=country&ds=.&br=1"
         )
@@ -953,11 +1028,31 @@ def _monthly_interpolated_gdp(pipeline: Optional[Pipeline] = None):
 
     output = pd.concat(results, axis=1)
     output = output.resample("QE-DEC").interpolate("linear").dropna(how="all")
-    output.rename_axis(None, inplace=True)
+    output = output.rename_axis(None)
 
-    metadata._modify_multiindex(output, levels=[0], new_arrays=[["PBI UYU", "PBI USD"]])
+    spanish_names = ["Producto bruto interno", "Producto bruto interno"]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
 
-    return output
+    base_metadata = {
+        "area": "Economic activity",
+        "currency": "UYU",
+        "inflation_adjustment": None,
+        "unit": "Millions",
+        "seasonal_adjustment": "Not seasonally adjusted",
+        "frequency": "QE-DEC",
+        "time_series_type": "Flow",
+        "cumulative_periods": 4,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    metadata.update_indicator_metadata_value(f"{name}_1", "currency", "USD")
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
 
 
 @retry(

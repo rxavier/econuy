@@ -388,14 +388,14 @@
       "provider": ["BCU"]
     }
   },
-  "_monthly_interpolated_gdp": {
-    "description": "PBI corriente acumulado mensual linealizado en pesos y USD con proyecciones",
-    "description_en": "Monthly linear interpolation of last 4 quarters current GDP in pesos and USD with forecasts",
+  "gdp_denominator": {
+    "description": "PBI corriente acumulado anual en frecuencia trimestral, con forecasts IMF al siguiente año calendario",
+    "description_en": "Current prices GDP annual cumulative in quarterly frequency, with IMF forecasts for the following calendar year",
     "area": "activity",
     "custom": true,
     "disabled": false,
     "auxiliary": true,
-    "function": "activity._monthly_interpolated_gdp"
+    "function": "activity.gdp_denominator"
   },
   "cpi": {
     "description": "Índice de precios al consumidor - IPC (ene-37, M)",

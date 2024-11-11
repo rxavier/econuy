@@ -386,8 +386,9 @@ class Dataset:
         column_metadatas = {indicator: {"name": self.metadata.indicator_metadata[indicator]["names"][language]} for indicator in self.indicators}
         for ind, col_meta in column_metadatas.items():
             col_meta.update(self.metadata.indicator_metadata[ind])
+            col_meta.update({"id": ind})
             col_meta.pop("names")
-            col_meta.pop("transformations", None)
+            col_meta.pop("transformations", None) #TODO: Add transformations to metadata
         col_names = [x.replace("_", " ").capitalize() for x in column_metadatas[self.indicators[0]].keys()]
         columns = pd.MultiIndex.from_tuples([tuple(column_metadatas[k].values()) for k in column_metadatas.keys()],
                                             names=col_names)
