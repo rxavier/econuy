@@ -1,6 +1,4 @@
 import io
-import datetime as dt
-from concurrent.futures import ProcessPoolExecutor
 from urllib.error import URLError, HTTPError
 from pathlib import Path
 
@@ -492,23 +490,13 @@ def nxr_daily() -> pd.DataFrame:
         Sell rate.
 
     """
-    name = "nxr_daily"
-    starts = [
-        dt.date(y, 1, 1).strftime("%d/%m/%Y")
-        for y in range(2000, dt.date.today().year + 1)
-    ]
-    ends = [
-        dt.date(y, 12, 31).strftime("%d/%m/%Y")
-        for y in range(2000, dt.date.today().year + 1)
-    ]
-    with ProcessPoolExecutor(8) as executor:
-        results = list(executor.map(_make_nxr_bcu_request, starts, ends))
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
-    raw = pd.concat([pd.read_excel(io.BytesIO(r), decimal=",") for r in results])
-    output = raw.set_index("Fecha")[["Venta"]].rename_axis(None)
-    output.index = pd.to_datetime(output.index, format="%d/%m/%Y")
+    output = pd.read_excel(sources["main"], usecols="A,D", index_col=0)
+    output.index = pd.to_datetime(output.index,  format="%d-%m-%Y")
 
-    spanish_names = ["Tipo de cambio Billete"]
+    spanish_names = ["Tipo de cambio venta"]
     ids = [f"{name}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
@@ -530,23 +518,6 @@ def nxr_daily() -> pd.DataFrame:
     dataset = Dataset(name, output, metadata)
 
     return dataset
-
-
-def _make_nxr_bcu_request(start, end):
-    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-    sources = get_download_sources("nxr_daily")
-    response = httpx.get(
-        sources["main"].format(start=start, end=end), verify=certs_path
-    )
-    try:
-        if response.status_code == 200:
-            return response.content
-        else:
-            print(response.reason)
-            return None
-    except Exception as e:
-        print(e)
-        return None
 
 
 # @retry(

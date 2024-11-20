@@ -521,15 +521,14 @@
     "function": "prices.nxr_daily",
     "sources": {
       "downloads": {
-        "main": "https://www.bcu.gub.uy/_layouts/15/BCU.Cotizaciones/handler/FileHandler.ashx?op=downloadcotizacionesexcel&KeyValuePairs={{%22KeyValuePairs%22:{{%22Monedas%22:[{{%22Val%22:%222225%22,%22Text%22:%22DLS.%20USA%20BILLETE%22}}],%22FechaDesde%22:%22{start}%22,%22FechaHasta%22:%22{end}%22,%22Grupo%22:%222%22}}}}"
+        "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/Cotizaci%C3%B3n%20monedas/Cotizaci%C3%B3n%20monedas.xlsx"
       },
-      "direct": [
-
+      "direct": ["https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/Cotizaci%C3%B3n%20monedas/Cotizaci%C3%B3n%20monedas.xlsx"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Cotizaciones.aspx"
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-cotizacion%20monedas"
       ],
-      "provider": ["BCU"]
+      "provider": ["INE"]
     }
   },
   "cpi_measures": {
