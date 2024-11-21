@@ -4,7 +4,7 @@ import tempfile
 import time
 from pathlib import Path
 from os import listdir, path
-from typing import List, Optional
+from typing import Optional
 from urllib.error import HTTPError, URLError
 
 import pandas as pd
@@ -17,9 +17,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from econuy import transform
 from econuy.core import Pipeline
-from econuy.utils import metadata, get_project_root
+from econuy.utils import get_project_root
 from econuy.utils.operations import get_download_sources, get_name_from_function
 from econuy.utils.chromedriver import _build
 from econuy.base import Dataset, DatasetMetadata
@@ -95,54 +94,6 @@ def monthly_gdp() -> pd.DataFrame:
     return dataset
 
 
-def _national_accounts_retriever(
-    url: str,
-    nrows: int,
-    skiprows: int,
-    inf_adj: str,
-    unit: str,
-    seas_adj: str,
-    colnames: List[str],
-) -> pd.DataFrame:
-    """Helper function. See any of the `natacc_...()` functions."""
-    try:
-        raw = pd.read_excel(url, skiprows=skiprows, nrows=nrows, index_col=1)
-    except URLError as err:
-        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = httpx.get(url, verify=certs_path)
-            raw = pd.read_excel(r.content, skiprows=skiprows, nrows=nrows, index_col=1)
-    raw = raw.iloc[:, 1:].dropna(how="all", axis=1).dropna(how="all", axis=0).T
-    raw.index = raw.index.str.replace("*", "", regex=False)
-    raw.index = raw.index.str.replace(r"\bI \b", "3-", regex=True)
-    raw.index = raw.index.str.replace(r"\bII \b", "6-", regex=True)
-    raw.index = raw.index.str.replace(r"\bIII \b", "9-", regex=True)
-    raw.index = raw.index.str.replace(r"\bIV \b", "12-", regex=True)
-    raw.index = raw.index.str.replace(r"([0-9]+)(I)", r"\g<1>1", regex=True)
-    raw.index = raw.index.str.strip()
-    raw.index = pd.to_datetime(raw.index, format="%m-%Y") + MonthEnd(1)
-    raw.columns = colnames
-    output = raw.apply(pd.to_numeric, errors="coerce")
-    output.rename_axis(None, inplace=True)
-
-    for col in output.columns:
-        if "Importaciones" in col and all(output[col] < 0):
-            output[col] = output[col] * -1
-
-    metadata._set(
-        output,
-        area="Actividad económica",
-        currency="UYU",
-        inf_adj=inf_adj,
-        unit=unit,
-        seas_adj=seas_adj,
-        ts_type="Flujo",
-        cumperiods=1,
-    )
-
-    return output
-
-
 @retry(
     retry_on_exceptions=(HTTPError, URLError),
     max_calls_total=4,
@@ -190,7 +141,7 @@ def national_accounts_supply_constant_nsa() -> pd.DataFrame:
         "currency": "UYU",
         "inflation_adjustment": "Constant prices 2016",
         "unit": "Million",
-        "seasonal_adjustment": "Not seasonally adjusted",
+        "seasonal_adjustment": None,
         "frequency": "QE-DEC",
         "time_series_type": "Flow",
         "cumulative_periods": 1,
@@ -248,7 +199,7 @@ def national_accounts_demand_constant_nsa() -> pd.DataFrame:
         "currency": "UYU",
         "inflation_adjustment": "Constant prices 2016",
         "unit": "Million",
-        "seasonal_adjustment": "Not seasonally adjusted",
+        "seasonal_adjustment": None,
         "frequency": "QE-DEC",
         "time_series_type": "Flow",
         "cumulative_periods": 1,
@@ -306,7 +257,7 @@ def national_accounts_demand_current_nsa() -> pd.DataFrame:
         "currency": "UYU",
         "inflation_adjustment": None,
         "unit": "Million",
-        "seasonal_adjustment": "Not seasonally adjusted",
+        "seasonal_adjustment": None,
         "frequency": "QE-DEC",
         "time_series_type": "Flow",
         "cumulative_periods": 1,
@@ -367,7 +318,7 @@ def national_accounts_supply_current_nsa() -> pd.DataFrame:
         "currency": "UYU",
         "inflation_adjustment": None,
         "unit": "Million",
-        "seasonal_adjustment": "Not seasonally adjusted",
+        "seasonal_adjustment": None,
         "frequency": "QE-DEC",
         "time_series_type": "Flow",
         "cumulative_periods": 1,
@@ -578,7 +529,7 @@ def national_accounts_supply_constant_nsa_extended(
         "currency": "UYU",
         "inflation_adjustment": "Constant prices 2016",
         "unit": "Million",
-        "seasonal_adjustment": "Not seasonally adjusted",
+        "seasonal_adjustment": None,
         "frequency": "QE-DEC",
         "time_series_type": "Flow",
         "cumulative_periods": 1,
@@ -691,7 +642,7 @@ def national_accounts_demand_constant_nsa_extended() -> pd.DataFrame:
         "currency": "UYU",
         "inflation_adjustment": "Constant prices 2016",
         "unit": "Million",
-        "seasonal_adjustment": "Not seasonally adjusted",
+        "seasonal_adjustment": None,
         "frequency": "QE-DEC",
         "time_series_type": "Flow",
         "cumulative_periods": 1,
@@ -887,7 +838,7 @@ def gdp_constant_nsa_extended() -> pd.DataFrame:
         "currency": "UYU",
         "inflation_adjustment": "Constant prices 2016",
         "unit": "Millions",
-        "seasonal_adjustment": "Not seasonally adjusted",
+        "seasonal_adjustment": None,
         "frequency": "QE-DEC",
         "time_series_type": "Flow",
         "cumulative_periods": 1,
@@ -945,7 +896,7 @@ def gdp_current_nsa_extended() -> pd.DataFrame:
         "currency": "UYU",
         "inflation_adjustment": None,
         "unit": "Millions",
-        "seasonal_adjustment": "Not seasonally adjusted",
+        "seasonal_adjustment": None,
         "frequency": "QE-DEC",
         "time_series_type": "Flow",
         "cumulative_periods": 1,
@@ -1040,7 +991,7 @@ def gdp_denominator():
         "currency": "UYU",
         "inflation_adjustment": None,
         "unit": "Millions",
-        "seasonal_adjustment": "Not seasonally adjusted",
+        "seasonal_adjustment": None,
         "frequency": "QE-DEC",
         "time_series_type": "Flow",
         "cumulative_periods": 4,
@@ -1116,7 +1067,7 @@ def industrial_production() -> pd.DataFrame:
         "currency": "UYU",
         "inflation_adjustment": None,
         "unit": "2018=100",
-        "seasonal_adjustment": "Not seasonally adjusted",
+        "seasonal_adjustment": None,
         "frequency": "ME",
         "time_series_type": "Flow",
         "cumulative_periods": 1,
@@ -1145,46 +1096,81 @@ def core_industrial_production(pipeline: Optional[Pipeline] = None) -> pd.DataFr
     Measures of industrial production : pd.DataFrame
 
     """
-    if pipeline is None:
-        pipeline = Pipeline()
+    name = get_name_from_function()
+    sources = get_download_sources(name)
 
-    pipeline.get("industrial_production")
-    data_18_weights = {"other foods": 0.0991, "pulp": 0.0907}
-    data_18 = pipeline.dataset
-    output = data_18[
+    data_18 = load_dataset("industrial_production").to_detailed()
+    data_18 = data_18[
         [
             "Industrias manufactureras",
             "Industrias manufactureras sin refinería",
-            "Cls_Elaboración de comidas y platos preparados; elaboració...",
-            "Cls_Fabricación de pasta de celulosa, papel y cartón",
+            "Clase: Elaboración de comidas y platos preparados; elaboración de otros productos alimenticios",
+            "Clase: Fabricación de pasta de celulosa, papel y cartón",
         ]
     ].copy()
-    output.columns = ["total", "ex-refinery", "other foods", "pulp"]
-    output["core"] = output["ex-refinery"] - (
-        output["other foods"] * data_18_weights["other foods"]
-        + output["pulp"] * data_18_weights["pulp"]
+    data_18.columns = ["total", "ex-refinery", "other foods", "pulp"]
+
+    data_18_weights = {"other foods": 0.0991, "pulp": 0.0907}
+    data_18["core"] = data_18["ex-refinery"] - (
+        data_18["other foods"] * data_18_weights["other foods"]
+        + data_18["pulp"] * data_18_weights["pulp"]
     )
-    output = output[["total", "ex-refinery", "core"]]
-    output.columns = [
+    data_18 = data_18[["total", "ex-refinery", "core"]]
+
+
+    data_06 = pd.read_excel(sources["2006"], skiprows=6, usecols="B,D,F,CF,CX", na_values="(s)").dropna(how="all")
+    data_06 = data_06.loc[~data_06.iloc[:, 0].str.contains("Prom")].iloc[:, 1:]
+    data_06.columns = ["total", "ex-refinery", "other foods", "pulp"]
+    data_06_weights = {"other foods": 0.3733 * 0.3107 * 0.7089, "pulp": 0.0184 * 0.4395} #https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IVFIM/Ponderadores%20de%20VBP%202006.xls
+    data_06["core"] = data_06["ex-refinery"] - (
+        data_06["other foods"] * data_06_weights["other foods"]
+        + data_06["pulp"] * data_06_weights["pulp"]
+    )
+    data_06 = data_06[["total", "ex-refinery", "core"]]
+    data_06.index = pd.date_range(start="2002-01-31", freq="ME", periods=len(data_06))
+
+    aux_index = list(dict.fromkeys(list(data_06.index) + list(data_18.index)))
+    output = data_18.reindex(aux_index)
+    for month in reversed(aux_index):
+        if output.loc[month, :].isna().all():
+            next_month = month + MonthEnd(1)
+            output.loc[month, :] = (
+                output.loc[next_month, :]
+                * data_06.loc[month, :]
+                / data_06.loc[next_month, :]
+            )
+
+    output = output.rename_axis(None)
+
+    spanish_names = [
         "Industrias manufactureras",
         "Industrias manufactureras sin refinería",
         "Núcleo industrial",
     ]
-    output.rename_axis(None, inplace=True)
 
-    metadata._set(
-        output,
-        area="Actividad económica",
-        currency="-",
-        inf_adj="No",
-        unit="2018=100",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
+
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Economic activity",
+        "currency": "UYU",
+        "inflation_adjustment": None,
+        "unit": "2018=100",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
-    output = transform.rebase(output, start_date="2018-01-01", end_date="2018-12-31")
+    dataset = Dataset(name, output, metadata).rebase(start_date="2018-01-01", end_date="2018-12-31")
+    dataset.metadata.update_dataset_metadata({"unit": "2018=100"})
 
-    return output
+    return dataset
 
 
 @retry(
@@ -1192,34 +1178,51 @@ def core_industrial_production(pipeline: Optional[Pipeline] = None) -> pd.DataFr
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def cattle_slaughter() -> pd.DataFrame:
-    """Get weekly cattle slaughter data.
+def livestock_slaughter() -> pd.DataFrame:
+    """Get weekly livestock slaughter data.
 
     Returns
     -------
-    Weekly cattle slaughter : pd.DataFrame
+    Weekly livestock slaughter : pd.DataFrame
 
     """
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    output = pd.read_excel(sources["main"], skiprows=8, usecols="C:H")
+    excel = pd.ExcelFile(sources["main"])
+    cattle = pd.read_excel(excel, sheet_name="BOVINOS", skiprows=8, usecols="C:H")
+    sheep = pd.read_excel(excel, sheet_name="OVINOS", skiprows=8, usecols="C:H")
+    output = pd.concat([cattle, sheep], axis=1).fillna(0).astype(int)
     output.index = pd.date_range(start="2005-01-02", freq="W", periods=len(output))
-    output.rename_axis(None, inplace=True)
+    output = output.rename_axis(None)
 
-    metadata._set(
-        output,
-        area="Actividad económica",
-        currency="-",
-        inf_adj="No",
-        unit="Cabezas",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
+    spanish_names = [
+        "Novillos", "Vacas", "Vaquillonas", "Terneros", "Toros", "Total bovinos",
+        "Borregos", "Capones", "Carneros", "Corderos", "Ovejas", "Total ovinos",
+    ]
+
+
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Economic activity",
+        "currency": None,
+        "inflation_adjustment": None,
+        "unit": "Heads",
+        "seasonal_adjustment": None,
+        "frequency": "W",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
 
-    return output
-
+    return dataset
 
 @retry(
     retry_on_exceptions=(HTTPError, URLError),
@@ -1239,34 +1242,35 @@ def milk_shipments() -> pd.DataFrame:
 
     r = httpx.get(sources["main"])
     url = re.findall(r'href="(.+\.xls)', r.text)[0]
-    raw = (
-        pd.read_excel(url, skiprows=11, skipfooter=4)
-        .iloc[2:, 3:]
-        .melt()
-        .iloc[:, [1]]
-        .dropna()
-        .rename_axis(None)
-    )
-    output = (
-        raw.set_index(pd.date_range(start="2002-01-31", freq="ME", periods=len(raw)))
-        * 1000
-    )
+    raw = pd.read_excel(url, sheet_name="Listado Datos", usecols="C:D", skiprows=4).dropna()
+
+    output = raw.set_index(pd.date_range(start="2002-01-31", freq="ME", periods=len(raw))) / 1000
     output = output.apply(pd.to_numeric)
-    output.columns = ["Remisión de leche a planta"]
 
-    metadata._set(
-        output,
-        area="Actividad económica",
-        currency="-",
-        inf_adj="No",
-        unit="Miles de litros",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
+    spanish_names = ["Remisión, litros", "Remisión, kilogramos"]
+
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Economic activity",
+        "currency": None,
+        "inflation_adjustment": None,
+        "unit": "Thousand liters",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    metadata.update_indicator_metadata_value("milk_shipments_1", "unit", "Thousand kilograms")
+    dataset = Dataset(name, output, metadata)
 
-    return output
-
+    return dataset
 
 @retry(
     retry_on_exceptions=(HTTPError, URLError),
@@ -1306,20 +1310,31 @@ def diesel_sales() -> pd.DataFrame:
         raw.index = pd.date_range(start="2004-01-31", freq="ME", periods=len(raw))
         raw.columns = list(raw.columns.str.replace("\n", " "))[:-1] + ["Total"]
         output = raw
-    output.rename_axis(None, inplace=True)
+    output = output.rename_axis(None)
 
-    metadata._set(
-        output,
-        area="Actividad económica",
-        currency="-",
-        inf_adj="No",
-        unit="m3",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
+    spanish_names = output.columns
+
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Economic activity",
+        "currency": None,
+        "inflation_adjustment": None,
+        "unit": "Cubic meters",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
 
-    return output
+    return dataset
 
 
 @retry(
@@ -1360,20 +1375,31 @@ def gasoline_sales() -> pd.DataFrame:
         raw.index = pd.date_range(start="2004-01-31", freq="ME", periods=len(raw))
         raw.columns = list(raw.columns.str.replace("\n", " "))[:-1] + ["Total"]
         output = raw
-    output.rename_axis(None, inplace=True)
+    output = output.rename_axis(None)
 
-    metadata._set(
-        output,
-        area="Actividad económica",
-        currency="-",
-        inf_adj="No",
-        unit="m3",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
+    spanish_names = output.columns
+
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Economic activity",
+        "currency": None,
+        "inflation_adjustment": None,
+        "unit": "Cubic meters",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
 
-    return output
+    return dataset
 
 
 @retry(
@@ -1412,17 +1438,28 @@ def electricity_sales() -> pd.DataFrame:
         raw.index = pd.date_range(start="2000-01-31", freq="ME", periods=len(raw))
         raw.columns = raw.columns.str.capitalize()
         output = raw
-    output.rename_axis(None, inplace=True)
+    output = output.rename_axis(None)
 
-    metadata._set(
-        output,
-        area="Actividad económica",
-        currency="-",
-        inf_adj="No",
-        unit="MWh",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
+    spanish_names = output.columns
+
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Economic activity",
+        "currency": None,
+        "inflation_adjustment": None,
+        "unit": "MWh",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
 
-    return output
+    return dataset

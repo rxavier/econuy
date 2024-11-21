@@ -145,7 +145,7 @@ def _convert_gdp(
         )
         return output, metadata
 
-    gdp = load_dataset("_monthly_interpolated_gdp").data
+    gdp = load_dataset("gdp_denominator").data
 
     inferred_freq = pd.infer_freq(data.index)
     target_freq = inferred_freq

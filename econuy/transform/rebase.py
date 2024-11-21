@@ -13,6 +13,7 @@ def _rebase(
 ) -> Tuple[pd.DataFrame, "Metadata"]:  # type: ignore # noqa: F821
     metadata = metadata.copy()
     if end_date is None:
+        m_end = None
         start_date = data.iloc[
             data.index.get_indexer([start_date], method="nearest")
         ].index[0]
@@ -41,6 +42,6 @@ def _rebase(
         else:
             metadata.update_dataset_metadata({"unit": f"{m_start}_{m_end}={base}"})
 
-    metadata.add_transformation_step({"rebase": {"start_date": start_date, "end_date": end_date, "base": base}})
+    metadata.add_transformation_step({"rebase": {"start_date": m_start, "end_date": m_end, "base": base}})
 
     return output, metadata

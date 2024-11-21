@@ -124,8 +124,8 @@
     }
   },
   "industrial_production": {
-    "description": "Producción industrial: por división, agrupaciones y clases (ene-02, M)",
-    "description_en": "Industrial production: by division, groups and classes (Jan-02, M)",
+    "description": "Producción industrial: por división, agrupaciones y clases (ene-18, M)",
+    "description_en": "Industrial production: by division, groups and classes (Jan-18, M)",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -202,14 +202,14 @@
       "provider": ["MIEM"]
     }
   },
-  "cattle_slaughter": {
-    "description": "Faena de bovinos (2-ene-05, S)",
-    "description_en": "Cattle slaughter (2-Jan-05, W)",
+  "livestock_slaughter": {
+    "description": "Faena de bovinos y ovinos(2-ene-05, S)",
+    "description_en": "Livestock slaughter (2-Jan-05, W)",
     "area": "activity",
     "custom": false,
     "disabled": false,
     "auxiliary": false,
-    "function": "activity.cattle_slaughter",
+    "function": "activity.livestock_slaughter",
     "sources": {
       "downloads": {
         "main": "https://www.inac.uy/innovaportal/v/11998/10/innova.front/serie-semanal-faena---bovinos-y-ovinos"
@@ -250,13 +250,15 @@
     "function": "activity.core_industrial_production",
     "sources": {
       "downloads": {
-        "2018": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IVFIM/Base%202018%20=%20100/IVFIM_IVF_B18.xlsx"
+        "2006": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IVFIM/Base%202006=100/IVFIM_IVF_B06.xls"
       },
       "direct": [
-        "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IVFIM/Base%202018%20=%20100/IVFIM_IVF_B18.xlsx"
+        "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IVFIM/Base%202018%20=%20100/IVFIM_IVF_B18.xlsx",
+        "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IVFIM/Base%202006=100/IVFIM_IVF_B06.xls"
       ],
       "indirect": [
-        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ivfim-base-2018100"
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ivfim-base-2018100",
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ivfim-base-2006100"
       ],
       "provider": ["econuy en base a INE"]
     }

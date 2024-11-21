@@ -53,7 +53,7 @@ def income_household() -> pd.DataFrame:
         "currency": "UYU",
         "inflation_adjustment": None,
         "unit": "Pesos",
-        "seasonal_adjustment": "Not seasonally adjusted",
+        "seasonal_adjustment": None,
         "frequency": "ME",
         "time_series_type": "Flow",
         "cumulative_periods": 1,

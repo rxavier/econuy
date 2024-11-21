@@ -122,8 +122,8 @@ class DatasetMetadata:
         ----------
         indicator : str
             The indicator to update.
-        new_metadata : dict
-            The new metadata to update with.
+        single_indicator_metadata : dict
+            The metadata to update with.
 
         Returns
         -------
@@ -146,8 +146,10 @@ class DatasetMetadata:
         ----------
         indicator : str
             The indicator to update.
-        new_metadata : dict
-            The new metadata to update with.
+        key : str
+            The key to update.
+        value : str
+            The value to update with.
 
         Returns
         -------
@@ -163,7 +165,7 @@ class DatasetMetadata:
 
         Parameters
         ----------
-        new_metadata : dict
+        indicator_metadata : dict
             The new metadata to update with.
 
         Returns
