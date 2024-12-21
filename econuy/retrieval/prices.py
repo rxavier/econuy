@@ -448,7 +448,7 @@ def nxr_monthly() -> pd.DataFrame:
     ]
     historical.index = pd.to_datetime(historical.index) + MonthEnd(1)
     historical = historical.apply(pd.to_numeric, errors="coerce")
-    historical = historical.loc[:"1999-12-31", :]
+    historical = historical.loc[:"2001-09-30", :]
 
     output = pd.concat([historical, output]).rename_axis(None)
 
