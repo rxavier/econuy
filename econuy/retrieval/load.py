@@ -25,8 +25,8 @@ def load_dataset(
 
     if not skip_cache:
         existing_dataset = read_dataset(name, data_dir)
-        created_at = existing_dataset.metadata.created_at
         if existing_dataset is not None:
+            created_at = existing_dataset.metadata.created_at
             if (dt.datetime.now() - created_at) < OUTDATED_DELTA_THRESHOLD:
                 return existing_dataset
             else:
