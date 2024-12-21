@@ -1,4 +1,5 @@
 import importlib
+import datetime as dt
 from typing import Union
 from pathlib import Path
 
@@ -7,6 +8,9 @@ import pandas as pd
 from econuy.utils.operations import DATASETS, read_dataset, get_data_dir
 
 from econuy.base import Dataset
+
+
+OUTDATED_DELTA_THRESHOLD = dt.timedelta(days=1) # TODO: Use an env var or config file
 
 
 def load_dataset(
@@ -21,8 +25,12 @@ def load_dataset(
 
     if not skip_cache:
         existing_dataset = read_dataset(name, data_dir)
+        created_at = existing_dataset.metadata.created_at
         if existing_dataset is not None:
-            return existing_dataset
+            if (dt.datetime.now() - created_at) < OUTDATED_DELTA_THRESHOLD:
+                return existing_dataset
+            else:
+                print(f"Dataset {name} exists in cache but is outdated (created at {created_at.strftime('%Y-%m-%d %H:%M:%S')}). Retrieving new data.")
 
     dataset_metadata = DATASETS[name]
     function_string = dataset_metadata["function"]
