@@ -551,6 +551,25 @@
     "auxiliary": false,
     "function": "prices.public_utilities_prices"
   },
+  "fiscal_balances": {
+    "description": "Todos los balances fiscales (ene-99, M)",
+    "description_en": "All fiscal balances (Jan-99, M)",
+    "area": "fiscal",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": true,
+    "function": "fiscal._get_fiscal_balances",
+    "sources": {
+      "downloads": {
+        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/estadisticas/informacion-resultados-del-sector-publico"
+      },
+      "direct": [],
+      "indirect": [
+        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+      ],
+      "provider": ["MEF"]
+    }
+  },
   "fiscal_balance_global_public_sector": {
     "description": "Resultado fiscal: sector público consolidado (ene-99, M)",
     "description_en": "Fiscal balance: consolidated public sector (Jan-99, M)",
@@ -724,6 +743,27 @@
       "provider": ["DGI"]
     }
   },
+  "public_debt": {
+    "description": "Todas la deuda pública (dic-99, T)",
+    "description_en": "ALl public debt (Dec-99, Q)",
+    "area": "fiscal",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": true,
+    "function": "fiscal._get_public_debt",
+    "sources": {
+      "downloads": {
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Finanzas%20Pblicas/resdspg.xls"
+      },
+      "direct": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Finanzas%20Pblicas/resdspg.xls"
+      ],
+      "indirect": [
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Finanzas-Publicas.aspx#deudap%C3%BAblica"
+      ],
+      "provider": ["BCU"]
+    }
+  },
   "public_debt_global_public_sector": {
     "description": "Deuda del sector público global: por plazo contractual, residual, moneda y residencia (dic-99, T)",
     "description_en": "General government debt: by contractual term, residual, currency and residence (Dec-99, Q)",
@@ -734,13 +774,13 @@
     "function": "fiscal.public_debt_global_public_sector",
     "sources": {
       "downloads": {
-        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Finanzas%20Pblicas/resdspg.xls"
       },
       "direct": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Finanzas%20Pblicas/resdspg.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Finanzas-Publicas.aspx#deudap%C3%BAblica"
       ],
       "provider": ["BCU"]
     }
@@ -755,13 +795,13 @@
     "function": "fiscal.public_debt_nonfinancial_public_sector",
     "sources": {
       "downloads": {
-        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Finanzas%20Pblicas/resdspg.xls"
       },
       "direct": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Finanzas%20Pblicas/resdspg.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Finanzas-Publicas.aspx#deudap%C3%BAblica"
       ],
       "provider": ["BCU"]
     }
@@ -776,13 +816,13 @@
     "function": "fiscal.public_debt_central_bank",
     "sources": {
       "downloads": {
-        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Finanzas%20Pblicas/resdspg.xls"
       },
       "direct": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Finanzas%20Pblicas/resdspg.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Finanzas-Publicas.aspx#deudap%C3%BAblica"
       ],
       "provider": ["BCU"]
     }
@@ -797,13 +837,13 @@
     "function": "fiscal.public_assets",
     "sources": {
       "downloads": {
-        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"
+        "main": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Finanzas%20Pblicas/resdspg.xls"
       },
       "direct": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Endeudamiento%20Pblico/resdspg.xls"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Finanzas%20Pblicas/resdspg.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Finanzas-Publicas.aspx#deudap%C3%BAblica"
       ],
       "provider": ["BCU"]
     }

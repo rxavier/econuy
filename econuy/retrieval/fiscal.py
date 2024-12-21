@@ -11,6 +11,8 @@ from pandas.tseries.offsets import MonthEnd
 from httpx import ConnectError
 
 from econuy import transform
+from econuy import load_dataset
+from econuy.base import Dataset, DatasetMetadata
 from econuy.core import Pipeline
 from econuy.utils import metadata, get_project_root
 from econuy.utils.extras import FISCAL_SHEETS, taxes_columns
@@ -22,41 +24,48 @@ from econuy.utils.operations import get_name_from_function, get_download_sources
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def _balance_retriever() -> Dict[str, pd.DataFrame]:
-    """Helper function. See any of the `balance_...()` functions."""
-    sources = get_download_sources("fiscal_balance_global_public_sector")
+def _get_fiscal_balances(dataset_name: str) -> Dict[str, pd.DataFrame]:
+    """Helper function. See any of the `fiscal_balance_...()` functions."""
+    sources = get_download_sources("fiscal_balances")
     response = httpx.get(sources["main"])
     url = re.findall(r"(http\S+Resultados.+\.xlsx)'", response.text)[0]
     xls = pd.ExcelFile(url)
     output = {}
-    for dataset, meta in FISCAL_SHEETS.items():
-        data = (
-            pd.read_excel(xls, sheet_name=meta["sheet"])
-            .dropna(axis=0, thresh=4)
-            .dropna(axis=1, thresh=4)
-            .transpose()
-            .set_index(2, drop=True)
-        )
-        data.columns = data.iloc[0]
-        data = data[data.index.notnull()].rename_axis(None)
-        data.index = data.index + MonthEnd(1)
-        data.columns = meta["colnames"]
-        data = data.apply(pd.to_numeric, errors="coerce")
-        data.rename_axis(None, inplace=True)
-        metadata._set(
-            data,
-            area="Sector público",
-            currency="UYU",
-            inf_adj="No",
-            unit="Millones",
-            seas_adj="NSA",
-            ts_type="Flujo",
-            cumperiods=1,
-        )
+    dataset_details = FISCAL_SHEETS[dataset_name]
+    output = (
+        pd.read_excel(xls, sheet_name=dataset_details["sheet"])
+        .dropna(axis=0, thresh=4)
+        .dropna(axis=1, thresh=4)
+        .transpose()
+        .set_index(2, drop=True)
+    )
+    output = output[output.index.notnull()].rename_axis(None)
+    output.index = output.index + MonthEnd(1)
+    output = output.apply(pd.to_numeric, errors="coerce")
+    output = output.rename_axis(None)
 
-        output.update({dataset: data})
+    ids = [f"{dataset_name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = dataset_details["colnames"]
+    spanish_names = [{"es": x} for x in spanish_names]
 
-    return output
+    base_metadata = {
+        "area": "Public sector",
+        "currency": "UYU",
+        "inflation_adjustment": None,
+        "unit": "Million",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        dataset_name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(dataset_name, output, metadata)
+
+    return dataset
 
 
 def fiscal_balance_global_public_sector() -> pd.DataFrame:
@@ -67,7 +76,7 @@ def fiscal_balance_global_public_sector() -> pd.DataFrame:
     Monthly fiscal balance for the consolidated public sector : pd.DataFrame
 
     """
-    return _balance_retriever()["fiscal_balance_global_public_sector"]
+    return _get_fiscal_balances("fiscal_balance_global_public_sector")
 
 
 def fiscal_balance_nonfinancial_public_sector() -> pd.DataFrame:
@@ -78,7 +87,7 @@ def fiscal_balance_nonfinancial_public_sector() -> pd.DataFrame:
     Monthly fiscal balance for the non-financial public sector : pd.DataFrame
 
     """
-    return _balance_retriever()["fiscal_balance_nonfinancial_public_sector"]
+    return _get_fiscal_balances("fiscal_balance_nonfinancial_public_sector")
 
 
 def fiscal_balance_central_government() -> pd.DataFrame:
@@ -89,7 +98,7 @@ def fiscal_balance_central_government() -> pd.DataFrame:
     Monthly fiscal balance for the central government + BPS : pd.DataFrame
 
     """
-    return _balance_retriever()["fiscal_balance_central_government"]
+    return _get_fiscal_balances("fiscal_balance_central_government")
 
 
 def fiscal_balance_soe() -> pd.DataFrame:
@@ -100,7 +109,7 @@ def fiscal_balance_soe() -> pd.DataFrame:
     Monthly fiscal balance for public enterprises : pd.DataFrame
 
     """
-    return _balance_retriever()["fiscal_balance_soe"]
+    return _get_fiscal_balances("fiscal_balance_soe")
 
 
 def fiscal_balance_ancap() -> pd.DataFrame:
@@ -111,7 +120,7 @@ def fiscal_balance_ancap() -> pd.DataFrame:
     Monthly fiscal balance for ANCAP : pd.DataFrame
 
     """
-    return _balance_retriever()["fiscal_balance_ancap"]
+    return _get_fiscal_balances("fiscal_balance_ancap")
 
 
 def fiscal_balance_ute() -> pd.DataFrame:
@@ -122,7 +131,7 @@ def fiscal_balance_ute() -> pd.DataFrame:
     Monthly fiscal balance for UTE : pd.DataFrame
 
     """
-    return _balance_retriever()["fiscal_balance_ute"]
+    return _get_fiscal_balances("fiscal_balance_ute")
 
 
 def fiscal_balance_antel() -> pd.DataFrame:
@@ -133,7 +142,7 @@ def fiscal_balance_antel() -> pd.DataFrame:
     Monthly fiscal balance for ANTEL : pd.DataFrame
 
     """
-    return _balance_retriever()["fiscal_balance_antel"]
+    return _get_fiscal_balances("fiscal_balance_antel")
 
 
 def fiscal_balance_ose() -> pd.DataFrame:
@@ -144,7 +153,7 @@ def fiscal_balance_ose() -> pd.DataFrame:
     Monthly fiscal balance for OSE : pd.DataFrame
 
     """
-    return _balance_retriever()["fiscal_balance_ose"]
+    return _get_fiscal_balances("fiscal_balance_ose")
 
 
 @retry(
@@ -166,26 +175,30 @@ def tax_revenue() -> pd.DataFrame:
     """
     name = get_name_from_function()
     sources = get_download_sources(name)
-    r = httpx.get(sources["main"])
+    r = httpx.get(sources["main"], timeout=20)
     url = re.findall(
-        "https://[A-z0-9-/\.]+Recaudaci%C3%B3n%20por%20impuesto%20-%20Series%20mensuales.xlsx",
+        "https://[A-z0-9-/\.]+Recaudaci%C3%B3n%20por%20impuesto%20-%20Series%20mensuales.csv",
         r.text,
     )[0]
-    raw = (
-        pd.read_excel(url)
-        .iloc[:, 2:]
-        .drop(index=[0, 1])
-        .drop(columns=["CONTROLES"])
-        .set_index("SELECCIONE IMPUESTO")
-        .rename_axis(None)
+    output = (
+        pd.read_csv(url, skiprows=2, encoding="Latin", sep=";", thousands=".")
+        .iloc[:, 3:41]
     )
-    raw.index = pd.to_datetime(
-        raw.index, format="%Y-%m-%d HH:MM:SS", errors="coerce"
-    ) + MonthEnd(0)
-    output = raw.loc[~pd.isna(raw.index), ~raw.columns.str.contains("Unnamed")]
+    output.index = pd.date_range("1982-01-31", periods=len(output), freq="ME")
     output.columns = taxes_columns
     output = output.div(1000000)
     latest = pd.read_csv(sources["pdfs"], index_col=0, parse_dates=True)
+    latest.columns = [
+                    'IVA - Valor Agregado',
+                    'IMESI - Específico Interno',
+                    'IMEBA - Enajenación de Bienes Agropecuarios',
+                    'IRAE - Rentas de Actividades Económicas',
+                    'IRPF Cat I - Renta de las Personas Físicas',
+                    'IRPF Cat II - Rentas de las Personas Físicas',
+                    'IASS - Asistencia a la Seguridad Social',
+                    'IRNR - Rentas de No Residentes',
+                    'Impuesto de Educación Primaria',
+                    'Recaudación Total de la DGI']
     latest = latest.loc[[x not in output.index for x in latest.index]]
     for col in latest.columns:
         for date in latest.index:
@@ -197,19 +210,30 @@ def tax_revenue() -> pd.DataFrame:
     output = output.loc[~output.index.duplicated(keep="first")]
 
     output = output.apply(pd.to_numeric, errors="coerce")
-    output.rename_axis(None, inplace=True)
-    metadata._set(
-        output,
-        area="Sector público",
-        currency="UYU",
-        inf_adj="No",
-        unit="Millones",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
-    )
+    output = output.rename_axis(None)
 
-    return output
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Public sector",
+        "currency": "UYU",
+        "inflation_adjustment": None,
+        "unit": "Million",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
 
 
 @retry(
@@ -217,9 +241,9 @@ def tax_revenue() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=30,
 )
-def _public_debt_retriever() -> Dict[str, pd.DataFrame]:
+def _get_public_debt(dataset_name: str) -> Dataset:
     """Helper function. See any of the `public_debt_...()` functions."""
-    sources = get_download_sources("public_debt_global_public_sector")
+    sources = get_download_sources("public_debt")
     colnames = [
         "Total deuda",
         "Plazo contractual: hasta 1 año",
@@ -244,92 +268,96 @@ def _public_debt_retriever() -> Dict[str, pd.DataFrame]:
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
             r = httpx.get(sources["main"], verify=certs_path)
             xls = pd.ExcelFile(r.content)
-    gps_raw = pd.read_excel(
-        xls,
-        sheet_name="SPG2",
-        usecols="B:Q",
-        index_col=0,
-        skiprows=10,
-        nrows=(dt.datetime.now().year - 1999) * 4,
-    )
-    gps = gps_raw.dropna(thresh=2)
-    gps.index = pd.date_range(start="1999-12-31", periods=len(gps), freq="QE-DEC")
-    gps.columns = colnames
 
-    nfps_raw = pd.read_excel(xls, sheet_name="SPNM bruta", usecols="B:O", index_col=0)
-    loc = nfps_raw.index.get_loc(
-        "9. Deuda Bruta del Sector Público no " "monetario por plazo y  moneda."
-    )
-    nfps = nfps_raw.iloc[loc + 5 :, :].dropna(how="any")
-    nfps.index = pd.date_range(start="1999-12-31", periods=len(nfps), freq="QE-DEC")
-    nfps_extra_raw = pd.read_excel(
-        xls,
-        sheet_name="SPNM bruta",
-        usecols="O:P",
-        skiprows=11,
-        nrows=(dt.datetime.now().year - 1999) * 4,
-    )
-    nfps_extra = nfps_extra_raw.dropna(how="all")
-    nfps_extra.index = nfps.index
-    nfps = pd.concat([nfps, nfps_extra], axis=1)
-    nfps.columns = colnames
-
-    cb_raw = pd.read_excel(
-        xls,
-        sheet_name="BCU bruta",
-        usecols="B:O",
-        index_col=0,
-        skiprows=(dt.datetime.now().year - 1999) * 8 + 20,
-    )
-    cb = cb_raw.dropna(how="any")
-    cb.index = pd.date_range(start="1999-12-31", periods=len(cb), freq="QE-DEC")
-    cb_extra_raw = pd.read_excel(
-        xls,
-        sheet_name="BCU bruta",
-        usecols="O:P",
-        skiprows=11,
-        nrows=(dt.datetime.now().year - 1999) * 4,
-    )
-    bcu_extra = cb_extra_raw.dropna(how="all")
-    bcu_extra.index = cb.index
-    cb = pd.concat([cb, bcu_extra], axis=1)
-    cb.columns = colnames
-
-    assets_raw = pd.read_excel(
-        xls,
-        sheet_name="Activos Neta",
-        usecols="B,C,D,K",
-        index_col=0,
-        skiprows=13,
-        nrows=(dt.datetime.now().year - 1999) * 4,
-    )
-    assets = assets_raw.dropna(how="any")
-    assets.index = pd.date_range(start="1999-12-31", periods=len(assets), freq="QE-DEC")
-    assets.columns = ["Total activos", "Sector público no monetario", "BCU"]
-
-    output = {
-        "public_debt_global_public_sector": gps,
-        "public_debt_nonfinancial_public_sector": nfps,
-        "public_debt_central_bank": cb,
-        "public_assets": assets,
-    }
-
-    for meta, data in output.items():
-        data.rename_axis(None, inplace=True)
-        metadata._set(
-            data,
-            area="Sector público",
-            currency="USD",
-            inf_adj="No",
-            unit="Millones",
-            seas_adj="NSA",
-            ts_type="Stock",
-            cumperiods=1,
+    if dataset_name == "public_debt_global_public_sector":
+        gps_raw = pd.read_excel(
+            xls,
+            sheet_name="SPG2",
+            usecols="B:Q",
+            index_col=0,
+            skiprows=10,
+            nrows=(dt.datetime.now().year - 1999) * 4,
         )
+        output = gps_raw.dropna(thresh=2)
+        output.index = pd.date_range(start="1999-12-31", periods=len(output), freq="QE-DEC")
+        output.columns = colnames
 
-        output.update({meta: data})
+    elif dataset_name == "public_debt_nonfinancial_public_sector":
+        nfps_raw = pd.read_excel(xls, sheet_name="SPNM bruta", usecols="B:O", index_col=0)
+        loc = nfps_raw.index.get_loc(
+            "9. Deuda Bruta del Sector Público no " "monetario por plazo y  moneda."
+        )
+        output = nfps_raw.iloc[loc + 5 :, :].dropna(how="any")
+        output.index = pd.date_range(start="1999-12-31", periods=len(output), freq="QE-DEC")
+        nfps_extra_raw = pd.read_excel(
+            xls,
+            sheet_name="SPNM bruta",
+            usecols="O:P",
+            skiprows=11,
+            nrows=(dt.datetime.now().year - 1999) * 4,
+        )
+        nfps_extra = nfps_extra_raw.dropna(how="all")
+        nfps_extra.index = output.index
+        output = pd.concat([output, nfps_extra], axis=1)
+        output.columns = colnames
 
-    return output
+    elif dataset_name == "public_debt_central_bank":
+        cb_raw = pd.read_excel(
+            xls,
+            sheet_name="BCU bruta",
+            usecols="B:O",
+            index_col=0,
+            skiprows=(dt.datetime.now().year - 1999) * 8 + 20,
+        )
+        output = cb_raw.dropna(how="any")
+        output.index = pd.date_range(start="1999-12-31", periods=len(output), freq="QE-DEC")
+        cb_extra_raw = pd.read_excel(
+            xls,
+            sheet_name="BCU bruta",
+            usecols="O:P",
+            skiprows=11,
+            nrows=(dt.datetime.now().year - 1999) * 4,
+        )
+        bcu_extra = cb_extra_raw.dropna(how="all")
+        bcu_extra.index = output.index
+        output = pd.concat([output, bcu_extra], axis=1)
+        output.columns = colnames
+
+    else:
+        assets_raw = pd.read_excel(
+            xls,
+            sheet_name="Activos Neta",
+            usecols="B,C,D,K",
+            index_col=0,
+            skiprows=13,
+            nrows=(dt.datetime.now().year - 1999) * 4,
+        )
+        output = assets_raw.dropna(how="any")
+        output.index = pd.date_range(start="1999-12-31", periods=len(output), freq="QE-DEC")
+        output.columns = ["Total activos", "Sector público no monetario", "BCU"]
+
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{dataset_name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Public sector",
+        "currency": "USD",
+        "inflation_adjustment": None,
+        "unit": "Million",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        dataset_name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(dataset_name, output, metadata)
+
+    return dataset
 
 
 def public_debt_global_public_sector() -> pd.DataFrame:
@@ -340,7 +368,7 @@ def public_debt_global_public_sector() -> pd.DataFrame:
     Quarterly public debt data for the consolidated public sector: pd.DataFrame
 
     """
-    return _public_debt_retriever()["public_debt_global_public_sector"]
+    return _get_public_debt("public_debt_global_public_sector")
 
 
 def public_debt_nonfinancial_public_sector() -> pd.DataFrame:
@@ -351,7 +379,7 @@ def public_debt_nonfinancial_public_sector() -> pd.DataFrame:
     Quarterly public debt data for the non-financial public sector: pd.DataFrame
 
     """
-    return _public_debt_retriever()["public_debt_nonfinancial_public_sector"]
+    return _get_public_debt("public_debt_nonfinancial_public_sector")
 
 
 def public_debt_central_bank() -> pd.DataFrame:
@@ -362,7 +390,7 @@ def public_debt_central_bank() -> pd.DataFrame:
     Quarterly public debt data for the central bank : pd.DataFrame
 
     """
-    return _public_debt_retriever()["public_debt_central_bank"]
+    return _get_public_debt("public_debt_central_bank")
 
 
 def public_assets() -> pd.DataFrame:
@@ -373,7 +401,7 @@ def public_assets() -> pd.DataFrame:
     Quarterly public sector assets: pd.DataFrame
 
     """
-    return _public_debt_retriever()["public_assets"]
+    return _get_public_debt("public_assets")
 
 
 def net_public_debt_global_public_sector(
@@ -444,22 +472,20 @@ def fiscal_balance_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     Summary fiscal balance table : pd.DataFrame
 
     """
-    if pipeline is None or pipeline.download is True:
-        data = _balance_retriever()
-        gps = data["fiscal_balance_global_public_sector"]
-        nfps = data["fiscal_balance_nonfinancial_public_sector"]
-        gc = data["fiscal_balance_central_government"]
-        pe = data["fiscal_balance_soe"]
-    else:
-        pipeline.get("fiscal_balance_global_public_sector")
-        gps = pipeline.dataset
-        pipeline.get("fiscal_balance_nonfinancial_public_sector")
-        nfps = pipeline.dataset
-        pipeline.get("fiscal_balance_central_government")
-        gc = pipeline.dataset
-        pipeline.get("fiscal_balance_soe")
-        pe = pipeline.dataset
+    name = get_name_from_function()
 
+    datasets = {}
+    for dataset_name in ["fiscal_balance_global_public_sector",
+                         "fiscal_balance_nonfinancial_public_sector",
+                         "fiscal_balance_central_government",
+                         "fiscal_balance_soe"]:
+        d = load_dataset(dataset_name).to_detailed()
+        d.columns = d.columns.get_level_values(0)
+        datasets.update({dataset_name: d})
+    gps = datasets["fiscal_balance_global_public_sector"]
+    nfps = datasets["fiscal_balance_nonfinancial_public_sector"]
+    gc = datasets["fiscal_balance_central_government"]
+    pe = datasets["fiscal_balance_soe"]
     proc = pd.DataFrame(index=gps.index)
 
     proc["Ingresos: GC-BPS"] = gc["Ingresos: GC-BPS"]
@@ -575,17 +601,28 @@ def fiscal_balance_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
         proc["Resultado: Global SPNF ex FSS"] + proc["Resultado: Global BCU"]
     )
     output = proc
-    output.rename_axis(None, inplace=True)
+    output = output.rename_axis(None)
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
 
-    metadata._set(
-        output,
-        area="Sector público",
-        currency="UYU",
-        inf_adj="No",
-        unit="Millones",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Public sector",
+        "currency": "UYU",
+        "inflation_adjustment": None,
+        "unit": "Million",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
 
-    return output
+    return dataset
+
