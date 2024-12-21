@@ -182,7 +182,7 @@ def _convert_gdp(
     else:
         gdp = gdp.iloc[:, 0].to_frame()
 
-    gdp_to_use = gdp.reindex(df.index).iloc[:, 0]
+    gdp_to_use = gdp.reindex(data.index).iloc[:, 0]
     converted_df = data.div(gdp_to_use, axis=0).multiply(100)
 
     metadata.update_dataset_metadata({"unit": "% GDP"})
