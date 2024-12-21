@@ -398,6 +398,26 @@ class Dataset:
         detailed_data.columns = columns
         return detailed_data
 
+    def to_named(self, language: str = "es") -> pd.DataFrame:
+        """
+        Rename the data using the metadata.
+
+        Parameters
+        ----------
+        language : str, default "es"
+            The language to use for the metadata.
+
+        Returns
+        -------
+        pd.DataFrame
+            The data with the indicators renamed.
+
+        """
+        column_metadatas = {indicator: self.metadata.indicator_metadata[indicator]["names"][language] for indicator in self.indicators}
+        named_data = self.data.copy()
+        named_data.columns = [column_metadatas[ind] for ind in self.indicators]
+        return named_data
+
     def save(
         self, data_dir: Union[str, Path, None] = None, name: Optional[str] = None
     ) -> None:
