@@ -2,7 +2,7 @@ TRADE_METADATA = {
     "trade_exports_sector_value": {
         "start_col": 3,
         "currency": "USD",
-        "unit": "Millones",
+        "unit": "Millions",
         "colnames": {
             "TOTAL EXPORTACIONES ": "Total exportaciones",
             "ACTIVIDADES PRIMARIAS": "Actividades primarias: total",
@@ -41,7 +41,7 @@ TRADE_METADATA = {
     },
     "trade_exports_sector_volume": {
         "start_col": 3,
-        "currency": "-",
+        "currency": None,
         "unit": "2005=100",
         "colnames": {
             "TOTAL EXPORTACIONES ": "Total exportaciones",
@@ -110,7 +110,7 @@ TRADE_METADATA = {
     "trade_exports_destination_value": {
         "start_col": 1,
         "currency": "USD",
-        "unit": "Millones",
+        "unit": "Millions",
         "colnames": {
             "TOTAL EXPORTACIONES": "Total exportaciones",
             "AMERICA": "América: total",
@@ -159,7 +159,7 @@ TRADE_METADATA = {
     },
     "trade_exports_destination_volume": {
         "start_col": 1,
-        "currency": "-",
+        "currency": None,
         "unit": "2005=100",
         "colnames": {
             "TOTAL EXPORTACIONES": "Total exportaciones",
@@ -222,7 +222,7 @@ TRADE_METADATA = {
     "trade_imports_category_value": {
         "start_col": 2,
         "currency": "USD",
-        "unit": "Millones",
+        "unit": "Millions",
         "old_colnames": [
             "TOTAL IMPORTACIONES FOB ",
             "TOTAL IMPORTACIONES CIF ",
@@ -280,7 +280,7 @@ TRADE_METADATA = {
     },
     "trade_imports_category_volume": {
         "start_col": 1,
-        "currency": "-",
+        "currency": None,
         "unit": "2005=100",
         "colnames": {
             "TOTAL IMPORTACIONES": "Total importaciones",
@@ -321,7 +321,7 @@ TRADE_METADATA = {
     "trade_imports_origin_value": {
         "start_col": 1,
         "currency": "USD",
-        "unit": "Millones",
+        "unit": "Millions",
         "colnames": {
             "TOTAL IMPORTACIONES CIF ": "Total importaciones",
             "AMERICA": "América: total",
@@ -370,7 +370,7 @@ TRADE_METADATA = {
     },
     "trade_imports_origin_volume": {
         "start_col": 1,
-        "currency": "-",
+        "currency": None,
         "unit": "2005=100",
         "colnames": {
             "TOTAL IMPORTACIONES": "Total importaciones",

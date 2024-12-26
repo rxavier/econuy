@@ -1,7 +1,7 @@
 import datetime as dt
 import re
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Optional
 from urllib.error import HTTPError, URLError
 
 import pandas as pd
@@ -10,11 +10,10 @@ from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from httpx import ConnectError
 
-from econuy import transform
 from econuy import load_dataset
 from econuy.base import Dataset, DatasetMetadata
 from econuy.core import Pipeline
-from econuy.utils import metadata, get_project_root
+from econuy.utils import get_project_root
 from econuy.utils.extras import FISCAL_SHEETS, taxes_columns
 from econuy.utils.operations import get_name_from_function, get_download_sources
 
@@ -24,7 +23,7 @@ from econuy.utils.operations import get_name_from_function, get_download_sources
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def _get_fiscal_balances(dataset_name: str) -> Dict[str, pd.DataFrame]:
+def _get_fiscal_balances(dataset_name: str) -> Dataset:
     """Helper function. See any of the `fiscal_balance_...()` functions."""
     sources = get_download_sources("fiscal_balances")
     response = httpx.get(sources["main"])
@@ -68,92 +67,100 @@ def _get_fiscal_balances(dataset_name: str) -> Dict[str, pd.DataFrame]:
     return dataset
 
 
-def fiscal_balance_global_public_sector() -> pd.DataFrame:
+def fiscal_balance_global_public_sector() -> Dataset:
     """Get fiscal balance data for the consolidated public sector.
 
     Returns
     -------
-    Monthly fiscal balance for the consolidated public sector : pd.DataFrame
+    Monthly fiscal balance for the consolidated public sector : Dataset
 
     """
-    return _get_fiscal_balances("fiscal_balance_global_public_sector")
+    name = get_name_from_function()
+    return _get_fiscal_balances(name)
 
 
-def fiscal_balance_nonfinancial_public_sector() -> pd.DataFrame:
+def fiscal_balance_nonfinancial_public_sector() -> Dataset:
     """Get fiscal balance data for the non-financial public sector.
 
     Returns
     -------
-    Monthly fiscal balance for the non-financial public sector : pd.DataFrame
+    Monthly fiscal balance for the non-financial public sector : Dataset
 
     """
-    return _get_fiscal_balances("fiscal_balance_nonfinancial_public_sector")
+    name = get_name_from_function()
+    return _get_fiscal_balances(name)
 
 
-def fiscal_balance_central_government() -> pd.DataFrame:
+def fiscal_balance_central_government() -> Dataset:
     """Get fiscal balance data for the central government + BPS.
 
     Returns
     -------
-    Monthly fiscal balance for the central government + BPS : pd.DataFrame
+    Monthly fiscal balance for the central government + BPS : Dataset
 
     """
-    return _get_fiscal_balances("fiscal_balance_central_government")
+    name = get_name_from_function()
+    return _get_fiscal_balances(name)
 
 
-def fiscal_balance_soe() -> pd.DataFrame:
+def fiscal_balance_soe() -> Dataset:
     """Get fiscal balance data for public enterprises.
 
     Returns
     -------
-    Monthly fiscal balance for public enterprises : pd.DataFrame
+    Monthly fiscal balance for public enterprises : Dataset
 
     """
-    return _get_fiscal_balances("fiscal_balance_soe")
+    name = get_name_from_function()
+    return _get_fiscal_balances(name)
 
 
-def fiscal_balance_ancap() -> pd.DataFrame:
+def fiscal_balance_ancap() -> Dataset:
     """Get fiscal balance data for ANCAP.
 
     Returns
     -------
-    Monthly fiscal balance for ANCAP : pd.DataFrame
+    Monthly fiscal balance for ANCAP : Dataset
 
     """
-    return _get_fiscal_balances("fiscal_balance_ancap")
+    name = get_name_from_function()
+    return _get_fiscal_balances(name)
 
 
-def fiscal_balance_ute() -> pd.DataFrame:
+def fiscal_balance_ute() -> Dataset:
     """Get fiscal balance data for UTE.
 
     Returns
     -------
-    Monthly fiscal balance for UTE : pd.DataFrame
+    Monthly fiscal balance for UTE : Dataset
 
     """
-    return _get_fiscal_balances("fiscal_balance_ute")
+    name = get_name_from_function()
+    return _get_fiscal_balances(name)
 
 
-def fiscal_balance_antel() -> pd.DataFrame:
+def fiscal_balance_antel() -> Dataset:
     """Get fiscal balance data for ANTEL.
 
     Returns
     -------
-    Monthly fiscal balance for ANTEL : pd.DataFrame
+    Monthly fiscal balance for ANTEL : Dataset
 
     """
-    return _get_fiscal_balances("fiscal_balance_antel")
+    name = get_name_from_function()
+    return _get_fiscal_balances(name)
 
 
-def fiscal_balance_ose() -> pd.DataFrame:
+def fiscal_balance_ose() -> Dataset:
     """Get fiscal balance data for OSE.
 
     Returns
     -------
-    Monthly fiscal balance for OSE : pd.DataFrame
+    Monthly fiscal balance for OSE : Dataset
 
     """
-    return _get_fiscal_balances("fiscal_balance_ose")
+    name = get_name_from_function()
+    return _get_fiscal_balances(name)
 
 
 @retry(
@@ -161,7 +168,7 @@ def fiscal_balance_ose() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def tax_revenue() -> pd.DataFrame:
+def tax_revenue() -> Dataset:
     """
     Get tax revenues data.
 
@@ -170,7 +177,7 @@ def tax_revenue() -> pd.DataFrame:
 
     Returns
     -------
-    Monthly tax revenues : pd.DataFrame
+    Monthly tax revenues : Dataset
 
     """
     name = get_name_from_function()
@@ -360,100 +367,101 @@ def _get_public_debt(dataset_name: str) -> Dataset:
     return dataset
 
 
-def public_debt_global_public_sector() -> pd.DataFrame:
+def public_debt_global_public_sector() -> Dataset:
     """Get public debt data for the consolidated public sector.
 
     Returns
     -------
-    Quarterly public debt data for the consolidated public sector: pd.DataFrame
+    Quarterly public debt data for the consolidated public sector: Dataset
 
     """
-    return _get_public_debt("public_debt_global_public_sector")
+    name = get_name_from_function()
+    return _get_public_debt(name)
 
 
-def public_debt_nonfinancial_public_sector() -> pd.DataFrame:
+def public_debt_nonfinancial_public_sector() -> Dataset:
     """Get public debt data for the non-financial public sector.
 
     Returns
     -------
-    Quarterly public debt data for the non-financial public sector: pd.DataFrame
+    Quarterly public debt data for the non-financial public sector: Dataset
 
     """
-    return _get_public_debt("public_debt_nonfinancial_public_sector")
+    name = get_name_from_function()
+    return _get_public_debt(name)
 
 
-def public_debt_central_bank() -> pd.DataFrame:
+def public_debt_central_bank() -> Dataset:
     """Get public debt data for the central bank
 
     Returns
     -------
-    Quarterly public debt data for the central bank : pd.DataFrame
+    Quarterly public debt data for the central bank : Dataset
 
     """
-    return _get_public_debt("public_debt_central_bank")
+    name = get_name_from_function()
+    return _get_public_debt(name)
 
 
-def public_assets() -> pd.DataFrame:
+def public_assets() -> Dataset:
     """Get public sector assets data.
 
     Returns
     -------
-    Quarterly public sector assets: pd.DataFrame
+    Quarterly public sector assets: Dataset
 
     """
-    return _get_public_debt("public_assets")
+    name = get_name_from_function()
+    return _get_public_debt(name)
 
 
-def net_public_debt_global_public_sector(
-    pipeline: Optional[Pipeline] = None,
-) -> pd.DataFrame:
+def net_public_debt_global_public_sector() -> Dataset:
     """
     Get net public debt excluding deposits at the central bank.
 
-    Parameters
-    ----------
-    pipeline : econuy.core.Pipeline or None, default None
-        An instance of the econuy Pipeline class.
 
     Returns
     -------
-    Net public debt excl. deposits at the central bank : pd.DataFrame
+    Net public debt excl. deposits at the central bank : Dataset
 
     """
-    if pipeline is None:
-        pipeline = Pipeline()
+    name = get_name_from_function()
 
-    pipeline.get("public_debt_global_public_sector")
-    gross_debt = pipeline.dataset.loc[:, ["Total deuda"]]
-    pipeline.get("public_assets")
-    assets = pipeline.dataset.loc[:, ["Total activos"]]
-    gross_debt.columns = ["Deuda neta del sector" " público global excl. encajes"]
+    gross_debt = load_dataset("public_debt_global_public_sector").to_named()[["Total deuda"]]
+    assets = load_dataset("public_assets").to_named()[["Total activos"]]
+    gross_debt.columns = ["Deuda neta del sector público global excl. encajes"]
     assets.columns = gross_debt.columns
-    pipeline.get("international_reserves")
-    deposits = pipeline.dataset.loc[:, ["Obligaciones en ME con el sector financiero"]]
-    deposits = (
-        transform.resample(deposits, rule="QE-DEC", operation="last")
-        .reindex(gross_debt.index)
-        .squeeze()
-    )
+    deposits = load_dataset("international_reserves").resample("QE-DEC", "last").to_named()[["Obligaciones en ME con el sector financiero"]]
+    deposits = deposits.reindex(gross_debt.index).squeeze()
     output = gross_debt.add(assets).add(deposits, axis=0).dropna()
-    output.rename_axis(None, inplace=True)
+    output = output.rename_axis(None)
 
-    metadata._set(
-        output,
-        area="Sector público",
-        currency="USD",
-        inf_adj="No",
-        unit="Millones",
-        seas_adj="NSA",
-        ts_type="Stock",
-        cumperiods=1,
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+
+    base_metadata = {
+        "area": "External sector",
+        "currency": "USD",
+        "inflation_adjustment": None,
+        "unit": "Millions",
+        "seasonal_adjustment": None,
+        "frequency": "QE-DEC",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
 
-    return output
+    return dataset
 
 
-def fiscal_balance_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+def fiscal_balance_summary(pipeline: Optional[Pipeline] = None) -> Dataset:
     """
     Get the summary fiscal balance table found in the `Budget Law
     <https://www.gub.uy/contaduria-general-nacion/sites/
@@ -469,7 +477,7 @@ def fiscal_balance_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
 
     Returns
     -------
-    Summary fiscal balance table : pd.DataFrame
+    Summary fiscal balance table : Dataset
 
     """
     name = get_name_from_function()

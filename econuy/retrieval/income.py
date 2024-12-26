@@ -14,12 +14,12 @@ from econuy.utils.operations import get_name_from_function, get_download_sources
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def income_household() -> pd.DataFrame:
+def income_household() -> Dataset:
     """Get average household income.
 
     Returns
     -------
-    Monthly average household income : pd.DataFrame
+    Monthly average household income : Dataset
 
     """
     name = get_name_from_function()
@@ -72,12 +72,12 @@ def income_household() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def income_capita() -> pd.DataFrame:
+def income_capita() -> Dataset:
     """Get average per capita income.
 
     Returns
     -------
-    Monthly average per capita income : pd.DataFrame
+    Monthly average per capita income : Dataset
 
     """
     name = get_name_from_function()

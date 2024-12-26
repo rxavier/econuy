@@ -30,7 +30,11 @@ def load_dataset(
             if (dt.datetime.now() - created_at) < OUTDATED_DELTA_THRESHOLD:
                 return existing_dataset
             else:
-                print(f"Dataset {name} exists in cache but is outdated (created at {created_at.strftime('%Y-%m-%d %H:%M:%S')}). Retrieving new data.")
+                print(
+                    f"Dataset {name} exists in cache but is outdated "
+                    f"(created at {created_at.strftime('%Y-%m-%d %H:%M:%S')}). "
+                    "Retrieving new data."
+                )
 
     dataset_metadata = DATASETS[name]
     function_string = dataset_metadata["function"]

@@ -5,30 +5,29 @@ import zipfile
 from pathlib import Path
 from io import BytesIO
 from json import JSONDecodeError
-from os import PathLike, path, listdir
-from typing import Union, Optional
+from os import path
+from typing import Optional
 from urllib import error
 from urllib.error import HTTPError, URLError
 
 import pandas as pd
 import httpx
-from dateutil.relativedelta import relativedelta
 from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd, YearEnd
-from sqlalchemy.engine.base import Engine, Connection
 
-from econuy import transform
+from econuy import load_dataset
+from econuy.base import Dataset, DatasetMetadata
 from econuy.retrieval import regional
 from econuy.core import Pipeline
-from econuy.utils import operations, metadata, get_project_root
+from econuy.utils import get_project_root
 from econuy.utils.operations import get_download_sources, get_name_from_function
-from econuy.utils.extras import TRADE_METADATA, RESERVES_COLUMNS, BOP_COLUMNS
+from econuy.utils.extras import TRADE_METADATA, BOP_COLUMNS
 
 
-def _trade_retriever(name: str) -> pd.DataFrame:
+def _get_trade(dataset_name: str) -> Dataset:
     """Helper function. See any of the `trade_...()` functions."""
-    sources = get_download_sources(name)
-    meta = TRADE_METADATA[name]
+    sources = get_download_sources(dataset_name)
+    meta = TRADE_METADATA[dataset_name]
     try:
         xls = pd.ExcelFile(sources["main"])
     except URLError as err:
@@ -47,7 +46,7 @@ def _trade_retriever(name: str) -> pd.DataFrame:
         )
         raw.index = pd.to_datetime(raw.index, errors="coerce") + MonthEnd(0)
         proc = raw[raw.index.notnull()].dropna(thresh=5, axis=1)
-        if name != "trade_imports_category_value":
+        if dataset_name != "trade_imports_category_value":
             try:
                 proc = proc.loc[:, meta["colnames"].keys()]
             except KeyError:
@@ -61,22 +60,33 @@ def _trade_retriever(name: str) -> pd.DataFrame:
         sheets.append(proc)
     output = pd.concat(sheets).sort_index()
     output = output.apply(pd.to_numeric, errors="coerce")
-    if meta["unit"] == "Millones":
+    if meta["unit"] == "Millions":
         output = output.div(1000)
-    output.rename_axis(None, inplace=True)
+    output = output.rename_axis(None)
 
-    metadata._set(
-        output,
-        area="Sector externo",
-        currency=meta["currency"],
-        inf_adj="No",
-        unit=meta["unit"],
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{dataset_name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+
+    base_metadata = {
+        "area": "External sector",
+        "currency": meta["currency"],
+        "inflation_adjustment": None,
+        "unit": meta["unit"],
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        dataset_name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(dataset_name, output, metadata)
 
-    return output
+    return dataset
 
 
 @retry(
@@ -84,16 +94,16 @@ def _trade_retriever(name: str) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_exports_sector_value() -> pd.DataFrame:
+def trade_exports_sector_value() -> Dataset:
     """Get export values by product.
 
     Returns
     -------
-    Export values by product : pd.DataFrame
+    Export values by product : Dataset
 
     """
     name = get_name_from_function()
-    return _trade_retriever(name)
+    return _get_trade(name)
 
 
 @retry(
@@ -101,16 +111,16 @@ def trade_exports_sector_value() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_exports_sector_volume() -> pd.DataFrame:
+def trade_exports_sector_volume() -> Dataset:
     """Get export volumes by product.
 
     Returns
     -------
-    Export volumes by product : pd.DataFrame
+    Export volumes by product : Dataset
 
     """
     name = get_name_from_function()
-    return _trade_retriever(name)
+    return _get_trade(name)
 
 
 @retry(
@@ -118,16 +128,16 @@ def trade_exports_sector_volume() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_exports_sector_price() -> pd.DataFrame:
+def trade_exports_sector_price() -> Dataset:
     """Get export prices by product.
 
     Returns
     -------
-    Export prices by product : pd.DataFrame
+    Export prices by product : Dataset
 
     """
     name = get_name_from_function()
-    return _trade_retriever(name)
+    return _get_trade(name)
 
 
 @retry(
@@ -135,16 +145,16 @@ def trade_exports_sector_price() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_exports_destination_value() -> pd.DataFrame:
+def trade_exports_destination_value() -> Dataset:
     """Get export values by destination.
 
     Returns
     -------
-    Export values by destination : pd.DataFrame
+    Export values by destination : Dataset
 
     """
     name = get_name_from_function()
-    return _trade_retriever(name)
+    return _get_trade(name)
 
 
 @retry(
@@ -152,16 +162,16 @@ def trade_exports_destination_value() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_exports_destination_volume() -> pd.DataFrame:
+def trade_exports_destination_volume() -> Dataset:
     """Get export volumes by destination.
 
     Returns
     -------
-    Export volumes by destination : pd.DataFrame
+    Export volumes by destination : Dataset
 
     """
     name = get_name_from_function()
-    return _trade_retriever(name)
+    return _get_trade(name)
 
 
 @retry(
@@ -169,16 +179,16 @@ def trade_exports_destination_volume() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_exports_destination_price() -> pd.DataFrame:
+def trade_exports_destination_price() -> Dataset:
     """Get export prices by destination.
 
     Returns
     -------
-    Export prices by destination : pd.DataFrame
+    Export prices by destination : Dataset
 
     """
     name = get_name_from_function()
-    return _trade_retriever(name)
+    return _get_trade(name)
 
 
 @retry(
@@ -186,16 +196,16 @@ def trade_exports_destination_price() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_imports_category_value() -> pd.DataFrame:
+def trade_imports_category_value() -> Dataset:
     """Get import values by sector.
 
     Returns
     -------
-    Import values by sector : pd.DataFrame
+    Import values by sector : Dataset
 
     """
     name = get_name_from_function()
-    return _trade_retriever(name)
+    return _get_trade(name)
 
 
 @retry(
@@ -203,16 +213,16 @@ def trade_imports_category_value() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_imports_category_volume() -> pd.DataFrame:
+def trade_imports_category_volume() -> Dataset:
     """Get import volumes by sector.
 
     Returns
     -------
-    Import volumes by sector : pd.DataFrame
+    Import volumes by sector : Dataset
 
     """
     name = get_name_from_function()
-    return _trade_retriever(name)
+    return _get_trade(name)
 
 
 @retry(
@@ -220,16 +230,16 @@ def trade_imports_category_volume() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_imports_category_price() -> pd.DataFrame:
+def trade_imports_category_price() -> Dataset:
     """Get import prices by sector.
 
     Returns
     -------
-    Import prices by sector : pd.DataFrame
+    Import prices by sector : Dataset
 
     """
     name = get_name_from_function()
-    return _trade_retriever(name)
+    return _get_trade(name)
 
 
 @retry(
@@ -237,16 +247,16 @@ def trade_imports_category_price() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_imports_origin_value() -> pd.DataFrame:
+def trade_imports_origin_value() -> Dataset:
     """Get import values by origin.
 
     Returns
     -------
-    Import values by origin : pd.DataFrame
+    Import values by origin : Dataset
 
     """
     name = get_name_from_function()
-    return _trade_retriever(name)
+    return _get_trade(name)
 
 
 @retry(
@@ -254,16 +264,16 @@ def trade_imports_origin_value() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_imports_origin_volume() -> pd.DataFrame:
+def trade_imports_origin_volume() -> Dataset:
     """Get import volumes by origin.
 
     Returns
     -------
-    Import volumes by origin : pd.DataFrame
+    Import volumes by origin : Dataset
 
     """
     name = get_name_from_function()
-    return _trade_retriever(name)
+    return _get_trade(name)
 
 
 @retry(
@@ -271,73 +281,98 @@ def trade_imports_origin_volume() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def trade_imports_origin_price() -> pd.DataFrame:
+def trade_imports_origin_price() -> Dataset:
     """Get import prices by origin.
 
     Returns
     -------
-    Import prices by origin : pd.DataFrame
+    Import prices by origin : Dataset
 
     """
     name = get_name_from_function()
-    return _trade_retriever(name)
+    return _get_trade(name)
 
 
-def trade_balance(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+def trade_balance() -> Dataset:
     """
     Get net trade balance data by country/region.
 
-    Parameters
-    ----------
-    pipeline : econuy.core.Pipeline or None, default None
-        An instance of the econuy Pipeline class.
-
     Returns
     -------
-    Net trade balance value by region/country : pd.DataFrame
+    Net trade balance value by region/country : Dataset
 
     """
-    if pipeline is None:
-        pipeline = Pipeline()
-    pipeline.get("trade_exports_destination_value")
-    exports = pipeline.dataset.rename(columns={"Total exportaciones": "Total"})
-    pipeline.get("trade_imports_origin_value")
-    imports = pipeline.dataset.rename(columns={"Total importaciones": "Total"})
-    net = exports - imports
-    net.rename_axis(None, inplace=True)
+    name = get_name_from_function()
+    exports = load_dataset("trade_exports_destination_value").to_named().rename(columns={"Total exportaciones": "Total"})
+    imports = load_dataset("trade_imports_origin_value").to_named().rename(columns={"Total importaciones": "Total"})
+    output = exports - imports
+    output = output.rename_axis(None)
 
-    return net
+    spanish_names = exports.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
 
 
-def terms_of_trade(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+    base_metadata = {
+        "area": "External sector",
+        "currency": "USD",
+        "inflation_adjustment": None,
+        "unit": "Millions",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
+
+
+def terms_of_trade() -> Dataset:
     """
     Get terms of trade.
 
-    Parameters
-    ----------
-    pipeline : econuy.core.Pipeline or None, default None
-        An instance of the econuy Pipeline class.
-
     Returns
     -------
-    Terms of trade (exports/imports) : pd.DataFrame
+    Terms of trade (exports/imports) : Dataset
 
     """
-    if pipeline is None:
-        pipeline = Pipeline()
-    pipeline.get("trade_exports_destination_price")
-    exports = pipeline.dataset.rename(columns={"Total exportaciones": "Total"})
-    pipeline.get("trade_imports_origin_price")
-    imports = pipeline.dataset.rename(columns={"Total importaciones": "Total"})
+    name = get_name_from_function()
+    exports = load_dataset("trade_exports_destination_price").to_named().rename(columns={"Total exportaciones": "Total"})
+    imports = load_dataset("trade_imports_origin_price").to_named().rename(columns={"Total importaciones": "Total"})
 
-    tot = exports / imports
-    tot = tot.loc[:, ["Total"]]
-    tot.rename(columns={"Total": "Términos de intercambio"}, inplace=True)
-    tot = transform.rebase(tot, start_date="2005-01-01", end_date="2005-12-31")
-    tot.rename_axis(None, inplace=True)
-    metadata._set(tot, ts_type="-")
+    output = exports / imports
+    output = output.loc[:, ["Total"]]
+    output = output.rename(columns={"Total": "Términos de intercambio"})
+    output = output.rename_axis(None)
 
-    return tot
+    spanish_names = exports.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "External sector",
+        "currency": "USD",
+        "inflation_adjustment": None,
+        "unit": "2005=100",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+    dataset = dataset.rebase("2005-01-01", "2005-12-31", 100)
+    return dataset
 
 
 @retry(
@@ -345,39 +380,7 @@ def terms_of_trade(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=90,
 )
-def _commodity_weights(
-    location: Union[str, PathLike, Engine, Connection, None] = None,
-    download: bool = True,
-) -> pd.DataFrame:
-    """Get commodity export weights for Uruguay.
-
-    Parameters
-    ----------
-    location : str, os.PathLike, SQLAlchemy Connection or Engine, or None, \
-               default None
-        Either Path or path-like string pointing to a directory where to find
-        a CSV for updating, SQLAlchemy connection or engine object, or
-        ``None``, don't update.
-    download : bool, default True
-        If False, don't download data, retrieve what is available from
-        ``location``.
-
-    Returns
-    -------
-    Commodity weights : pd.DataFrame
-        Export-based weights for relevant commodities to Uruguay.
-
-    """
-    if download is False and location is not None:
-        output = operations._io(
-            operation="read",
-            data_loc=location,
-            name="commodity_weights",
-            multiindex=None,
-        )
-        if not output.equals(pd.DataFrame()):
-            return output
-
+def _commodity_weights() -> pd.DataFrame:
     raw = pd.read_csv(
         "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/comtrade.csv"
     )
@@ -385,8 +388,6 @@ def _commodity_weights(
     table = raw.groupby(["RefYear", "CmdDesc"]).sum().reset_index()
     table = table.pivot(index="RefYear", columns="CmdDesc", values="PrimaryValue")
     table.fillna(0, inplace=True)
-
-    # output = roll.resample("M").bfill()
 
     beef = [
         "Bovine animals, live",
@@ -418,26 +419,6 @@ def _commodity_weights(
     output.index = pd.to_datetime(output.index, format="%Y") + YearEnd(1)
     output = output.rolling(window=3, min_periods=3).mean().bfill()
 
-    if location is not None:
-        previous_data = operations._io(
-            operation="read",
-            data_loc=location,
-            name="commodity_weights",
-            multiindex=None,
-        )
-        output = operations._revise(
-            new_data=output, prev_data=previous_data, revise_rows="nodup"
-        )
-
-    if location is not None:
-        operations._io(
-            operation="save",
-            data_loc=location,
-            data=output,
-            name="commodity_weights",
-            multiindex=None,
-        )
-
     return output
 
 
@@ -446,12 +427,12 @@ def _commodity_weights(
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def commodity_prices() -> pd.DataFrame:
+def commodity_prices() -> Dataset:
     """Get commodity prices for Uruguay.
 
     Returns
     -------
-    Commodity prices : pd.DataFrame
+    Commodity prices : Dataset
         Prices and price indexes of relevant commodities for Uruguay.
 
     """
@@ -477,15 +458,6 @@ def commodity_prices() -> pd.DataFrame:
         start="2002-01-04", periods=len(proc_beef), freq="W-SAT"
     )
     beef = proc_beef.resample("ME").mean()
-
-    # soy_wheat = []
-    # for link in [url["soybean"], url["wheat"]]:
-    #    proc = pd.read_csv(link, index_col=0)
-    #    proc.index = pd.to_datetime(proc.index, format="%Y-%m-%d")
-    #    proc.sort_index(inplace=True)
-    #    soy_wheat.append(proc.resample("M").mean())
-    # soybean = soy_wheat[0]
-    # wheat = soy_wheat[1]
 
     milk_r = httpx.get(sources["milk1"])
     xls = re.findall(
@@ -543,7 +515,7 @@ def commodity_prices() -> pd.DataFrame:
     with zipfile.ZipFile(BytesIO(raw_pulp_r.content), "r") as f:
         f.extractall(path=temp_dir.name)
         path_temp = path.join(
-            temp_dir.name, listdir(temp_dir.name)[0], "monthly_values.csv"
+            temp_dir.name, "monthly_values.csv"
         )
         raw_pulp = pd.read_csv(path_temp, sep=";").dropna(how="any")
     proc_pulp = raw_pulp.copy().sort_index(ascending=False)
@@ -573,11 +545,11 @@ def commodity_prices() -> pd.DataFrame:
     ]
     wheat = proc_imf[proc_imf.columns[proc_imf.columns.str.startswith("Wheat")]]
 
-    complete = pd.concat(
+    output = pd.concat(
         [beef, pulp, soybean, milk, rice, wood, wool, barley, gold, wheat], axis=1
     )
-    complete = complete.reindex(beef.index).dropna(thresh=8)
-    complete.columns = [
+    output = output.reindex(beef.index).dropna(thresh=8)
+    output.columns = [
         "Carne bovina",
         "Pulpa de celulosa",
         "Soja",
@@ -589,87 +561,94 @@ def commodity_prices() -> pd.DataFrame:
         "Oro",
         "Trigo",
     ]
-    complete = complete.apply(pd.to_numeric, errors="coerce")
-    complete.rename_axis(None, inplace=True)
+    output = output.apply(pd.to_numeric, errors="coerce")
+    output = output.rename_axis(None)
 
-    metadata._set(
-        complete,
-        area="Sector externo",
-        currency="USD",
-        inf_adj="No",
-        unit="2002-01=100",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "External sector",
+        "currency": "USD",
+        "inflation_adjustment": None,
+        "unit": "-",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
-    metadata._modify_multiindex(
-        complete,
-        levels=[5],
-        new_arrays=[
-            [
-                "USD por ton",
-                "USD por ton",
-                "USD por ton",
-                "USD por ton",
-                "USD por ton",
-                "USD por m3",
-                "US cent. por kg",
-                "USD por ton",
-                "USD por onza troy",
-                "USD por ton",
+    units =             [
+                "USD per ton",
+                "USD per ton",
+                "USD per ton",
+                "USD per ton",
+                "USD per ton",
+                "USD per m3",
+                "US cent. per kg",
+                "USD per ton",
+                "USD per onza troy",
+                "USD per ton",
             ]
-        ],
-    )
+    for indicator, unit in zip(ids, units):
+        metadata.update_indicator_metadata_value(indicator, "unit", unit)
 
-    return complete
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
 
 
-def commodity_index(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+def commodity_index() -> Dataset:
     """Get export-weighted commodity price index for Uruguay.
-
-    Parameters
-    ----------
-    pipeline : econuy.core.Pipeline or None, default None
-        An instance of the econuy Pipeline class.
 
     Returns
     -------
-    Monthly export-weighted commodity index : pd.DataFrame
+    Monthly export-weighted commodity index : Dataset
         Export-weighted average of commodity prices relevant to Uruguay.
 
     """
-    if pipeline is None:
-        pipeline = Pipeline()
-    pipeline.get("commodity_prices")
-    prices = pipeline.dataset
-    prices.columns = prices.columns.get_level_values(0)
+    name = get_name_from_function()
+    prices = load_dataset("commodity_prices").to_named()
     prices = prices.interpolate(method="linear", limit=1).dropna(how="any")
     prices = prices.pct_change(periods=1)
-    weights = _commodity_weights(
-        location=pipeline.location, download=pipeline._download_commodity_weights
-    )
+    weights = _commodity_weights()
     weights = weights[prices.columns]
     weights = weights.reindex(prices.index, method="ffill")
 
-    product = pd.DataFrame(
+    output = pd.DataFrame(
         prices.values * weights.values, columns=prices.columns, index=prices.index
     )
-    product = product.sum(axis=1).add(1).to_frame().cumprod().multiply(100)
-    product.columns = ["Índice de precios de productos primarios"]
-    product.rename_axis(None, inplace=True)
+    output = output.sum(axis=1).add(1).to_frame().cumprod().multiply(100)
+    output.columns = ["Índice de precios de productos primarios"]
+    output = output.rename_axis(None)
 
-    metadata._set(
-        product,
-        area="Sector externo",
-        currency="USD",
-        inf_adj="No",
-        unit="2002-01=100",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "External sector",
+        "currency": "USD",
+        "inflation_adjustment": None,
+        "unit": "2002-01=100",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
 
-    return product
+    return dataset
 
 
 @retry(
@@ -677,12 +656,12 @@ def commodity_index(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def rxr() -> pd.DataFrame:
+def rxr() -> Dataset:
     """Get official (BCU) real exchange rates.
 
     Returns
     -------
-    Monthly real exchange rates vs select countries/regions : pd.DataFrame
+    Monthly real exchange rates vs select countries/regions : Dataset
         Available: global, regional, extraregional, Argentina, Brazil, US.
 
     """
@@ -694,9 +673,9 @@ def rxr() -> pd.DataFrame:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
             r = httpx.get(sources["main"], verify=certs_path)
-            raw = pd.read_excel(r.content, skiprows=8, usecols="B:N", index_col=0)
-    proc = raw.dropna(how="any")
-    proc.columns = [
+            raw = pd.read_excel(r.content, skiprows=9, usecols="B:N", index_col=0)
+    output = raw.dropna(how="any")
+    output.columns = [
         "Global",
         "Extrarregional",
         "Regional",
@@ -710,21 +689,31 @@ def rxr() -> pd.DataFrame:
         "Italia",
         "China",
     ]
-    proc.index = pd.to_datetime(proc.index) + MonthEnd(1)
-    proc.rename_axis(None, inplace=True)
+    output.index = pd.to_datetime(output.index) + MonthEnd(1)
+    output = output.rename_axis(None)
 
-    metadata._set(
-        proc,
-        area="Sector externo",
-        currency="UYU/Otro",
-        inf_adj="No",
-        unit="2017=100",
-        seas_adj="NSA",
-        ts_type="-",
-        cumperiods=1,
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "External sector",
+        "currency": "UYU/other",
+        "inflation_adjustment": None,
+        "unit": "2019=100",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
 
-    return proc
+    return dataset
 
 
 @retry(
@@ -732,28 +721,20 @@ def rxr() -> pd.DataFrame:
     max_calls_total=10,
     retry_window_after_first_call_in_seconds=90,
 )
-def rxr_custom(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+def rxr_custom() -> Dataset:
     """Get custom real exchange rates vis-à-vis the US, Argentina and Brazil.
-
-    Parameters
-    ----------
-    pipeline : econuy.core.Pipeline or None, default None
-        An instance of the econuy Pipeline class.
 
     Returns
     -------
-    Monthly real exchange rates vs select countries : pd.DataFrame
+    Monthly real exchange rates vs select countries : Dataset
         Available: Argentina, Brazil, US.
 
     """
-    if pipeline is None:
-        pipeline = Pipeline()
+    name = get_name_from_function()
 
-    ifs = regional._ifs(pipeline=pipeline)
-    pipeline.get("cpi")
-    uy_cpi = pipeline.dataset
-    pipeline.get("nxr_monthly")
-    uy_e = pipeline.dataset.iloc[:, [1]]
+    ifs = regional._ifs()
+    uy_cpi = load_dataset("cpi").to_named()
+    uy_e = load_dataset("nxr_monthly").to_named().iloc[:, [1]]
     proc = pd.concat([ifs, uy_cpi, uy_e], axis=1)
     proc = proc.interpolate(method="linear", limit_area="inside")
     proc = proc.dropna(how="all")
@@ -769,29 +750,35 @@ def rxr_custom(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     )
     output["Uruguay-Brasil"] = output["UY_E_P"] / proc["BR_E"] * proc["BR_P"]
     output["Uruguay-EE.UU."] = output["UY_E_P"] * proc["US_P"]
-    output.drop("UY_E_P", axis=1, inplace=True)
+    output = output.drop("UY_E_P", axis=1)
     output = output.loc[output.index >= "1979-12-01"]
-    output.rename_axis(None, inplace=True)
+    output = output.rename_axis(None)
     output = output.dropna(how="all")
 
-    metadata._set(
-        output,
-        area="Sector externo",
-        currency="-",
-        inf_adj="No",
-        unit="-",
-        seas_adj="NSA",
-        ts_type="-",
-        cumperiods=1,
-    )
-    output = transform.rebase(
-        output, start_date="2010-01-01", end_date="2010-12-31", base=100
-    )
-    metadata._modify_multiindex(
-        output, levels=[3], new_arrays=[["UYU/ARS", "UYU/ARS", "UYU/BRL", "UYU/USD"]]
-    )
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
 
-    return output
+    base_metadata = {
+        "area": "External sector",
+        "currency": "UYU/other",
+        "inflation_adjustment": None,
+        "unit": "2019=100",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    for indicator, currency in zip(ids, ["UYU/ARS", "UYU/ARS", "UYU/BRL", "UYU/USD"]):
+        metadata.update_indicator_metadata_value(indicator, "currency", currency)
+    dataset = Dataset(name, output, metadata).rebase("2010-01-01", "2010-12-31", 100)
+
+    return dataset
 
 
 @retry(
@@ -799,12 +786,12 @@ def rxr_custom(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     max_calls_total=10,
     retry_window_after_first_call_in_seconds=90,
 )
-def balance_of_payments() -> pd.DataFrame:
+def balance_of_payments() -> Dataset:
     """Get balance of payments.
 
     Returns
     -------
-    Quarterly balance of payments : pd.DataFrame
+    Quarterly balance of payments : Dataset
 
     """
     name = get_name_from_function()
@@ -829,7 +816,7 @@ def balance_of_payments() -> pd.DataFrame:
                 .T
             )
     output = raw.iloc[:, 2:]
-    output.index = pd.date_range(start="2012-03-31", freq="Q", periods=len(output))
+    output.index = pd.date_range(start="2012-03-31", freq="QE-DEC", periods=len(output))
     pattern = r"\(1\)|\(2\)|\(3\)|\(4\)|\(5\)"
     output.columns = [re.sub(pattern, "", x).strip() for x in output.columns]
     output = output.drop(
@@ -840,20 +827,30 @@ def balance_of_payments() -> pd.DataFrame:
         ],
         axis=1,
     )
-    output.columns = [x[:58] + "..." if len(x) > 60 else x for x in BOP_COLUMNS]
+    output.columns = BOP_COLUMNS
 
-    metadata._set(
-        output,
-        area="Sector externo",
-        currency="USD",
-        inf_adj="No",
-        unit="Millones",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "External sector",
+        "currency": "USD",
+        "inflation_adjustment": None,
+        "unit": "Millions",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
 
-    return output
+    return dataset
 
 
 @retry(
@@ -861,19 +858,17 @@ def balance_of_payments() -> pd.DataFrame:
     max_calls_total=10,
     retry_window_after_first_call_in_seconds=90,
 )
-def balance_of_payments_summary(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+def balance_of_payments_summary(pipeline: Optional[Pipeline] = None) -> Dataset:
     """Get a balance of payments summary and capital flows calculations.
 
     Returns
     -------
-    Quarterly balance of payments summary : pd.DataFrame
+    Quarterly balance of payments summary : Dataset
 
     """
-    if pipeline is None:
-        pipeline = Pipeline()
+    name = get_name_from_function()
+    bop = load_dataset("balance_of_payments").to_named()
 
-    pipeline.get("balance_of_payments")
-    bop = pipeline.dataset.copy()
     output = pd.DataFrame(index=bop.index)
     output["Cuenta corriente"] = bop["Cuenta Corriente"]
     output["Balance de bienes y servicios"] = bop["Bienes y Servicios"]
@@ -929,31 +924,40 @@ def balance_of_payments_summary(pipeline: Optional[Pipeline] = None) -> pd.DataF
         + output["Cuenta capital"]
     )
 
-    metadata._set(
-        output,
-        area="Sector externo",
-        currency="USD",
-        inf_adj="No",
-        unit="Millones",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "External sector",
+        "currency": "USD",
+        "inflation_adjustment": None,
+        "unit": "Millions",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
 
-    return output
-
+    return dataset
 
 @retry(
     retry_on_exceptions=(HTTPError, URLError),
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def international_reserves() -> pd.DataFrame:
+def international_reserves() -> Dataset:
     """Get international reserves data.
 
     Returns
     -------
-    Daily international reserves : pd.DataFrame
+    Daily international reserves : Dataset
 
     """
     name = get_name_from_function()
@@ -970,8 +974,8 @@ def international_reserves() -> pd.DataFrame:
                 r.content, usecols="D:J", index_col=0, skiprows=5, na_values="n/d"
             )
     proc = raw.dropna(thresh=1)
-    reserves = proc[proc.index.notnull()]
-    reserves.columns = [
+    output = proc[proc.index.notnull()]
+    output.columns = [
         "Activos de reserva",
         "Otros activos externos de corto plazo",
         "Obligaciones en ME con el sector público",
@@ -979,155 +983,165 @@ def international_reserves() -> pd.DataFrame:
         "Activos de reserva sin sector público y financiero",
         "Posición en ME del BCU",
     ]
-    reserves = reserves.apply(pd.to_numeric, errors="coerce")
-    reserves = reserves.loc[~reserves.index.duplicated(keep="first")]
-    reserves.index = pd.to_datetime(reserves.index)
-    reserves.rename_axis(None, inplace=True)
+    output = output.apply(pd.to_numeric, errors="coerce")
+    output = output.loc[~output.index.duplicated(keep="first")]
+    output.index = pd.to_datetime(output.index)
+    output = output.rename_axis(None)
 
-    metadata._set(
-        reserves,
-        area="Sector externo",
-        currency="USD",
-        inf_adj="No",
-        unit="Millones",
-        seas_adj="NSA",
-        ts_type="Stock",
-        cumperiods=1,
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "External sector",
+        "currency": "USD",
+        "inflation_adjustment": None,
+        "unit": "Millions",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
 
-    return reserves
+    return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=10,
-    retry_window_after_first_call_in_seconds=90,
-)
-def international_reserves_changes(
-    pipeline: Optional[Pipeline] = None, previous_data: pd.DataFrame = pd.DataFrame()
-) -> pd.DataFrame:
-    """Get international reserves changes data.
+# @retry(
+#     retry_on_exceptions=(HTTPError, URLError),
+#     max_calls_total=10,
+#     retry_window_after_first_call_in_seconds=90,
+# )
+# def international_reserves_changes(
+#     pipeline: Optional[Pipeline] = None, previous_data: pd.DataFrame = pd.DataFrame()
+# ) -> pd.DataFrame:
+#     """Get international reserves changes data.
 
-    Parameters
-    ----------
-    pipeline : econuy.core.Pipeline or None, default None
-        An instance of the econuy Pipeline class.
-    previous_data : pd.DataFrame
-        A DataFrame representing this dataset used to extract last
-        available dates.
+#     Parameters
+#     ----------
+#     pipeline : econuy.core.Pipeline or None, default None
+#         An instance of the econuy Pipeline class.
+#     previous_data : pd.DataFrame
+#         A DataFrame representing this dataset used to extract last
+#         available dates.
 
-    Returns
-    -------
-    Monthly international reserves changes : pd.DataFrame
+#     Returns
+#     -------
+#     Monthly international reserves changes : pd.DataFrame
 
-    """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+#     """
+#     name = get_name_from_function()
+#     sources = get_download_sources(name)
 
-    if pipeline is None:
-        pipeline = Pipeline()
-    if previous_data.empty:
-        first_year = 2013
-    else:
-        first_year = previous_data.index[-1].year
+#     if pipeline is None:
+#         pipeline = Pipeline()
+#     if previous_data.empty:
+#         first_year = 2013
+#     else:
+#         first_year = previous_data.index[-1].year
 
-    mapping = dict(
-        zip(
-            [
-                "Ene",
-                "Feb",
-                "Mar",
-                "Abr",
-                "May",
-                "Jun",
-                "Jul",
-                "Ago",
-                "Set",
-                "Oct",
-                "Nov",
-                "Dic",
-            ],
-            [str(x).zfill(2) for x in range(1, 13)],
-        )
-    )
-    inverse_mapping = {v: k for k, v in mapping.items()}
-    mapping.update({"Sep": "09"})
+#     mapping = dict(
+#         zip(
+#             [
+#                 "Ene",
+#                 "Feb",
+#                 "Mar",
+#                 "Abr",
+#                 "May",
+#                 "Jun",
+#                 "Jul",
+#                 "Ago",
+#                 "Set",
+#                 "Oct",
+#                 "Nov",
+#                 "Dic",
+#             ],
+#             [str(x).zfill(2) for x in range(1, 13)],
+#         )
+#     )
+#     inverse_mapping = {v: k for k, v in mapping.items()}
+#     mapping.update({"Sep": "09"})
 
-    current_year = dt.date.today().year
-    months = []
-    for year in range(first_year, current_year + 1):
-        if year < current_year:
-            filename = f"dic{year}.xls"
-        else:
-            current_month = inverse_mapping[str(dt.date.today().month).zfill(2)]
-            last_month = inverse_mapping[
-                str((dt.date.today() + relativedelta(months=-1)).month).zfill(2)
-            ]
-            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            filename = f"{current_month}{year}.xls"
-            r = httpx.get(f"{sources['main']}{filename}", verify=certs_path)
-            if r.status_code == 404:
-                filename = f"{last_month}{year}.xls"
-        try:
-            data = pd.read_excel(
-                f"{sources['main']}{filename}",
-                skiprows=2,
-                sheet_name="ACTIVOS DE RESERVA",
-            )
-        except URLError as err:
-            if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-                certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-                r = httpx.get(f"{sources['main']}{filename}", verify=certs_path)
-                data = pd.read_excel(
-                    r.content,
-                    skiprows=2,
-                    sheet_name="ACTIVOS DE RESERVA",
-                )
-        data = data.dropna(how="all").dropna(how="all", axis=1).set_index("CONCEPTOS")
-        if data.columns[0] == "Mes":
-            data.columns = data.iloc[0, :]
-        data = (
-            data.iloc[1:]
-            .T.reset_index(names="date")
-            .loc[
-                lambda x: ~x["date"]
-                .astype(str)
-                .str.contains("Unnamed|Trimestre|Año|I", regex=True, case=True),
-                lambda x: x.columns.notna(),
-            ]
-        )
-        data["date"] = data["date"].replace("Mes\n", "", regex=True).str.strip()
-        data = data.loc[data["date"].notna()]
+#     current_year = dt.date.today().year
+#     months = []
+#     for year in range(first_year, current_year + 1):
+#         if year < current_year:
+#             filename = f"dic{year}.xls"
+#         else:
+#             current_month = inverse_mapping[str(dt.date.today().month).zfill(2)]
+#             last_month = inverse_mapping[
+#                 str((dt.date.today() + relativedelta(months=-1)).month).zfill(2)
+#             ]
+#             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+#             filename = f"{current_month}{year}.xls"
+#             r = httpx.get(f"{sources['main']}{filename}", verify=certs_path)
+#             if r.status_code == 404:
+#                 filename = f"{last_month}{year}.xls"
+#         try:
+#             data = pd.read_excel(
+#                 f"{sources['main']}{filename}",
+#                 skiprows=2,
+#                 sheet_name="ACTIVOS DE RESERVA",
+#             )
+#         except URLError as err:
+#             if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
+#                 certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
+#                 r = httpx.get(f"{sources['main']}{filename}", verify=certs_path)
+#                 data = pd.read_excel(
+#                     r.content,
+#                     skiprows=2,
+#                     sheet_name="ACTIVOS DE RESERVA",
+#                 )
+#         data = data.dropna(how="all").dropna(how="all", axis=1).set_index("CONCEPTOS")
+#         if data.columns[0] == "Mes":
+#             data.columns = data.iloc[0, :]
+#         data = (
+#             data.iloc[1:]
+#             .T.reset_index(names="date")
+#             .loc[
+#                 lambda x: ~x["date"]
+#                 .astype(str)
+#                 .str.contains("Unnamed|Trimestre|Año|I", regex=True, case=True),
+#                 lambda x: x.columns.notna(),
+#             ]
+#         )
+#         data["date"] = data["date"].replace("Mes\n", "", regex=True).str.strip()
+#         data = data.loc[data["date"].notna()]
 
-        index = pd.Series(data["date"]).str.split("-", expand=True).replace(mapping)
-        index = pd.to_datetime(
-            index.iloc[:, 0] + "-" + index.iloc[:, 1], format="%m-%Y", errors="coerce"
-        ) + pd.tseries.offsets.MonthEnd(1)
-        if year == 2019:
-            index = index.fillna(dt.datetime(year, 1, 31))
-        elif year == 2013:
-            index = index.fillna(dt.datetime(year, 12, 31))
-        data["date"] = index
-        data.columns = ["date"] + RESERVES_COLUMNS
-        months.append(data)
-    reserves = (
-        pd.concat(months, sort=False, ignore_index=True)
-        .drop_duplicates(subset="date")
-        .dropna(subset="date")
-        .set_index("date")
-        .sort_index()
-        .rename_axis(None)
-    )
-    metadata._set(
-        reserves,
-        area="Sector externo",
-        currency="USD",
-        inf_adj="No",
-        unit="Millones",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
-    )
-    reserves.columns = reserves.columns.set_levels(["-"], level=2)
+#         index = pd.Series(data["date"]).str.split("-", expand=True).replace(mapping)
+#         index = pd.to_datetime(
+#             index.iloc[:, 0] + "-" + index.iloc[:, 1], format="%m-%Y", errors="coerce"
+#         ) + pd.tseries.offsets.MonthEnd(1)
+#         if year == 2019:
+#             index = index.fillna(dt.datetime(year, 1, 31))
+#         elif year == 2013:
+#             index = index.fillna(dt.datetime(year, 12, 31))
+#         data["date"] = index
+#         data.columns = ["date"] + RESERVES_COLUMNS
+#         months.append(data)
+#     reserves = (
+#         pd.concat(months, sort=False, ignore_index=True)
+#         .drop_duplicates(subset="date")
+#         .dropna(subset="date")
+#         .set_index("date")
+#         .sort_index()
+#         .rename_axis(None)
+#     )
+#     metadata._set(
+#         reserves,
+#         area="Sector externo",
+#         currency="USD",
+#         inf_adj="No",
+#         unit="Millones",
+#         seas_adj="NSA",
+#         ts_type="Flujo",
+#         cumperiods=1,
+#     )
+#     reserves.columns = reserves.columns.set_levels(["-"], level=2)
 
-    return reserves
+#     return reserves

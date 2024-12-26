@@ -19,12 +19,12 @@ from econuy import load_dataset
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def cpi() -> pd.DataFrame:
+def cpi() -> Dataset:
     """Get CPI data.
 
     Returns
     -------
-    Monthly CPI : pd.DataFrame
+    Monthly CPI : Dataset
 
     """
     name = get_name_from_function()
@@ -70,7 +70,7 @@ def cpi_divisions() -> Dataset:
 
     Returns
     -------
-    Monthly CPI by division : pd.DataFrame
+    Monthly CPI by division : Dataset
 
     """
     name = get_name_from_function()
@@ -202,12 +202,12 @@ def cpi_divisions() -> Dataset:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def inflation_expectations() -> pd.DataFrame:
+def inflation_expectations() -> Dataset:
     """Get data for the BCU inflation expectations survey.
 
     Returns
     -------
-    Monthly inflation expectations : pd.DataFrame
+    Monthly inflation expectations : Dataset
 
     """
     name = get_name_from_function()
@@ -355,12 +355,12 @@ def inflation_expectations() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=30,
 )
-def ppi() -> pd.DataFrame:
+def ppi() -> Dataset:
     """Get PPI data.
 
     Returns
     -------
-    Monthly PPI : pd.DataFrame
+    Monthly PPI : Dataset
 
     """
     name = get_name_from_function()
@@ -409,7 +409,7 @@ def ppi() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=30,
 )
-def nxr_monthly() -> pd.DataFrame:
+def nxr_monthly() -> Dataset:
     """Get monthly nominal exchange rate data.
 
     Parameters
@@ -419,7 +419,7 @@ def nxr_monthly() -> pd.DataFrame:
 
     Returns
     -------
-    Monthly nominal exchange rates : pd.DataFrame
+    Monthly nominal exchange rates : Dataset
         Sell rate, monthly average and end of period.
 
     """
@@ -481,12 +481,12 @@ def nxr_monthly() -> pd.DataFrame:
     max_calls_total=10,
     retry_window_after_first_call_in_seconds=60,
 )
-def nxr_daily() -> pd.DataFrame:
+def nxr_daily() -> Dataset:
     """Get daily nominal exchange rate data.
 
     Returns
     -------
-    Daily nominal exchange rates : pd.DataFrame
+    Daily nominal exchange rates : Dataset
         Sell rate.
 
     """

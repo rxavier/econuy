@@ -161,7 +161,7 @@ def _convert_gdp(
         gdp = gdp.resample(inferred_freq, convention="end").asfreq()
         if cum_periods != 4 and ts_type == "Flow":
             converter = int(4 / cum_periods)
-            df = data.rolling(window=converter).sum()
+            data = data.rolling(window=converter).sum()
     elif inferred_freq in ["A", "A-DEC", "YE-DEC"]:
         gdp = gdp.resample(inferred_freq, convention="end").asfreq()
     elif inferred_freq in ["D", "B", "C", "W", "W-SUN", None]:
@@ -169,7 +169,7 @@ def _convert_gdp(
             data = data.resample("ME").sum()
         else:
             data = data.resample("ME").mean()
-        gdp = gdp.resample(target_freq).interpolate("linear")
+        gdp = gdp.resample("ME").interpolate("linear")
     else:
         raise ValueError(
             "Frequency of input dataframe not any of 'D', 'C', "

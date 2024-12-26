@@ -30,12 +30,12 @@ from econuy import load_dataset
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def monthly_gdp() -> pd.DataFrame:
+def monthly_gdp() -> Dataset:
     """Get the monthly indicator for economic activity.
 
     Returns
     -------
-    Monthly GDP : pd.DataFrame
+    Monthly GDP : Dataset
 
     """
     name = get_name_from_function()
@@ -99,12 +99,12 @@ def monthly_gdp() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def national_accounts_supply_constant_nsa() -> pd.DataFrame:
+def national_accounts_supply_constant_nsa() -> Dataset:
     """Get supply-side national accounts data in NSA constant prices, 2005-.
 
     Returns
     -------
-    National accounts, supply side, constant prices, NSA : pd.DataFrame
+    National accounts, supply side, constant prices, NSA : Dataset
 
     """
     name = get_name_from_function()
@@ -160,12 +160,12 @@ def national_accounts_supply_constant_nsa() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def national_accounts_demand_constant_nsa() -> pd.DataFrame:
+def national_accounts_demand_constant_nsa() -> Dataset:
     """Get demand-side national accounts data in NSA constant prices, 2005-.
 
     Returns
     -------
-    National accounts, demand side, constant prices, NSA : pd.DataFrame
+    National accounts, demand side, constant prices, NSA : Dataset
 
     """
     name = get_name_from_function()
@@ -218,12 +218,12 @@ def national_accounts_demand_constant_nsa() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def national_accounts_demand_current_nsa() -> pd.DataFrame:
+def national_accounts_demand_current_nsa() -> Dataset:
     """Get demand-side national accounts data in NSA current prices.
 
     Returns
     -------
-    National accounts, demand side, current prices, NSA : pd.DataFrame
+    National accounts, demand side, current prices, NSA : Dataset
 
     """
     name = get_name_from_function()
@@ -276,12 +276,12 @@ def national_accounts_demand_current_nsa() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def national_accounts_supply_current_nsa() -> pd.DataFrame:
+def national_accounts_supply_current_nsa() -> Dataset:
     """Get supply-side national accounts data in NSA current prices, 2005-.
 
     Returns
     -------
-    National accounts, supply side, current prices, NSA : pd.DataFrame
+    National accounts, supply side, current prices, NSA : Dataset
 
     """
     name = get_name_from_function()
@@ -338,12 +338,12 @@ def national_accounts_supply_current_nsa() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def gdp_index_constant_sa() -> pd.DataFrame:
+def gdp_index_constant_sa() -> Dataset:
     """Get supply-side national accounts data in SA real index, 1997-.
 
     Returns
     -------
-    National accounts, supply side, real index, SA : pd.DataFrame
+    National accounts, supply side, real index, SA : Dataset
 
     """
     name = get_name_from_function()
@@ -385,7 +385,7 @@ def gdp_index_constant_sa() -> pd.DataFrame:
     retry_window_after_first_call_in_seconds=60,
 )
 def national_accounts_supply_constant_nsa_extended(
-) -> pd.DataFrame:
+) -> Dataset:
     """Get supply-side national accounts data in NSA constant prices, 1988-.
 
     Three datasets with different base years, 1983, 2005 and 2016, are spliced
@@ -393,7 +393,7 @@ def national_accounts_supply_constant_nsa_extended(
 
     Returns
     -------
-    National accounts, supply side, constant prices, NSA : pd.DataFrame
+    National accounts, supply side, constant prices, NSA : Dataset
 
     """
     name = get_name_from_function()
@@ -548,7 +548,7 @@ def national_accounts_supply_constant_nsa_extended(
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def national_accounts_demand_constant_nsa_extended() -> pd.DataFrame:
+def national_accounts_demand_constant_nsa_extended() -> Dataset:
     """Get demand-side national accounts data in NSA constant prices, 1988-.
 
     Three datasets with different base years, 1983, 2005 and 2016, are spliced
@@ -556,7 +556,7 @@ def national_accounts_demand_constant_nsa_extended() -> pd.DataFrame:
 
     Returns
     -------
-    National accounts, demand side, constant prices, NSA : pd.DataFrame
+    National accounts, demand side, constant prices, NSA : Dataset
 
     """
     name = get_name_from_function()
@@ -661,7 +661,7 @@ def national_accounts_demand_constant_nsa_extended() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def gdp_index_constant_sa_extended() -> pd.DataFrame:
+def gdp_index_constant_sa_extended() -> Dataset:
     """Get GDP data in SA constant prices, 1988-.
 
     Three datasets with different base years, 1983, 2005 and 2016, are spliced
@@ -669,7 +669,7 @@ def gdp_index_constant_sa_extended() -> pd.DataFrame:
 
     Returns
     -------
-    GDP, constant prices, SA : pd.DataFrame
+    GDP, constant prices, SA : Dataset
 
     """
     name = get_name_from_function()
@@ -769,7 +769,7 @@ def gdp_index_constant_sa_extended() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def gdp_constant_nsa_extended() -> pd.DataFrame:
+def gdp_constant_nsa_extended() -> Dataset:
     """Get GDP data in NSA constant prices, 1988-.
 
     Three datasets with two different base years, 1983 and 2016, are
@@ -778,7 +778,7 @@ def gdp_constant_nsa_extended() -> pd.DataFrame:
 
     Returns
     -------
-    GDP, constant prices, NSA : pd.DataFrame
+    GDP, constant prices, NSA : Dataset
 
     """
     name = get_name_from_function()
@@ -857,7 +857,7 @@ def gdp_constant_nsa_extended() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def gdp_current_nsa_extended() -> pd.DataFrame:
+def gdp_current_nsa_extended() -> Dataset:
     """Get GDP data in NSA current prices, 1997-.
 
     It uses the BCU's working paper for retropolated GDP in current and constant prices for
@@ -865,7 +865,7 @@ def gdp_current_nsa_extended() -> pd.DataFrame:
 
     Returns
     -------
-    GDP, current prices, NSA : pd.DataFrame
+    GDP, current prices, NSA : Dataset
 
     """
     name = get_name_from_function()
@@ -1011,12 +1011,12 @@ def gdp_denominator():
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def industrial_production() -> pd.DataFrame:
+def industrial_production() -> Dataset:
     """Get industrial production data.
 
     Returns
     -------
-    Monthly industrial production index : pd.DataFrame
+    Monthly industrial production index : Dataset
 
     """
     name = get_name_from_function()
@@ -1081,7 +1081,7 @@ def industrial_production() -> pd.DataFrame:
     return dataset
 
 
-def core_industrial_production(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+def core_industrial_production(pipeline: Optional[Pipeline] = None) -> Dataset:
     """
     Get total industrial production, industrial production excluding oil
     refinery and core industrial production.
@@ -1093,7 +1093,7 @@ def core_industrial_production(pipeline: Optional[Pipeline] = None) -> pd.DataFr
 
     Returns
     -------
-    Measures of industrial production : pd.DataFrame
+    Measures of industrial production : Dataset
 
     """
     name = get_name_from_function()
@@ -1178,12 +1178,12 @@ def core_industrial_production(pipeline: Optional[Pipeline] = None) -> pd.DataFr
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def livestock_slaughter() -> pd.DataFrame:
+def livestock_slaughter() -> Dataset:
     """Get weekly livestock slaughter data.
 
     Returns
     -------
-    Weekly livestock slaughter : pd.DataFrame
+    Weekly livestock slaughter : Dataset
 
     """
     name = get_name_from_function()
@@ -1229,12 +1229,12 @@ def livestock_slaughter() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def milk_shipments() -> pd.DataFrame:
+def milk_shipments() -> Dataset:
     """Get monthly milk shipments from farms data.
 
     Returns
     -------
-    Monhtly milk shipments from farms : pd.DataFrame
+    Monhtly milk shipments from farms : Dataset
 
     """
     name = get_name_from_function()
@@ -1277,7 +1277,7 @@ def milk_shipments() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def diesel_sales() -> pd.DataFrame:
+def diesel_sales() -> Dataset:
     """
     Get diesel sales by department data.
 
@@ -1286,7 +1286,7 @@ def diesel_sales() -> pd.DataFrame:
 
     Returns
     -------
-    Monthly diesel dales : pd.DataFrame
+    Monthly diesel dales : Dataset
 
     """
     name = get_name_from_function()
@@ -1342,7 +1342,7 @@ def diesel_sales() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def gasoline_sales() -> pd.DataFrame:
+def gasoline_sales() -> Dataset:
     """
     Get gasoline sales by department data.
 
@@ -1351,7 +1351,7 @@ def gasoline_sales() -> pd.DataFrame:
 
     Returns
     -------
-    Monthly gasoline dales : pd.DataFrame
+    Monthly gasoline dales : Dataset
 
     """
     name = get_name_from_function()
@@ -1407,7 +1407,7 @@ def gasoline_sales() -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def electricity_sales() -> pd.DataFrame:
+def electricity_sales() -> Dataset:
     """
     Get electricity sales by sector data.
 
@@ -1416,7 +1416,7 @@ def electricity_sales() -> pd.DataFrame:
 
     Returns
     -------
-    Monthly electricity dales : pd.DataFrame
+    Monthly electricity dales : Dataset
 
     """
     name = get_name_from_function()

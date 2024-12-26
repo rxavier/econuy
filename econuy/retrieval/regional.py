@@ -15,8 +15,10 @@ from pandas.tseries.offsets import MonthEnd
 from opnieuw import retry
 from selenium.webdriver.remote.webdriver import WebDriver
 
+from econuy import load_dataset
 from econuy.core import Pipeline
-from econuy.transform import rebase, resample
+from econuy.base import Dataset, DatasetMetadata
+from econuy.transform import rebase
 from econuy.utils import metadata
 from econuy.utils.chromedriver import _build
 from econuy.utils.operations import get_download_sources, get_name_from_function
@@ -160,7 +162,7 @@ def regional_cpi() -> pd.DataFrame:
     arg = httpx.get(
         sources["ar"].format(
             end_date=dt.datetime.now().strftime("%Y-%m-%d"),
-        ),
+        ), verify="econuy/utils/files/bcra_certs.pem"
     )
     arg = pd.read_html(arg.content)[0]
     arg.set_index("Fecha", drop=True, inplace=True)
@@ -193,20 +195,32 @@ def regional_cpi() -> pd.DataFrame:
 
     output = pd.concat([arg, bra], axis=1)
     output.columns = ["Argentina", "Brasil"]
-    output.rename_axis(None, inplace=True)
-    metadata._set(
-        output,
-        area="Regional",
-        currency="-",
-        inf_adj="No",
-        seas_adj="NSA",
-        ts_type="-",
-        cumperiods=1,
-    )
-    metadata._modify_multiindex(output, levels=[3], new_arrays=[["ARS", "BRL"]])
-    output = rebase(output, start_date="2010-10-01", end_date="2010-10-31")
+    output = output.rename_axis(None)
 
-    return output
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Regional",
+        "currency": "-",
+        "inflation_adjustment": None,
+        "unit": "-",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    for indicator, currency in zip(ids, ["ARS", "BRL"]):
+        metadata.update_indicator_metadata_value(indicator, "currency", currency)
+    dataset = Dataset(name, output, metadata).rebase("2010-01-01", "2010-12-31")
+
+    return dataset
 
 
 @retry(
@@ -326,14 +340,15 @@ def regional_nxr() -> pd.DataFrame:
     arg = []
     for dollar in ["ar", "ar_unofficial"]:
         r = httpx.get(
-            sources[dollar].format(date=dt.datetime.now().strftime("%d-%m-%Y"))
+            sources[dollar].format(date=dt.datetime.now().strftime("%d-%m-%Y")),
+            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"}
         )
         aux = pd.DataFrame(r.json())[[0, 2]]
-        aux.set_index(0, drop=True, inplace=True)
-        aux.drop("Fecha", inplace=True)
+        aux = aux.set_index(0, drop=True)
+        aux = aux.drop("Fecha")
         aux = aux.replace(",", ".", regex=True).apply(pd.to_numeric)
         aux.index = pd.to_datetime(aux.index, format="%d/%m/%Y")
-        aux.sort_index(inplace=True)
+        aux = aux.sort_index()
         aux.columns = [dollar]
         arg.append(aux)
     arg = arg[0].join(arg[1], how="left")
@@ -343,30 +358,36 @@ def regional_nxr() -> pd.DataFrame:
     bra = pd.DataFrame(r.json())
     bra = [(x["VALDATA"], x["VALVALOR"]) for x in bra["value"]]
     bra = pd.DataFrame.from_records(bra).dropna(how="any")
-    bra.set_index(0, inplace=True)
+    bra = bra.set_index(0)
     bra.index = pd.to_datetime(bra.index.str[:-4]).tz_localize(None)
     bra.columns = ["Brasil"]
 
     output = arg.join(bra, how="left").interpolate(method="linear", limit_area="inside")
-    output.rename_axis(None, inplace=True)
+    output = output.rename_axis(None)
 
-    metadata._set(
-        output,
-        area="Regional",
-        currency="USD",
-        inf_adj="No",
-        seas_adj="NSA",
-        unit="Tasa",
-        ts_type="-",
-        cumperiods=1,
-    )
-    metadata._modify_multiindex(
-        output,
-        levels=[3, 5],
-        new_arrays=[["ARS", "ARS", "BRL"], ["ARS/USD", "ARS/USD", "BRL/USD"]],
-    )
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
 
-    return output
+    base_metadata = {
+        "area": "Regional",
+        "currency": "USD",
+        "inflation_adjustment": None,
+        "unit": "-",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
+
 
 
 @retry(
@@ -515,13 +536,8 @@ def regional_rxr(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=30,
 )
-def _ifs(pipeline: Pipeline = None) -> pd.DataFrame:
+def _ifs() -> pd.DataFrame:
     """Get extra CPI and exchange rate data from the IMF IFS.
-
-    Parameters
-    ----------
-    pipeline : econuy.core.Pipeline or None, default None
-        An instance of the econuy Pipeline class.
 
     Returns
     -------
@@ -529,9 +545,6 @@ def _ifs(pipeline: Pipeline = None) -> pd.DataFrame:
         CPI and XR for the US, Brazil and Argentina.
 
     """
-    if pipeline is None:
-        pipeline = Pipeline()
-
     url_ = "http://dataservices.imf.org/REST/SDMX_JSON.svc/CompactData/IFS/M"
     url_extra = "?startPeriod=1970&endPeriod="
     ifs = []
@@ -560,12 +573,8 @@ def _ifs(pipeline: Pipeline = None) -> pd.DataFrame:
             ifs.append(data)
     ifs = pd.concat(ifs, axis=1, sort=True).apply(pd.to_numeric)
 
-    pipeline.get("regional_nxr")
-    xr = pipeline.dataset
-    xr = resample(xr, rule="ME", operation="mean")
-    xr.columns = xr.columns.get_level_values(0)
-    pipeline.get("regional_cpi")
-    prices = pipeline.dataset
+    xr = load_dataset("regional_nxr").resample("ME", "mean").to_named()
+    prices = load_dataset("regional_cpi").to_named()
     prices.columns = ["ARG CPI", "BRA CPI"]
 
     proc = pd.concat([xr, prices, ifs], axis=1)

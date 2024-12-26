@@ -1034,7 +1034,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/exp_ciiu_val.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
       "provider": ["BCU"]
     }
@@ -1055,7 +1055,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_exp_ciiu_ivf.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
       "provider": ["BCU"]
     }
@@ -1076,7 +1076,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_exp_ciiu_ip.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
       "provider": ["BCU"]
     }
@@ -1097,7 +1097,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/exp_pais_val.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
       "provider": ["BCU"]
     }
@@ -1118,7 +1118,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_exp_pais_ivf.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
       "provider": ["BCU"]
     }
@@ -1139,7 +1139,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_exp_pais_ip.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
       "provider": ["BCU"]
     }
@@ -1160,7 +1160,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/imp_gce_val.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
       "provider": ["BCU"]
     }
@@ -1181,7 +1181,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_imp_gce_ivf.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
       "provider": ["BCU"]
     }
@@ -1202,7 +1202,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_imp_gce_ip.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
       "provider": ["BCU"]
     }
@@ -1223,7 +1223,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/imp_pais_val.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
       "provider": ["BCU"]
     }
@@ -1244,7 +1244,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_imp_pais_ivf.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
       "provider": ["BCU"]
     }
@@ -1265,7 +1265,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_imp_pais_ip.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
       "provider": ["BCU"]
     }
@@ -1317,7 +1317,7 @@
     "description_en": "Changes in BCU reserves by source (2-Jan-13, D)",
     "area": "external",
     "custom": false,
-    "disabled": false,
+    "disabled": true,
     "auxiliary": false,
     "function": "external.international_reserves_changes",
     "sources": {
