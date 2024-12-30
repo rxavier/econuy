@@ -3,6 +3,9 @@ import datetime as dt
 import inspect
 from typing import Union
 from pathlib import Path
+from opnieuw import retry
+from urllib.error import URLError
+from json.decoder import JSONDecodeError
 
 import pandas as pd
 
@@ -14,6 +17,11 @@ from econuy.base import Dataset
 OUTDATED_DELTA_THRESHOLD = dt.timedelta(days=1)  # TODO: Use an env var or config file
 
 
+@retry(
+    retry_on_exceptions=(ConnectionError, URLError, JSONDecodeError),
+    max_calls_total=4,
+    retry_window_after_first_call_in_seconds=30,
+)
 def load_dataset(
     name: str,
     data_dir: Union[str, Path, None] = None,

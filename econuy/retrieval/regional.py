@@ -6,13 +6,11 @@ import datetime as dt
 from io import BytesIO
 from os import path, listdir
 from typing import Optional
-from urllib.error import HTTPError, URLError
 
 import pandas as pd
 import numpy as np
 import httpx
 from pandas.tseries.offsets import MonthEnd
-from opnieuw import retry
 from selenium.webdriver.remote.webdriver import WebDriver
 
 from econuy import load_dataset
@@ -24,11 +22,6 @@ from econuy.utils.chromedriver import _build
 from econuy.utils.operations import get_download_sources, get_name_from_function
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=12,
-    retry_window_after_first_call_in_seconds=60,
-)
 def regional_gdp(driver: WebDriver = None) -> pd.DataFrame:
     """Get seasonally adjusted real GDP for Argentina and Brazil.
 
@@ -101,11 +94,6 @@ def regional_gdp(driver: WebDriver = None) -> pd.DataFrame:
     return output
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def regional_monthly_gdp() -> pd.DataFrame:
     """Get monthly GDP data.
 
@@ -143,11 +131,6 @@ def regional_monthly_gdp() -> pd.DataFrame:
     return output
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=12,
-    retry_window_after_first_call_in_seconds=60,
-)
 def regional_cpi() -> pd.DataFrame:
     """Get consumer price index for Argentina and Brazil.
 
@@ -224,11 +207,6 @@ def regional_cpi() -> pd.DataFrame:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=12,
-    retry_window_after_first_call_in_seconds=60,
-)
 def regional_embi_spreads() -> pd.DataFrame:
     """Get EMBI spread for Argentina, Brazil and the EMBI Global.
 
@@ -266,11 +244,6 @@ def regional_embi_spreads() -> pd.DataFrame:
     return output
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=12,
-    retry_window_after_first_call_in_seconds=60,
-)
 def regional_embi_yields(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """Get EMBI yields for Argentina, Brazil and the EMBI Global.
 
@@ -322,11 +295,6 @@ def regional_embi_yields(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     return output
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=12,
-    retry_window_after_first_call_in_seconds=60,
-)
 def regional_nxr() -> pd.DataFrame:
     """Get USDARS and USDBRL.
 
@@ -392,11 +360,6 @@ def regional_nxr() -> pd.DataFrame:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def regional_policy_rates() -> pd.DataFrame:
     """Get central bank policy interest rates data.
 
@@ -441,11 +404,6 @@ def regional_policy_rates() -> pd.DataFrame:
     return output
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=12,
-    retry_window_after_first_call_in_seconds=60,
-)
 def regional_stock_markets() -> pd.DataFrame:
     """Get stock market index data in USD terms.
 
@@ -492,11 +450,6 @@ def regional_stock_markets() -> pd.DataFrame:
     return output
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=12,
-    retry_window_after_first_call_in_seconds=60,
-)
 def regional_rxr(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """Get real exchange rates vis-á-vis the US dollar for Argentina and Brasil .
 
@@ -533,11 +486,6 @@ def regional_rxr(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     return output
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=30,
-)
 def _ifs(*args, **kwargs) -> pd.DataFrame:
     """Get extra CPI and exchange rate data from the IMF IFS.
 

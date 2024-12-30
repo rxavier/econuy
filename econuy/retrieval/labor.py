@@ -1,8 +1,6 @@
 from typing import Optional
-from urllib.error import URLError, HTTPError
 
 import pandas as pd
-from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 
 from econuy import transform
@@ -11,11 +9,6 @@ from econuy.utils import metadata
 from econuy.utils.operations import get_name_from_function, get_download_sources
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def labor_rates() -> pd.DataFrame:
     """Get labor market data (LFPR, employment and unemployment).
 
@@ -60,11 +53,6 @@ def labor_rates() -> pd.DataFrame:
     return labor
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def nominal_wages() -> pd.DataFrame:
     """Get nominal general, public and private sector wages data
 
@@ -104,11 +92,6 @@ def nominal_wages() -> pd.DataFrame:
     return wages
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def hours_worked() -> pd.DataFrame:
     """Get average hours worked data.
 
@@ -160,11 +143,6 @@ def hours_worked() -> pd.DataFrame:
     return output
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def labor_rates_persons(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     """
     Get labor data, both rates and persons. Extends national data between 1991

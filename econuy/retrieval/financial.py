@@ -9,7 +9,6 @@ from httpx import ConnectError
 
 import pandas as pd
 import httpx
-from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from selenium.webdriver.remote.webdriver import WebDriver
 
@@ -18,11 +17,6 @@ from econuy.utils.chromedriver import _build
 from econuy.utils.operations import get_download_sources, get_name_from_function
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def bank_credit() -> pd.DataFrame:
     """Get bank credit data.
 
@@ -113,11 +107,6 @@ def bank_credit() -> pd.DataFrame:
     return output
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def bank_deposits() -> pd.DataFrame:
     """Get bank deposits data.
 
@@ -191,11 +180,6 @@ def bank_deposits() -> pd.DataFrame:
     return output
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def bank_interest_rates() -> pd.DataFrame:
     """Get interest rates data.
 
@@ -320,11 +304,6 @@ def bank_interest_rates() -> pd.DataFrame:
     return output
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def sovereign_risk_index() -> pd.DataFrame:
     """Get Uruguayan Bond Index (sovereign risk spreads) data.
 
@@ -384,11 +363,6 @@ def sovereign_risk_index() -> pd.DataFrame:
     return output
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def call_rate(driver: Optional[WebDriver] = None) -> pd.DataFrame:
     """Get 1-day call interest rate data.
 
@@ -452,11 +426,6 @@ def call_rate(driver: Optional[WebDriver] = None) -> pd.DataFrame:
     return call
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=8,
-    retry_window_after_first_call_in_seconds=60,
-)
 def sovereign_bond_yields(driver: Optional[WebDriver] = None) -> pd.DataFrame:
     """Get interest rate yield for Uruguayan US-denominated bonds,
     inflation-linked bonds and peso bonds.

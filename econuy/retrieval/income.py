@@ -1,19 +1,10 @@
-from urllib.error import URLError, HTTPError
-
 import pandas as pd
-
-from opnieuw import retry
 
 from econuy.base import Dataset, DatasetMetadata
 from econuy.utils import metadata
 from econuy.utils.operations import get_name_from_function, get_download_sources
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def income_household() -> Dataset:
     """Get average household income.
 
@@ -67,11 +58,6 @@ def income_household() -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def income_capita() -> Dataset:
     """Get average per capita income.
 

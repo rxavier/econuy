@@ -2,13 +2,11 @@ import datetime as dt
 import re
 from io import BytesIO
 from pathlib import Path
-from urllib.error import HTTPError, URLError
+from urllib.error import URLError
 
 import pandas as pd
 import httpx
-from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
-from httpx import ConnectError
 
 from econuy import load_dataset
 from econuy.base import Dataset, DatasetMetadata
@@ -17,11 +15,6 @@ from econuy.utils.extras import FISCAL_SHEETS, taxes_columns
 from econuy.utils.operations import get_name_from_function, get_download_sources
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, ConnectError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def _get_fiscal_balances(dataset_name: str) -> Dataset:
     """Helper function. See any of the `fiscal_balance_...()` functions."""
     sources = get_download_sources("fiscal_balances")
@@ -162,11 +155,6 @@ def fiscal_balance_ose() -> Dataset:
     return _get_fiscal_balances(name)
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, ConnectionError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def tax_revenue() -> Dataset:
     """
     Get tax revenues data.
@@ -242,11 +230,6 @@ def tax_revenue() -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=30,
-)
 def _get_public_debt(dataset_name: str) -> Dataset:
     """Helper function. See any of the `public_debt_...()` functions."""
     sources = get_download_sources("public_debt")

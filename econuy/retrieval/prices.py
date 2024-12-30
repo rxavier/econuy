@@ -1,10 +1,9 @@
 import io
-from urllib.error import URLError, HTTPError
+from urllib.error import URLError
 from pathlib import Path
 
 import pandas as pd
 import httpx
-from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 
 
@@ -14,11 +13,6 @@ from econuy.base import Dataset, DatasetMetadata
 from econuy import load_dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def cpi() -> Dataset:
     """Get CPI data.
 
@@ -60,11 +54,6 @@ def cpi() -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def cpi_divisions() -> Dataset:
     """Get CPI data by division.
 
@@ -197,11 +186,6 @@ def cpi_divisions() -> Dataset:
 #     return output
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def inflation_expectations() -> Dataset:
     """Get data for the BCU inflation expectations survey.
 
@@ -350,11 +334,6 @@ def inflation_expectations() -> Dataset:
 #     return output
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=30,
-)
 def ppi() -> Dataset:
     """Get PPI data.
 
@@ -404,11 +383,6 @@ def ppi() -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=30,
-)
 def nxr_monthly(*args, **kwargs) -> Dataset:
     """Get monthly nominal exchange rate data.
 
@@ -471,11 +445,6 @@ def nxr_monthly(*args, **kwargs) -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=10,
-    retry_window_after_first_call_in_seconds=60,
-)
 def nxr_daily() -> Dataset:
     """Get daily nominal exchange rate data.
 

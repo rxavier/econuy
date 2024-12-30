@@ -5,13 +5,11 @@ import time
 from io import BytesIO
 from pathlib import Path
 from os import listdir, path
-from urllib.error import HTTPError, URLError
 
 import pandas as pd
 import numpy as np
 import patoolib
 import httpx
-from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -24,11 +22,6 @@ from econuy.base import Dataset, DatasetMetadata
 from econuy import load_dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def monthly_gdp() -> Dataset:
     """Get the monthly indicator for economic activity.
 
@@ -93,11 +86,6 @@ def monthly_gdp() -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def national_accounts_supply_constant_nsa() -> Dataset:
     """Get supply-side national accounts data in NSA constant prices, 2005-.
 
@@ -154,11 +142,6 @@ def national_accounts_supply_constant_nsa() -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def national_accounts_demand_constant_nsa() -> Dataset:
     """Get demand-side national accounts data in NSA constant prices, 2005-.
 
@@ -212,11 +195,6 @@ def national_accounts_demand_constant_nsa() -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def national_accounts_demand_current_nsa() -> Dataset:
     """Get demand-side national accounts data in NSA current prices.
 
@@ -272,11 +250,6 @@ def national_accounts_demand_current_nsa() -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def national_accounts_supply_current_nsa() -> Dataset:
     """Get supply-side national accounts data in NSA current prices, 2005-.
 
@@ -333,11 +306,6 @@ def national_accounts_supply_current_nsa() -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def gdp_index_constant_sa() -> Dataset:
     """Get supply-side national accounts data in SA real index, 1997-.
 
@@ -379,11 +347,6 @@ def gdp_index_constant_sa() -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def national_accounts_supply_constant_nsa_extended(
     *args,
     **kwargs,
@@ -554,11 +517,6 @@ def national_accounts_supply_constant_nsa_extended(
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def national_accounts_demand_constant_nsa_extended(*args, **kwargs) -> Dataset:
     """Get demand-side national accounts data in NSA constant prices, 1988-.
 
@@ -677,11 +635,6 @@ def national_accounts_demand_constant_nsa_extended(*args, **kwargs) -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def gdp_index_constant_sa_extended(*args, **kwargs) -> Dataset:
     """Get GDP data in SA constant prices, 1988-.
 
@@ -793,11 +746,6 @@ def gdp_index_constant_sa_extended(*args, **kwargs) -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def gdp_constant_nsa_extended(*args, **kwargs) -> Dataset:
     """Get GDP data in NSA constant prices, 1988-.
 
@@ -891,11 +839,6 @@ def gdp_constant_nsa_extended(*args, **kwargs) -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def gdp_current_nsa_extended(*args, **kwargs) -> Dataset:
     """Get GDP data in NSA current prices, 1997-.
 
@@ -959,11 +902,6 @@ def gdp_current_nsa_extended(*args, **kwargs) -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def gdp_denominator(*args, **kwargs):
     """Get nominal GDP data in UYU and USD with forecasts.
 
@@ -1051,11 +989,6 @@ def gdp_denominator(*args, **kwargs):
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def industrial_production() -> Dataset:
     """Get industrial production data.
 
@@ -1219,11 +1152,6 @@ def core_industrial_production(*args, **kwargs) -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def livestock_slaughter() -> Dataset:
     """Get weekly livestock slaughter data.
 
@@ -1280,11 +1208,6 @@ def livestock_slaughter() -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def milk_shipments() -> Dataset:
     """Get monthly milk shipments from farms data.
 
@@ -1336,11 +1259,6 @@ def milk_shipments() -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def diesel_sales() -> Dataset:
     """
     Get diesel sales by department data.
@@ -1401,11 +1319,6 @@ def diesel_sales() -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def gasoline_sales() -> Dataset:
     """
     Get gasoline sales by department data.
@@ -1466,11 +1379,6 @@ def gasoline_sales() -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def electricity_sales() -> Dataset:
     """
     Get electricity sales by sector data.

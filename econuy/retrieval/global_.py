@@ -4,11 +4,9 @@ import zipfile
 
 from io import BytesIO
 from os import path
-from urllib.error import HTTPError, URLError
 
 import pandas as pd
 import httpx
-from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd
 
 from econuy.transform import decompose, rebase
@@ -19,11 +17,6 @@ from econuy.utils.operations import get_download_sources, get_name_from_function
 FRED_API_KEY = "f5700348a7dd3a997c88af6d35608a12"
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def global_gdp() -> pd.DataFrame:
     """Get seasonally adjusted real quarterly GDP for select countries.
 
@@ -118,11 +111,6 @@ def global_gdp() -> pd.DataFrame:
     return output
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=12,
-    retry_window_after_first_call_in_seconds=60,
-)
 def global_stock_markets() -> pd.DataFrame:
     """Get stock market index data.
 
@@ -172,11 +160,6 @@ def global_stock_markets() -> pd.DataFrame:
     return output
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def global_policy_rates() -> pd.DataFrame:
     """Get central bank policy interest rates data.
 
@@ -315,11 +298,6 @@ def global_policy_rates() -> pd.DataFrame:
 #     return output
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=12,
-    retry_window_after_first_call_in_seconds=60,
-)
 def global_nxr() -> pd.DataFrame:
     """Get currencies data.
 

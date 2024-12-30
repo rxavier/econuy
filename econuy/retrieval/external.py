@@ -4,14 +4,11 @@ import tempfile
 import zipfile
 from pathlib import Path
 from io import BytesIO
-from json import JSONDecodeError
 from os import path
-from urllib import error
-from urllib.error import HTTPError, URLError
+from urllib.error import URLError
 
 import pandas as pd
 import httpx
-from opnieuw import retry
 from pandas.tseries.offsets import MonthEnd, YearEnd
 
 from econuy import load_dataset
@@ -86,11 +83,6 @@ def _get_trade(dataset_name: str) -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def trade_exports_sector_value() -> Dataset:
     """Get export values by product.
 
@@ -103,11 +95,6 @@ def trade_exports_sector_value() -> Dataset:
     return _get_trade(name)
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def trade_exports_sector_volume() -> Dataset:
     """Get export volumes by product.
 
@@ -120,11 +107,6 @@ def trade_exports_sector_volume() -> Dataset:
     return _get_trade(name)
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def trade_exports_sector_price() -> Dataset:
     """Get export prices by product.
 
@@ -137,11 +119,6 @@ def trade_exports_sector_price() -> Dataset:
     return _get_trade(name)
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def trade_exports_destination_value() -> Dataset:
     """Get export values by destination.
 
@@ -154,11 +131,6 @@ def trade_exports_destination_value() -> Dataset:
     return _get_trade(name)
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def trade_exports_destination_volume() -> Dataset:
     """Get export volumes by destination.
 
@@ -171,11 +143,6 @@ def trade_exports_destination_volume() -> Dataset:
     return _get_trade(name)
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def trade_exports_destination_price() -> Dataset:
     """Get export prices by destination.
 
@@ -188,11 +155,6 @@ def trade_exports_destination_price() -> Dataset:
     return _get_trade(name)
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def trade_imports_category_value() -> Dataset:
     """Get import values by sector.
 
@@ -205,11 +167,6 @@ def trade_imports_category_value() -> Dataset:
     return _get_trade(name)
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def trade_imports_category_volume() -> Dataset:
     """Get import volumes by sector.
 
@@ -222,11 +179,6 @@ def trade_imports_category_volume() -> Dataset:
     return _get_trade(name)
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def trade_imports_category_price() -> Dataset:
     """Get import prices by sector.
 
@@ -239,11 +191,6 @@ def trade_imports_category_price() -> Dataset:
     return _get_trade(name)
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def trade_imports_origin_value() -> Dataset:
     """Get import values by origin.
 
@@ -256,11 +203,6 @@ def trade_imports_origin_value() -> Dataset:
     return _get_trade(name)
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def trade_imports_origin_volume() -> Dataset:
     """Get import volumes by origin.
 
@@ -273,11 +215,6 @@ def trade_imports_origin_volume() -> Dataset:
     return _get_trade(name)
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def trade_imports_origin_price() -> Dataset:
     """Get import prices by origin.
 
@@ -387,11 +324,6 @@ def terms_of_trade(*args, **kwargs) -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, ConnectionError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=90,
-)
 def _commodity_weights() -> pd.DataFrame:
     raw = pd.read_csv(
         "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/comtrade.csv"
@@ -434,11 +366,6 @@ def _commodity_weights() -> pd.DataFrame:
     return output
 
 
-@retry(
-    retry_on_exceptions=(error.HTTPError, error.URLError, HTTPError, ConnectionError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def commodity_prices() -> Dataset:
     """Get commodity prices for Uruguay.
 
@@ -661,11 +588,6 @@ def commodity_index(*args, **kwargs) -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(error.HTTPError, error.URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def rxr() -> Dataset:
     """Get official (BCU) real exchange rates.
 
@@ -728,11 +650,6 @@ def rxr() -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(error.HTTPError, error.URLError, JSONDecodeError),
-    max_calls_total=10,
-    retry_window_after_first_call_in_seconds=90,
-)
 def rxr_custom(*args, **kwargs) -> Dataset:
     """Get custom real exchange rates vis-à-vis the US, Argentina and Brazil.
 
@@ -793,11 +710,6 @@ def rxr_custom(*args, **kwargs) -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(error.HTTPError, error.URLError),
-    max_calls_total=10,
-    retry_window_after_first_call_in_seconds=90,
-)
 def balance_of_payments() -> Dataset:
     """Get balance of payments.
 
@@ -868,11 +780,6 @@ def balance_of_payments() -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(error.HTTPError, error.URLError),
-    max_calls_total=10,
-    retry_window_after_first_call_in_seconds=90,
-)
 def balance_of_payments_summary(*args, **kwargs) -> Dataset:
     """Get a balance of payments summary and capital flows calculations.
 
@@ -963,11 +870,6 @@ def balance_of_payments_summary(*args, **kwargs) -> Dataset:
     return dataset
 
 
-@retry(
-    retry_on_exceptions=(HTTPError, URLError),
-    max_calls_total=4,
-    retry_window_after_first_call_in_seconds=60,
-)
 def international_reserves() -> Dataset:
     """Get international reserves data.
 
