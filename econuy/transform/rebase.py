@@ -42,6 +42,8 @@ def _rebase(
         else:
             metadata.update_dataset_metadata({"unit": f"{m_start}_{m_end}={base}"})
 
-    metadata.add_transformation_step({"rebase": {"start_date": m_start, "end_date": m_end, "base": base}})
+    metadata.add_transformation_step(
+        {"rebase": {"start_date": m_start, "end_date": m_end, "base": base}}
+    )
 
     return output, metadata

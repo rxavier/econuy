@@ -186,25 +186,25 @@ def tax_revenue() -> Dataset:
         "https://[A-z0-9-/\.]+Recaudaci%C3%B3n%20por%20impuesto%20-%20Series%20mensuales.csv",
         r.text,
     )[0]
-    output = (
-        pd.read_csv(url, skiprows=2, encoding="Latin", sep=";", thousands=".")
-        .iloc[:, 3:41]
-    )
+    output = pd.read_csv(
+        url, skiprows=2, encoding="Latin", sep=";", thousands="."
+    ).iloc[:, 3:41]
     output.index = pd.date_range("1982-01-31", periods=len(output), freq="ME")
     output.columns = taxes_columns
     output = output.div(1000000)
     latest = pd.read_csv(sources["pdfs"], index_col=0, parse_dates=True)
     latest.columns = [
-                    'IVA - Valor Agregado',
-                    'IMESI - Específico Interno',
-                    'IMEBA - Enajenación de Bienes Agropecuarios',
-                    'IRAE - Rentas de Actividades Económicas',
-                    'IRPF Cat I - Renta de las Personas Físicas',
-                    'IRPF Cat II - Rentas de las Personas Físicas',
-                    'IASS - Asistencia a la Seguridad Social',
-                    'IRNR - Rentas de No Residentes',
-                    'Impuesto de Educación Primaria',
-                    'Recaudación Total de la DGI']
+        "IVA - Valor Agregado",
+        "IMESI - Específico Interno",
+        "IMEBA - Enajenación de Bienes Agropecuarios",
+        "IRAE - Rentas de Actividades Económicas",
+        "IRPF Cat I - Renta de las Personas Físicas",
+        "IRPF Cat II - Rentas de las Personas Físicas",
+        "IASS - Asistencia a la Seguridad Social",
+        "IRNR - Rentas de No Residentes",
+        "Impuesto de Educación Primaria",
+        "Recaudación Total de la DGI",
+    ]
     latest = latest.loc[[x not in output.index for x in latest.index]]
     for col in latest.columns:
         for date in latest.index:
@@ -285,16 +285,22 @@ def _get_public_debt(dataset_name: str) -> Dataset:
             nrows=(dt.datetime.now().year - 1999) * 4,
         )
         output = gps_raw.dropna(thresh=2)
-        output.index = pd.date_range(start="1999-12-31", periods=len(output), freq="QE-DEC")
+        output.index = pd.date_range(
+            start="1999-12-31", periods=len(output), freq="QE-DEC"
+        )
         output.columns = colnames
 
     elif dataset_name == "public_debt_nonfinancial_public_sector":
-        nfps_raw = pd.read_excel(xls, sheet_name="SPNM bruta", usecols="B:O", index_col=0)
+        nfps_raw = pd.read_excel(
+            xls, sheet_name="SPNM bruta", usecols="B:O", index_col=0
+        )
         loc = nfps_raw.index.get_loc(
             "9. Deuda Bruta del Sector Público no " "monetario por plazo y  moneda."
         )
         output = nfps_raw.iloc[loc + 5 :, :].dropna(how="any")
-        output.index = pd.date_range(start="1999-12-31", periods=len(output), freq="QE-DEC")
+        output.index = pd.date_range(
+            start="1999-12-31", periods=len(output), freq="QE-DEC"
+        )
         nfps_extra_raw = pd.read_excel(
             xls,
             sheet_name="SPNM bruta",
@@ -316,7 +322,9 @@ def _get_public_debt(dataset_name: str) -> Dataset:
             skiprows=(dt.datetime.now().year - 1999) * 8 + 20,
         )
         output = cb_raw.dropna(how="any")
-        output.index = pd.date_range(start="1999-12-31", periods=len(output), freq="QE-DEC")
+        output.index = pd.date_range(
+            start="1999-12-31", periods=len(output), freq="QE-DEC"
+        )
         cb_extra_raw = pd.read_excel(
             xls,
             sheet_name="BCU bruta",
@@ -339,7 +347,9 @@ def _get_public_debt(dataset_name: str) -> Dataset:
             nrows=(dt.datetime.now().year - 1999) * 4,
         )
         output = assets_raw.dropna(how="any")
-        output.index = pd.date_range(start="1999-12-31", periods=len(output), freq="QE-DEC")
+        output.index = pd.date_range(
+            start="1999-12-31", periods=len(output), freq="QE-DEC"
+        )
         output.columns = ["Total activos", "Sector público no monetario", "BCU"]
 
     spanish_names = output.columns
@@ -426,11 +436,19 @@ def net_public_debt_global_public_sector(*args, **kwargs) -> Dataset:
     """
     name = get_name_from_function()
 
-    gross_debt = load_dataset("public_debt_global_public_sector", *args, **kwargs).to_named()[["Total deuda"]]
-    assets = load_dataset("public_assets", *args, **kwargs).to_named()[["Total activos"]]
+    gross_debt = load_dataset(
+        "public_debt_global_public_sector", *args, **kwargs
+    ).to_named()[["Total deuda"]]
+    assets = load_dataset("public_assets", *args, **kwargs).to_named()[
+        ["Total activos"]
+    ]
     gross_debt.columns = ["Deuda neta del sector público global excl. encajes"]
     assets.columns = gross_debt.columns
-    deposits = load_dataset("international_reserves", *args, **kwargs).resample("QE-DEC", "last").to_named()[["Obligaciones en ME con el sector financiero"]]
+    deposits = (
+        load_dataset("international_reserves", *args, **kwargs)
+        .resample("QE-DEC", "last")
+        .to_named()[["Obligaciones en ME con el sector financiero"]]
+    )
     deposits = deposits.reindex(gross_debt.index).squeeze()
     output = gross_debt.add(assets).add(deposits, axis=0).dropna()
     output = output.rename_axis(None)
@@ -439,7 +457,6 @@ def net_public_debt_global_public_sector(*args, **kwargs) -> Dataset:
     spanish_names = [{"es": x} for x in spanish_names]
     ids = [f"{name}_{i}" for i in range(output.shape[1])]
     output.columns = ids
-
 
     base_metadata = {
         "area": "External sector",
@@ -477,10 +494,12 @@ def fiscal_balance_summary(*args, **kwargs) -> Dataset:
     name = get_name_from_function()
 
     datasets = {}
-    for dataset_name in ["fiscal_balance_global_public_sector",
-                         "fiscal_balance_nonfinancial_public_sector",
-                         "fiscal_balance_central_government",
-                         "fiscal_balance_soe"]:
+    for dataset_name in [
+        "fiscal_balance_global_public_sector",
+        "fiscal_balance_nonfinancial_public_sector",
+        "fiscal_balance_central_government",
+        "fiscal_balance_soe",
+    ]:
         d = load_dataset(dataset_name, *args, **kwargs).to_detailed()
         d.columns = d.columns.get_level_values(0)
         datasets.update({dataset_name: d})
@@ -627,4 +646,3 @@ def fiscal_balance_summary(*args, **kwargs) -> Dataset:
     dataset = Dataset(name, output, metadata)
 
     return dataset
-

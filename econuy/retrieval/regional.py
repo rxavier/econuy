@@ -162,7 +162,8 @@ def regional_cpi() -> pd.DataFrame:
     arg = httpx.get(
         sources["ar"].format(
             end_date=dt.datetime.now().strftime("%Y-%m-%d"),
-        ), verify="econuy/utils/files/bcra_certs.pem"
+        ),
+        verify="econuy/utils/files/bcra_certs.pem",
     )
     arg = pd.read_html(arg.content)[0]
     arg.set_index("Fecha", drop=True, inplace=True)
@@ -341,7 +342,9 @@ def regional_nxr() -> pd.DataFrame:
     for dollar in ["ar", "ar_unofficial"]:
         r = httpx.get(
             sources[dollar].format(date=dt.datetime.now().strftime("%d-%m-%Y")),
-            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"}
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+            },
         )
         aux = pd.DataFrame(r.json())[[0, 2]]
         aux = aux.set_index(0, drop=True)
@@ -387,7 +390,6 @@ def regional_nxr() -> pd.DataFrame:
     dataset = Dataset(name, output, metadata)
 
     return dataset
-
 
 
 @retry(

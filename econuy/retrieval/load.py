@@ -11,7 +11,7 @@ from econuy.utils.operations import DATASETS, read_dataset, get_data_dir
 from econuy.base import Dataset
 
 
-OUTDATED_DELTA_THRESHOLD = dt.timedelta(days=1) # TODO: Use an env var or config file
+OUTDATED_DELTA_THRESHOLD = dt.timedelta(days=1)  # TODO: Use an env var or config file
 
 
 def load_dataset(

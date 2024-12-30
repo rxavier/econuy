@@ -43,7 +43,11 @@ def cast_metadata(
 
 class DatasetMetadata:
     def __init__(
-        self, name: str, indicator_metadata: dict, created_at: Optional[datetime] = None, config: Optional[DatasetConfig] = None,
+        self,
+        name: str,
+        indicator_metadata: dict,
+        created_at: Optional[datetime] = None,
+        config: Optional[DatasetConfig] = None,
     ) -> None:
         self.name = name
         self.indicator_metadata = indicator_metadata
@@ -404,15 +408,27 @@ class Dataset:
             The data with the indicators renamed.
 
         """
-        column_metadatas = {indicator: {"name": self.metadata.indicator_metadata[indicator]["names"][language]} for indicator in self.indicators}
+        column_metadatas = {
+            indicator: {
+                "name": self.metadata.indicator_metadata[indicator]["names"][language]
+            }
+            for indicator in self.indicators
+        }
         for ind, col_meta in column_metadatas.items():
             col_meta.update(self.metadata.indicator_metadata[ind])
             col_meta.update({"id": ind})
             col_meta.pop("names")
-            col_meta.pop("transformations", None) #TODO: Add transformations to metadata
-        col_names = [x.replace("_", " ").capitalize() for x in column_metadatas[self.indicators[0]].keys()]
-        columns = pd.MultiIndex.from_tuples([tuple(column_metadatas[k].values()) for k in column_metadatas.keys()],
-                                            names=col_names)
+            col_meta.pop(
+                "transformations", None
+            )  # TODO: Add transformations to metadata
+        col_names = [
+            x.replace("_", " ").capitalize()
+            for x in column_metadatas[self.indicators[0]].keys()
+        ]
+        columns = pd.MultiIndex.from_tuples(
+            [tuple(column_metadatas[k].values()) for k in column_metadatas.keys()],
+            names=col_names,
+        )
         detailed_data = self.data.copy()
         detailed_data.columns = columns
         return detailed_data
@@ -432,7 +448,10 @@ class Dataset:
             The data with the indicators renamed.
 
         """
-        column_metadatas = {indicator: self.metadata.indicator_metadata[indicator]["names"][language] for indicator in self.indicators}
+        column_metadatas = {
+            indicator: self.metadata.indicator_metadata[indicator]["names"][language]
+            for indicator in self.indicators
+        }
         named_data = self.data.copy()
         named_data.columns = [column_metadatas[ind] for ind in self.indicators]
         return named_data
@@ -517,7 +536,11 @@ class Dataset:
     def select(self, indicators: Union[str, List[str]]) -> "Dataset":
         return self.__getitem__(indicators)
 
-    def filter(self, start_date: Union[str, datetime, None] = None, end_date: Union[str, datetime, None] = None) -> "Dataset":
+    def filter(
+        self,
+        start_date: Union[str, datetime, None] = None,
+        end_date: Union[str, datetime, None] = None,
+    ) -> "Dataset":
         return self.__class__(
             data=self.data.loc[start_date:end_date],
             metadata=self.metadata,
@@ -677,7 +700,10 @@ class Dataset:
             transformed = pd.concat(transformed, axis=1)
             new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
         output = self.__class__(
-            data=transformed, metadata=new_metadata, name=self.name, transformed=True,
+            data=transformed,
+            metadata=new_metadata,
+            name=self.name,
+            transformed=True,
         )
         return output
 
@@ -749,7 +775,10 @@ class Dataset:
             transformed = pd.concat(transformed, axis=1)
             new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
         output = self.__class__(
-            data=transformed, metadata=new_metadata, name=self.name, transformed=True,
+            data=transformed,
+            metadata=new_metadata,
+            name=self.name,
+            transformed=True,
         )
         return output
 
@@ -804,7 +833,10 @@ class Dataset:
             transformed = pd.concat(transformed, axis=1)
             new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
         output = self.__class__(
-            data=transformed, metadata=new_metadata, name=self.name, transformed=True,
+            data=transformed,
+            metadata=new_metadata,
+            name=self.name,
+            transformed=True,
         )
         return output
 
@@ -862,14 +894,16 @@ class Dataset:
         assert flavor in ["usd", "real", "gdp"], "Invalid 'flavor' option."
         funcs = {"usd": _convert_usd, "real": _convert_real, "gdp": _convert_gdp}
         func = funcs[flavor]
-        kwargs = {"start_date": start_date, "end_date": end_date} if flavor == "real" else {}
+        kwargs = (
+            {"start_date": start_date, "end_date": end_date} if flavor == "real" else {}
+        )
 
         if self.metadata.has_common_metadata:
             transformed, new_metadata = func(
                 data=self.data,
                 metadata=self.metadata,
                 error_handling=error_handling,
-                **kwargs
+                **kwargs,
             )
 
         else:
@@ -881,13 +915,16 @@ class Dataset:
                     data=n_dataset.data,
                     metadata=n_dataset.metadata,
                     error_handling=error_handling,
-                    **kwargs
+                    **kwargs,
                 )
                 transformed.append(transformed_col)
                 new_metadatas.append(new_metadata)
             transformed = pd.concat(transformed, axis=1)
             new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
         output = self.__class__(
-            data=transformed, metadata=new_metadata, name=self.name, transformed=True,
+            data=transformed,
+            metadata=new_metadata,
+            name=self.name,
+            transformed=True,
         )
         return output

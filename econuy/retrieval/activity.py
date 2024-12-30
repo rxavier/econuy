@@ -234,7 +234,9 @@ def national_accounts_demand_current_nsa() -> Dataset:
     output = raw.dropna(how="all", axis=1).iloc[:, 2:].dropna(how="all").T
     output.index = pd.date_range(start="2016-03-31", freq="QE-DEC", periods=len(output))
     output = output.apply(pd.to_numeric, errors="coerce").rename_axis(None)
-    output["Importaciones de bienes y servicios"] = output["Importaciones de bienes y servicios"] * -1
+    output["Importaciones de bienes y servicios"] = (
+        output["Importaciones de bienes y servicios"] * -1
+    )
 
     spanish_names = [
         "Gasto de consumo: total",
@@ -331,7 +333,6 @@ def national_accounts_supply_current_nsa() -> Dataset:
     return dataset
 
 
-
 @retry(
     retry_on_exceptions=(HTTPError, URLError),
     max_calls_total=4,
@@ -383,7 +384,9 @@ def gdp_index_constant_sa() -> Dataset:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def national_accounts_supply_constant_nsa_extended(*args, **kwargs,
+def national_accounts_supply_constant_nsa_extended(
+    *args,
+    **kwargs,
 ) -> Dataset:
     """Get supply-side national accounts data in NSA constant prices, 1988-.
 
@@ -398,7 +401,9 @@ def national_accounts_supply_constant_nsa_extended(*args, **kwargs,
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    data_16 = load_dataset("national_accounts_supply_constant_nsa", *args, **kwargs).to_detailed()
+    data_16 = load_dataset(
+        "national_accounts_supply_constant_nsa", *args, **kwargs
+    ).to_detailed()
     data_16.columns = data_16.columns.get_level_values(0)
     data_16["Otros servicios"] = (
         data_16["Servicios financieros"]
@@ -434,8 +439,16 @@ def national_accounts_supply_constant_nsa_extended(*args, **kwargs,
     certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
     r = httpx.get(sources["2005"], verify=certs_path)
     raw_05 = pd.read_excel(BytesIO(r.content), skiprows=9)
-    data_05 = raw_05.dropna(how="all", axis=1).iloc[:, 1:].set_index("Unnamed: 1").dropna(how="all").T
-    data_05.index = pd.date_range(start="1997-03-31", freq="QE-DEC", periods=len(data_05))
+    data_05 = (
+        raw_05.dropna(how="all", axis=1)
+        .iloc[:, 1:]
+        .set_index("Unnamed: 1")
+        .dropna(how="all")
+        .T
+    )
+    data_05.index = pd.date_range(
+        start="1997-03-31", freq="QE-DEC", periods=len(data_05)
+    )
     data_05 = data_05.apply(pd.to_numeric, errors="coerce").rename_axis(None)
     data_05.columns = names_05
 
@@ -465,17 +478,17 @@ def national_accounts_supply_constant_nsa_extended(*args, **kwargs,
                 * data_05.loc[quarter, :]
                 / data_05.loc[next_quarter, :]
             )
-    spanish_names =         [
-            "Agropecuario, pesca y minería",
-            "Industrias manufactureras",
-            "Energía eléctrica, gas y agua",
-            "Construcción",
-            "Comercio, alojamiento y suministro de comidas y bebidas",
-            "Transporte y almacenamiento, información y comunicaciones",
-            "Otros servicios",
-            "Impuestos menos subvenciones",
-            "Producto bruto interno",
-        ]
+    spanish_names = [
+        "Agropecuario, pesca y minería",
+        "Industrias manufactureras",
+        "Energía eléctrica, gas y agua",
+        "Construcción",
+        "Comercio, alojamiento y suministro de comidas y bebidas",
+        "Transporte y almacenamiento, información y comunicaciones",
+        "Otros servicios",
+        "Impuestos menos subvenciones",
+        "Producto bruto interno",
+    ]
     aux = aux[spanish_names]
     r = httpx.get(sources["1983"], verify=certs_path)
     data_83 = (
@@ -560,7 +573,9 @@ def national_accounts_demand_constant_nsa_extended(*args, **kwargs) -> Dataset:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    data_16 = load_dataset("national_accounts_demand_constant_nsa", *args, **kwargs).to_detailed()
+    data_16 = load_dataset(
+        "national_accounts_demand_constant_nsa", *args, **kwargs
+    ).to_detailed()
     data_16.columns = data_16.columns.get_level_values(0)
     data_16 = data_16.drop(["Variación de existencias"], axis=1)
 
@@ -579,8 +594,16 @@ def national_accounts_demand_constant_nsa_extended(*args, **kwargs) -> Dataset:
     certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
     r = httpx.get(sources["2005"], verify=certs_path)
     raw_05 = pd.read_excel(BytesIO(r.content), skiprows=9)
-    data_05 = raw_05.dropna(how="all", axis=1).iloc[:, 1:].set_index("Unnamed: 1").dropna(how="all").T
-    data_05.index = pd.date_range(start="2005-03-31", freq="QE-DEC", periods=len(data_05))
+    data_05 = (
+        raw_05.dropna(how="all", axis=1)
+        .iloc[:, 1:]
+        .set_index("Unnamed: 1")
+        .dropna(how="all")
+        .T
+    )
+    data_05.index = pd.date_range(
+        start="2005-03-31", freq="QE-DEC", periods=len(data_05)
+    )
     data_05 = data_05.apply(pd.to_numeric, errors="coerce").rename_axis(None)
     data_05.columns = spanish_names
     data_05["Importaciones"] = data_05["Importaciones"] * -1
@@ -692,8 +715,16 @@ def gdp_index_constant_sa_extended(*args, **kwargs) -> Dataset:
     certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
     r = httpx.get(sources["2005"], verify=certs_path)
     raw_05 = pd.read_excel(BytesIO(r.content), skiprows=9)
-    data_05 = raw_05.dropna(how="all", axis=1).iloc[:, 1:].set_index("Unnamed: 1").dropna(how="all").T
-    data_05.index = pd.date_range(start="1997-03-31", freq="QE-DEC", periods=len(data_05))
+    data_05 = (
+        raw_05.dropna(how="all", axis=1)
+        .iloc[:, 1:]
+        .set_index("Unnamed: 1")
+        .dropna(how="all")
+        .T
+    )
+    data_05.index = pd.date_range(
+        start="1997-03-31", freq="QE-DEC", periods=len(data_05)
+    )
     data_05 = data_05.apply(pd.to_numeric, errors="coerce").rename_axis(None)
     data_05.columns = names
 
@@ -782,7 +813,9 @@ def gdp_constant_nsa_extended(*args, **kwargs) -> Dataset:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    data_16 = load_dataset("national_accounts_supply_constant_nsa", *args, **kwargs).to_detailed()
+    data_16 = load_dataset(
+        "national_accounts_supply_constant_nsa", *args, **kwargs
+    ).to_detailed()
     data_16.columns = data_16.columns.get_level_values(0)
     data_16 = data_16[["Producto bruto interno"]]
 
@@ -790,8 +823,16 @@ def gdp_constant_nsa_extended(*args, **kwargs) -> Dataset:
     certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
     r = httpx.get(sources["1997"], verify=certs_path)
     raw_97 = pd.read_excel(BytesIO(r.content), skiprows=6)
-    data_97 = raw_97.dropna(how="all", axis=1).iloc[:, 1:].set_index("Unnamed: 1").dropna(how="all").T
-    data_97.index = pd.date_range(start="1997-03-31", freq="QE-DEC", periods=len(data_97))
+    data_97 = (
+        raw_97.dropna(how="all", axis=1)
+        .iloc[:, 1:]
+        .set_index("Unnamed: 1")
+        .dropna(how="all")
+        .T
+    )
+    data_97.index = pd.date_range(
+        start="1997-03-31", freq="QE-DEC", periods=len(data_97)
+    )
     data_97 = data_97.apply(pd.to_numeric, errors="coerce").rename_axis(None)
     data_97.columns = names
 
@@ -869,7 +910,9 @@ def gdp_current_nsa_extended(*args, **kwargs) -> Dataset:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    data_16 = load_dataset("national_accounts_supply_current_nsa", *args, **kwargs).to_detailed()
+    data_16 = load_dataset(
+        "national_accounts_supply_current_nsa", *args, **kwargs
+    ).to_detailed()
     data_16.columns = data_16.columns.get_level_values(0)
     data_16 = data_16[["Producto bruto interno"]]
 
@@ -877,8 +920,16 @@ def gdp_current_nsa_extended(*args, **kwargs) -> Dataset:
     certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
     r = httpx.get(sources["1997"], verify=certs_path)
     raw_97 = pd.read_excel(BytesIO(r.content), skiprows=6)
-    data_97 = raw_97.dropna(how="all", axis=1).iloc[:, 1:].set_index("Unnamed: 1").dropna(how="all").T
-    data_97.index = pd.date_range(start="1997-03-31", freq="QE-DEC", periods=len(data_97))
+    data_97 = (
+        raw_97.dropna(how="all", axis=1)
+        .iloc[:, 1:]
+        .set_index("Unnamed: 1")
+        .dropna(how="all")
+        .T
+    )
+    data_97.index = pd.date_range(
+        start="1997-03-31", freq="QE-DEC", periods=len(data_97)
+    )
     data_97 = data_97.apply(pd.to_numeric, errors="coerce").rename_axis(None)
     data_97.columns = names
 
@@ -929,10 +980,11 @@ def gdp_denominator(*args, **kwargs):
     """
     name = get_name_from_function()
 
-    data_uyu = load_dataset("gdp_current_nsa_extended", *args, **kwargs).rolling(window=4, operation="sum")
+    data_uyu = load_dataset("gdp_current_nsa_extended", *args, **kwargs).rolling(
+        window=4, operation="sum"
+    )
     data_usd = data_uyu.convert("usd")
     data_uyu, data_usd = data_uyu.data, data_usd.data
-
 
     data = [data_uyu, data_usd]
     last_year = data_uyu.index.max().year
@@ -1106,11 +1158,15 @@ def core_industrial_production(*args, **kwargs) -> Dataset:
     )
     data_18 = data_18[["total", "ex-refinery", "core"]]
 
-
-    data_06 = pd.read_excel(sources["2006"], skiprows=6, usecols="B,D,F,CF,CX", na_values="(s)").dropna(how="all")
+    data_06 = pd.read_excel(
+        sources["2006"], skiprows=6, usecols="B,D,F,CF,CX", na_values="(s)"
+    ).dropna(how="all")
     data_06 = data_06.loc[~data_06.iloc[:, 0].str.contains("Prom")].iloc[:, 1:]
     data_06.columns = ["total", "ex-refinery", "other foods", "pulp"]
-    data_06_weights = {"other foods": 0.3733 * 0.3107 * 0.7089, "pulp": 0.0184 * 0.4395} #https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IVFIM/Ponderadores%20de%20VBP%202006.xls
+    data_06_weights = {
+        "other foods": 0.3733 * 0.3107 * 0.7089,
+        "pulp": 0.0184 * 0.4395,
+    }  # https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IVFIM/Ponderadores%20de%20VBP%202006.xls
     data_06["core"] = data_06["ex-refinery"] - (
         data_06["other foods"] * data_06_weights["other foods"]
         + data_06["pulp"] * data_06_weights["pulp"]
@@ -1137,7 +1193,6 @@ def core_industrial_production(*args, **kwargs) -> Dataset:
         "Núcleo industrial",
     ]
 
-
     ids = [f"{name}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
@@ -1156,7 +1211,9 @@ def core_industrial_production(*args, **kwargs) -> Dataset:
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata).rebase(start_date="2018-01-01", end_date="2018-12-31")
+    dataset = Dataset(name, output, metadata).rebase(
+        start_date="2018-01-01", end_date="2018-12-31"
+    )
     dataset.metadata.update_dataset_metadata({"unit": "2018=100"})
 
     return dataset
@@ -1186,10 +1243,19 @@ def livestock_slaughter() -> Dataset:
     output = output.rename_axis(None)
 
     spanish_names = [
-        "Novillos", "Vacas", "Vaquillonas", "Terneros", "Toros", "Total bovinos",
-        "Borregos", "Capones", "Carneros", "Corderos", "Ovejas", "Total ovinos",
+        "Novillos",
+        "Vacas",
+        "Vaquillonas",
+        "Terneros",
+        "Toros",
+        "Total bovinos",
+        "Borregos",
+        "Capones",
+        "Carneros",
+        "Corderos",
+        "Ovejas",
+        "Total ovinos",
     ]
-
 
     ids = [f"{name}_{i}" for i in range(output.shape[1])]
     output.columns = ids
@@ -1213,6 +1279,7 @@ def livestock_slaughter() -> Dataset:
 
     return dataset
 
+
 @retry(
     retry_on_exceptions=(HTTPError, URLError),
     max_calls_total=4,
@@ -1231,9 +1298,14 @@ def milk_shipments() -> Dataset:
 
     r = httpx.get(sources["main"])
     url = re.findall(r'href="(.+\.xls)', r.text)[0]
-    raw = pd.read_excel(url, sheet_name="Listado Datos", usecols="C:D", skiprows=4).dropna()
+    raw = pd.read_excel(
+        url, sheet_name="Listado Datos", usecols="C:D", skiprows=4
+    ).dropna()
 
-    output = raw.set_index(pd.date_range(start="2002-01-31", freq="ME", periods=len(raw))) / 1000
+    output = (
+        raw.set_index(pd.date_range(start="2002-01-31", freq="ME", periods=len(raw)))
+        / 1000
+    )
     output = output.apply(pd.to_numeric)
 
     spanish_names = ["Remisión, litros", "Remisión, kilogramos"]
@@ -1256,10 +1328,13 @@ def milk_shipments() -> Dataset:
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
     )
-    metadata.update_indicator_metadata_value("milk_shipments_1", "unit", "Thousand kilograms")
+    metadata.update_indicator_metadata_value(
+        "milk_shipments_1", "unit", "Thousand kilograms"
+    )
     dataset = Dataset(name, output, metadata)
 
     return dataset
+
 
 @retry(
     retry_on_exceptions=(HTTPError, URLError),

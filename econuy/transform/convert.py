@@ -6,10 +6,11 @@ import pandas as pd
 from econuy.utils.transform import error_handler
 
 
-def _convert_usd(data: pd.DataFrame,
+def _convert_usd(
+    data: pd.DataFrame,
     metadata: "Metadata",  # type: ignore # noqa: F821
     error_handling: Literal["raise", "coerce", "ignore"] = "raise",
-    ) -> pd.DataFrame:
+) -> pd.DataFrame:
     from econuy.retrieval.load import load_dataset
 
     indicators = metadata.indicator_ids
@@ -38,7 +39,11 @@ def _convert_usd(data: pd.DataFrame,
         nxr_freq = nxr.resample(target_freq, operation="last").data.iloc[:, [1]]
     else:
         cum_periods = single_metadata["cumulative_periods"]
-        nxr_freq = nxr.resample(target_freq, operation="mean").rolling(window=cum_periods, operation="mean").data.iloc[:, [0]]
+        nxr_freq = (
+            nxr.resample(target_freq, operation="mean")
+            .rolling(window=cum_periods, operation="mean")
+            .data.iloc[:, [0]]
+        )
 
     nxr_to_use = nxr_freq.reindex(data.index).iloc[:, 0]
     output = data.div(nxr_to_use, axis=0)
@@ -83,16 +88,28 @@ def _convert_real(
         target_freq = pd.infer_freq(data.index)
 
     cum_periods = single_metadata["cumulative_periods"]
-    cpi_to_use = cpi.resample(target_freq, operation="mean").rolling(cum_periods, operation="mean").data.iloc[:, 0]
+    cpi_to_use = (
+        cpi.resample(target_freq, operation="mean")
+        .rolling(cum_periods, operation="mean")
+        .data.iloc[:, 0]
+    )
 
-    start_date = datetime.strptime(start_date, "%Y-%m-%d") if isinstance(start_date, str) else start_date
-    end_date = datetime.strptime(end_date, "%Y-%m-%d") if isinstance(end_date, str) else end_date
+    start_date = (
+        datetime.strptime(start_date, "%Y-%m-%d")
+        if isinstance(start_date, str)
+        else start_date
+    )
+    end_date = (
+        datetime.strptime(end_date, "%Y-%m-%d")
+        if isinstance(end_date, str)
+        else end_date
+    )
 
     if start_date is None:
         converted_df = data.div(cpi_to_use, axis=0)
         col_text = "Constant prices"
     elif end_date is None:
-        #start_date = pd.to_datetime(start_date)
+        # start_date = pd.to_datetime(start_date)
         month = data.index.to_series().sub(pd.to_datetime(start_date)).abs().idxmin()
         converted_df = data.div(cpi_to_use, axis=0) * cpi_to_use.loc[month]
         m_start = start_date.strftime("%Y-%m")
@@ -112,7 +129,15 @@ def _convert_real(
     metadata.update_dataset_metadata({"inflation_adjustment": col_text})
     start_date_str = start_date.strftime("%Y-%m-%d") if start_date is not None else None
     end_date_str = end_date.strftime("%Y-%m-%d") if end_date is not None else None
-    metadata.add_transformation_step({"convert": {"flavor": "real", "start_date": start_date_str, "end_date": end_date_str}})
+    metadata.add_transformation_step(
+        {
+            "convert": {
+                "flavor": "real",
+                "start_date": start_date_str,
+                "end_date": end_date_str,
+            }
+        }
+    )
 
     return converted_df, metadata
 
@@ -130,12 +155,12 @@ def _convert_gdp(
     single_metadata = metadata.indicator_metadata[indicators[0]]
 
     if single_metadata["currency"] not in ["UYU", "USD"]:
-        output = error_handler(data, errors=error_handling, msg="Currency is not UYU or USD")
+        output = error_handler(
+            data, errors=error_handling, msg="Currency is not UYU or USD"
+        )
         return output, metadata
     elif single_metadata["unit"] == "% GDP":
-        output = error_handler(
-            data, errors=error_handling, msg="Already in % GDP"
-        )
+        output = error_handler(data, errors=error_handling, msg="Already in % GDP")
         return output, metadata
     elif single_metadata["inflation_adjustment"] is not None:
         output = error_handler(

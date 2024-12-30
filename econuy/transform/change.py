@@ -61,6 +61,8 @@ def _chg_diff(
         output = output.multiply(100)
 
     metadata.update_dataset_metadata({"unit": type_change[period][operation][1]})
-    metadata.add_transformation_step({"chg_diff": {"operation": operation, "period": period}})
+    metadata.add_transformation_step(
+        {"chg_diff": {"operation": operation, "period": period}}
+    )
 
     return output, metadata
