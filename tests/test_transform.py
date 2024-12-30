@@ -299,12 +299,12 @@ def test_convert_gdp(freq, ts_type, periods, cumperiods, currency):
             converter = int(12 / cumperiods)
             df = df.rolling(window=converter).sum()
     elif freq in ["Q", "QE-DEC"]:
-        gdp = gdp.resample(freq, convention="end").asfreq()
+        gdp = gdp.resample(freq).asfreq()
         if cumperiods != 4 and ts_type == "Flujo":
             converter = int(4 / cumperiods)
             df = df.rolling(window=converter).sum()
     elif freq in ["A", "A-DEC"]:
-        gdp = gdp.resample(freq, convention="end").asfreq()
+        gdp = gdp.resample(freq).asfreq()
     else:
         if ts_type == "Flujo":
             df = df.resample("ME").sum()

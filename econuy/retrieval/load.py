@@ -1,5 +1,6 @@
 import importlib
 import datetime as dt
+import inspect
 from typing import Union
 from pathlib import Path
 
@@ -42,7 +43,13 @@ def load_dataset(
     path_prefix = "econuy.retrieval."
     module = importlib.import_module(path_prefix + module)
     dataset_retriever = getattr(module, function)
-    dataset = dataset_retriever()
+
+    signature = inspect.signature(dataset_retriever)
+    parameters = signature.parameters
+    if parameters:
+        dataset = dataset_retriever(data_dir, skip_cache, safe_overwrite)
+    else:
+        dataset = dataset_retriever()
 
     if safe_overwrite:
         existing_dataset = read_dataset(name, data_dir)

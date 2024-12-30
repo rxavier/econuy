@@ -35,10 +35,8 @@ def _convert_usd(data: pd.DataFrame,
         target_freq = "ME"
 
     if time_series_type == "Stock":
-        #nxr.metadata.update_dataset_metadata({"time_series_type": "Stock"})
         nxr_freq = nxr.resample(target_freq, operation="last").data.iloc[:, [1]]
     else:
-        #nxr.metadata.update_dataset_metadata({"time_series_type": "Stock"})
         cum_periods = single_metadata["cumulative_periods"]
         nxr_freq = nxr.resample(target_freq, operation="mean").rolling(window=cum_periods, operation="mean").data.iloc[:, [0]]
 
@@ -158,12 +156,12 @@ def _convert_gdp(
             converter = int(12 / cum_periods)
             data = data.rolling(window=converter).sum()
     elif inferred_freq in ["Q", "QE-DEC", "QE-DEC"]:
-        gdp = gdp.resample(inferred_freq, convention="end").asfreq()
+        gdp = gdp.resample(inferred_freq).asfreq()
         if cum_periods != 4 and ts_type == "Flow":
             converter = int(4 / cum_periods)
             data = data.rolling(window=converter).sum()
     elif inferred_freq in ["A", "A-DEC", "YE-DEC"]:
-        gdp = gdp.resample(inferred_freq, convention="end").asfreq()
+        gdp = gdp.resample(inferred_freq).asfreq()
     elif inferred_freq in ["D", "B", "C", "W", "W-SUN", None]:
         if ts_type == "Flow":
             data = data.resample("ME").sum()

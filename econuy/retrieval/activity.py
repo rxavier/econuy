@@ -2,9 +2,9 @@ import datetime as dt
 import re
 import tempfile
 import time
+from io import BytesIO
 from pathlib import Path
 from os import listdir, path
-from typing import Optional
 from urllib.error import HTTPError, URLError
 
 import pandas as pd
@@ -17,7 +17,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from econuy.core import Pipeline
 from econuy.utils import get_project_root
 from econuy.utils.operations import get_download_sources, get_name_from_function
 from econuy.utils.chromedriver import _build
@@ -112,7 +111,7 @@ def national_accounts_supply_constant_nsa() -> Dataset:
 
     certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
     r = httpx.get(sources["main"], verify=certs_path)
-    raw = pd.read_excel(r.content, skiprows=7)
+    raw = pd.read_excel(BytesIO(r.content), skiprows=7)
     output = raw.dropna(how="all", axis=1).iloc[:, 2:].dropna(how="all").T
     output.index = pd.date_range(start="2016-03-31", freq="QE-DEC", periods=len(output))
     output = output.apply(pd.to_numeric, errors="coerce").rename_axis(None)
@@ -173,7 +172,7 @@ def national_accounts_demand_constant_nsa() -> Dataset:
 
     certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
     r = httpx.get(sources["main"], verify=certs_path)
-    raw = pd.read_excel(r.content, skiprows=7)
+    raw = pd.read_excel(BytesIO(r.content), skiprows=7)
     output = raw.dropna(how="all", axis=1).iloc[:, 2:].dropna(how="all").T
     output.index = pd.date_range(start="2016-03-31", freq="QE-DEC", periods=len(output))
     output = output.apply(pd.to_numeric, errors="coerce").rename_axis(None)
@@ -231,7 +230,7 @@ def national_accounts_demand_current_nsa() -> Dataset:
 
     certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
     r = httpx.get(sources["main"], verify=certs_path)
-    raw = pd.read_excel(r.content, skiprows=7)
+    raw = pd.read_excel(BytesIO(r.content), skiprows=7)
     output = raw.dropna(how="all", axis=1).iloc[:, 2:].dropna(how="all").T
     output.index = pd.date_range(start="2016-03-31", freq="QE-DEC", periods=len(output))
     output = output.apply(pd.to_numeric, errors="coerce").rename_axis(None)
@@ -289,7 +288,7 @@ def national_accounts_supply_current_nsa() -> Dataset:
 
     certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
     r = httpx.get(sources["main"], verify=certs_path)
-    raw = pd.read_excel(r.content, skiprows=7)
+    raw = pd.read_excel(BytesIO(r.content), skiprows=7)
     output = raw.dropna(how="all", axis=1).iloc[:, 2:].dropna(how="all").T
     output.index = pd.date_range(start="2016-03-31", freq="QE-DEC", periods=len(output))
     output = output.apply(pd.to_numeric, errors="coerce").rename_axis(None)
@@ -350,7 +349,7 @@ def gdp_index_constant_sa() -> Dataset:
     sources = get_download_sources(name)
     certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
     r = httpx.get(sources["main"], verify=certs_path)
-    raw = pd.read_excel(r.content, skiprows=7)
+    raw = pd.read_excel(BytesIO(r.content), skiprows=7)
     output = raw.dropna(how="all", axis=1).iloc[:, 2:].dropna(how="all").T
     output.index = pd.date_range(start="2016-03-31", freq="QE-DEC", periods=len(output))
     output = output.apply(pd.to_numeric, errors="coerce").rename_axis(None)
@@ -384,7 +383,7 @@ def gdp_index_constant_sa() -> Dataset:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def national_accounts_supply_constant_nsa_extended(
+def national_accounts_supply_constant_nsa_extended(*args, **kwargs,
 ) -> Dataset:
     """Get supply-side national accounts data in NSA constant prices, 1988-.
 
@@ -399,8 +398,7 @@ def national_accounts_supply_constant_nsa_extended(
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-
-    data_16 = load_dataset("national_accounts_supply_constant_nsa").to_detailed()
+    data_16 = load_dataset("national_accounts_supply_constant_nsa", *args, **kwargs).to_detailed()
     data_16.columns = data_16.columns.get_level_values(0)
     data_16["Otros servicios"] = (
         data_16["Servicios financieros"]
@@ -435,7 +433,7 @@ def national_accounts_supply_constant_nsa_extended(
     ]
     certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
     r = httpx.get(sources["2005"], verify=certs_path)
-    raw_05 = pd.read_excel(r.content, skiprows=9)
+    raw_05 = pd.read_excel(BytesIO(r.content), skiprows=9)
     data_05 = raw_05.dropna(how="all", axis=1).iloc[:, 1:].set_index("Unnamed: 1").dropna(how="all").T
     data_05.index = pd.date_range(start="1997-03-31", freq="QE-DEC", periods=len(data_05))
     data_05 = data_05.apply(pd.to_numeric, errors="coerce").rename_axis(None)
@@ -482,7 +480,7 @@ def national_accounts_supply_constant_nsa_extended(
     r = httpx.get(sources["1983"], verify=certs_path)
     data_83 = (
         pd.read_excel(
-            r.content,
+            BytesIO(r.content),
             skiprows=10,
             nrows=8,
             index_col=1,
@@ -548,7 +546,7 @@ def national_accounts_supply_constant_nsa_extended(
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def national_accounts_demand_constant_nsa_extended() -> Dataset:
+def national_accounts_demand_constant_nsa_extended(*args, **kwargs) -> Dataset:
     """Get demand-side national accounts data in NSA constant prices, 1988-.
 
     Three datasets with different base years, 1983, 2005 and 2016, are spliced
@@ -562,7 +560,7 @@ def national_accounts_demand_constant_nsa_extended() -> Dataset:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    data_16 = load_dataset("national_accounts_demand_constant_nsa").to_detailed()
+    data_16 = load_dataset("national_accounts_demand_constant_nsa", *args, **kwargs).to_detailed()
     data_16.columns = data_16.columns.get_level_values(0)
     data_16 = data_16.drop(["Variación de existencias"], axis=1)
 
@@ -580,7 +578,7 @@ def national_accounts_demand_constant_nsa_extended() -> Dataset:
     ]
     certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
     r = httpx.get(sources["2005"], verify=certs_path)
-    raw_05 = pd.read_excel(r.content, skiprows=9)
+    raw_05 = pd.read_excel(BytesIO(r.content), skiprows=9)
     data_05 = raw_05.dropna(how="all", axis=1).iloc[:, 1:].set_index("Unnamed: 1").dropna(how="all").T
     data_05.index = pd.date_range(start="2005-03-31", freq="QE-DEC", periods=len(data_05))
     data_05 = data_05.apply(pd.to_numeric, errors="coerce").rename_axis(None)
@@ -661,7 +659,7 @@ def national_accounts_demand_constant_nsa_extended() -> Dataset:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def gdp_index_constant_sa_extended() -> Dataset:
+def gdp_index_constant_sa_extended(*args, **kwargs) -> Dataset:
     """Get GDP data in SA constant prices, 1988-.
 
     Three datasets with different base years, 1983, 2005 and 2016, are spliced
@@ -675,7 +673,7 @@ def gdp_index_constant_sa_extended() -> Dataset:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    data_16 = load_dataset("gdp_index_constant_sa").to_detailed()
+    data_16 = load_dataset("gdp_index_constant_sa", *args, **kwargs).to_detailed()
     data_16.columns = data_16.columns.get_level_values(0)
 
     names = [
@@ -693,7 +691,7 @@ def gdp_index_constant_sa_extended() -> Dataset:
     ]
     certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
     r = httpx.get(sources["2005"], verify=certs_path)
-    raw_05 = pd.read_excel(r.content, skiprows=9)
+    raw_05 = pd.read_excel(BytesIO(r.content), skiprows=9)
     data_05 = raw_05.dropna(how="all", axis=1).iloc[:, 1:].set_index("Unnamed: 1").dropna(how="all").T
     data_05.index = pd.date_range(start="1997-03-31", freq="QE-DEC", periods=len(data_05))
     data_05 = data_05.apply(pd.to_numeric, errors="coerce").rename_axis(None)
@@ -769,7 +767,7 @@ def gdp_index_constant_sa_extended() -> Dataset:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def gdp_constant_nsa_extended() -> Dataset:
+def gdp_constant_nsa_extended(*args, **kwargs) -> Dataset:
     """Get GDP data in NSA constant prices, 1988-.
 
     Three datasets with two different base years, 1983 and 2016, are
@@ -784,14 +782,14 @@ def gdp_constant_nsa_extended() -> Dataset:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    data_16 = load_dataset("national_accounts_supply_constant_nsa").to_detailed()
+    data_16 = load_dataset("national_accounts_supply_constant_nsa", *args, **kwargs).to_detailed()
     data_16.columns = data_16.columns.get_level_values(0)
     data_16 = data_16[["Producto bruto interno"]]
 
     names = ["Producto bruto interno"]
     certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
     r = httpx.get(sources["1997"], verify=certs_path)
-    raw_97 = pd.read_excel(r.content, skiprows=6)
+    raw_97 = pd.read_excel(BytesIO(r.content), skiprows=6)
     data_97 = raw_97.dropna(how="all", axis=1).iloc[:, 1:].set_index("Unnamed: 1").dropna(how="all").T
     data_97.index = pd.date_range(start="1997-03-31", freq="QE-DEC", periods=len(data_97))
     data_97 = data_97.apply(pd.to_numeric, errors="coerce").rename_axis(None)
@@ -857,7 +855,7 @@ def gdp_constant_nsa_extended() -> Dataset:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def gdp_current_nsa_extended() -> Dataset:
+def gdp_current_nsa_extended(*args, **kwargs) -> Dataset:
     """Get GDP data in NSA current prices, 1997-.
 
     It uses the BCU's working paper for retropolated GDP in current and constant prices for
@@ -871,14 +869,14 @@ def gdp_current_nsa_extended() -> Dataset:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    data_16 = load_dataset("national_accounts_supply_current_nsa").to_detailed()
+    data_16 = load_dataset("national_accounts_supply_current_nsa", *args, **kwargs).to_detailed()
     data_16.columns = data_16.columns.get_level_values(0)
     data_16 = data_16[["Producto bruto interno"]]
 
     names = ["Producto bruto interno"]
     certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
     r = httpx.get(sources["1997"], verify=certs_path)
-    raw_97 = pd.read_excel(r.content, skiprows=6)
+    raw_97 = pd.read_excel(BytesIO(r.content), skiprows=6)
     data_97 = raw_97.dropna(how="all", axis=1).iloc[:, 1:].set_index("Unnamed: 1").dropna(how="all").T
     data_97.index = pd.date_range(start="1997-03-31", freq="QE-DEC", periods=len(data_97))
     data_97 = data_97.apply(pd.to_numeric, errors="coerce").rename_axis(None)
@@ -915,18 +913,13 @@ def gdp_current_nsa_extended() -> Dataset:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=60,
 )
-def gdp_denominator():
+def gdp_denominator(*args, **kwargs):
     """Get nominal GDP data in UYU and USD with forecasts.
 
     Update nominal GDP data for use in the `transform.convert_gdp()` function.
     Get IMF forecasts for year of last available data point and the next
     year (for example, if the last period available at the BCU website is
     september 2019, fetch forecasts for 2019 and 2020).
-
-    Parameters
-    ----------
-    pipeline : econuy.core.Pipeline or None, default None
-        An instance of the econuy Pipeline class.
 
     Returns
     -------
@@ -936,7 +929,7 @@ def gdp_denominator():
     """
     name = get_name_from_function()
 
-    data_uyu = load_dataset("gdp_current_nsa_extended").rolling(window=4, operation="sum")
+    data_uyu = load_dataset("gdp_current_nsa_extended", *args, **kwargs).rolling(window=4, operation="sum")
     data_usd = data_uyu.convert("usd")
     data_uyu, data_usd = data_uyu.data, data_usd.data
 
@@ -1081,15 +1074,11 @@ def industrial_production() -> Dataset:
     return dataset
 
 
-def core_industrial_production(pipeline: Optional[Pipeline] = None) -> Dataset:
+def core_industrial_production(*args, **kwargs) -> Dataset:
     """
     Get total industrial production, industrial production excluding oil
     refinery and core industrial production.
 
-    Parameters
-    ----------
-    pipeline : econuy.core.Pipeline or None, default None
-        An instance of the econuy Pipeline class.
 
     Returns
     -------
@@ -1099,7 +1088,7 @@ def core_industrial_production(pipeline: Optional[Pipeline] = None) -> Dataset:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    data_18 = load_dataset("industrial_production").to_detailed()
+    data_18 = load_dataset("industrial_production", *args, **kwargs).to_detailed()
     data_18 = data_18[
         [
             "Industrias manufactureras",

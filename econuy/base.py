@@ -12,7 +12,23 @@ from econuy.transform.resample import _resample
 from econuy.transform.rolling import _rolling
 from econuy.transform.rebase import _rebase
 from econuy.transform.convert import _convert_usd, _convert_gdp, _convert_real
-# from econuy.transform.convert import _convert_gdp, _convert_real, _convert_usd
+
+
+class DatasetConfig:
+    def __init__(self, name: str) -> None:
+        self.name = name
+        self.load()
+
+    def load(self) -> None:
+        from econuy.utils.operations import load_datasets_info
+
+        all_datasets_info = load_datasets_info()
+        dataset_config = all_datasets_info[self.name]
+        for key, value in dataset_config.items():
+            setattr(self, key, value)
+
+    def __repr__(self) -> str:
+        return json.dumps(self.__dict__, indent=4)
 
 
 def cast_metadata(
@@ -27,11 +43,12 @@ def cast_metadata(
 
 class DatasetMetadata:
     def __init__(
-        self, name: str, indicator_metadata: dict, created_at: Optional[datetime] = None
+        self, name: str, indicator_metadata: dict, created_at: Optional[datetime] = None, config: Optional[DatasetConfig] = None,
     ) -> None:
         self.name = name
         self.indicator_metadata = indicator_metadata
         self.created_at = created_at or datetime.now()
+        self.config = config or DatasetConfig(name)
 
     def __getitem__(self, indicator) -> "DatasetMetadata":
         return self.__class__(
@@ -212,8 +229,9 @@ class DatasetMetadata:
         data_dir = data_dir or get_data_dir()
         data_dir = Path(data_dir)
         data_dir.mkdir(parents=True, exist_ok=True)
-        for_json = self.__dict__
+        for_json = self.__dict__.copy()
         for_json["created_at"] = for_json["created_at"].isoformat()
+        for_json["config"] = self.config.__dict__
         with open(data_dir / f"{name}_metadata.json", "w") as f:
             json.dump(for_json, f, indent=4)
         return
@@ -286,6 +304,7 @@ class DatasetMetadata:
         metadata_dict["created_at"] = datetime.fromisoformat(
             metadata_dict["created_at"]
         )
+        metadata_dict["config"] = DatasetConfig(metadata_dict["name"])
         return cls(**metadata_dict)
 
     def __repr__(self) -> str:

@@ -409,13 +409,8 @@ def ppi() -> Dataset:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=30,
 )
-def nxr_monthly() -> Dataset:
+def nxr_monthly(*args, **kwargs) -> Dataset:
     """Get monthly nominal exchange rate data.
-
-    Parameters
-    ----------
-    pipeline : econuy.core.Pipeline or None, default None
-        An instance of the econuy Pipeline class.
 
     Returns
     -------
@@ -426,7 +421,7 @@ def nxr_monthly() -> Dataset:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    daily_data = load_dataset("nxr_daily").data
+    daily_data = load_dataset("nxr_daily", *args, **kwargs).data
 
     output = pd.DataFrame(
         {

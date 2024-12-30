@@ -39,7 +39,7 @@ def bank_credit() -> pd.DataFrame:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
             r = httpx.get(sources["main"], verify=certs_path)
-            xls = pd.ExcelFile(r.content)
+            xls = pd.ExcelFile(BytesIO(r.content))
     tc = pd.read_excel(
         xls,
         sheet_name="TC",
@@ -134,7 +134,7 @@ def bank_deposits() -> pd.DataFrame:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
             r = httpx.get(sources["main"], verify=certs_path)
-            xls = pd.ExcelFile(r.content)
+            xls = pd.ExcelFile(BytesIO(r.content))
     tc = pd.read_excel(
         xls,
         sheet_name="TC",
@@ -212,7 +212,7 @@ def bank_interest_rates() -> pd.DataFrame:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
             r = httpx.get(sources["main"], verify=certs_path)
-            xls = pd.ExcelFile(r.content)
+            xls = pd.ExcelFile(BytesIO(r.content))
 
     sheets = [
         "Activas $",

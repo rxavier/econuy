@@ -1,7 +1,7 @@
 import datetime as dt
 import re
+from io import BytesIO
 from pathlib import Path
-from typing import Optional
 from urllib.error import HTTPError, URLError
 
 import pandas as pd
@@ -12,7 +12,6 @@ from httpx import ConnectError
 
 from econuy import load_dataset
 from econuy.base import Dataset, DatasetMetadata
-from econuy.core import Pipeline
 from econuy.utils import get_project_root
 from econuy.utils.extras import FISCAL_SHEETS, taxes_columns
 from econuy.utils.operations import get_name_from_function, get_download_sources
@@ -274,7 +273,7 @@ def _get_public_debt(dataset_name: str) -> Dataset:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
             r = httpx.get(sources["main"], verify=certs_path)
-            xls = pd.ExcelFile(r.content)
+            xls = pd.ExcelFile(BytesIO(r.content))
 
     if dataset_name == "public_debt_global_public_sector":
         gps_raw = pd.read_excel(
@@ -415,7 +414,7 @@ def public_assets() -> Dataset:
     return _get_public_debt(name)
 
 
-def net_public_debt_global_public_sector() -> Dataset:
+def net_public_debt_global_public_sector(*args, **kwargs) -> Dataset:
     """
     Get net public debt excluding deposits at the central bank.
 
@@ -427,11 +426,11 @@ def net_public_debt_global_public_sector() -> Dataset:
     """
     name = get_name_from_function()
 
-    gross_debt = load_dataset("public_debt_global_public_sector").to_named()[["Total deuda"]]
-    assets = load_dataset("public_assets").to_named()[["Total activos"]]
+    gross_debt = load_dataset("public_debt_global_public_sector", *args, **kwargs).to_named()[["Total deuda"]]
+    assets = load_dataset("public_assets", *args, **kwargs).to_named()[["Total activos"]]
     gross_debt.columns = ["Deuda neta del sector público global excl. encajes"]
     assets.columns = gross_debt.columns
-    deposits = load_dataset("international_reserves").resample("QE-DEC", "last").to_named()[["Obligaciones en ME con el sector financiero"]]
+    deposits = load_dataset("international_reserves", *args, **kwargs).resample("QE-DEC", "last").to_named()[["Obligaciones en ME con el sector financiero"]]
     deposits = deposits.reindex(gross_debt.index).squeeze()
     output = gross_debt.add(assets).add(deposits, axis=0).dropna()
     output = output.rename_axis(None)
@@ -461,7 +460,7 @@ def net_public_debt_global_public_sector() -> Dataset:
     return dataset
 
 
-def fiscal_balance_summary(pipeline: Optional[Pipeline] = None) -> Dataset:
+def fiscal_balance_summary(*args, **kwargs) -> Dataset:
     """
     Get the summary fiscal balance table found in the `Budget Law
     <https://www.gub.uy/contaduria-general-nacion/sites/
@@ -469,11 +468,6 @@ def fiscal_balance_summary(pipeline: Optional[Pipeline] = None) -> Dataset:
     Mensaje%20y%20Exposici%C3%B3n%20de%20motivos.pdf>`_. Includes adjustments
     for the `Social Security Fund <https://www.impo.com.uy/bases/decretos/
     71-2018/25>`_.
-
-    Parameters
-    ----------
-    pipeline : econuy.core.Pipeline or None, default None
-        An instance of the econuy Pipeline class.
 
     Returns
     -------
@@ -487,7 +481,7 @@ def fiscal_balance_summary(pipeline: Optional[Pipeline] = None) -> Dataset:
                          "fiscal_balance_nonfinancial_public_sector",
                          "fiscal_balance_central_government",
                          "fiscal_balance_soe"]:
-        d = load_dataset(dataset_name).to_detailed()
+        d = load_dataset(dataset_name, *args, **kwargs).to_detailed()
         d.columns = d.columns.get_level_values(0)
         datasets.update({dataset_name: d})
     gps = datasets["fiscal_balance_global_public_sector"]

@@ -536,7 +536,7 @@ def regional_rxr(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=30,
 )
-def _ifs() -> pd.DataFrame:
+def _ifs(*args, **kwargs) -> pd.DataFrame:
     """Get extra CPI and exchange rate data from the IMF IFS.
 
     Returns
@@ -553,6 +553,7 @@ def _ifs() -> pd.DataFrame:
             base_url = (
                 f"{url_}.{country}.{indicator}.{url_extra}{dt.datetime.now().year}"
             )
+            print(base_url)
             r_json = httpx.get(base_url).json()
             data = r_json["CompactData"]["DataSet"]["Series"]["Obs"]
             try:
@@ -573,8 +574,8 @@ def _ifs() -> pd.DataFrame:
             ifs.append(data)
     ifs = pd.concat(ifs, axis=1, sort=True).apply(pd.to_numeric)
 
-    xr = load_dataset("regional_nxr").resample("ME", "mean").to_named()
-    prices = load_dataset("regional_cpi").to_named()
+    xr = load_dataset("regional_nxr", *args, **kwargs).resample("ME", "mean").to_named()
+    prices = load_dataset("regional_cpi", *args, **kwargs).to_named()
     prices.columns = ["ARG CPI", "BRA CPI"]
 
     proc = pd.concat([xr, prices, ifs], axis=1)

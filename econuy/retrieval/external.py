@@ -6,7 +6,6 @@ from pathlib import Path
 from io import BytesIO
 from json import JSONDecodeError
 from os import path
-from typing import Optional
 from urllib import error
 from urllib.error import HTTPError, URLError
 
@@ -18,7 +17,6 @@ from pandas.tseries.offsets import MonthEnd, YearEnd
 from econuy import load_dataset
 from econuy.base import Dataset, DatasetMetadata
 from econuy.retrieval import regional
-from econuy.core import Pipeline
 from econuy.utils import get_project_root
 from econuy.utils.operations import get_download_sources, get_name_from_function
 from econuy.utils.extras import TRADE_METADATA, BOP_COLUMNS
@@ -34,7 +32,7 @@ def _get_trade(dataset_name: str) -> Dataset:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
             r = httpx.get(sources["main"], verify=certs_path)
-            xls = pd.ExcelFile(r.content)
+            xls = pd.ExcelFile(BytesIO(r.content))
     sheets = []
     start_col = meta["start_col"]
     for sheet in xls.sheet_names:
@@ -293,7 +291,7 @@ def trade_imports_origin_price() -> Dataset:
     return _get_trade(name)
 
 
-def trade_balance() -> Dataset:
+def trade_balance(*args, **kwargs) -> Dataset:
     """
     Get net trade balance data by country/region.
 
@@ -303,8 +301,8 @@ def trade_balance() -> Dataset:
 
     """
     name = get_name_from_function()
-    exports = load_dataset("trade_exports_destination_value").to_named().rename(columns={"Total exportaciones": "Total"})
-    imports = load_dataset("trade_imports_origin_value").to_named().rename(columns={"Total importaciones": "Total"})
+    exports = load_dataset("trade_exports_destination_value", *args, **kwargs).to_named().rename(columns={"Total exportaciones": "Total"})
+    imports = load_dataset("trade_imports_origin_value", *args, **kwargs).to_named().rename(columns={"Total importaciones": "Total"})
     output = exports - imports
     output = output.rename_axis(None)
 
@@ -333,7 +331,7 @@ def trade_balance() -> Dataset:
     return dataset
 
 
-def terms_of_trade() -> Dataset:
+def terms_of_trade(*args, **kwargs) -> Dataset:
     """
     Get terms of trade.
 
@@ -343,8 +341,8 @@ def terms_of_trade() -> Dataset:
 
     """
     name = get_name_from_function()
-    exports = load_dataset("trade_exports_destination_price").to_named().rename(columns={"Total exportaciones": "Total"})
-    imports = load_dataset("trade_imports_origin_price").to_named().rename(columns={"Total importaciones": "Total"})
+    exports = load_dataset("trade_exports_destination_price", *args, **kwargs).to_named().rename(columns={"Total exportaciones": "Total"})
+    imports = load_dataset("trade_imports_origin_price", *args, **kwargs).to_named().rename(columns={"Total importaciones": "Total"})
 
     output = exports / imports
     output = output.loc[:, ["Total"]]
@@ -502,7 +500,7 @@ def commodity_prices() -> Dataset:
         params=f"b=USD&c=EUR&rd=&fd=1&fm=1&fy=2001&ld=31&lm=12&ly="
         f"{dt.datetime.now().year}&y=monthly&q=volume&f=html&o=",
     )
-    eurusd = pd.read_html(eurusd_r.content)[0].drop("MMM YYYY", axis=1)
+    eurusd = pd.read_html(BytesIO(eurusd_r.content))[0].drop("MMM YYYY", axis=1)
     eurusd.index = pd.date_range(start="2001-01-31", periods=len(eurusd), freq="ME")
     eurusd_milk = eurusd.reindex(prev_milk.index)
     prev_milk = prev_milk.divide(eurusd_milk.values).multiply(10)
@@ -603,7 +601,7 @@ def commodity_prices() -> Dataset:
     return dataset
 
 
-def commodity_index() -> Dataset:
+def commodity_index(*args, **kwargs) -> Dataset:
     """Get export-weighted commodity price index for Uruguay.
 
     Returns
@@ -613,7 +611,7 @@ def commodity_index() -> Dataset:
 
     """
     name = get_name_from_function()
-    prices = load_dataset("commodity_prices").to_named()
+    prices = load_dataset("commodity_prices", *args, **kwargs).to_named()
     prices = prices.interpolate(method="linear", limit=1).dropna(how="any")
     prices = prices.pct_change(periods=1)
     weights = _commodity_weights()
@@ -673,7 +671,7 @@ def rxr() -> Dataset:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
             r = httpx.get(sources["main"], verify=certs_path)
-            raw = pd.read_excel(r.content, skiprows=9, usecols="B:N", index_col=0)
+            raw = pd.read_excel(BytesIO(r.content), skiprows=9, usecols="B:N", index_col=0)
     output = raw.dropna(how="any")
     output.columns = [
         "Global",
@@ -721,7 +719,7 @@ def rxr() -> Dataset:
     max_calls_total=10,
     retry_window_after_first_call_in_seconds=90,
 )
-def rxr_custom() -> Dataset:
+def rxr_custom(*args, **kwargs) -> Dataset:
     """Get custom real exchange rates vis-à-vis the US, Argentina and Brazil.
 
     Returns
@@ -733,8 +731,8 @@ def rxr_custom() -> Dataset:
     name = get_name_from_function()
 
     ifs = regional._ifs()
-    uy_cpi = load_dataset("cpi").to_named()
-    uy_e = load_dataset("nxr_monthly").to_named().iloc[:, [1]]
+    uy_cpi = load_dataset("cpi", *args, **kwargs).to_named()
+    uy_e = load_dataset("nxr_monthly", *args, **kwargs).to_named().iloc[:, [1]]
     proc = pd.concat([ifs, uy_cpi, uy_e], axis=1)
     proc = proc.interpolate(method="linear", limit_area="inside")
     proc = proc.dropna(how="all")
@@ -810,7 +808,7 @@ def balance_of_payments() -> Dataset:
             r = httpx.get(sources["main"], verify=certs_path)
             raw = (
                 pd.read_excel(
-                    r.content, skiprows=7, index_col=0, sheet_name="Cuadro Nº 1"
+                    BytesIO(r.content), skiprows=7, index_col=0, sheet_name="Cuadro Nº 1"
                 )
                 .dropna(how="all")
                 .T
@@ -858,7 +856,7 @@ def balance_of_payments() -> Dataset:
     max_calls_total=10,
     retry_window_after_first_call_in_seconds=90,
 )
-def balance_of_payments_summary(pipeline: Optional[Pipeline] = None) -> Dataset:
+def balance_of_payments_summary(*args, **kwargs) -> Dataset:
     """Get a balance of payments summary and capital flows calculations.
 
     Returns
@@ -867,7 +865,7 @@ def balance_of_payments_summary(pipeline: Optional[Pipeline] = None) -> Dataset:
 
     """
     name = get_name_from_function()
-    bop = load_dataset("balance_of_payments").to_named()
+    bop = load_dataset("balance_of_payments", *args, **kwargs).to_named()
 
     output = pd.DataFrame(index=bop.index)
     output["Cuenta corriente"] = bop["Cuenta Corriente"]
@@ -971,7 +969,7 @@ def international_reserves() -> Dataset:
             certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
             r = httpx.get(sources["main"], verify=certs_path)
             raw = pd.read_excel(
-                r.content, usecols="D:J", index_col=0, skiprows=5, na_values="n/d"
+                BytesIO(r.content), usecols="D:J", index_col=0, skiprows=5, na_values="n/d"
             )
     proc = raw.dropna(thresh=1)
     output = proc[proc.index.notnull()]
