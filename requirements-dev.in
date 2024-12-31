@@ -1,9 +1,0 @@
-ipykernel
-pytest
-sphinx
-sphinx-autobuild
-sphinx-autodoc-typehints
-recommonmark
-sphinx-rtd-theme
-ruff
-matplotlib
