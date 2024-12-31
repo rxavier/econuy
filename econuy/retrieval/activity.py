@@ -1148,6 +1148,7 @@ def core_industrial_production(*args, **kwargs) -> Dataset:
         start_date="2018-01-01", end_date="2018-12-31"
     )
     dataset.metadata.update_dataset_metadata({"unit": "2018=100"})
+    dataset.transformed = False
 
     return dataset
 

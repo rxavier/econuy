@@ -1846,7 +1846,7 @@
     "function": "regional.regional_embi_yields",
     "sources": {
       "downloads": {
-        "treasury": "https://query1.finance.yahoo.com/v7/finance/download/%5ETNX?period1=-252374400&period2={timestamp}&interval=1d&events=history&includeAdjustedClose=true"
+        "treasury": "https://api.stlouisfed.org/fred/series/observations?series_id=dgs10&api_key={}&file_type=json"
       },
       "direct": [],
       "indirect": [
@@ -1901,7 +1901,7 @@
     "description_en": "Stock markets in USD of Argentina and Brazil (09-Apr-02, D)",
     "area": "regional",
     "custom": true,
-    "disabled": false,
+    "disabled": true,
     "auxiliary": false,
     "function": "regional.regional_stock_markets",
     "sources": {

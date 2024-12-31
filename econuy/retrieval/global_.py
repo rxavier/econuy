@@ -1,20 +1,22 @@
 import datetime as dt
 import tempfile
 import zipfile
-
+import os
 from io import BytesIO
 from os import path
 
 import pandas as pd
 import httpx
 from pandas.tseries.offsets import MonthEnd
+from dotenv import load_dotenv
 
 from econuy.transform import decompose, rebase
 from econuy.utils import metadata
 from econuy.utils.operations import get_download_sources, get_name_from_function
 
 
-FRED_API_KEY = "f5700348a7dd3a997c88af6d35608a12"
+load_dotenv()
+FRED_API_KEY = os.environ.get("FRED_API_KEY")
 
 
 def global_gdp() -> pd.DataFrame:
@@ -29,6 +31,11 @@ def global_gdp() -> pd.DataFrame:
     """
     name = get_name_from_function()
     sources = get_download_sources(name)
+
+    if FRED_API_KEY is None:
+        raise ValueError(
+            "FRED_API_KEY not found. Get one at https://fredaccount.stlouisfed.org/apikeys and set it as an environment variable."
+        )
 
     chn_y = dt.datetime.now().year + 1
     chn_r = httpx.get(f"{sources['chn_oecd']}{chn_y}-Q4")

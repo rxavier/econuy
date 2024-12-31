@@ -38,3 +38,4 @@ orig-data/
 x13as
 .python-version
 .continueignore
+.env

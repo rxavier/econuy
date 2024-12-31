@@ -321,6 +321,9 @@ def terms_of_trade(*args, **kwargs) -> Dataset:
     )
     dataset = Dataset(name, output, metadata)
     dataset = dataset.rebase("2005-01-01", "2005-12-31", 100)
+    dataset.metadata.update_dataset_metadata({"unit": "2005=100"})
+    dataset.transformed = False
+
     return dataset
 
 
@@ -706,6 +709,8 @@ def rxr_custom(*args, **kwargs) -> Dataset:
     for indicator, currency in zip(ids, ["UYU/ARS", "UYU/ARS", "UYU/BRL", "UYU/USD"]):
         metadata.update_indicator_metadata_value(indicator, "currency", currency)
     dataset = Dataset(name, output, metadata).rebase("2010-01-01", "2010-12-31", 100)
+    dataset.metadata.update_dataset_metadata({"unit": "2010=100"})
+    dataset.transformed = False
 
     return dataset
 

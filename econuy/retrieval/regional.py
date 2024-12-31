@@ -1,28 +1,29 @@
 import re
+import os
 import tempfile
 import time
 import zipfile
 import datetime as dt
 from io import BytesIO
 from os import path, listdir
-from typing import Optional
 
 import pandas as pd
 import numpy as np
 import httpx
 from pandas.tseries.offsets import MonthEnd
-from selenium.webdriver.remote.webdriver import WebDriver
+from dotenv import load_dotenv
 
 from econuy import load_dataset
-from econuy.core import Pipeline
 from econuy.base import Dataset, DatasetMetadata
-from econuy.transform import rebase
-from econuy.utils import metadata
 from econuy.utils.chromedriver import _build
 from econuy.utils.operations import get_download_sources, get_name_from_function
 
 
-def regional_gdp(driver: WebDriver = None) -> pd.DataFrame:
+load_dotenv()
+FRED_API_KEY = os.environ.get("FRED_API_KEY")
+
+
+def regional_gdp() -> pd.DataFrame:
     """Get seasonally adjusted real GDP for Argentina and Brazil.
 
     This function requires a Selenium webdriver. It can be provided in the
@@ -41,8 +42,7 @@ def regional_gdp(driver: WebDriver = None) -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    if driver is None:
-        driver = _build()
+    driver = _build()
     driver.get(sources["arg_new"])
     time.sleep(5)
     source = driver.page_source
@@ -77,21 +77,32 @@ def regional_gdp(driver: WebDriver = None) -> pd.DataFrame:
 
     output = pd.concat([arg, bra], axis=1).div(1000)
     output.columns = ["Argentina", "Brasil"]
-    output.rename_axis(None, inplace=True)
+    output = output.rename_axis(None)
 
-    metadata._set(
-        output,
-        area="Regional",
-        currency="-",
-        inf_adj="Const.",
-        seas_adj="SA",
-        unit="Miles de millones",
-        ts_type="Flujo",
-        cumperiods=1,
+    spanish_names = output.columns
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Regional",
+        "currency": "-",
+        "inflation_adjustment": "Const.",
+        "unit": "Billions",
+        "seasonal_adjustment": "Seasonally adjusted",
+        "frequency": "QE-DEC",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
-    metadata._modify_multiindex(output, levels=[3], new_arrays=[["ARS", "BRL"]])
+    for indicator, currency in zip(ids, ["ARS", "BRL"]):
+        metadata.update_indicator_metadata_value(indicator, "currency", currency)
+    dataset = Dataset(name, output, metadata)
 
-    return output
+    return dataset
 
 
 def regional_monthly_gdp() -> pd.DataFrame:
@@ -107,7 +118,7 @@ def regional_monthly_gdp() -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    arg = pd.read_excel(sources["arg"], usecols="C", skiprows=3).dropna(how="all")
+    arg = pd.read_excel(sources["arg"], usecols="E", skiprows=3).dropna(how="all")
     arg.index = pd.date_range(start="2004-01-31", freq="ME", periods=len(arg))
 
     bra = pd.read_csv(sources["bra"], sep=";", index_col=0, decimal=",")
@@ -115,20 +126,34 @@ def regional_monthly_gdp() -> pd.DataFrame:
 
     output = pd.concat([arg, bra], axis=1)
     output.columns = ["Argentina", "Brasil"]
-    output.rename_axis(None, inplace=True)
-    metadata._set(
-        output,
-        area="Regional",
-        currency="-",
-        inf_adj="Const.",
-        seas_adj="SA",
-        ts_type="Flujo",
-        cumperiods=1,
-    )
-    metadata._modify_multiindex(output, levels=[3], new_arrays=[["ARS", "BRL"]])
-    output = rebase(output, start_date="2010-01-01", end_date="2010-12-31")
+    output = output.rename_axis(None)
 
-    return output
+    spanish_names = output.columns
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Regional",
+        "currency": "-",
+        "inflation_adjustment": "Const.",
+        "unit": "-",
+        "seasonal_adjustment": "Seasonally adjusted",
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    for indicator, currency in zip(ids, ["ARS", "BRL"]):
+        metadata.update_indicator_metadata_value(indicator, "currency", currency)
+    dataset = Dataset(name, output, metadata).rebase("2010-01-01", "2010-12-31")
+    dataset.metadata.update_dataset_metadata({"unit": "2010=100"})
+    dataset.transformed = False
+
+    return dataset
 
 
 def regional_cpi() -> pd.DataFrame:
@@ -203,6 +228,8 @@ def regional_cpi() -> pd.DataFrame:
     for indicator, currency in zip(ids, ["ARS", "BRL"]):
         metadata.update_indicator_metadata_value(indicator, "currency", currency)
     dataset = Dataset(name, output, metadata).rebase("2010-01-01", "2010-12-31")
+    dataset.metadata.update_dataset_metadata({"unit": "2010=100"})
+    dataset.transformed = False
 
     return dataset
 
@@ -227,33 +254,38 @@ def regional_embi_spreads() -> pd.DataFrame:
         ]
     )
     output.index = pd.to_datetime(output.index)
-    output = output.apply(pd.to_numeric, errors="coerce")
-    output.rename_axis(None, inplace=True)
+    output = output.apply(pd.to_numeric, errors="coerce").sort_index()
+    output = output.rename_axis(None)
 
-    metadata._set(
-        output,
-        area="Regional",
-        currency="USD",
-        inf_adj="No",
-        seas_adj="NSA",
-        unit="PBS",
-        ts_type="-",
-        cumperiods=1,
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Regional",
+        "currency": "USD",
+        "inflation_adjustment": None,
+        "unit": "Bps",
+        "seasonal_adjustment": None,
+        "frequency": "D",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
 
-    return output
+    return dataset
 
 
-def regional_embi_yields(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+def regional_embi_yields(*args, **kwargs) -> pd.DataFrame:
     """Get EMBI yields for Argentina, Brazil and the EMBI Global.
 
     Yields are calculated by adding EMBI spreads to the 10-year US Treasury
     bond rate.
-
-    Parameters
-    ----------
-    pipeline : econuy.core.Pipeline or None, default None
-        An instance of the econuy Pipeline class.
 
     Returns
     -------
@@ -263,36 +295,50 @@ def regional_embi_yields(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    if pipeline is None:
-        pipeline = Pipeline()
+    if FRED_API_KEY is None:
+        raise ValueError(
+            "FRED_API_KEY not found. Get one at https://fredaccount.stlouisfed.org/apikeys and set it as an environment variable."
+        )
 
-    treasuries = pd.read_csv(
-        sources["treasury"].format(timestamp=dt.datetime.now().timestamp().__round__()),
-        usecols=[0, 4],
-        index_col=0,
-    )
+    r = httpx.get(sources["treasury"].format(FRED_API_KEY))
+    treasuries = pd.DataFrame.from_records(r.json()["observations"]).set_index("date")[
+        ["value"]
+    ]
     treasuries.index = pd.to_datetime(treasuries.index)
-    pipeline.get("regional_embi_spreads")
-    spreads = pipeline.dataset
+    treasuries["value"] = pd.to_numeric(
+        treasuries["value"], errors="coerce"
+    ).interpolate()
+
+    spreads = load_dataset("regional_embi_spreads", *args, **kwargs).to_named()
 
     treasuries = treasuries.reindex(spreads.index).interpolate(
         method="linear", limit_direction="forward"
     )
     output = spreads.div(100).add(treasuries.squeeze(), axis=0)
-    output.rename_axis(None, inplace=True)
+    output = output.rename_axis(None)
 
-    metadata._set(
-        output,
-        area="Regional",
-        currency="USD",
-        inf_adj="No",
-        seas_adj="NSA",
-        unit="Tasa",
-        ts_type="-",
-        cumperiods=1,
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Regional",
+        "currency": "USD",
+        "inflation_adjustment": None,
+        "unit": "Rate",
+        "seasonal_adjustment": None,
+        "frequency": "D",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
 
-    return output
+    return dataset
 
 
 def regional_nxr() -> pd.DataFrame:
@@ -387,70 +433,81 @@ def regional_policy_rates() -> pd.DataFrame:
         method="linear", limit_area="inside"
     )
     output.index = pd.to_datetime(output.index)
-    output.rename_axis(None, inplace=True)
+    output = output.rename_axis(None)
 
-    metadata._set(
-        output,
-        area="Regional",
-        currency="-",
-        inf_adj="No",
-        seas_adj="NSA",
-        unit="Tasa",
-        ts_type="-",
-        cumperiods=1,
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Regional",
+        "currency": "-",
+        "inflation_adjustment": None,
+        "unit": "Rate",
+        "seasonal_adjustment": None,
+        "frequency": "D",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
-    metadata._modify_multiindex(output, levels=[3], new_arrays=[["ARS", "BRL"]])
+    for indicator, currency in zip(ids, ["ARS", "BRL"]):
+        metadata.update_indicator_metadata_value(indicator, "currency", currency)
+    dataset = Dataset(name, output, metadata)
 
-    return output
-
-
-def regional_stock_markets() -> pd.DataFrame:
-    """Get stock market index data in USD terms.
-
-    Indexes selected are MERVAL and BOVESPA.
-
-    Parameters
-    ----------
-    pipeline : econuy.core.Pipeline or None, default None
-        An instance of the econuy Pipeline class.
-
-    Returns
-    -------
-    Daily stock market index in USD terms: pd.DataFrame
-
-    """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
-
-    yahoo = []
-    for series in ["arg", "bra"]:
-        aux = pd.read_csv(
-            sources[series].format(timestamp=dt.datetime.now().timestamp().__round__()),
-            index_col=0,
-            usecols=[0, 4],
-            parse_dates=True,
-        )
-        aux.columns = [series]
-        yahoo.append(aux)
-    output = pd.concat(yahoo, axis=1).interpolate(method="linear", limit_area="inside")
-    output.columns = ["MERVAL", "BOVESPA"]
-    output.rename_axis(None, inplace=True)
-    metadata._set(
-        output,
-        area="Global",
-        currency="USD",
-        inf_adj="No",
-        seas_adj="NSA",
-        ts_type="-",
-        cumperiods=1,
-    )
-    metadata._modify_multiindex(output, levels=[3], new_arrays=[["ARS", "BRL"]])
-    output = rebase(output, start_date="2019-01-02")
-
-    return output
+    return dataset
 
 
-def regional_rxr(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+# def regional_stock_markets() -> pd.DataFrame:
+#     """Get stock market index data in USD terms.
+
+#     Indexes selected are MERVAL and BOVESPA.
+
+#     Parameters
+#     ----------
+#     pipeline : econuy.core.Pipeline or None, default None
+#         An instance of the econuy Pipeline class.
+
+#     Returns
+#     -------
+#     Daily stock market index in USD terms: pd.DataFrame
+
+#     """
+#     name = get_name_from_function()
+#     sources = get_download_sources(name)
+
+#     yahoo = []
+#     for series in ["arg", "bra"]:
+#         aux = pd.read_csv(
+#             sources[series].format(timestamp=dt.datetime.now().timestamp().__round__()),
+#             index_col=0,
+#             usecols=[0, 4],
+#             parse_dates=True,
+#         )
+#         aux.columns = [series]
+#         yahoo.append(aux)
+#     output = pd.concat(yahoo, axis=1).interpolate(method="linear", limit_area="inside")
+#     output.columns = ["MERVAL", "BOVESPA"]
+#     output.rename_axis(None, inplace=True)
+#     metadata._set(
+#         output,
+#         area="Global",
+#         currency="USD",
+#         inf_adj="No",
+#         seas_adj="NSA",
+#         ts_type="-",
+#         cumperiods=1,
+#     )
+#     metadata._modify_multiindex(output, levels=[3], new_arrays=[["ARS", "BRL"]])
+#     output = rebase(output, start_date="2019-01-02")
+
+#     return output
+
+
+def regional_rxr(*args, **kwargs) -> pd.DataFrame:
     """Get real exchange rates vis-á-vis the US dollar for Argentina and Brasil .
 
     Returns
@@ -458,32 +515,42 @@ def regional_rxr(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     Monthly real exchange rate : pd.DataFrame
 
     """
-    if pipeline is None:
-        pipeline = Pipeline()
-
-    proc = _ifs(pipeline=pipeline)
+    name = get_name_from_function()
+    proc = _ifs(*args, **kwargs)
 
     output = pd.DataFrame()
     output["Argentina"] = (
         proc["Argentina - oficial"] * proc["US.PCPI_IX"] / proc["ARG CPI"]
     )
     output["Brasil"] = proc["Brasil"] * proc["US.PCPI_IX"] / proc["BRA CPI"]
-    output.rename_axis(None, inplace=True)
-    metadata._set(
-        output,
-        area="Regional",
-        currency="-",
-        inf_adj="-",
-        seas_adj="NSA",
-        ts_type="-",
-        cumperiods=1,
-    )
-    metadata._modify_multiindex(output, levels=[3], new_arrays=[["ARS/USD", "BRL/USD"]])
-    output = rebase(output, start_date="2019-01-01", end_date="2019-01-31").dropna(
-        how="all"
-    )
+    output = output.rename_axis(None).dropna(how="all")
 
-    return output
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Regional",
+        "currency": "USD",
+        "inflation_adjustment": None,
+        "unit": "-",
+        "seasonal_adjustment": None,
+        "frequency": "D",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    for indicator, unit in zip(ids, ["ARS/USD", "BRL/USD"]):
+        metadata.update_indicator_metadata_value(indicator, "unit", unit)
+    dataset = Dataset(name, output, metadata).rebase("2019-01-01", "2019-01-31")
+    dataset.metadata.update_dataset_metadata({"unit": "2019-01=100"})
+    dataset.transformed = False
+
+    return dataset
 
 
 def _ifs(*args, **kwargs) -> pd.DataFrame:
@@ -503,8 +570,7 @@ def _ifs(*args, **kwargs) -> pd.DataFrame:
             base_url = (
                 f"{url_}.{country}.{indicator}.{url_extra}{dt.datetime.now().year}"
             )
-            print(base_url)
-            r_json = httpx.get(base_url).json()
+            r_json = httpx.get(base_url, timeout=30).json()
             data = r_json["CompactData"]["DataSet"]["Series"]["Obs"]
             try:
                 data = pd.DataFrame(data)

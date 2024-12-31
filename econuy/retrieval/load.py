@@ -3,14 +3,14 @@ import datetime as dt
 import inspect
 from typing import Union
 from pathlib import Path
-from opnieuw import retry
 from urllib.error import URLError
 from json.decoder import JSONDecodeError
 
 import pandas as pd
+from httpx import ReadTimeout
+from opnieuw import retry
 
 from econuy.utils.operations import DATASETS, read_dataset, get_data_dir
-
 from econuy.base import Dataset
 
 
@@ -18,7 +18,7 @@ OUTDATED_DELTA_THRESHOLD = dt.timedelta(days=1)  # TODO: Use an env var or confi
 
 
 @retry(
-    retry_on_exceptions=(ConnectionError, URLError, JSONDecodeError),
+    retry_on_exceptions=(ConnectionError, URLError, JSONDecodeError, ReadTimeout),
     max_calls_total=4,
     retry_window_after_first_call_in_seconds=30,
 )
@@ -26,7 +26,7 @@ def load_dataset(
     name: str,
     data_dir: Union[str, Path, None] = None,
     skip_cache: bool = False,
-    safe_overwrite: bool = True,
+    force_overwrite: bool = False,
 ) -> Dataset:
     data_dir = data_dir or get_data_dir()
     data_dir = Path(data_dir)
@@ -55,11 +55,11 @@ def load_dataset(
     signature = inspect.signature(dataset_retriever)
     parameters = signature.parameters
     if parameters:
-        dataset = dataset_retriever(data_dir, skip_cache, safe_overwrite)
+        dataset = dataset_retriever(data_dir, skip_cache, force_overwrite)
     else:
         dataset = dataset_retriever()
 
-    if safe_overwrite:
+    if not force_overwrite:
         existing_dataset = read_dataset(name, data_dir)
         if existing_dataset is not None:
             try:
