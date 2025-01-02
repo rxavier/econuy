@@ -90,15 +90,25 @@ def income_capita() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output.rename_axis(None, inplace=True)
 
-    metadata._set(
-        output,
-        area="Ingresos",
-        currency="UYU",
-        inf_adj="No",
-        unit="Pesos",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
-    )
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
 
-    return output
+    base_metadata = {
+        "area": "Income and expenditure",
+        "currency": "UYU",
+        "inflation_adjustment": None,
+        "unit": "Pesos",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Flow",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
