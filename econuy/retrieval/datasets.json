@@ -1653,13 +1653,13 @@
     "description_en": "Real GDP of the United States, Europe, Japan and China (Mar-47, Q)",
     "area": "global",
     "custom": true,
-    "disabled": false,
+    "disabled": true,
     "auxiliary": false,
     "function": "global_.global_gdp",
     "sources": {
       "downloads": {
         "fred": "https://api.stlouisfed.org/fred/series/observations?series_id=",
-        "chn_oecd": "https://stats.oecd.org/SDMX-JSON/data/QNA/CHN.B1_GE.GYSA+GPSA.Q/all?startTime=1960-Q1&endTime=",
+        "chn_oecd": "https://sdmx.oecd.org/public/rest/data/OECD.SDD.NAD,DSD_NAMAIN1@DF_QNA_EXPENDITURE_GROWTH_G20,1.1/Q..CHN...B1GQ......GY+G1.?format=csv&startPeriod=1960-Q1&endPeriod={}&dimensionAtObservation=AllDimensions",
         "chn_obs": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/manual_data/china_gdp_constant_q.csv"
       },
       "direct": [],
@@ -1676,7 +1676,7 @@
     "description_en": "Stock markets of the United States, Europe, Japan and China (30-Dec-27, D)",
     "area": "global",
     "custom": true,
-    "disabled": false,
+    "disabled": true,
     "auxiliary": false,
     "function": "global_.global_stock_markets",
     "sources": {
@@ -1701,7 +1701,7 @@
     "description_en": "Monetary policy interest rates of the United States, Eurozone, Japan and China (01-Jan-46, D)",
     "area": "global",
     "custom": true,
-    "disabled": false,
+    "disabled": true,
     "auxiliary": false,
     "function": "global_.global_policy_rates",
     "sources": {
@@ -1727,7 +1727,7 @@
     "description_en": "Exchange rates of the United States, Eurozone, Japan and China (04-Jan-71, D)",
     "area": "global",
     "custom": true,
-    "disabled": false,
+    "disabled": true,
     "auxiliary": false,
     "function": "global_.global_nxr",
     "sources": {

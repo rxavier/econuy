@@ -7,7 +7,7 @@ from os import path
 
 import pandas as pd
 import httpx
-from pandas.tseries.offsets import MonthEnd
+from pandas.tseries.offsets import MonthEnd, QuarterEnd
 from dotenv import load_dotenv
 
 from econuy.transform import decompose, rebase
@@ -38,20 +38,15 @@ def global_gdp() -> pd.DataFrame:
         )
 
     chn_y = dt.datetime.now().year + 1
-    chn_r = httpx.get(f"{sources['chn_oecd']}{chn_y}-Q4")
-    chn_json = chn_r.json()
-    chn_datasets = []
-    for dataset, start in zip(["0", "1"], ["2011-03-31", "1993-03-31"]):
-        raw = chn_json["dataSets"][0]["series"][f"0:0:{dataset}:0"]["observations"]
-        values = [x[0] for x in raw.values()]
-        df = pd.DataFrame(
-            data=values,
-            index=pd.date_range(start=start, freq="QE-DEC", periods=len(values)),
-            columns=["China"],
-        )
-        chn_datasets.append(df)
-    chn_qoq = chn_datasets[0]
-    chn_yoy = chn_datasets[1]
+    chn_r = httpx.get(sources['chn_oecd'].format(f"{chn_y}-Q4"))
+    chn_datasets = (pd.read_csv(BytesIO(chn_r.content))
+                    [["TIME_PERIOD", "TRANSFORMATION", "OBS_VALUE"]]
+                    .pivot(index="TIME_PERIOD", columns="TRANSFORMATION", values="OBS_VALUE")
+                    .rename_axis(None)
+                    .rename_axis(None, axis=1))
+    chn_datasets.index = pd.to_datetime(chn_datasets.index, format="mixed") + QuarterEnd(0)
+    chn_qoq = chn_datasets.iloc[:, [0]]
+    chn_yoy = chn_datasets.iloc[:, [1]]
     chn_obs = pd.read_csv(
         sources["chn_obs"], index_col=0, parse_dates=[0], usecols=[0, 1]
     )
