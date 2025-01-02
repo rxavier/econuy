@@ -1,30 +1,28 @@
-from typing import Optional
 
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
-from econuy import transform
-from econuy.core import Pipeline
-from econuy.utils import metadata
+from econuy.base import Dataset, DatasetMetadata
+from econuy import load_dataset
 from econuy.utils.operations import get_name_from_function, get_download_sources
 
 
-def labor_rates() -> pd.DataFrame:
+def labor_rates() -> Dataset:
     """Get labor market data (LFPR, employment and unemployment).
 
     Returns
     -------
-    Monthly participation, employment and unemployment rates : pd.DataFrame
+    Monthly participation, employment and unemployment rates : Dataset
 
     """
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    labor_raw = pd.read_excel(sources["main"], skiprows=7).dropna(axis=0, thresh=2)
-    labor = labor_raw[~labor_raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
-    labor.index = pd.date_range(start="2006-01-31", periods=len(labor), freq="ME")
-    labor = labor.drop(columns="Unnamed: 0")
-    labor.columns = [
+    raw = pd.read_excel(sources["main"], skiprows=7).dropna(axis=0, thresh=2)
+    output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
+    output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
+    output = output.drop(columns="Unnamed: 0")
+    output.columns = [
         "Tasa de actividad: total",
         "Tasa de actividad: hombres",
         "Tasa de actividad: mujeres",
@@ -36,29 +34,39 @@ def labor_rates() -> pd.DataFrame:
         "Tasa de desempleo: mujeres",
     ]
 
-    labor = labor.apply(pd.to_numeric, errors="coerce")
-    labor.rename_axis(None, inplace=True)
+    output = output.apply(pd.to_numeric, errors="coerce")
+    output = output.rename_axis(None)
 
-    metadata._set(
-        labor,
-        area="Mercado laboral",
-        currency="-",
-        inf_adj="No",
-        unit="Tasa",
-        seas_adj="NSA",
-        ts_type="-",
-        cumperiods=1,
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Labor market",
+        "currency": None,
+        "inflation_adjustment": None,
+        "unit": "Rate",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
 
-    return labor
+    return dataset
 
 
-def nominal_wages() -> pd.DataFrame:
+def nominal_wages() -> Dataset:
     """Get nominal general, public and private sector wages data
 
     Returns
     -------
-    Monthly wages separated by public and private sector : pd.DataFrame
+    Monthly wages separated by public and private sector : Dataset
 
     """
     name = get_name_from_function()
@@ -68,36 +76,46 @@ def nominal_wages() -> pd.DataFrame:
     current = pd.read_excel(sources["current"], skiprows=8, usecols="A,C:D")
     historical = historical.dropna(how="any").set_index("Unnamed: 0")
     current = current.dropna(how="any").set_index("Unnamed: 0")
-    wages = pd.concat([historical, current], axis=1)
-    wages.index = wages.index + MonthEnd(1)
-    wages.columns = [
+    output = pd.concat([historical, current], axis=1)
+    output.index = output.index + MonthEnd(1)
+    output.columns = [
         "Índice medio de salarios",
         "Índice medio de salarios privados",
         "Índice medio de salarios públicos",
     ]
-    wages = wages.apply(pd.to_numeric, errors="coerce")
-    wages.rename_axis(None, inplace=True)
+    output = output.apply(pd.to_numeric, errors="coerce")
+    output = output.rename_axis(None)
 
-    metadata._set(
-        wages,
-        area="Mercado laboral",
-        currency="UYU",
-        inf_adj="No",
-        unit="2008-07=100",
-        seas_adj="NSA",
-        ts_type="-",
-        cumperiods=1,
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Labor market",
+        "currency": "UYU",
+        "inflation_adjustment": None,
+        "unit": "2008-07=100",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
 
-    return wages
+    return dataset
 
 
-def hours_worked() -> pd.DataFrame:
+def hours_worked() -> Dataset:
     """Get average hours worked data.
 
     Returns
     -------
-    Monthly hours worked : pd.DataFrame
+    Monthly hours worked : Dataset
 
     """
     name = get_name_from_function()
@@ -127,44 +145,46 @@ def hours_worked() -> pd.DataFrame:
         "Agro, forestación, pesca y minería",
     ]
 
-    output.rename_axis(None, inplace=True)
+    output = output.rename_axis(None)
 
-    metadata._set(
-        output,
-        area="Mercado laboral",
-        currency="-",
-        inf_adj="No",
-        unit="Horas por semana",
-        seas_adj="NSA",
-        ts_type="Stock",
-        cumperiods=1,
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Labor market",
+        "currency": None,
+        "inflation_adjustment": None,
+        "unit": "Hours per week",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
 
-    return output
+    return dataset
 
 
-def labor_rates_persons(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+def labor_rates_persons(*args, **kwargs) -> Dataset:
     """
     Get labor data, both rates and persons. Extends national data between 1991
     and 2005 with data for jurisdictions with more than 5,000 inhabitants.
 
-    Parameters
-    ----------
-    pipeline : econuy.core.Pipeline or None, default None
-        An instance of the econuy Pipeline class.
-
     Returns
     -------
-    Labor market data : pd.DataFrame
+    Labor market data : Dataset
 
     """
     name = get_name_from_function()
     sources = get_download_sources(name)
-    if pipeline is None:
-        pipeline = Pipeline()
 
-    pipeline.get("labor_rates")
-    rates = pipeline.dataset
+    rates = load_dataset("labor_rates", *args, **kwargs).to_named()
     rates = rates.loc[
         :,
         [
@@ -176,14 +196,12 @@ def labor_rates_persons(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     working_age = pd.read_excel(
         sources["population"], skiprows=7, index_col=0, nrows=92
     ).dropna(how="all")
-    rates.columns = rates.columns.set_levels(
-        rates.columns.levels[0].str.replace(": total", ""), level=0
-    )
+    rates.columns = rates.columns.str.replace(": total", "")
 
     ages = list(range(14, 90)) + ["90 y más"]
     working_age = working_age.loc[ages].sum()
     working_age.index = pd.date_range(
-        start="1996-06-30", end="2050-06-30", freq="A-JUN"
+        start="1996-06-30", end="2050-06-30", freq="YE-JUN"
     )
     monthly_working_age = working_age.resample("ME").interpolate("linear")
     monthly_working_age = monthly_working_age.reindex(rates.index)
@@ -191,58 +209,73 @@ def labor_rates_persons(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
     persons["Desempleados"] = rates.iloc[:, 2].div(100).mul(persons.iloc[:, 0])
     persons.columns = ["Activos", "Empleados", "Desempleados"]
 
-    metadata._set(
-        persons,
-        area="Mercado laboral",
-        currency="-",
-        inf_adj="No",
-        unit="Personas",
-        seas_adj="NSA",
-        ts_type="-",
-        cumperiods=1,
-    )
-
     output = pd.concat([rates, persons], axis=1)
-    output.rename_axis(None, inplace=True)
+    output = output.rename_axis(None)
 
-    return output
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Labor market",
+        "currency": None,
+        "inflation_adjustment": None,
+        "unit": "Rate",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    for indicator, unit in zip(ids[-3:], ["Persons", "Persons", "Persons"]):
+        metadata.update_indicator_metadata_value(indicator, "unit", unit)
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
 
 
-def real_wages(pipeline: Optional[Pipeline] = None) -> pd.DataFrame:
+def real_wages(*args, **kwargs) -> Dataset:
     """
     Get real wages.
 
-    Parameters
-    ----------
-    pipeline : econuy.core.Pipeline or None, default None
-        An instance of the econuy Pipeline class.
-
     Returns
     -------
-    Real wages data : pd.DataFrame
+    Real wages data : Dataset
 
     """
-    if pipeline is None:
-        pipeline = Pipeline()
+    name = get_name_from_function()
 
-    pipeline.get("nominal_wages")
-    wages = pipeline.dataset
-    wages.columns = [
+    nominal_wages = load_dataset("nominal_wages", *args, **kwargs)
+    output = nominal_wages.convert("real").rebase("2008-07-31").to_named()
+    output.columns = [
         "Índice medio de salarios reales",
         "Índice medio de salarios reales privados",
         "Índice medio de salarios reales públicos",
     ]
-    metadata._set(
-        wages,
-        area="Mercado laboral",
-        currency="UYU",
-        inf_adj="Sí",
-        seas_adj="NSA",
-        ts_type="-",
-        cumperiods=1,
-    )
-    output = transform.convert_real(wages, pipeline=pipeline)
-    output = transform.rebase(output, start_date="2008-07-31")
-    output.rename_axis(None, inplace=True)
 
-    return output
+    spanish_names = output.columns
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Labor market",
+        "currency": "UYU",
+        "inflation_adjustment": "Const.",
+        "unit": "2008-07=100",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset

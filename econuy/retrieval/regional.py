@@ -23,7 +23,7 @@ load_dotenv()
 FRED_API_KEY = os.environ.get("FRED_API_KEY")
 
 
-def regional_gdp() -> pd.DataFrame:
+def regional_gdp() -> Dataset:
     """Get seasonally adjusted real GDP for Argentina and Brazil.
 
     This function requires a Selenium webdriver. It can be provided in the
@@ -36,7 +36,7 @@ def regional_gdp() -> pd.DataFrame:
 
     Returns
     -------
-    Quarterly real GDP : pd.DataFrame
+    Quarterly real GDP : Dataset
 
     """
     name = get_name_from_function()
@@ -105,7 +105,7 @@ def regional_gdp() -> pd.DataFrame:
     return dataset
 
 
-def regional_monthly_gdp() -> pd.DataFrame:
+def regional_monthly_gdp() -> Dataset:
     """Get monthly GDP data.
 
     Countries/aggregates selected are Argentina and Brazil.
@@ -161,7 +161,7 @@ def regional_cpi() -> pd.DataFrame:
 
     Returns
     -------
-    Monthly CPI : pd.DataFrame
+    Monthly CPI : Dataset
 
     """
     name = get_name_from_function()
@@ -234,12 +234,12 @@ def regional_cpi() -> pd.DataFrame:
     return dataset
 
 
-def regional_embi_spreads() -> pd.DataFrame:
+def regional_embi_spreads() -> Dataset:
     """Get EMBI spread for Argentina, Brazil and the EMBI Global.
 
     Returns
     -------
-    Daily 10-year government bond spreads : pd.DataFrame
+    Daily 10-year government bond spreads : Dataset
 
     """
     name = get_name_from_function()
@@ -281,7 +281,7 @@ def regional_embi_spreads() -> pd.DataFrame:
     return dataset
 
 
-def regional_embi_yields(*args, **kwargs) -> pd.DataFrame:
+def regional_embi_yields(*args, **kwargs) -> Dataset:
     """Get EMBI yields for Argentina, Brazil and the EMBI Global.
 
     Yields are calculated by adding EMBI spreads to the 10-year US Treasury
@@ -289,7 +289,7 @@ def regional_embi_yields(*args, **kwargs) -> pd.DataFrame:
 
     Returns
     -------
-    Daily 10-year government bonds interest rates : pd.DataFrame
+    Daily 10-year government bonds interest rates : Dataset
 
     """
     name = get_name_from_function()
@@ -341,12 +341,12 @@ def regional_embi_yields(*args, **kwargs) -> pd.DataFrame:
     return dataset
 
 
-def regional_nxr() -> pd.DataFrame:
+def regional_nxr() -> Dataset:
     """Get USDARS and USDBRL.
 
     Returns
     -------
-    Daily exchange rates : pd.DataFrame
+    Daily exchange rates : Dataset
 
     """
     name = get_name_from_function()
@@ -406,14 +406,14 @@ def regional_nxr() -> pd.DataFrame:
     return dataset
 
 
-def regional_policy_rates() -> pd.DataFrame:
+def regional_policy_rates() -> Dataset:
     """Get central bank policy interest rates data.
 
     Countries/aggregates selected are Argentina and Brazil.
 
     Returns
     -------
-    Daily policy interest rates : pd.DataFrame
+    Daily policy interest rates : Dataset
 
     """
     name = get_name_from_function()
@@ -507,12 +507,12 @@ def regional_policy_rates() -> pd.DataFrame:
 #     return output
 
 
-def regional_rxr(*args, **kwargs) -> pd.DataFrame:
+def regional_rxr(*args, **kwargs) -> Dataset:
     """Get real exchange rates vis-á-vis the US dollar for Argentina and Brasil .
 
     Returns
     -------
-    Monthly real exchange rate : pd.DataFrame
+    Monthly real exchange rate : Dataset
 
     """
     name = get_name_from_function()
