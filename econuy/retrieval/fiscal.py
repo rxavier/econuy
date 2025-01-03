@@ -1,7 +1,5 @@
 import datetime as dt
 import re
-from io import BytesIO
-from pathlib import Path
 from urllib.error import URLError
 
 import pandas as pd
@@ -10,9 +8,9 @@ from pandas.tseries.offsets import MonthEnd
 
 from econuy import load_dataset
 from econuy.base import Dataset, DatasetMetadata
-from econuy.utils import get_project_root
 from econuy.utils.extras import FISCAL_SHEETS, taxes_columns
 from econuy.utils.operations import get_name_from_function, get_download_sources
+from econuy.utils.retrieval import get_with_ssl_context
 
 
 def _get_fiscal_balances(dataset_name: str) -> Dataset:
@@ -254,9 +252,8 @@ def _get_public_debt(dataset_name: str) -> Dataset:
         xls = pd.ExcelFile(sources["main"])
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = httpx.get(sources["main"], verify=certs_path)
-            xls = pd.ExcelFile(BytesIO(r.content))
+            r_bytes = get_with_ssl_context("bcu", sources["main"])
+            xls = pd.ExcelFile(r_bytes)
 
     if dataset_name == "public_debt_global_public_sector":
         gps_raw = pd.read_excel(

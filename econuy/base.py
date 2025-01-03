@@ -31,16 +31,6 @@ class DatasetConfig:
         return json.dumps(self.__dict__, indent=4)
 
 
-def cast_metadata(
-    indicator_metadata: dict, indicator_ids: list, full_names: list
-) -> dict:
-    # TODO: Improve this hack
-    return {
-        name: {"names": full_name} | indicator_metadata
-        for name, full_name in zip(indicator_ids, full_names)
-    }
-
-
 class DatasetMetadata:
     def __init__(
         self,
@@ -240,6 +230,16 @@ class DatasetMetadata:
             json.dump(for_json, f, indent=4)
         return
 
+    @staticmethod
+    def cast_metadata(
+        indicator_metadata: dict, indicator_ids: list, full_names: list
+    ) -> dict:
+        # TODO: Improve this hack
+        return {
+            name: {"names": full_name} | indicator_metadata
+            for name, full_name in zip(indicator_ids, full_names)
+        }
+
     @classmethod
     def from_cast(
         cls, name: str, base_metadata: dict, indicator_ids: list, indicator_names: list
@@ -261,7 +261,7 @@ class DatasetMetadata:
         Metadata
             The created metadata instance.
         """
-        indicator_metadata = cast_metadata(
+        indicator_metadata = cls.cast_metadata(
             base_metadata, indicator_ids, indicator_names
         )
         return cls(name, indicator_metadata)

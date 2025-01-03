@@ -2,7 +2,6 @@ import datetime as dt
 import re
 import tempfile
 import zipfile
-from pathlib import Path
 from io import BytesIO
 from os import path
 from urllib.error import URLError
@@ -14,9 +13,9 @@ from pandas.tseries.offsets import MonthEnd, YearEnd
 from econuy import load_dataset
 from econuy.base import Dataset, DatasetMetadata
 from econuy.retrieval import regional
-from econuy.utils import get_project_root
 from econuy.utils.operations import get_download_sources, get_name_from_function
 from econuy.utils.extras import TRADE_METADATA, BOP_COLUMNS
+from econuy.utils.retrieval import get_with_ssl_context
 
 
 def _get_trade(dataset_name: str) -> Dataset:
@@ -27,9 +26,8 @@ def _get_trade(dataset_name: str) -> Dataset:
         xls = pd.ExcelFile(sources["main"])
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = httpx.get(sources["main"], verify=certs_path)
-            xls = pd.ExcelFile(BytesIO(r.content))
+            r_bytes = get_with_ssl_context("bcu", sources["main"])
+            xls = pd.ExcelFile(r_bytes)
     sheets = []
     start_col = meta["start_col"]
     for sheet in xls.sheet_names:
@@ -386,10 +384,9 @@ def commodity_prices() -> Dataset:
         ).dropna(how="all")
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certificate = Path(get_project_root(), "utils", "files", "inac_certs.pem")
-            r = httpx.get(sources["beef"], verify=certificate)
+            r_bytes = get_with_ssl_context("inac", sources["beef"])
             raw_beef = pd.read_excel(
-                BytesIO(r.content), header=4, index_col=0, thousands="."
+                r_bytes, header=4, index_col=0, thousands="."
             ).dropna(how="all")
         else:
             raise err
@@ -606,11 +603,8 @@ def rxr() -> Dataset:
         raw = pd.read_excel(sources["main"], skiprows=8, usecols="B:N", index_col=0)
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = httpx.get(sources["main"], verify=certs_path)
-            raw = pd.read_excel(
-                BytesIO(r.content), skiprows=9, usecols="B:N", index_col=0
-            )
+            r_bytes = get_with_ssl_context("bcu", sources["main"])
+            raw = pd.read_excel(r_bytes, skiprows=9, usecols="B:N", index_col=0)
     output = raw.dropna(how="any")
     output.columns = [
         "Global",
@@ -735,11 +729,10 @@ def balance_of_payments() -> Dataset:
         )
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = httpx.get(sources["main"], verify=certs_path)
+            r_bytes = get_with_ssl_context("bcu", sources["main"])
             raw = (
                 pd.read_excel(
-                    BytesIO(r.content),
+                    r_bytes,
                     skiprows=7,
                     index_col=0,
                     sheet_name="Cuadro Nº 1",
@@ -891,10 +884,9 @@ def international_reserves() -> Dataset:
         )
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = httpx.get(sources["main"], verify=certs_path)
+            r_bytes = get_with_ssl_context("bcu", sources["main"])
             raw = pd.read_excel(
-                BytesIO(r.content),
+                r_bytes,
                 usecols="D:J",
                 index_col=0,
                 skiprows=5,

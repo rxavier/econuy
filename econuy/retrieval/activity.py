@@ -2,7 +2,6 @@ import datetime as dt
 import re
 import tempfile
 import time
-from io import BytesIO
 from pathlib import Path
 from os import listdir, path
 
@@ -15,11 +14,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from econuy.utils import get_project_root
 from econuy.utils.operations import get_download_sources, get_name_from_function
 from econuy.utils.chromedriver import _build
 from econuy.base import Dataset, DatasetMetadata
 from econuy import load_dataset
+from econuy.utils.retrieval import get_with_ssl_context
 
 
 def monthly_gdp() -> Dataset:
@@ -97,9 +96,8 @@ def national_accounts_supply_constant_nsa() -> Dataset:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-    r = httpx.get(sources["main"], verify=certs_path)
-    raw = pd.read_excel(BytesIO(r.content), skiprows=7)
+    r_bytes = get_with_ssl_context("bcu", sources["main"])
+    raw = pd.read_excel(r_bytes, skiprows=7)
     output = raw.dropna(how="all", axis=1).iloc[:, 2:].dropna(how="all").T
     output.index = pd.date_range(start="2016-03-31", freq="QE-DEC", periods=len(output))
     output = output.apply(pd.to_numeric, errors="coerce").rename_axis(None)
@@ -153,9 +151,8 @@ def national_accounts_demand_constant_nsa() -> Dataset:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-    r = httpx.get(sources["main"], verify=certs_path)
-    raw = pd.read_excel(BytesIO(r.content), skiprows=7)
+    r_bytes = get_with_ssl_context("bcu", sources["main"])
+    raw = pd.read_excel(r_bytes, skiprows=7)
     output = raw.dropna(how="all", axis=1).iloc[:, 2:].dropna(how="all").T
     output.index = pd.date_range(start="2016-03-31", freq="QE-DEC", periods=len(output))
     output = output.apply(pd.to_numeric, errors="coerce").rename_axis(None)
@@ -206,9 +203,8 @@ def national_accounts_demand_current_nsa() -> Dataset:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-    r = httpx.get(sources["main"], verify=certs_path)
-    raw = pd.read_excel(BytesIO(r.content), skiprows=7)
+    r_bytes = get_with_ssl_context("bcu", sources["main"])
+    raw = pd.read_excel(r_bytes, skiprows=7)
     output = raw.dropna(how="all", axis=1).iloc[:, 2:].dropna(how="all").T
     output.index = pd.date_range(start="2016-03-31", freq="QE-DEC", periods=len(output))
     output = output.apply(pd.to_numeric, errors="coerce").rename_axis(None)
@@ -261,9 +257,8 @@ def national_accounts_supply_current_nsa() -> Dataset:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-    r = httpx.get(sources["main"], verify=certs_path)
-    raw = pd.read_excel(BytesIO(r.content), skiprows=7)
+    r_bytes = get_with_ssl_context("bcu", sources["main"])
+    raw = pd.read_excel(r_bytes, skiprows=7)
     output = raw.dropna(how="all", axis=1).iloc[:, 2:].dropna(how="all").T
     output.index = pd.date_range(start="2016-03-31", freq="QE-DEC", periods=len(output))
     output = output.apply(pd.to_numeric, errors="coerce").rename_axis(None)
@@ -316,9 +311,9 @@ def gdp_index_constant_sa() -> Dataset:
     """
     name = get_name_from_function()
     sources = get_download_sources(name)
-    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-    r = httpx.get(sources["main"], verify=certs_path)
-    raw = pd.read_excel(BytesIO(r.content), skiprows=7)
+
+    r_bytes = get_with_ssl_context("bcu", sources["main"])
+    raw = pd.read_excel(r_bytes, skiprows=7)
     output = raw.dropna(how="all", axis=1).iloc[:, 2:].dropna(how="all").T
     output.index = pd.date_range(start="2016-03-31", freq="QE-DEC", periods=len(output))
     output = output.apply(pd.to_numeric, errors="coerce").rename_axis(None)
@@ -399,9 +394,8 @@ def national_accounts_supply_constant_nsa_extended(
         "Impuestos menos subvenciones",
         "Producto bruto interno",
     ]
-    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-    r = httpx.get(sources["2005"], verify=certs_path)
-    raw_05 = pd.read_excel(BytesIO(r.content), skiprows=9)
+    r_bytes = get_with_ssl_context("bcu", sources["2005"])
+    raw_05 = pd.read_excel(r_bytes, skiprows=9)
     data_05 = (
         raw_05.dropna(how="all", axis=1)
         .iloc[:, 1:]
@@ -453,10 +447,10 @@ def national_accounts_supply_constant_nsa_extended(
         "Producto bruto interno",
     ]
     aux = aux[spanish_names]
-    r = httpx.get(sources["1983"], verify=certs_path)
+    r_bytes = get_with_ssl_context("bcu", sources["1983"])
     data_83 = (
         pd.read_excel(
-            BytesIO(r.content),
+            r_bytes,
             skiprows=10,
             nrows=8,
             index_col=1,
@@ -549,9 +543,8 @@ def national_accounts_demand_constant_nsa_extended(*args, **kwargs) -> Dataset:
         "Importaciones",
         "Producto bruto interno",
     ]
-    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-    r = httpx.get(sources["2005"], verify=certs_path)
-    raw_05 = pd.read_excel(BytesIO(r.content), skiprows=9)
+    r_bytes = get_with_ssl_context("bcu", sources["2005"])
+    raw_05 = pd.read_excel(r_bytes, skiprows=9)
     data_05 = (
         raw_05.dropna(how="all", axis=1)
         .iloc[:, 1:]
@@ -580,10 +573,10 @@ def national_accounts_demand_constant_nsa_extended(*args, **kwargs) -> Dataset:
                 / data_05.loc[next_quarter, :]
             )
 
-    r = httpx.get(sources["1983"], verify=certs_path)
+    r_bytes = get_with_ssl_context("bcu", sources["1983"])
     data_83 = (
         pd.read_excel(
-            r.content,
+            r_bytes,
             skiprows=10,
             nrows=11,
             index_col=1,
@@ -665,9 +658,8 @@ def gdp_index_constant_sa_extended(*args, **kwargs) -> Dataset:
         "Impuestos menos subvenciones",
         "Producto bruto interno",
     ]
-    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-    r = httpx.get(sources["2005"], verify=certs_path)
-    raw_05 = pd.read_excel(BytesIO(r.content), skiprows=9)
+    r_bytes = get_with_ssl_context("bcu", sources["2005"])
+    raw_05 = pd.read_excel(r_bytes, skiprows=9)
     data_05 = (
         raw_05.dropna(how="all", axis=1)
         .iloc[:, 1:]
@@ -693,10 +685,10 @@ def gdp_index_constant_sa_extended(*args, **kwargs) -> Dataset:
                 / data_05.loc[next_quarter, :]
             )
 
-    r = httpx.get(sources["1983"], verify=certs_path)
+    r_bytes = get_with_ssl_context("bcu", sources["1983"])
     data_83 = (
         pd.read_excel(
-            r.content,
+            r_bytes,
             skiprows=10,
             nrows=8,
             index_col=1,
@@ -768,9 +760,9 @@ def gdp_constant_nsa_extended(*args, **kwargs) -> Dataset:
     data_16 = data_16[["Producto bruto interno"]]
 
     names = ["Producto bruto interno"]
-    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-    r = httpx.get(sources["1997"], verify=certs_path)
-    raw_97 = pd.read_excel(BytesIO(r.content), skiprows=6)
+
+    r_bytes = get_with_ssl_context("bcu", sources["1997"])
+    raw_97 = pd.read_excel(r_bytes, skiprows=6)
     data_97 = (
         raw_97.dropna(how="all", axis=1)
         .iloc[:, 1:]
@@ -786,10 +778,10 @@ def gdp_constant_nsa_extended(*args, **kwargs) -> Dataset:
 
     aux = pd.concat([data_97, data_16], axis=0)
 
-    r = httpx.get(sources["1983"], verify=certs_path)
+    r_bytes = get_with_ssl_context("bcu", sources["1983"])
     data_83 = (
         pd.read_excel(
-            r.content,
+            r_bytes,
             skiprows=10,
             nrows=8,
             index_col=1,
@@ -860,9 +852,9 @@ def gdp_current_nsa_extended(*args, **kwargs) -> Dataset:
     data_16 = data_16[["Producto bruto interno"]]
 
     names = ["Producto bruto interno"]
-    certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-    r = httpx.get(sources["1997"], verify=certs_path)
-    raw_97 = pd.read_excel(BytesIO(r.content), skiprows=6)
+
+    r_bytes = get_with_ssl_context("bcu", sources["1997"])
+    raw_97 = pd.read_excel(r_bytes, skiprows=6)
     data_97 = (
         raw_97.dropna(how="all", axis=1)
         .iloc[:, 1:]

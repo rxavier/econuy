@@ -4,6 +4,7 @@ import tempfile
 import time
 import zipfile
 import datetime as dt
+import ssl
 from io import BytesIO
 from os import path, listdir
 
@@ -167,11 +168,12 @@ def regional_cpi() -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
+    ssl_context = ssl.create_default_context(cafile="econuy/utils/files/bcra_certs.pem")
     arg = httpx.get(
         sources["ar"].format(
             end_date=dt.datetime.now().strftime("%Y-%m-%d"),
         ),
-        verify="econuy/utils/files/bcra_certs.pem",
+        verify=ssl_context,
     )
     arg = pd.read_html(arg.content)[0]
     arg.set_index("Fecha", drop=True, inplace=True)

@@ -1,16 +1,13 @@
-import io
 from urllib.error import URLError
-from pathlib import Path
 
 import pandas as pd
-import httpx
 from pandas.tseries.offsets import MonthEnd
 
 
-from econuy.utils import get_project_root
 from econuy.utils.operations import get_name_from_function, get_download_sources
 from econuy.base import Dataset, DatasetMetadata
 from econuy import load_dataset
+from econuy.utils.retrieval import get_with_ssl_context
 
 
 def cpi() -> Dataset:
@@ -201,9 +198,8 @@ def inflation_expectations() -> Dataset:
         raw = pd.read_excel(sources["main"], skiprows=9)
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = httpx.get(sources["main"], verify=certs_path)
-            raw = pd.read_excel(io.BytesIO(r.content), skiprows=9)
+            r_bytes = get_with_ssl_context("bcu", sources["main"])
+            raw = pd.read_excel(r_bytes, skiprows=9)
     raw = raw.dropna(how="all", axis=1).dropna(thresh=4)
     mask = raw.iloc[-12:].isna().all()
     output = raw.loc[:, ~mask]

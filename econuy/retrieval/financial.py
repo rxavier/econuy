@@ -1,7 +1,6 @@
 import datetime as dt
 import re
 import time
-from pathlib import Path
 from io import BytesIO
 from typing import Optional
 from urllib.error import HTTPError, URLError
@@ -12,9 +11,10 @@ import httpx
 from pandas.tseries.offsets import MonthEnd
 from selenium.webdriver.remote.webdriver import WebDriver
 
-from econuy.utils import metadata, get_project_root
+from econuy.utils import metadata
 from econuy.utils.chromedriver import _build
 from econuy.utils.operations import get_download_sources, get_name_from_function
+from econuy.utils.retrieval import get_with_ssl_context
 
 
 def bank_credit() -> pd.DataFrame:
@@ -31,9 +31,8 @@ def bank_credit() -> pd.DataFrame:
         xls = pd.ExcelFile(sources["main"])
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = httpx.get(sources["main"], verify=certs_path)
-            xls = pd.ExcelFile(BytesIO(r.content))
+            r_bytes = get_with_ssl_context("bcu", sources["main"])
+            xls = pd.ExcelFile(r_bytes)
     tc = pd.read_excel(
         xls,
         sheet_name="TC",
@@ -121,9 +120,8 @@ def bank_deposits() -> pd.DataFrame:
         xls = pd.ExcelFile(sources["main"])
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = httpx.get(sources["main"], verify=certs_path)
-            xls = pd.ExcelFile(BytesIO(r.content))
+            r_bytes = get_with_ssl_context("bcu", sources["main"])
+            xls = pd.ExcelFile(r_bytes)
     tc = pd.read_excel(
         xls,
         sheet_name="TC",
@@ -194,9 +192,8 @@ def bank_interest_rates() -> pd.DataFrame:
         xls = pd.ExcelFile(sources["main"])
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            certs_path = Path(get_project_root(), "utils", "files", "bcu_certs.pem")
-            r = httpx.get(sources["main"], verify=certs_path)
-            xls = pd.ExcelFile(BytesIO(r.content))
+            r_bytes = get_with_ssl_context("bcu", sources["main"])
+            xls = pd.ExcelFile(r_bytes)
 
     sheets = [
         "Activas $",
