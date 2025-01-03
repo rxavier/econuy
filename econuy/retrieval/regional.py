@@ -27,14 +27,6 @@ FRED_API_KEY = os.environ.get("FRED_API_KEY")
 def regional_gdp() -> Dataset:
     """Get seasonally adjusted real GDP for Argentina and Brazil.
 
-    This function requires a Selenium webdriver. It can be provided in the
-    driver parameter, or it will attempt to configure a Chrome webdriver.
-
-    Parameters
-    ----------
-    driver : selenium.webdriver.chrome.webdriver.WebDriver, default None
-        Selenium webdriver for scraping. If None, build a Chrome webdriver.
-
     Returns
     -------
     Quarterly real GDP : Dataset

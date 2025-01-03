@@ -1,20 +1,18 @@
 import datetime as dt
 import re
 import time
-from io import BytesIO
-from typing import Optional
+from io import BytesIO, StringIO
 from urllib.error import HTTPError, URLError
 from httpx import ConnectError
 
 import pandas as pd
 import httpx
 from pandas.tseries.offsets import MonthEnd
-from selenium.webdriver.remote.webdriver import WebDriver
 
-from econuy.utils import metadata
 from econuy.utils.chromedriver import _build
 from econuy.utils.operations import get_download_sources, get_name_from_function
 from econuy.utils.retrieval import get_with_ssl_context
+from econuy.base import Dataset, DatasetMetadata
 
 
 def bank_credit() -> pd.DataFrame:
@@ -91,19 +89,30 @@ def bank_credit() -> pd.DataFrame:
     output.iloc[:, :24] = output.iloc[:, :24].div(tc, axis=0)
 
     output = output.apply(pd.to_numeric, errors="coerce")
-    output.rename_axis(None, inplace=True)
-    metadata._set(
-        output,
-        area="Sector financiero",
-        currency="USD",
-        inf_adj="No",
-        unit="Millones",
-        seas_adj="NSA",
-        ts_type="Stock",
-        cumperiods=1,
-    )
+    output = output.rename_axis(None)
 
-    return output
+    spanish_names = output.columns
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Financial market",
+        "currency": "USD",
+        "inflation_adjustment": None,
+        "unit": "Millions",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
 
 
 def bank_deposits() -> pd.DataFrame:
@@ -163,19 +172,30 @@ def bank_deposits() -> pd.DataFrame:
     ]
     output.iloc[:, :15] = output.iloc[:, :15].div(tc, axis=0)
     output = output.apply(pd.to_numeric, errors="coerce")
-    output.rename_axis(None, inplace=True)
-    metadata._set(
-        output,
-        area="Sector financiero",
-        currency="USD",
-        inf_adj="No",
-        unit="Millones",
-        seas_adj="NSA",
-        ts_type="Stock",
-        cumperiods=1,
-    )
+    output = output.rename_axis(None)
 
-    return output
+    spanish_names = output.columns
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Financial market",
+        "currency": "USD",
+        "inflation_adjustment": None,
+        "unit": "Millions",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
 
 
 def bank_interest_rates() -> pd.DataFrame:
@@ -240,65 +260,80 @@ def bank_interest_rates() -> pd.DataFrame:
     ]
 
     output = output.apply(pd.to_numeric, errors="coerce")
-    output.rename_axis(None, inplace=True)
-    metadata._set(
-        output,
-        area="Sector financiero",
-        currency="-",
-        inf_adj="-",
-        unit="Tasa",
-        seas_adj="NSA",
-        ts_type="Flujo",
-        cumperiods=1,
-    )
-    metadata._modify_multiindex(
-        output,
-        levels=[3, 4],
-        new_arrays=[
-            [
-                "UYU",
-                "UYU",
-                "UYU",
-                "UYU",
-                "UYU",
-                "UYU",
-                "USD",
-                "USD",
-                "USD",
-                "UYU",
-                "UYU",
-                "UYU",
-                "UYU",
-                "UYU",
-                "UYU",
-                "USD",
-                "USD",
-                "USD",
-            ],
-            [
-                "No",
-                "No",
-                "No",
-                "Const.",
-                "Const.",
-                "Const.",
-                "No",
-                "No",
-                "No",
-                "No",
-                "No",
-                "No",
-                "Const.",
-                "Const.",
-                "Const.",
-                "No",
-                "No",
-                "No",
-            ],
-        ],
-    )
+    output = output.rename_axis(None)
 
-    return output
+    spanish_names = output.columns
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Financial market",
+        "currency": "-",
+        "inflation_adjustment": "-",
+        "unit": "Rate",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    for indicator, currency in zip(
+        ids,
+        [
+            "UYU",
+            "UYU",
+            "UYU",
+            "UYU",
+            "UYU",
+            "UYU",
+            "USD",
+            "USD",
+            "USD",
+            "UYU",
+            "UYU",
+            "UYU",
+            "UYU",
+            "UYU",
+            "UYU",
+            "USD",
+            "USD",
+            "USD",
+        ],
+    ):
+        metadata.update_indicator_metadata_value(indicator, "currency", currency)
+    for indicator, const in zip(
+        ids,
+        [
+            None,
+            None,
+            None,
+            "Const.",
+            "Const.",
+            "Const.",
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            "Const.",
+            "Const.",
+            "Const.",
+            None,
+            None,
+            None,
+        ],
+    ):
+        metadata.update_indicator_metadata_value(
+            indicator, "inflation_adjustment", const
+        )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
 
 
 def sovereign_risk_index() -> pd.DataFrame:
@@ -344,32 +379,52 @@ def sovereign_risk_index() -> pd.DataFrame:
     output = output.apply(pd.to_numeric, errors="coerce").interpolate(
         limit_area="inside"
     )
-    output.rename_axis(None, inplace=True)
+    output = output.rename_axis(None)
 
-    metadata._set(
-        output,
-        area="Sector financiero",
-        currency="USD",
-        inf_adj="No",
-        unit="PBS",
-        seas_adj="NSA",
-        ts_type="-",
-        cumperiods=1,
+    spanish_names = output.columns
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Financial market",
+        "currency": "USD",
+        "inflation_adjustment": None,
+        "unit": "Bps",
+        "seasonal_adjustment": None,
+        "frequency": "D",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
 
-    return output
+    return dataset
 
 
-def call_rate(driver: Optional[WebDriver] = None) -> pd.DataFrame:
+def _bypass_bevsa_disclaimer_maybe(driver, url: str):
+    driver.get(url)
+    if "Disclaimer.aspx" in driver.current_url:
+        checkbox = driver.find_element(
+            by="id", value="ContentPlaceHolder1_chkAcceptTerms"
+        )
+        checkbox.click()
+        time.sleep(2)
+
+        accept_button = driver.find_element(
+            by="id", value="ContentPlaceHolder1_btnContinue"
+        )
+        accept_button.click()
+        time.sleep(2)
+
+        driver.get(url)
+
+
+def call_rate() -> pd.DataFrame:
     """Get 1-day call interest rate data.
-
-    This function requires a Selenium webdriver. It can be provided in the
-    driver parameter, or it will attempt to configure a Chrome webdriver.
-
-    Parameters
-    ----------
-    driver : selenium.webdriver.chrome.webdriver.WebDriver, default None
-        Selenium webdriver for scraping. If None, build a Chrome webdriver.
 
     Returns
     -------
@@ -379,9 +434,9 @@ def call_rate(driver: Optional[WebDriver] = None) -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    if driver is None:
-        driver = _build()
-    driver.get(sources["main"])
+    driver = _build()
+    _bypass_bevsa_disclaimer_maybe(driver, sources["main"])
+
     start = driver.find_element(
         by="name", value="ctl00$ContentPlaceHolder1$dateDesde$dateInput"
     )
@@ -395,45 +450,48 @@ def call_rate(driver: Optional[WebDriver] = None) -> pd.DataFrame:
     submit = driver.find_element(by="id", value="ContentPlaceHolder1_LinkFiltrar")
     submit.click()
     time.sleep(5)
-    tables = pd.read_html(driver.page_source, decimal=",", thousands=".")
+    tables = pd.read_html(StringIO(driver.page_source), decimal=",", thousands=".")
     driver.quit()
+
     raw = tables[8].iloc[:, :-2]
-    call = raw.set_index("FECHA")
-    call.index = pd.to_datetime(call.index, format="%d/%m/%Y")
-    call.sort_index(inplace=True)
-    call.columns = [
+    output = raw.set_index("FECHA")
+    output.index = pd.to_datetime(output.index, format="%d/%m/%Y")
+    output.columns = [
         "Tasa call a 1 día: Promedio",
         "Tasa call a 1 día: Máximo",
         "Tasa call a 1 día: Mínimo",
     ]
-    call = call.apply(pd.to_numeric, errors="coerce")
-    call.rename_axis(None, inplace=True)
+    output = output.sort_index()
+    output = output.apply(pd.to_numeric, errors="coerce")
+    output = output.rename_axis(None)
 
-    metadata._set(
-        call,
-        area="Sector financiero",
-        currency="UYU",
-        inf_adj="No",
-        unit="Tasa",
-        seas_adj="NSA",
-        ts_type="-",
-        cumperiods=1,
+    spanish_names = output.columns
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Financial market",
+        "currency": "UYU",
+        "inflation_adjustment": None,
+        "unit": "Rate",
+        "seasonal_adjustment": None,
+        "frequency": "D",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
     )
+    dataset = Dataset(name, output, metadata)
 
-    return call
+    return dataset
 
 
-def sovereign_bond_yields(driver: Optional[WebDriver] = None) -> pd.DataFrame:
+def sovereign_bond_yields() -> pd.DataFrame:
     """Get interest rate yield for Uruguayan US-denominated bonds,
     inflation-linked bonds and peso bonds.
-
-    This function requires a Selenium webdriver. It can be provided in the
-    driver parameter, or it will attempt to configure a Chrome webdriver.
-
-    Parameters
-    ----------
-    driver : selenium.webdriver.chrome.webdriver.WebDriver, default None
-        Selenium webdriver for scraping. If None, build a Chrome webdriver.
 
     Returns
     -------
@@ -443,8 +501,8 @@ def sovereign_bond_yields(driver: Optional[WebDriver] = None) -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    if driver is None:
-        driver = _build()
+    driver = _build()
+    _bypass_bevsa_disclaimer_maybe(driver, sources["usd"])
     dfs = []
     for url in sources.values():
         driver.get(url)
@@ -460,8 +518,8 @@ def sovereign_bond_yields(driver: Optional[WebDriver] = None) -> pd.DataFrame:
         end.send_keys(dt.datetime.now().strftime("%d/%m/%Y"))
         submit = driver.find_element(by="id", value="ContentPlaceHolder1_LinkFiltrar")
         submit.click()
-        time.sleep(10)
-        tables = pd.read_html(driver.page_source, decimal=",", thousands=".")
+        time.sleep(5)
+        tables = pd.read_html(StringIO(driver.page_source), decimal=",", thousands=".")
 
         raw = tables[8]
         df = raw.set_index("FECHA")
@@ -480,21 +538,33 @@ def sovereign_bond_yields(driver: Optional[WebDriver] = None) -> pd.DataFrame:
     output = output.loc[~output.index.duplicated()]
 
     output = output.apply(pd.to_numeric, errors="coerce")
-    output.rename_axis(None, inplace=True)
-    metadata._set(
-        output,
-        area="Sector financiero",
-        currency="-",
-        inf_adj="No",
-        unit="PBS",
-        seas_adj="NSA",
-        ts_type="-",
-        cumperiods=1,
-    )
-    metadata._modify_multiindex(
-        output,
-        levels=[3, 4],
-        new_arrays=[["USD", "UYU", "UYU"], ["No", "Const.", "No"]],
-    )
+    output = output.rename_axis(None)
 
-    return output
+    spanish_names = output.columns
+    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    output.columns = ids
+    spanish_names = [{"es": x} for x in spanish_names]
+
+    base_metadata = {
+        "area": "Financial market",
+        "currency": "UYU",
+        "inflation_adjustment": None,
+        "unit": "Rate",
+        "seasonal_adjustment": None,
+        "frequency": "D",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    for indicator, const in zip(ids, [None, "Const.", None]):
+        metadata.update_indicator_metadata_value(
+            indicator, "inflation_adjustment", const
+        )
+    for indicator, currency in zip(ids, ["USD", "UYU", "UYU"]):
+        metadata.update_indicator_metadata_value(indicator, "currency", currency)
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
