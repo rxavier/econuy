@@ -74,9 +74,7 @@ def monthly_gdp() -> Dataset:
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
     )
-    for indicator, adjustment in zip(
-        ids, ["Not seasonally adjusted", "Seasonally adjusted", "Trend-cycle"]
-    ):
+    for indicator, adjustment in zip(ids, [None, "Seasonally adjusted", "Trend-cycle"]):
         metadata = metadata.update_indicator_metadata_value(
             indicator, "seasonal_adjustment", adjustment
         )

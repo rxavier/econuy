@@ -12,6 +12,7 @@ from econuy.transform.resample import _resample
 from econuy.transform.rolling import _rolling
 from econuy.transform.rebase import _rebase
 from econuy.transform.convert import _convert_usd, _convert_gdp, _convert_real
+from econuy.transform.decompose import _decompose
 
 
 class DatasetConfig:
@@ -559,7 +560,7 @@ class Dataset:
     def resample(
         self,
         rule: Union[pd.DateOffset, pd.Timedelta, str],
-        operation: str = "sum",
+        operation: Literal["sum", "mean", "last", "upsample"] = "sum",
         interpolation: str = "linear",
     ) -> "Dataset":
         """
@@ -638,7 +639,9 @@ class Dataset:
         )
         return output
 
-    def rolling(self, window: int, operation: str = "sum") -> "Dataset":
+    def rolling(
+        self, window: int, operation: Literal["sum", "mean"] = "sum"
+    ) -> "Dataset":
         """
         Wrapper for the `rolling method <https://pandas.pydata.org/pandas-docs/
         stable/reference/api/pandas.DataFrame.rolling.html>`_ in Pandas that
@@ -707,7 +710,11 @@ class Dataset:
         )
         return output
 
-    def chg_diff(self, operation: str = "chg", period: str = "last") -> "Dataset":
+    def chg_diff(
+        self,
+        operation: Literal["chg", "diff"] = "chg",
+        period: Literal["last", "inter", "annual"] = "last",
+    ) -> "Dataset":
         """Wrapper for the `pct_change <https://pandas.pydata.org/pandas-docs/stable/
         reference/api/pandas.DataFrame.pct_change.html>`_ and `diff <https://pandas
         .pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.diff.html>`_
@@ -842,7 +849,7 @@ class Dataset:
 
     def convert(
         self,
-        flavor: str,
+        flavor: Literal["usd", "real", "gdp"],
         start_date: Union[str, datetime, None] = None,
         end_date: Union[str, datetime, None] = None,
         error_handling: Literal["raise", "coerce", "ignore"] = "raise",
@@ -916,6 +923,86 @@ class Dataset:
                     metadata=n_dataset.metadata,
                     error_handling=error_handling,
                     **kwargs,
+                )
+                transformed.append(transformed_col)
+                new_metadatas.append(new_metadata)
+            transformed = pd.concat(transformed, axis=1)
+            new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
+        output = self.__class__(
+            data=transformed,
+            metadata=new_metadata,
+            name=self.name,
+            transformed=True,
+        )
+        return output
+
+    def decompose(
+        self,
+        method: Literal["x13", "loess", "mloess", "moving_averages"] = "x13",
+        fallback: Literal["loess", "mloess", "moving_averages"] = "loess",
+        component: Literal["t-c", "sa"] = "sa",
+        fn_kwargs: Optional[dict] = None,
+        ignore_warnings: bool = True,
+        error_handling: Literal["raise", "coerce", "ignore"] = "raise",
+    ) -> "Dataset":
+        """Rebase dataset to a date or range of dates.
+
+        Parameters
+        ----------
+        method : {'x13', 'loess', 'mloess', 'moving_averages'}, default 'x13'
+            Method to use for decomposition.
+        fallback : {'loess', 'mloess', 'moving_averages'}, default 'loess'
+            Fallback method to use if the main method fails.
+        component : {'t-c', 'sa'}, default 'sa'
+            Component to return. 't-c' for trend-cycle, 'sa' for seasonally adjusted.
+        fn_kwargs : dict, default None
+            Additional keyword arguments to pass to the decomposition function.
+        ignore_warnings : bool, default True
+            Whether to ignore warnings.
+        error_handling : {"raise", "coerce", "ignore"}, default "raise"
+            What to do when the input dataset can't be converted. Coercion will set to np.nan,
+
+        Returns
+        -------
+        ``Dataset``
+
+        """
+        assert method in [
+            "x13",
+            "loess",
+            "mloess",
+            "moving_averages",
+        ], "Invalid 'method' option."
+        assert component in ["t-c", "sa"], "Invalid 'component' option."
+
+        fn_kwargs = fn_kwargs or {}
+
+        if self.metadata.has_common_metadata:
+            transformed, new_metadata = _decompose(
+                data=self.data,
+                metadata=self.metadata,
+                method=method,
+                fallback=fallback,
+                component=component,
+                fn_kwargs=fn_kwargs,
+                ignore_warnings=ignore_warnings,
+                error_handling=error_handling,
+            )
+
+        else:
+            transformed = []
+            new_metadatas = []
+            for column_name in self.data.columns:
+                n_dataset = self[column_name]
+                transformed_col, new_metadata = _decompose(
+                    data=n_dataset.data,
+                    metadata=n_dataset.metadata,
+                    method=method,
+                    fallback=fallback,
+                    component=component,
+                    fn_kwargs=fn_kwargs,
+                    ignore_warnings=ignore_warnings,
+                    error_handling=error_handling,
                 )
                 transformed.append(transformed_col)
                 new_metadatas.append(new_metadata)

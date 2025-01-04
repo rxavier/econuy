@@ -1,69 +1,58 @@
 import platform
 import os
 from pathlib import Path
-from typing import Union
 
 import httpx
 
-from econuy.utils import get_project_root
 
-
-def _get_binary(file_path: Union[str, os.PathLike, None] = None) -> None:
-    if file_path is None:
-        file_path = Path(get_project_root(), "utils")
+def _get_binary() -> None:
+    if "X13PATH" in os.environ:
+        return os.environ["X13PATH"]
 
     urls = {
-        "Windows": "https://github.com/rxavier/econuy-extras/raw/main/econuy_extras/x13/windows/x13as.exe",
-        "Darwin-x64": "https://github.com/rxavier/econuy-extras/raw/main/econuy_extras/x13/darwin/x64/x13as",
-        "Darwin-arm64": "https://github.com/rxavier/econuy-extras/raw/main/econuy_extras/x13/darwin/arm64/x13as",
-        "Linux": "https://github.com/rxavier/econuy-extras/raw/main/econuy_extras/x13/linux/x13as",
+        "Windows": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/x13/windows/x13as.exe",
+        "Darwin-x64": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/x13/darwin/x64/x13as",
+        "Darwin-arm64": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/x13/darwin/arm64/x13as",
+        "Linux": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/x13/linux/x13as",
     }
 
     system_string = platform.system()
     if system_string == "Windows":
         suffix = ".exe"
+        base_dir = Path.home() / "AppData" / "Roaming" / "econuy"
     else:
         suffix = ""
+        base_dir = Path.home() / ".econuy"
     if system_string == "Darwin":
         if "ARM64" in platform.version():
             system_string += "-arm64"
         else:
             system_string += "-x64"
+        base_dir = Path.home() / "Library" / "Application Support" / "econuy"
+
     if system_string not in urls.keys():
         raise ValueError(
             "X13 binaries are only available for Windows, Darwin (macOS) or Linux."
         )
 
+    base_dir.mkdir(exist_ok=True, parents=True)
+    binary_path = Path(base_dir, f"x13as{suffix}")
+
+    if binary_path.exists():
+        os.chmod(binary_path, 0o755)
+        os.environ["X13PATH"] = binary_path.as_posix()
+        print(f"Using existing binary at {binary_path}")
+        return binary_path.as_posix()
+
     r = httpx.get(urls[system_string])
-    binary_path = Path(file_path, f"x13as{suffix}")
+    r.raise_for_status()
     with open(binary_path, "wb") as f:
         f.write(r.content)
     os.chmod(binary_path, 0o755)
-    print("Download complete.")
-    return binary_path
+    os.environ["X13PATH"] = binary_path.as_posix()
 
+    print(
+        f"Download complete. Saved binary to {base_dir} and set X13PATH to {binary_path}"
+    )
 
-def _search_binary(
-    start_path: Union[str, os.PathLike],
-    n: int = 0,
-    download_path: Union[str, os.PathLike, None] = None,
-):
-    """Recursively search for a the X13 binary starting from the n-parent folder of
-    a supplied path."""
-    if platform.system() == "Windows":
-        search_term = "x13as.exe"
-    else:
-        search_term = "x13as"
-    i = 0
-    while i < n:
-        i += 1
-        start_path = os.path.dirname(start_path)
-    try:
-        final_path = (
-            [x for x in Path(start_path).rglob(search_term)][0].absolute().as_posix()
-        )
-    except IndexError:
-        print("X13 binary not found. Downloading appropiate binary for your system...")
-        final_path = _get_binary(file_path=download_path).absolute().as_posix()
-
-    return final_path
+    return binary_path.as_posix()
