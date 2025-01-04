@@ -1,3 +1,3 @@
-from econuy.retrieval.load import load_dataset
+from econuy.load import load_dataset, load_datasets_parallel
 
-__all__ = ["load_dataset"]
+__all__ = ["load_dataset", "load_datasets_parallel"]

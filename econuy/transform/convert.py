@@ -11,7 +11,7 @@ def _convert_usd(
     metadata: "Metadata",  # type: ignore # noqa: F821
     error_handling: Literal["raise", "coerce", "ignore"] = "raise",
 ) -> pd.DataFrame:
-    from econuy.retrieval.load import load_dataset
+    from econuy.load import load_dataset
 
     indicators = metadata.indicator_ids
     metadata = metadata.copy()
@@ -60,7 +60,7 @@ def _convert_real(
     end_date: Union[str, datetime, None] = None,
     error_handling: Literal["raise", "coerce", "ignore"] = "raise",
 ) -> pd.DataFrame:
-    from econuy.retrieval.load import load_dataset
+    from econuy.load import load_dataset
 
     indicators = metadata.indicator_ids
     metadata = metadata.copy()
@@ -147,7 +147,7 @@ def _convert_gdp(
     metadata: "Metadata",  # type: ignore # noqa: F821
     error_handling: Literal["raise", "coerce", "ignore"] = "raise",
 ) -> pd.DataFrame:
-    from econuy.retrieval.load import load_dataset
+    from econuy.load import load_dataset
 
     indicators = metadata.indicator_ids
     metadata = metadata.copy()

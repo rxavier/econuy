@@ -1,10 +1,11 @@
 import importlib
 import datetime as dt
 import inspect
-from typing import Union
+from typing import Union, List, Optional, Dict, Literal
 from pathlib import Path
 from urllib.error import URLError
 from json.decoder import JSONDecodeError
+from concurrent import futures
 
 import pandas as pd
 from httpx import ReadTimeout
@@ -45,7 +46,11 @@ def load_dataset(
                     "Retrieving new data."
                 )
 
-    dataset_metadata = DATASETS[name]
+    try:
+        dataset_metadata = DATASETS[name]
+    except KeyError:
+        raise ValueError(f"Dataset {name} not available.")
+
     function_string = dataset_metadata["function"]
     module, function = function_string.split(".")
     path_prefix = "econuy.retrieval."
@@ -73,6 +78,37 @@ def load_dataset(
         dataset.save(data_dir)
 
     return dataset
+
+
+def load_datasets_parallel(
+    names: List[str],
+    data_dir: Union[str, Path, None] = None,
+    skip_cache: bool = False,
+    force_overwrite: bool = False,
+    max_workers: Optional[int] = None,
+    executor_type: Literal["thread", "process"] = "thread",
+) -> Dict[str, Dataset]:
+    datasets = {}
+    if executor_type == "thread":
+        executor_class = futures.ThreadPoolExecutor
+    elif executor_type == "process":
+        executor_class = futures.ProcessPoolExecutor
+
+    with executor_class(max_workers) as executor:
+        future_to_name = {
+            executor.submit(
+                load_dataset, name, data_dir, skip_cache, force_overwrite
+            ): name
+            for name in names
+        }
+        for future in futures.as_completed(future_to_name):
+            name = future_to_name[future]
+            try:
+                dataset = future.result()
+                datasets[name] = dataset
+            except Exception as exc:
+                print(f"Error loading dataset {name} | {exc}")
+    return datasets
 
 
 def check_updated_dataset(original: Dataset, new: Dataset) -> None:  # noqa: F821
