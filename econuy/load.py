@@ -10,6 +10,7 @@ from concurrent import futures
 import pandas as pd
 from httpx import ReadTimeout
 from opnieuw import retry
+from tqdm.auto import tqdm
 
 from econuy.utils.operations import REGISTRY, read_dataset, get_data_dir
 from econuy.base import Dataset
@@ -101,13 +102,16 @@ def load_datasets_parallel(
             ): name
             for name in names
         }
-        for future in futures.as_completed(future_to_name):
-            name = future_to_name[future]
-            try:
-                dataset = future.result()
-                datasets[name] = dataset
-            except Exception as exc:
-                print(f"Error loading dataset {name} | {exc}")
+        with tqdm(total=len(names), desc="Loading datasets") as pbar:
+            for future in futures.as_completed(future_to_name):
+                name = future_to_name[future]
+                pbar.set_postfix_str(name)
+                try:
+                    dataset = future.result()
+                    datasets[name] = dataset
+                except Exception as exc:
+                    print(f"Error loading dataset {name} | {exc}")
+                pbar.update(1)
     return datasets
 
 

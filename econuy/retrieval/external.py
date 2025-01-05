@@ -658,7 +658,7 @@ def rxr_custom(*args, **kwargs) -> Dataset:
     """
     name = get_name_from_function()
 
-    ifs = regional._ifs()
+    ifs = regional._ifs(*args, **kwargs)
     uy_cpi = load_dataset("cpi", *args, **kwargs).to_named()
     uy_e = load_dataset("nxr_monthly", *args, **kwargs).to_named().iloc[:, [1]]
     proc = pd.concat([ifs, uy_cpi, uy_e], axis=1)

@@ -15,6 +15,7 @@ dependencies = [
     "selenium",
     "sqlalchemy>=2.0.36",
     "statsmodels",
+    "tqdm>=4.67.1",
     "xlrd>=2.0.1",
 ]
 
