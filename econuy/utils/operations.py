@@ -72,7 +72,9 @@ class DatasetRegistry:
         """
         return {k: v for k, v in self.registry.items() if v["custom"]}
 
-    def get_by_area(self, area: str, keep_disabled: bool = False, keep_auxiliary: bool = False) -> Dict:
+    def get_by_area(
+        self, area: str, keep_disabled: bool = False, keep_auxiliary: bool = False
+    ) -> Dict:
         """
         Retrieve datasets by a specific area, with options to include disabled and auxiliary datasets.
 
@@ -93,8 +95,9 @@ class DatasetRegistry:
         return {
             k: v
             for k, v in self.registry.items()
-            if v["area"] == area and (keep_disabled or not v["disabled"])
-                                      and (keep_auxiliary or not v["auxiliary"])
+            if v["area"] == area
+            and (keep_disabled or not v["disabled"])
+            and (keep_auxiliary or not v["auxiliary"])
         }
 
     def list_available(self) -> List[str]:
@@ -119,7 +122,9 @@ class DatasetRegistry:
         """
         return list(self.get_custom().keys())
 
-    def list_by_area(self, area: str, keep_disabled: bool = False, keep_auxiliary: bool = False) -> List[str]:
+    def list_by_area(
+        self, area: str, keep_disabled: bool = False, keep_auxiliary: bool = False
+    ) -> List[str]:
         """
         List the names of datasets by a specific area, with options to include disabled and auxiliary datasets.
 
