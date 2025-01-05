@@ -12,36 +12,132 @@ from econuy.base import Dataset, DatasetMetadata
 
 class DatasetRegistry:
     def __init__(self):
+        """
+        Initialize the DatasetRegistry by loading the dataset information from a JSON file.
+        """
         with open(get_project_root() / "retrieval" / "datasets.json", "r") as f:
             self.registry = json.load(f)
 
     def __getitem__(self, name: str) -> Dict:
+        """
+        Retrieve a dataset by its name.
+
+        Parameters
+        ----------
+        name : str
+            The name of the dataset to retrieve.
+
+        Returns
+        -------
+        dict
+            The dataset information.
+        """
         return self.registry[name]
 
     def get_multiple(self, names: List[str]) -> Dict:
+        """
+        Retrieve multiple datasets by their names.
+
+        Parameters
+        ----------
+        names : List[str]
+            A list of dataset names to retrieve.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the requested datasets.
+        """
         return {k: v for k, v in self.registry.items() if k in names}
 
-    def get_available(self):
+    def get_available(self) -> Dict:
+        """
+        Retrieve all available datasets that are not disabled.
+
+        Returns
+        -------
+        dict
+            A dictionary containing all available datasets.
+        """
         return {k: v for k, v in self.registry.items() if not v["disabled"]}
 
-    def get_custom(self):
+    def get_custom(self) -> Dict:
+        """
+        Retrieve all custom datasets.
+
+        Returns
+        -------
+        dict
+            A dictionary containing all custom datasets.
+        """
         return {k: v for k, v in self.registry.items() if v["custom"]}
 
-    def get_by_area(self, area: str, keep_disabled: bool = False):
+    def get_by_area(self, area: str, keep_disabled: bool = False, keep_auxiliary: bool = False) -> Dict:
+        """
+        Retrieve datasets by a specific area, with options to include disabled and auxiliary datasets.
+
+        Parameters
+        ----------
+        area : str
+            The area to filter datasets by.
+        keep_disabled : bool, optional
+            Whether to include disabled datasets (default is False).
+        keep_auxiliary : bool, optional
+            Whether to include auxiliary datasets (default is False).
+
+        Returns
+        -------
+        dict
+            A dictionary containing the datasets that match the specified area and options.
+        """
         return {
             k: v
             for k, v in self.registry.items()
             if v["area"] == area and (keep_disabled or not v["disabled"])
+                                      and (keep_auxiliary or not v["auxiliary"])
         }
 
-    def list_available(self):
+    def list_available(self) -> List[str]:
+        """
+        List the names of all available datasets.
+
+        Returns
+        -------
+        List[str]
+            A list of names of all available datasets.
+        """
         return list(self.get_available().keys())
 
-    def list_custom(self):
+    def list_custom(self) -> List[str]:
+        """
+        List the names of all custom datasets.
+
+        Returns
+        -------
+        List[str]
+            A list of names of all custom datasets.
+        """
         return list(self.get_custom().keys())
 
-    def list_by_area(self, area: str, keep_disabled: bool = False):
-        return list(self.get_by_area(area, keep_disabled).keys())
+    def list_by_area(self, area: str, keep_disabled: bool = False, keep_auxiliary: bool = False) -> List[str]:
+        """
+        List the names of datasets by a specific area, with options to include disabled and auxiliary datasets.
+
+        Parameters
+        ----------
+        area : str
+            The area to filter datasets by.
+        keep_disabled : bool, optional
+            Whether to include disabled datasets (default is False).
+        keep_auxiliary : bool, optional
+            Whether to include auxiliary datasets (default is False).
+
+        Returns
+        -------
+        List[str]
+            A list of names of datasets that match the specified area and options.
+        """
+        return list(self.get_by_area(area, keep_disabled, keep_auxiliary).keys())
 
 
 REGISTRY = DatasetRegistry()
