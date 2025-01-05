@@ -30,6 +30,34 @@ def load_dataset(
     skip_cache: bool = False,
     force_overwrite: bool = False,
 ) -> Dataset:
+    """
+    Load a dataset by name, optionally skipping cache and forcing overwrite.
+
+    Parameters
+    ----------
+    name : str
+        The name of the dataset to load.
+    data_dir : Union[str, Path, None], optional
+        The directory where the dataset is stored or will be stored. If None,
+        the default data directory is used. Default is None.
+    skip_cache : bool, optional
+        If True, the cache will be skipped and a new dataset will be retrieved.
+        Default is False.
+    force_overwrite : bool, optional
+        If True, the existing dataset will be overwritten. Default is False.
+
+    Returns
+    -------
+    Dataset
+        The loaded dataset.
+
+    Raises
+    ------
+    ValueError
+        If the dataset name is not available in the registry.
+    AssertionError
+        If the existing dataset has changed and force_overwrite is False.
+    """
     data_dir = data_dir or get_data_dir()
     data_dir = Path(data_dir)
     data_dir.mkdir(parents=True, exist_ok=True, mode=0o755)
@@ -89,6 +117,34 @@ def load_datasets_parallel(
     max_workers: Optional[int] = None,
     executor_type: Literal["thread", "process"] = "thread",
 ) -> Dict[str, Dataset]:
+    """
+    Load multiple datasets in parallel using either threading or multiprocessing.
+
+    Parameters
+    ----------
+    names : List[str]
+        List of dataset names to load.
+    data_dir : Union[str, Path, None], optional
+        Directory where datasets are stored. If None, a default directory is used.
+    skip_cache : bool, optional
+        If True, skip loading from cache. Default is False.
+    force_overwrite : bool, optional
+        If True, force overwrite existing datasets. Default is False.
+    max_workers : Optional[int], optional
+        Maximum number of workers to use for parallel loading. If None, it will use the default number of workers.
+    executor_type : Literal["thread", "process"], optional
+        Type of executor to use for parallel loading. Can be "thread" for ThreadPoolExecutor or "process" for ProcessPoolExecutor. Default is "thread".
+
+    Returns
+    -------
+    Dict[str, Dataset]
+        A dictionary where keys are dataset names and values are the loaded datasets.
+
+    Raises
+    ------
+    Exception
+        If there is an error loading any of the datasets, it will be printed and the dataset will be skipped.
+    """
     datasets = {}
     if executor_type == "thread":
         executor_class = futures.ThreadPoolExecutor

@@ -15,7 +15,7 @@ import sys
 from shutil import copyfile
 
 sys.path.insert(0, os.path.abspath("../../"))
-from econuy._version import __version__
+
 
 
 copyfile("../../README.md", "README.md")
@@ -23,11 +23,17 @@ copyfile("../../README.md", "README.md")
 # -- Project information -----------------------------------------------------
 
 project = "econuy"
-copyright = "2022, Rafael Xavier"
+copyright = "2025, Rafael Xavier"
 author = "Rafael Xavier"
 
 # The full version, including alpha/beta/rc tags
-release = __version__
+# get version from pyproject.toml
+with open("../../pyproject.toml") as f:
+    for line in f:
+        if "version" in line:
+            version = line.split("=")[1].strip().strip('"')
+            break
+release = version
 
 
 # -- General configuration ---------------------------------------------------
@@ -40,6 +46,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "recommonmark",
+    "sphinx_rtd_theme"
 ]
 
 # Add any paths that contain templates here, relative to this directory.

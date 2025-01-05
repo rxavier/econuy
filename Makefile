@@ -1,8 +1,5 @@
-deps-compile:
-	uv pip compile requirements.in -o requirements.txt && uv pip compile requirements-dev.in -c requirements.txt -o requirements-dev.txt
-
 deps-sync:
-	uv pip sync requirements.txt requirements-dev.txt
+	uv sync
 
 test:
 	pytest .
@@ -12,3 +9,6 @@ format:
 
 check:
 	ruff check . --fix
+
+docs:
+	uv export -o docs/requirements.txt && uv run sphinx-build -M html docs/source docs/build

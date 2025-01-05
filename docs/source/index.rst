@@ -24,5 +24,7 @@ API documentation
 Or read the API documentation (automatically generated from source code) for the specifics.
 
 .. toctree::
+   :maxdepth: 2
+
 
    api.rst
