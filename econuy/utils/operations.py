@@ -2,7 +2,7 @@ import inspect
 import json
 import os
 from pathlib import Path
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
 import pandas as pd
 
@@ -10,12 +10,41 @@ from econuy.utils import get_project_root
 from econuy.base import Dataset, DatasetMetadata
 
 
-def load_datasets_info() -> Dict:
-    with open(get_project_root() / "retrieval" / "datasets.json", "r") as f:
-        return json.load(f)
+class DatasetRegistry:
+    def __init__(self):
+        with open(get_project_root() / "retrieval" / "datasets.json", "r") as f:
+            self.registry = json.load(f)
+
+    def __getitem__(self, name: str) -> Dict:
+        return self.registry[name]
+
+    def get_multiple(self, names: List[str]) -> Dict:
+        return {k: v for k, v in self.registry.items() if k in names}
+
+    def get_available(self):
+        return {k: v for k, v in self.registry.items() if not v["disabled"]}
+
+    def get_custom(self):
+        return {k: v for k, v in self.registry.items() if v["custom"]}
+
+    def get_by_area(self, area: str, keep_disabled: bool = False):
+        return {
+            k: v
+            for k, v in self.registry.items()
+            if v["area"] == area and (keep_disabled or not v["disabled"])
+        }
+
+    def list_available(self):
+        return list(self.get_available().keys())
+
+    def list_custom(self):
+        return list(self.get_custom().keys())
+
+    def list_by_area(self, area: str, keep_disabled: bool = False):
+        return list(self.get_by_area(area, keep_disabled).keys())
 
 
-DATASETS = load_datasets_info()
+REGISTRY = DatasetRegistry()
 
 
 def get_name_from_function() -> str:
@@ -23,7 +52,7 @@ def get_name_from_function() -> str:
 
 
 def get_download_sources(name: str) -> Dict:
-    return DATASETS[name]["sources"]["downloads"]
+    return REGISTRY[name]["sources"]["downloads"]
 
 
 def get_data_dir() -> Path:

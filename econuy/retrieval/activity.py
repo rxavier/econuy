@@ -206,9 +206,7 @@ def national_accounts_demand_current_nsa() -> Dataset:
     output = raw.dropna(how="all", axis=1).iloc[:, 2:].dropna(how="all").T
     output.index = pd.date_range(start="2016-03-31", freq="QE-DEC", periods=len(output))
     output = output.apply(pd.to_numeric, errors="coerce").rename_axis(None)
-    output["Importaciones de bienes y servicios"] = (
-        output["Importaciones de bienes y servicios"] * -1
-    )
+    output[7] = output[7] * -1
 
     spanish_names = [
         "Gasto de consumo: total",
@@ -1269,7 +1267,7 @@ def diesel_sales() -> Dataset:
     with open(temp_rar, "wb") as f:
         r = httpx.get(sources["main"])
         rar_url = re.findall(
-            r"https://www.gub.uy/ministerio-industria-energia-mineria/sites/ministerio-industria-energia-mineria/files/[0-9\-]+/Venta%20de%20gas%20oil%20por%20departamento.rar",
+            r'(https?://[^"]*?gas%20oil[^"]*?\.rar)',
             r.text,
         )[0]
         f.write(httpx.get(rar_url).content)
@@ -1329,7 +1327,7 @@ def gasoline_sales() -> Dataset:
     with open(temp_rar, "wb") as f:
         r = httpx.get(sources["main"])
         rar_url = re.findall(
-            r"https://www.gub.uy/ministerio-industria-energia-mineria/sites/ministerio-industria-energia-mineria/files/[0-9\-]+/Venta%20de%20gasolinas%20por%20departamento.rar",
+            r'(https?://[^"]*?gasolinas[^"]*?\.rar)',
             r.text,
         )[0]
         f.write(httpx.get(rar_url).content)

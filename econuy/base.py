@@ -21,10 +21,9 @@ class DatasetConfig:
         self.load()
 
     def load(self) -> None:
-        from econuy.utils.operations import load_datasets_info
+        from econuy.utils.operations import REGISTRY
 
-        all_datasets_info = load_datasets_info()
-        dataset_config = all_datasets_info[self.name]
+        dataset_config = REGISTRY[self.name]
         for key, value in dataset_config.items():
             setattr(self, key, value)
 

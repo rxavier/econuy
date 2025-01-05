@@ -11,7 +11,7 @@ import pandas as pd
 from httpx import ReadTimeout
 from opnieuw import retry
 
-from econuy.utils.operations import DATASETS, read_dataset, get_data_dir
+from econuy.utils.operations import REGISTRY, read_dataset, get_data_dir
 from econuy.base import Dataset
 
 
@@ -47,7 +47,7 @@ def load_dataset(
                 )
 
     try:
-        dataset_metadata = DATASETS[name]
+        dataset_metadata = REGISTRY[name]
     except KeyError:
         raise ValueError(f"Dataset {name} not available.")
 
