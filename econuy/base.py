@@ -456,6 +456,30 @@ class Dataset:
         named_data.columns = [column_metadatas[ind] for ind in self.indicators]
         return named_data
 
+    def to_dict(self) -> dict:
+        """
+        Convert the dataset to a dictionary.
+
+        Returns
+        -------
+        dict
+            A dictionary representation of the dataset.
+
+        """
+        data = self.data.copy()
+        data.index = data.index.astype(str)
+
+        metadata = self.metadata.__dict__.copy()
+        metadata.pop("config")
+        metadata["created_at"] = metadata["created_at"].isoformat()
+
+        return {
+            "name": self.name,
+            "data": data.to_dict(),
+            "metadata": metadata,
+            "transformed": self.transformed,
+        }
+
     def save(
         self, data_dir: Union[str, Path, None] = None, name: Optional[str] = None
     ) -> None:
