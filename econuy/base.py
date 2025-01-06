@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import List, Union, Optional, Literal, Dict
 
 import pandas as pd
+import numpy as np
 
 from econuy.transform.change import _chg_diff
 from econuy.transform.resample import _resample
@@ -472,6 +473,7 @@ class Dataset:
         """
         data = self.data.copy()
         data.index = data.index.astype(str)
+        data = data.replace([np.inf, -np.inf], np.nan)
         data = data.astype(object).where(pd.notnull(data), None)
 
         metadata = self.metadata.to_dict()
