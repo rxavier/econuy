@@ -3,7 +3,7 @@ import warnings
 import json
 from pathlib import Path
 from datetime import datetime
-from typing import List, Union, Optional, Literal
+from typing import List, Union, Optional, Literal, Dict
 
 import pandas as pd
 
@@ -217,15 +217,19 @@ class DatasetMetadata:
         """
         return copy.deepcopy(self)
 
+    def to_dict(self) -> Dict:
+        d = self.__dict__.copy()
+        d["created_at"] = d["created_at"].isoformat()
+        d["config"] = self.config.__dict__
+        return d
+
     def save(self, name: str, data_dir: Union[str, Path, None] = None) -> None:
         from econuy.utils.operations import get_data_dir
 
         data_dir = data_dir or get_data_dir()
         data_dir = Path(data_dir)
         data_dir.mkdir(parents=True, exist_ok=True)
-        for_json = self.__dict__.copy()
-        for_json["created_at"] = for_json["created_at"].isoformat()
-        for_json["config"] = self.config.__dict__
+        for_json = self.to_dict()
         with open(data_dir / f"{name}_metadata.json", "w") as f:
             json.dump(for_json, f, indent=4)
         return
@@ -456,26 +460,25 @@ class Dataset:
         named_data.columns = [column_metadatas[ind] for ind in self.indicators]
         return named_data
 
-    def to_dict(self) -> dict:
+    def to_json(self) -> dict:
         """
-        Convert the dataset to a dictionary.
+        Convert the dataset to a valid JSON dictionary.
 
         Returns
         -------
         dict
-            A dictionary representation of the dataset.
+            A JSON representation of the dataset.
 
         """
         data = self.data.copy()
         data.index = data.index.astype(str)
+        data = data.astype(object).where(pd.notnull(data), None)
 
-        metadata = self.metadata.__dict__.copy()
+        metadata = self.metadata.to_dict()
         metadata.pop("config")
-        metadata["created_at"] = metadata["created_at"].isoformat()
-
         return {
             "name": self.name,
-            "data": data.to_dict(),
+            "data": data.to_json(),
             "metadata": metadata,
             "transformed": self.transformed,
         }
