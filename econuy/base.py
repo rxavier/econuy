@@ -478,7 +478,7 @@ class Dataset:
         metadata.pop("config")
         return {
             "name": self.name,
-            "data": data.to_json(),
+            "data": data.to_dict(),
             "metadata": metadata,
             "transformed": self.transformed,
         }
