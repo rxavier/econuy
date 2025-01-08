@@ -332,6 +332,8 @@ def _get_public_debt(dataset_name: str) -> Dataset:
         )
         output.columns = ["Total activos", "Sector público no monetario", "BCU"]
 
+    output = output.apply(pd.to_numeric, errors="coerce")
+    
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
     ids = [f"{dataset_name}_{i}" for i in range(output.shape[1])]
