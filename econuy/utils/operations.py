@@ -59,7 +59,7 @@ class DatasetRegistry:
         dict
             A dictionary containing all available datasets.
         """
-        return {k: v for k, v in self.registry.items() if not v["disabled"]}
+        return {k: v for k, v in self.registry.items() if not v["disabled"] and not v["auxiliary"]}
 
     def get_custom(self) -> Dict:
         """

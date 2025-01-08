@@ -324,7 +324,7 @@ def _get_public_debt(dataset_name: str) -> Dataset:
             usecols="B,C,D,K",
             index_col=0,
             skiprows=13,
-            nrows=(dt.datetime.now().year - 1999) * 4,
+            nrows=(dt.datetime.now().year - 1999) * 4 - 1,
         )
         output = assets_raw.dropna(how="any")
         output.index = pd.date_range(
@@ -333,7 +333,7 @@ def _get_public_debt(dataset_name: str) -> Dataset:
         output.columns = ["Total activos", "Sector público no monetario", "BCU"]
 
     output = output.apply(pd.to_numeric, errors="coerce")
-    
+
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
     ids = [f"{dataset_name}_{i}" for i in range(output.shape[1])]
