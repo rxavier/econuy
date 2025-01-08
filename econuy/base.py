@@ -562,8 +562,14 @@ class Dataset:
             transformed=self.transformed,
         )
 
-    def select(self, indicators: Union[str, List[str]]) -> "Dataset":
-        return self.__getitem__(indicators)
+    def select(self, ids: Union[str, List[str], None] = None, names: Union[str, List[str], None] = None, language: str = "es") -> "Dataset":
+        assert ids is not None or names is not None, "Either 'ids' or 'names' must be provided."
+        assert ids is None or names is None, "Only one of 'ids' or 'names' can be provided."
+
+        if ids is None:
+            names = [names] if isinstance(names, str) else names
+            ids = [k for k, v in self.metadata.indicator_metadata.items() if v["names"][language] in names]
+        return self.__getitem__(ids)
 
     def filter(
         self,
