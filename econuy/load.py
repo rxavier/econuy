@@ -1,6 +1,7 @@
 import importlib
 import datetime as dt
 import inspect
+import os
 from typing import Union, List, Optional, Dict, Literal
 from pathlib import Path
 from urllib.error import URLError
@@ -146,12 +147,21 @@ def load_datasets_parallel(
         If there is an error loading any of the datasets, it will be printed and the dataset will be skipped.
     """
     datasets = {}
+
+    # We first pick an executor, then get the default workers used in the stdlib code.
+    # If max_workers is not set, we use the default number of workers.
+    # In both cases we limit the number of workers to the number of datasets.
     if executor_type == "thread":
         executor_class = futures.ThreadPoolExecutor
+        default_workers = min(32, (os.cpu_count() or 1) + 4)
     elif executor_type == "process":
         executor_class = futures.ProcessPoolExecutor
+        default_workers = os.cpu_count() or 1
 
-    with executor_class(max_workers) as executor:
+    workers = max_workers or default_workers
+    workers = min(workers, len(names))
+
+    with executor_class(workers) as executor:
         future_to_name = {
             executor.submit(
                 load_dataset, name, data_dir, skip_cache, force_overwrite
