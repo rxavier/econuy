@@ -909,8 +909,8 @@
     }
   },
   "hours_worked": {
-    "description": "Horas promedio trabajadas por sector (ene-06, M)",
-    "description_en": "Average hours worked by sector (Jan-06, M)",
+    "description": "Horas promedio trabajadas por sector (ene-11, M)",
+    "description_en": "Average hours worked by sector (Jan-11, M)",
     "area": "labor",
     "custom": false,
     "disabled": false,
