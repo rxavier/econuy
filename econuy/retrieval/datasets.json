@@ -472,8 +472,8 @@
     }
   },
   "ppi": {
-    "description": "Índice de precios al productor de productos nacionales por sección - IPPN (ene-68, M)",
-    "description_en": "Producer price index by division - PPI (Jan-68, M)",
+    "description": "Índice de precios al productor de productos nacionales por letra - IPPN Plza (ene-88, M)",
+    "description_en": "Producer price index by letter - PPI (Jan-88, M)",
     "area": "prices",
     "custom": false,
     "disabled": false,
@@ -481,13 +481,13 @@
     "function": "prices.ppi",
     "sources": {
       "downloads": {
-        "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPPN/IPPN%20C2%20M_B10.xls"
+        "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPPN/IPPN%20Plaza%20y%20Export%20por%20seccion%20B2024.xls"
       },
       "direct": [
-        "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPPN/IPPN%20C2%20M_B10.xls"
+        "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPPN/IPPN%20Plaza%20y%20Export%20por%20seccion%20B2024.xls"
       ],
       "indirect": [
-        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ippn-base-marzo-2010100"
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ippn-base-octubre-2024100"
       ],
       "provider": ["INE"]
     }
@@ -828,7 +828,7 @@
     }
   },
   "public_assets": {
-    "description": "Activos del sectro público (dic-99, T)",
+    "description": "Activos del sector público (dic-99, T)",
     "description_en": "Public assets (Dec-99, Q)",
     "area": "fiscal",
     "custom": false,

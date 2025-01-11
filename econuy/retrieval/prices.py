@@ -341,19 +341,18 @@ def ppi() -> Dataset:
     sources = get_download_sources(name)
 
     raw = (
-        pd.read_excel(sources["main"], skiprows=7, index_col=0)
+        pd.read_excel(sources["main"], skiprows=7, usecols="H,I,J,K")
         .dropna()
         .rename_axis(None)
     )
-    raw.index = raw.index + MonthEnd(1)
+    raw.index = pd.date_range(start="1988-01-31", freq="ME", periods=len(raw))
     output = raw.apply(pd.to_numeric, errors="coerce")
 
     spanish_names = [
-        "Índice general",
-        "Ganadería, agricultura y silvicultura",
-        "Pesca",
+        "IPPN Plaza",
+        "Producción agropecuaria, forestación y pesca",
         "Explotación de minas y canteras",
-        "Industrias manufactureras",
+        "Industria manufacturera",
     ]
     ids = [f"{name}_{i}" for i in range(output.shape[1])]
     output.columns = ids
@@ -363,7 +362,7 @@ def ppi() -> Dataset:
         "area": "Prices",
         "currency": "UYU",
         "inflation_adjustment": None,
-        "unit": "2010-03=100",
+        "unit": "2024-10=100",
         "seasonal_adjustment": None,
         "frequency": "ME",
         "time_series_type": None,
