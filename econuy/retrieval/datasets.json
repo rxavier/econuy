@@ -1588,7 +1588,7 @@
     "description_en": "Sovereign bond yields (02-Jun-03, D [e])",
     "area": "financial",
     "custom": true,
-    "disabled": false,
+    "disabled": true,
     "auxiliary": false,
     "function": "financial.sovereign_bond_yields",
     "sources": {
