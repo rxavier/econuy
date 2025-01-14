@@ -13,7 +13,8 @@ def _get_binary() -> None:
         "Windows": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/x13/windows/x13as.exe",
         "Darwin-x64": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/x13/darwin/x64/x13as",
         "Darwin-arm64": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/x13/darwin/arm64/x13as",
-        "Linux": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/x13/linux/x13as",
+        "Linux-x64": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/x13/linux/x64/x13as",
+        "Linux-arm64": "https://raw.githubusercontent.com/rxavier/econuy-extras/main/econuy_extras/x13/linux/arm64/x13as",
     }
 
     system_string = platform.system()
@@ -29,7 +30,11 @@ def _get_binary() -> None:
         else:
             system_string += "-x64"
         base_dir = Path.home() / "Library" / "Application Support" / "econuy"
-
+    elif system_string == "Linux":
+        if "aarch64" in platform.machine():
+            system_string += "-arm64"
+        else:
+            system_string += "-x64"
     if system_string not in urls.keys():
         raise ValueError(
             "X13 binaries are only available for Windows, Darwin (macOS) or Linux."
