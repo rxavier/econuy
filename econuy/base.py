@@ -92,13 +92,21 @@ class DatasetMetadata:
         Returns
         -------
         dict
-            The common metadata dictionary if all indicators have the same metadata, otherwise an empty dictionary.
+            The metadata dictionary excluding keys that are not common to all indicators.
         """
-        if self.has_common_metadata:
-            metadata_wo_full_names = self._drop_full_names(self.indicator_metadata)
-            return metadata_wo_full_names[self.indicator_ids[0]]
-        else:
+        metadata_wo_full_names = self._drop_full_names(self.indicator_metadata)
+        if len(metadata_wo_full_names) == 0:
             return {}
+
+        first_metadata = metadata_wo_full_names[self.indicator_ids[0]]
+        common_metadata = {}
+
+        for key, value in first_metadata.items():
+            if all(metadata_wo_full_names[indicator].get(key) == value
+                  for indicator in self.indicator_ids):
+                common_metadata[key] = value
+
+        return common_metadata
 
     @staticmethod
     def _drop_full_names(indicator_metadata: dict) -> dict:
