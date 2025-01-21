@@ -753,6 +753,7 @@ def balance_of_payments() -> Dataset:
         axis=1,
     )
     output.columns = BOP_COLUMNS
+    output = output.apply(pd.to_numeric, errors="coerce")
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]

@@ -145,6 +145,7 @@ def hours_worked() -> Dataset:
     ]
 
     output = output.rename_axis(None)
+    output = output.apply(pd.to_numeric, errors="coerce")
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
