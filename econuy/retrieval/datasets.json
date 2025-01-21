@@ -1,7 +1,7 @@
 {
   "national_accounts_supply_constant_nsa": {
-    "description": "Cuentas nacionales: oferta, precios constantes (mar-16, T)",
-    "description_en": "National accounts: supply, constant prices (Mar-16, Q)",
+    "description": "Cuentas nacionales: oferta, precios constantes",
+    "description_en": "National accounts: supply, constant prices",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -21,8 +21,8 @@
     }
   },
   "national_accounts_demand_constant_nsa": {
-    "description": "Cuentas nacionales: demanda, precios constantes (mar-16, T)",
-    "description_en": "National accounts: demand, constant prices (Mar-16, Q)",
+    "description": "Cuentas nacionales: demanda, precios constantes",
+    "description_en": "National accounts: demand, constant prices",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -42,8 +42,8 @@
     }
   },
   "national_accounts_supply_current_nsa": {
-    "description": "Cuentas nacionales: oferta, precios corrientes (mar-16, T)",
-    "description_en": "National accounts: supply, current prices (Mar-16, Q)",
+    "description": "Cuentas nacionales: oferta, precios corrientes",
+    "description_en": "National accounts: supply, current prices",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -63,8 +63,8 @@
     }
   },
   "national_accounts_demand_current_nsa": {
-    "description": "Cuentas nacionales: demanda, precios corrientes (mar-16, T)",
-    "description_en": "National accounts: demand, current prices (Mar-16, Q)",
+    "description": "Cuentas nacionales: demanda, precios corrientes",
+    "description_en": "National accounts: demand, current prices",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -84,8 +84,8 @@
     }
   },
   "gdp_index_constant_sa": {
-    "description": "PBI: índice real, desestacionalizado (mar-16, T)",
-    "description_en": "GDP: real index, seasonally adjusted (Mar-16, Q)",
+    "description": "PBI: índice real, desestacionalizado",
+    "description_en": "GDP: real index, seasonally adjusted",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -105,8 +105,8 @@
     }
   },
   "monthly_gdp": {
-    "description": "Indicador mensual de actividad económica: índice 2016=100, desestacionalizado y tendencia-ciclo (ene-16, M)",
-    "description_en": "Monthly indicator of economic activity: index 2016=100, seasonally adjusted and trend-cycle (Jan-16, M)",
+    "description": "Indicador mensual de actividad económica: índice 2016=100, desestacionalizado y tendencia-ciclo",
+    "description_en": "Monthly indicator of economic activity: index 2016=100, seasonally adjusted and trend-cycle",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -124,8 +124,8 @@
     }
   },
   "industrial_production": {
-    "description": "Producción industrial: por división, agrupaciones y clases (ene-18, M)",
-    "description_en": "Industrial production: by division, groups and classes (Jan-18, M)",
+    "description": "Producción industrial: por división, agrupaciones y clases",
+    "description_en": "Industrial production: by division, groups and classes",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -146,8 +146,8 @@
     }
   },
   "electricity_sales": {
-    "description": "Ventas de energía eléctrica por sector (ene-00, M)",
-    "description_en": "Electricity sales by sector (Jan-00, M)",
+    "description": "Ventas de energía eléctrica por sector",
+    "description_en": "Electricity sales by sector",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -165,8 +165,8 @@
     }
   },
   "gasoline_sales": {
-    "description": "Ventas de nafta por departamento (ene-04, M)",
-    "description_en": "Gasoline sales by department (Jan-04, M)",
+    "description": "Ventas de nafta por departamento",
+    "description_en": "Gasoline sales by department",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -184,8 +184,8 @@
     }
   },
   "diesel_sales": {
-    "description": "Ventas de gasoil por departamento (ene-04, M)",
-    "description_en": "Diesel sales by department (Jan-04, M)",
+    "description": "Ventas de gasoil por departamento",
+    "description_en": "Diesel sales by department",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -203,8 +203,8 @@
     }
   },
   "livestock_slaughter": {
-    "description": "Faena de bovinos y ovinos(2-ene-05, S)",
-    "description_en": "Livestock slaughter (2-Jan-05, W)",
+    "description": "Faena de bovinos y ovinos",
+    "description_en": "Livestock slaughter",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -224,8 +224,8 @@
     }
   },
   "milk_shipments": {
-    "description": "Remisión de leche a planta (ene-02, M)",
-    "description_en": "Milk delivery to plant (Jan-02, M)",
+    "description": "Remisión de leche a planta",
+    "description_en": "Milk delivery to plant",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -241,8 +241,8 @@
     }
   },
   "core_industrial_production": {
-    "description": "Producción industrial: total, sin refinería y núcleo (ene-02, M [e])",
-    "description_en": "Industrial production: total, ex-refinery and core (Jan-02, M [e])",
+    "description": "Producción industrial: total, sin refinería y núcleo",
+    "description_en": "Industrial production: total, ex-refinery and core",
     "area": "activity",
     "custom": true,
     "disabled": false,
@@ -264,8 +264,8 @@
     }
   },
   "national_accounts_supply_constant_nsa_extended": {
-    "description": "Cuentas nacionales: oferta, precios constantes, serie empalmada (mar-88, T [e])",
-    "description_en": "National accounts: supply, constant prices, spliced series (Mar-88, Q [e])",
+    "description": "Cuentas nacionales: oferta, precios constantes, serie empalmada",
+    "description_en": "National accounts: supply, constant prices, spliced series",
     "area": "activity",
     "custom": true,
     "disabled": false,
@@ -290,8 +290,8 @@
     }
   },
   "national_accounts_demand_constant_nsa_extended": {
-    "description": "Cuentas nacionales: demanda, precios constantes, serie empalmada (mar-88, T [e])",
-    "description_en": "National accounts: demand, constant prices, spliced series (Mar-88, Q [e])",
+    "description": "Cuentas nacionales: demanda, precios constantes, serie empalmada",
+    "description_en": "National accounts: demand, constant prices, spliced series",
     "area": "activity",
     "custom": true,
     "disabled": false,
@@ -316,8 +316,8 @@
     }
   },
   "gdp_index_constant_sa_extended": {
-    "description": "PBI: índice real, desestacionalizado, serie empalmada (mar-88, T [e])",
-    "description_en": "GDP: real index, seasonally adjusted, spliced series (Mar-88, Q [e])",
+    "description": "PBI: índice real, desestacionalizado, serie empalmada",
+    "description_en": "GDP: real index, seasonally adjusted, spliced series",
     "area": "activity",
     "custom": true,
     "disabled": false,
@@ -342,8 +342,8 @@
     }
   },
   "gdp_constant_nsa_extended": {
-    "description": "PBI: constante, serie empalmada (wp BCU 12-15) (mar-88, T [e])",
-    "description_en": "GDP: constant prices, spliced series (wp BCU 12-15) (Mar-88, Q [e])",
+    "description": "PBI: constante, serie empalmada (wp BCU 12-15)",
+    "description_en": "GDP: constant prices, spliced series (wp BCU 12-15)",
     "area": "activity",
     "custom": true,
     "disabled": false,
@@ -368,8 +368,8 @@
     }
   },
   "gdp_current_nsa_extended": {
-    "description": "PBI: corriente, serie empalmada (wp BCU 12-15) (mar-97, T [e])",
-    "description_en": "GDP: current prices, spliced series (wp BCU 12-15) (Mar-97, Q [e])",
+    "description": "PBI: corriente, serie empalmada (wp BCU 12-15)",
+    "description_en": "GDP: current prices, spliced series (wp BCU 12-15)",
     "area": "activity",
     "custom": true,
     "disabled": false,
@@ -400,8 +400,8 @@
     "function": "activity.gdp_denominator"
   },
   "cpi": {
-    "description": "Índice de precios al consumidor - IPC (ene-37, M)",
-    "description_en": "Consumer price index - CPI (Jan-37, M)",
+    "description": "Índice de precios al consumidor - IPC",
+    "description_en": "Consumer price index - CPI",
     "area": "prices",
     "custom": false,
     "disabled": false,
@@ -421,8 +421,8 @@
     }
   },
   "cpi_divisions": {
-    "description": "Índice de precios al consumidor por división - IPC (mar-97, M)",
-    "description_en": "Consumer price index by division - CPI (Mar-97, M)",
+    "description": "Índice de precios al consumidor por división - IPC",
+    "description_en": "Consumer price index by division - CPI",
     "area": "prices",
     "custom": false,
     "disabled": false,
@@ -442,8 +442,8 @@
     }
   },
   "cpi_classes": {
-    "description": "Índice de precios al consumidor por división, grupo y clase - IPC (ene-11, M)",
-    "description_en": "Consumer price index by division, group and class - CPI (Jan-11, M)",
+    "description": "Índice de precios al consumidor por división, grupo y clase - IPC",
+    "description_en": "Consumer price index by division, group and class - CPI",
     "area": "prices",
     "custom": true,
     "disabled": true,
@@ -451,8 +451,8 @@
     "function": "prices.cpi_classes"
   },
   "inflation_expectations": {
-    "description": "Expectativas de inflación (ene-04, M)",
-    "description_en": "Inflation expectations (Jan-04, M)",
+    "description": "Expectativas de inflación",
+    "description_en": "Inflation expectations",
     "area": "prices",
     "custom": false,
     "disabled": false,
@@ -472,8 +472,8 @@
     }
   },
   "ppi": {
-    "description": "Índice de precios al productor de productos nacionales por letra - IPPN Plza (ene-88, M)",
-    "description_en": "Producer price index by letter - PPI (Jan-88, M)",
+    "description": "Índice de precios al productor de productos nacionales por letra - IPPN Plza",
+    "description_en": "Producer price index by letter - PPI",
     "area": "prices",
     "custom": false,
     "disabled": false,
@@ -493,8 +493,8 @@
     }
   },
   "nxr_monthly": {
-    "description": "Tipo de cambio, interbancario, mensual (abr-72, M)",
-    "description_en": "Exchange rate, interbank, monthly (Apr-72, M)",
+    "description": "Tipo de cambio, interbancario, mensual",
+    "description_en": "Exchange rate, interbank, monthly",
     "area": "prices",
     "custom": false,
     "disabled": false,
@@ -514,8 +514,8 @@
     }
   },
   "nxr_daily": {
-    "description": "Tipo de cambio, interbancario, diario (3-ene-00, D)",
-    "description_en": "Exchange rate, interbank, daily (3-Jan-00, D)",
+    "description": "Tipo de cambio, interbancario, diario",
+    "description_en": "Exchange rate, interbank, daily",
     "area": "prices",
     "custom": false,
     "disabled": false,
@@ -534,8 +534,8 @@
     }
   },
   "cpi_measures": {
-    "description": "IPC transable, no transable, subyacente y residual (mar-97, M [e])",
-    "description_en": "CPI: tradable, non-tradable, core and residual (Mar-97, M [e])",
+    "description": "IPC transable, no transable, subyacente y residual",
+    "description_en": "CPI: tradable, non-tradable, core and residual",
     "area": "prices",
     "custom": true,
     "disabled": true,
@@ -543,8 +543,8 @@
     "function": "prices.cpi_measures"
   },
   "public_utilities_prices": {
-    "description": "Tarifas públicas (mar-97, M [e])",
-    "description_en": "Public utilities prices (Mar-97, M [e])",
+    "description": "Tarifas públicas",
+    "description_en": "Public utilities prices",
     "area": "prices",
     "custom": true,
     "disabled": true,
@@ -552,8 +552,8 @@
     "function": "prices.public_utilities_prices"
   },
   "fiscal_balances": {
-    "description": "Todos los balances fiscales (ene-99, M)",
-    "description_en": "All fiscal balances (Jan-99, M)",
+    "description": "Todos los balances fiscales",
+    "description_en": "All fiscal balances",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -571,8 +571,8 @@
     }
   },
   "fiscal_balance_global_public_sector": {
-    "description": "Resultado fiscal: sector público consolidado (ene-99, M)",
-    "description_en": "Fiscal balance: consolidated public sector (Jan-99, M)",
+    "description": "Resultado fiscal: sector público consolidado",
+    "description_en": "Fiscal balance: consolidated public sector",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -590,8 +590,8 @@
     }
   },
   "fiscal_balance_nonfinancial_public_sector": {
-    "description": "Resultado fiscal: sector público no financiero (ene-99, M)",
-    "description_en": "Fiscal balance: non-financial public sector (Jan-99, M)",
+    "description": "Resultado fiscal: sector público no financiero",
+    "description_en": "Fiscal balance: non-financial public sector",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -609,8 +609,8 @@
     }
   },
   "fiscal_balance_central_government": {
-    "description": "Resultado fiscal: gobierno central-BPS (ene-99, M)",
-    "description_en": "Fiscal balance: central government-BPS (Jan-99, M)",
+    "description": "Resultado fiscal: gobierno central-BPS",
+    "description_en": "Fiscal balance: central government-BPS",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -647,8 +647,8 @@
     }
   },
   "fiscal_balance_ancap": {
-    "description": "Resultado fiscal: ANCAP (ene-01, M)",
-    "description_en": "Fiscal balance: ANCAP (Jan-01, M)",
+    "description": "Resultado fiscal: ANCAP",
+    "description_en": "Fiscal balance: ANCAP",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -666,8 +666,8 @@
     }
   },
   "fiscal_balance_ute": {
-    "description": "Resultado fiscal: UTE (ene-99, M)",
-    "description_en": "Fiscal balance: UTE (Jan-99, M)",
+    "description": "Resultado fiscal: UTE",
+    "description_en": "Fiscal balance: UTE",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -685,8 +685,8 @@
     }
   },
   "fiscal_balance_antel": {
-    "description": "Resultado fiscal: ANTEL (ene-99, M)",
-    "description_en": "Fiscal balance: ANTEL (Jan-99, M)",
+    "description": "Resultado fiscal: ANTEL",
+    "description_en": "Fiscal balance: ANTEL",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -704,8 +704,8 @@
     }
   },
   "fiscal_balance_ose": {
-    "description": "Resultado fiscal: OSE (ene-99, M)",
-    "description_en": "Fiscal balance: OSE (Jan-99, M)",
+    "description": "Resultado fiscal: OSE",
+    "description_en": "Fiscal balance: OSE",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -723,8 +723,8 @@
     }
   },
   "tax_revenue": {
-    "description": "Recaudación por impuesto (ene-82, M)",
-    "description_en": "Tax revenue by source (Jan-82, M)",
+    "description": "Recaudación por impuesto",
+    "description_en": "Tax revenue by source",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -744,8 +744,8 @@
     }
   },
   "public_debt": {
-    "description": "Todas la deuda pública (dic-99, T)",
-    "description_en": "ALl public debt (Dec-99, Q)",
+    "description": "Todas la deuda pública",
+    "description_en": "ALl public debt",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -765,8 +765,8 @@
     }
   },
   "public_debt_global_public_sector": {
-    "description": "Deuda del sector público global: por plazo contractual, residual, moneda y residencia (dic-99, T)",
-    "description_en": "General government debt: by contractual term, residual, currency and residence (Dec-99, Q)",
+    "description": "Deuda del sector público global: por plazo contractual, residual, moneda y residencia",
+    "description_en": "General government debt: by contractual term, residual, currency and residence",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -786,8 +786,8 @@
     }
   },
   "public_debt_nonfinancial_public_sector": {
-    "description": "Deuda del sector público no monetario: por plazo contractual, residual, moneda y residencia (dic-99, T)",
-    "description_en": "Non-monetary government debt: by contractual term, residual, currency and residence (Dec-99, Q)",
+    "description": "Deuda del sector público no monetario: por plazo contractual, residual, moneda y residencia",
+    "description_en": "Non-monetary government debt: by contractual term, residual, currency and residence",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -807,8 +807,8 @@
     }
   },
   "public_debt_central_bank": {
-    "description": "Deuda del Banco Central: por plazo contractual, residual, moneda y residencia (dic-99, T)",
-    "description_en": "Central bank debt: by contractual term, residual, currency and residence (Dec-99, Q)",
+    "description": "Deuda del Banco Central: por plazo contractual, residual, moneda y residencia",
+    "description_en": "Central bank debt: by contractual term, residual, currency and residence",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -828,8 +828,8 @@
     }
   },
   "public_assets": {
-    "description": "Activos del sector público (dic-99, T)",
-    "description_en": "Public assets (Dec-99, Q)",
+    "description": "Activos del sector público",
+    "description_en": "Public assets",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -849,8 +849,8 @@
     }
   },
   "fiscal_balance_summary": {
-    "description": "Resultado fiscal: Todas las agregaciones, inc. aj. FSS (ene-99, M [e])",
-    "description_en": "Fiscal balance: all aggregations, inc. FSS adjustment (Jan-99, M [e])",
+    "description": "Resultado fiscal: Todas las agregaciones, inc. aj. FSS",
+    "description_en": "Fiscal balance: all aggregations, inc. FSS adjustment",
     "area": "fiscal",
     "custom": true,
     "disabled": false,
@@ -868,8 +868,8 @@
     }
   },
   "net_public_debt_global_public_sector": {
-    "description": "Deuda neta del sector público global excl. encajes (dic-99, T [e])",
-    "description_en": "Net public debt excluding bank deposits (Dec-99, T [e])",
+    "description": "Deuda neta del sector público global excl. encajes",
+    "description_en": "Net public debt excluding bank deposits",
     "area": "fiscal",
     "custom": true,
     "disabled": false,
@@ -888,8 +888,8 @@
     }
   },
   "labor_rates": {
-    "description": "Tasas de actividad, empleo y desempleo por sexo (ene-06, M)",
-    "description_en": "Labor force participation, employment and unemployment rates by gender (Jan-06, M)",
+    "description": "Tasas de actividad, empleo y desempleo por sexo",
+    "description_en": "Labor force participation, employment and unemployment rates by gender",
     "area": "labor",
     "custom": false,
     "disabled": false,
@@ -909,8 +909,8 @@
     }
   },
   "hours_worked": {
-    "description": "Horas promedio trabajadas por sector (ene-11, M)",
-    "description_en": "Average hours worked by sector (Jan-11, M)",
+    "description": "Horas promedio trabajadas por sector",
+    "description_en": "Average hours worked by sector",
     "area": "labor",
     "custom": false,
     "disabled": false,
@@ -930,8 +930,8 @@
     }
   },
   "nominal_wages": {
-    "description": "Salarios nominales: total, públicos y privados (ene-68, M)",
-    "description_en": "Nominal wages: total, public and private (Jan-68, M)",
+    "description": "Salarios nominales: total, públicos y privados",
+    "description_en": "Nominal wages: total, public and private",
     "area": "labor",
     "custom": false,
     "disabled": false,
@@ -953,8 +953,8 @@
     }
   },
   "real_wages": {
-    "description": "Salarios reales: total, públicos y privados (ene-68, M)",
-    "description_en": "Real wages: total, public and private (Jan-68, M)",
+    "description": "Salarios reales: total, públicos y privados",
+    "description_en": "Real wages: total, public and private",
     "area": "labor",
     "custom": false,
     "disabled": false,
@@ -975,8 +975,8 @@
     }
   },
   "labor_rates_persons": {
-    "description": "Actividad, empleo y desempleo: series extendidas de tasas y personas (ene-91, M [e])",
-    "description_en": "Labor force participation, employment and unemployment: extended series of rates and people (Jan-91, M [e])",
+    "description": "Actividad, empleo y desempleo: series extendidas de tasas y personas",
+    "description_en": "Labor force participation, employment and unemployment: extended series of rates and people",
     "area": "labor",
     "custom": true,
     "disabled": false,
@@ -998,8 +998,8 @@
     }
   },
   "balance_of_payments": {
-    "description": "Balanza de pagos (mar-12, T)",
-    "description_en": "Balance of payments (Mar-12, Q)",
+    "description": "Balanza de pagos",
+    "description_en": "Balance of payments",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1019,8 +1019,8 @@
     }
   },
   "trade_exports_sector_value": {
-    "description": "Exportaciones por sector, valor (ene-00, M)",
-    "description_en": "Exports by sector, value (Jan-00, M)",
+    "description": "Exportaciones por sector, valor",
+    "description_en": "Exports by sector, value",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1040,8 +1040,8 @@
     }
   },
   "trade_exports_sector_volume": {
-    "description": "Exportaciones por sector, volumen (ene-05, M)",
-    "description_en": "Exports by sector, volume (Jan-05, M)",
+    "description": "Exportaciones por sector, volumen",
+    "description_en": "Exports by sector, volume",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1061,8 +1061,8 @@
     }
   },
   "trade_exports_sector_price": {
-    "description": "Exportaciones por sector, precio (ene-05, M)",
-    "description_en": "Exports by sector, price (Jan-05, M)",
+    "description": "Exportaciones por sector, precio",
+    "description_en": "Exports by sector, price",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1082,8 +1082,8 @@
     }
   },
   "trade_exports_destination_value": {
-    "description": "Exportaciones por destino, valor (ene-00, M)",
-    "description_en": "Exports by destination, value (Jan-00, M)",
+    "description": "Exportaciones por destino, valor",
+    "description_en": "Exports by destination, value",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1103,8 +1103,8 @@
     }
   },
   "trade_exports_destination_volume": {
-    "description": "Exportaciones por destino, volumen (ene-05, M)",
-    "description_en": "Exports by destination, volume (Jan-05, M)",
+    "description": "Exportaciones por destino, volumen",
+    "description_en": "Exports by destination, volume",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1124,8 +1124,8 @@
     }
   },
   "trade_exports_destination_price": {
-    "description": "Exportaciones por destino, precio (ene-05, M)",
-    "description_en": "Exports by destination, price (Jan-05, M)",
+    "description": "Exportaciones por destino, precio",
+    "description_en": "Exports by destination, price",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1145,8 +1145,8 @@
     }
   },
   "trade_imports_category_value": {
-    "description": "Importaciones por categoría, valor (ene-00, M)",
-    "description_en": "Imports by category, value (Jan-00, M)",
+    "description": "Importaciones por categoría, valor",
+    "description_en": "Imports by category, value",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1166,8 +1166,8 @@
     }
   },
   "trade_imports_category_volume": {
-    "description": "Importaciones por categoría, volumen (ene-05, M)",
-    "description_en": "Imports by category, volume (Jan-05, M)",
+    "description": "Importaciones por categoría, volumen",
+    "description_en": "Imports by category, volume",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1187,8 +1187,8 @@
     }
   },
   "trade_imports_category_price": {
-    "description": "Importaciones por categoría, precio (ene-05, M)",
-    "description_en": "Imports by category, price (Jan-05, M)",
+    "description": "Importaciones por categoría, precio",
+    "description_en": "Imports by category, price",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1208,8 +1208,8 @@
     }
   },
   "trade_imports_origin_value": {
-    "description": "Importaciones por origen, valor (ene-00, M)",
-    "description_en": "Imports by origin, value (Jan-00, M)",
+    "description": "Importaciones por origen, valor",
+    "description_en": "Imports by origin, value",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1229,8 +1229,8 @@
     }
   },
   "trade_imports_origin_volume": {
-    "description": "Importaciones por origen, volumen (ene-05, M)",
-    "description_en": "Imports by origin, volume (Jan-05, M)",
+    "description": "Importaciones por origen, volumen",
+    "description_en": "Imports by origin, volume",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1250,8 +1250,8 @@
     }
   },
   "trade_imports_origin_price": {
-    "description": "Importaciones por origen, precio (ene-05, M)",
-    "description_en": "Imports by origin, price (Jan-05, M)",
+    "description": "Importaciones por origen, precio",
+    "description_en": "Imports by origin, price",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1271,8 +1271,8 @@
     }
   },
   "rxr": {
-    "description": "Tipos de cambio reales, BCU (ene-00, M)",
-    "description_en": "Real exchange rates, BCU (Jan-00, M)",
+    "description": "Tipos de cambio reales, BCU",
+    "description_en": "Real exchange rates, BCU",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1292,8 +1292,8 @@
     }
   },
   "international_reserves": {
-    "description": "Reservas internacionales (26-jun-02, D)",
-    "description_en": "International reserves (26-jun-02, D)",
+    "description": "Reservas internacionales",
+    "description_en": "International reserves",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1313,8 +1313,8 @@
     }
   },
   "international_reserves_changes": {
-    "description": "Variación en las reservas del BCU por fuente (2-ene-13, D)",
-    "description_en": "Changes in BCU reserves by source (2-Jan-13, D)",
+    "description": "Variación en las reservas del BCU por fuente",
+    "description_en": "Changes in BCU reserves by source",
     "area": "external",
     "custom": false,
     "disabled": true,
@@ -1334,8 +1334,8 @@
     }
   },
   "balance_of_payments_summary": {
-    "description": "Balanza de pagos resumida y flujos de capital (mar-12, T)",
-    "description_en": "Summarized balance of payments and capital flows (Mar-12, Q)",
+    "description": "Balanza de pagos resumida y flujos de capital",
+    "description_en": "Summarized balance of payments and capital flows",
     "area": "external",
     "custom": true,
     "disabled": false,
@@ -1351,8 +1351,8 @@
     }
   },
   "trade_balance": {
-    "description": "Balanza comercial por país (ene-00, M [e])",
-    "description_en": "Trade balance by country (Jan-00, M [e])",
+    "description": "Balanza comercial por país",
+    "description_en": "Trade balance by country",
     "area": "external",
     "custom": true,
     "disabled": false,
@@ -1371,8 +1371,8 @@
     }
   },
   "terms_of_trade": {
-    "description": "Términos de intercambio (ene-05, M [e])",
-    "description_en": "Terms of trade (Jan-05, M [e])",
+    "description": "Términos de intercambio",
+    "description_en": "Terms of trade",
     "area": "external",
     "custom": true,
     "disabled": false,
@@ -1391,8 +1391,8 @@
     }
   },
   "commodity_prices": {
-    "description": "Precios de commodities seleccionados (ene-02, M [e])",
-    "description_en": "Selected commodity prices (Jan-02, M [e])",
+    "description": "Precios de commodities seleccionados",
+    "description_en": "Selected commodity prices",
     "area": "external",
     "custom": true,
     "disabled": false,
@@ -1426,8 +1426,8 @@
     }
   },
   "commodity_index": {
-    "description": "Índice econuy de precios de commodities (ene-02, M [e])",
-    "description_en": "Econuy commodity price index (Jan-02, M [e])",
+    "description": "Índice econuy de precios de commodities",
+    "description_en": "Econuy commodity price index",
     "area": "external",
     "custom": true,
     "disabled": false,
@@ -1458,8 +1458,8 @@
     }
   },
   "rxr_custom": {
-    "description": "Tipos de cambio reales, cálculos econuy (dic-79, M [e])",
-    "description_en": "Real exchange rates, econuy calculations (Dec-79, M [e])",
+    "description": "Tipos de cambio reales, cálculos econuy",
+    "description_en": "Real exchange rates, econuy calculations",
     "area": "external",
     "custom": true,
     "disabled": false,
@@ -1484,8 +1484,8 @@
     }
   },
   "bank_deposits": {
-    "description": "Depósitos en el sistema bancario (dic-98, M)",
-    "description_en": "Bank deposits (Dec-98, M)",
+    "description": "Depósitos en el sistema bancario",
+    "description_en": "Bank deposits",
     "area": "financial",
     "custom": false,
     "disabled": false,
@@ -1505,8 +1505,8 @@
     }
   },
   "bank_credit": {
-    "description": "Créditos del sistema bancario al sector no financiero (dic-98, M)",
-    "description_en": "Bank credits to non-financial sector (Dec-98, M)",
+    "description": "Créditos del sistema bancario al sector no financiero",
+    "description_en": "Bank credits to non-financial sector",
     "area": "financial",
     "custom": false,
     "disabled": false,
@@ -1526,8 +1526,8 @@
     }
   },
   "bank_interest_rates": {
-    "description": "Tasas de interés activas y pasivas (ene-98, M)",
-    "description_en": "Active and passive interest rates (Jan-98, M)",
+    "description": "Tasas de interés activas y pasivas",
+    "description_en": "Active and passive interest rates",
     "area": "financial",
     "custom": false,
     "disabled": false,
@@ -1547,8 +1547,8 @@
     }
   },
   "call_rate": {
-    "description": "Tasa call a 1 día (02-ene-02, D)",
-    "description_en": "Call rate (02-Jan-02, D)",
+    "description": "Tasa call a 1 día",
+    "description_en": "Call rate",
     "area": "financial",
     "custom": false,
     "disabled": false,
@@ -1566,8 +1566,8 @@
     }
   },
   "sovereign_risk_index": {
-    "description": "Uruguay Bond Index - riesgo soberano (01-ene-99, D)",
-    "description_en": "Uruguay Bond Index - sovereign risk (01-Jan-99, D)",
+    "description": "Uruguay Bond Index - riesgo soberano",
+    "description_en": "Uruguay Bond Index - sovereign risk",
     "area": "financial",
     "custom": false,
     "disabled": false,
@@ -1584,8 +1584,8 @@
     }
   },
   "sovereign_bond_yields": {
-    "description": "Rendimiento de bonos soberanos (02-jun-03, D [e])",
-    "description_en": "Sovereign bond yields (02-Jun-03, D [e])",
+    "description": "Rendimiento de bonos soberanos",
+    "description_en": "Sovereign bond yields",
     "area": "financial",
     "custom": true,
     "disabled": true,
@@ -1607,8 +1607,8 @@
     }
   },
   "income_household": {
-    "description": "Ingreso medio de los hogares sin valor ni aguinaldo (ene-06, M)",
-    "description_en": "Average household income (Jan-06, M)",
+    "description": "Ingreso medio de los hogares sin valor locativo ni aguinaldo",
+    "description_en": "Average household income",
     "area": "income",
     "custom": false,
     "disabled": false,
@@ -1628,8 +1628,8 @@
     }
   },
   "income_capita": {
-    "description": "Ingreso medio per cápita sin valor locativo ni aguinaldo (ene-06, M)",
-    "description_en": "Average per capita income (Jan-06, M)",
+    "description": "Ingreso medio per cápita sin valor locativo ni aguinaldo",
+    "description_en": "Average per capita income",
     "area": "income",
     "custom": false,
     "disabled": false,
@@ -1649,8 +1649,8 @@
     }
   },
   "global_gdp": {
-    "description": "PBI real desestacionalizado de EE.UU., Unión Europea, Japón y China (mar-47, T)",
-    "description_en": "Real GDP of the United States, Europe, Japan and China (Mar-47, Q)",
+    "description": "PBI real desestacionalizado de EE.UU., Unión Europea, Japón y China",
+    "description_en": "Real GDP of the United States, Europe, Japan and China",
     "area": "global",
     "custom": true,
     "disabled": true,
@@ -1672,8 +1672,8 @@
     }
   },
   "global_stock_markets": {
-    "description": "Índices bursátiles de EE.UU., Unión Europea, Japón y China (30-dic-27, D)",
-    "description_en": "Stock markets of the United States, Europe, Japan and China (30-Dec-27, D)",
+    "description": "Índices bursátiles de EE.UU., Unión Europea, Japón y China",
+    "description_en": "Stock markets of the United States, Europe, Japan and China",
     "area": "global",
     "custom": true,
     "disabled": true,
@@ -1697,8 +1697,8 @@
     }
   },
   "global_policy_rates": {
-    "description": "Tasas de interés de política monetaria de EE.UU., Eurozona, Japón y China (01-ene-46, D)",
-    "description_en": "Monetary policy interest rates of the United States, Eurozone, Japan and China (01-Jan-46, D)",
+    "description": "Tasas de interés de política monetaria de EE.UU., Eurozona, Japón y China",
+    "description_en": "Monetary policy interest rates of the United States, Eurozone, Japan and China",
     "area": "global",
     "custom": true,
     "disabled": true,
@@ -1714,8 +1714,8 @@
     }
   },
   "global_long_bond_rates": {
-    "description": "Tasas de interés de largo plazo (10 años) de EE.UU., Alemania, Francia, España, Italia, Reino Unido, Japón y China (02-ene-62, D)",
-    "description_en": "Long term interest rates (10 years) of the United States, Germany, France, Spain, Italy, United Kingdom, Japan and China (02-Jan-62, D)",
+    "description": "Tasas de interés de largo plazo (10 años) de EE.UU., Alemania, Francia, España, Italia, Reino Unido, Japón y China",
+    "description_en": "Long term interest rates (10 years) of the United States, Germany, France, Spain, Italy, United Kingdom, Japan and China",
     "area": "global",
     "custom": true,
     "disabled": true,
@@ -1723,8 +1723,8 @@
     "function": "global_.global_long_bond_rates"
   },
   "global_nxr": {
-    "description": "Cotización de monedas de EE.UU., Eurozona, Japón y China (04-ene-71, D)",
-    "description_en": "Exchange rates of the United States, Eurozone, Japan and China (04-Jan-71, D)",
+    "description": "Cotización de monedas de EE.UU., Eurozona, Japón y China",
+    "description_en": "Exchange rates of the United States, Eurozone, Japan and China",
     "area": "global",
     "custom": true,
     "disabled": true,
@@ -1748,8 +1748,8 @@
     }
   },
   "regional_gdp": {
-    "description": "PBI real desestacionalizado de Argentina y Brasil (mar-93, T)",
-    "description_en": "Real GDP of Argentina and Brazil (Mar-93, Q)",
+    "description": "PBI real desestacionalizado de Argentina y Brasil",
+    "description_en": "Real GDP of Argentina and Brazil",
     "area": "regional",
     "custom": true,
     "disabled": false,
@@ -1771,8 +1771,8 @@
     }
   },
   "regional_monthly_gdp": {
-    "description": "PBI real mensual desestacionalizado de Argentina y Brasil (ene-03, M)",
-    "description_en": "Real monthly seasonally adjusted GDP of Argentina and Brazil (Jan-03, M)",
+    "description": "PBI real mensual desestacionalizado de Argentina y Brasil",
+    "description_en": "Real monthly seasonally adjusted GDP of Argentina and Brazil",
     "area": "regional",
     "custom": true,
     "disabled": false,
@@ -1792,8 +1792,8 @@
     }
   },
   "regional_cpi": {
-    "description": "Índice de precios al consumo de Argentina y Brasil (ene-70, M)",
-    "description_en": "Consumer price index of Argentina and Brazil (Jan-70, M)",
+    "description": "Índice de precios al consumo de Argentina y Brasil",
+    "description_en": "Consumer price index of Argentina and Brazil",
     "area": "regional",
     "custom": true,
     "disabled": false,
@@ -1816,8 +1816,8 @@
     }
   },
   "regional_embi_spreads": {
-    "description": "EMBI spread (JP Morgan) de Argentina, Brasil y Global (11-dic-98, D)",
-    "description_en": "EMBI spread (JP Morgan) of Argentina, Brazil and Global (11-Dec-98, D)",
+    "description": "EMBI spread (JP Morgan) de Argentina, Brasil y Global",
+    "description_en": "EMBI spread (JP Morgan) of Argentina, Brazil and Global",
     "area": "regional",
     "custom": true,
     "disabled": false,
@@ -1837,8 +1837,8 @@
     }
   },
   "regional_embi_yields": {
-    "description": "EMBI yield (JP Morgan) de Argentina, Brasil y Global (11-dic-98, D)",
-    "description_en": "EMBI yield (JP Morgan) of Argentina, Brazil and Global (11-Dec-98, D)",
+    "description": "EMBI yield (JP Morgan) de Argentina, Brasil y Global",
+    "description_en": "EMBI yield (JP Morgan) of Argentina, Brazil and Global",
     "area": "regional",
     "custom": true,
     "disabled": false,
@@ -1857,8 +1857,8 @@
     }
   },
   "regional_nxr": {
-    "description": "Tipo de cambio nominal diario de Argentina y Brasil (9-abr-02, D)",
-    "description_en": "Nominal daily exchange rate of Argentina and Brazil (09-Apr-02, D)",
+    "description": "Tipo de cambio nominal diario de Argentina y Brasil",
+    "description_en": "Nominal daily exchange rate of Argentina and Brazil",
     "area": "regional",
     "custom": true,
     "disabled": false,
@@ -1880,8 +1880,8 @@
     }
   },
   "regional_policy_rates": {
-    "description": "Tasas de interés de política monetaria de Argentina y Brasil (4-jun-86, D)",
-    "description_en": "Monetary policy interest rates of Argentina and Brazil (04-Jun-86, D)",
+    "description": "Tasas de interés de política monetaria de Argentina y Brasil",
+    "description_en": "Monetary policy interest rates of Argentina and Brazil",
     "area": "regional",
     "custom": true,
     "disabled": false,
@@ -1897,8 +1897,8 @@
     }
   },
   "regional_stock_markets": {
-    "description": "Índices bursátiles en USD de Argentina y Brasil (9-abr-02, D)",
-    "description_en": "Stock markets in USD of Argentina and Brazil (09-Apr-02, D)",
+    "description": "Índices bursátiles en USD de Argentina y Brasil",
+    "description_en": "Stock markets in USD of Argentina and Brazil",
     "area": "regional",
     "custom": true,
     "disabled": true,
@@ -1918,8 +1918,8 @@
     }
   },
   "regional_rxr": {
-    "description": "Tipo de cambio real vs. EE.UU. de Argentina y Brasil (dic-70, M)",
-    "description_en": "Real exchange rate vs. the United States of Argentina and Brazil (Dec-70, M)",
+    "description": "Tipo de cambio real vs. EE.UU. de Argentina y Brasil",
+    "description_en": "Real exchange rate vs. the United States of Argentina and Brazil",
     "area": "regional",
     "custom": true,
     "disabled": false,
