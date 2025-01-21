@@ -30,6 +30,7 @@ def load_dataset(
     data_dir: Union[str, Path, None] = None,
     skip_cache: bool = False,
     force_overwrite: bool = False,
+    skip_update: bool = False,
 ) -> Dataset:
     """
     Load a dataset by name, optionally skipping cache and forcing overwrite.
@@ -46,6 +47,8 @@ def load_dataset(
         Default is False.
     force_overwrite : bool, optional
         If True, the existing dataset will be overwritten. Default is False.
+    skip_update : bool, optional
+        If True, the dataset will not be updated if it already exists. Default is False.
 
     Returns
     -------
@@ -67,7 +70,7 @@ def load_dataset(
         existing_dataset = read_dataset(name, data_dir)
         if existing_dataset is not None:
             created_at = existing_dataset.metadata.created_at
-            if (dt.datetime.now() - created_at) < OUTDATED_DELTA_THRESHOLD:
+            if (dt.datetime.now() - created_at) < OUTDATED_DELTA_THRESHOLD or skip_update:
                 return existing_dataset
             else:
                 print(
@@ -90,7 +93,7 @@ def load_dataset(
     signature = inspect.signature(dataset_retriever)
     parameters = signature.parameters
     if parameters:
-        dataset = dataset_retriever(data_dir, skip_cache, force_overwrite)
+        dataset = dataset_retriever(data_dir, skip_cache, force_overwrite, skip_update)
     else:
         dataset = dataset_retriever()
 
@@ -115,6 +118,7 @@ def load_datasets_parallel(
     data_dir: Union[str, Path, None] = None,
     skip_cache: bool = False,
     force_overwrite: bool = False,
+    skip_update: bool = False,
     max_workers: Optional[int] = None,
     executor_type: Literal["thread", "process"] = "thread",
 ) -> Dict[str, Dataset]:
@@ -131,6 +135,8 @@ def load_datasets_parallel(
         If True, skip loading from cache. Default is False.
     force_overwrite : bool, optional
         If True, force overwrite existing datasets. Default is False.
+    skip_update : bool, optional
+        If True, skip updating datasets that already exist. Default is False.
     max_workers : Optional[int], optional
         Maximum number of workers to use for parallel loading. If None, it will use the default number of workers.
     executor_type : Literal["thread", "process"], optional
@@ -164,7 +170,7 @@ def load_datasets_parallel(
     with executor_class(workers) as executor:
         future_to_name = {
             executor.submit(
-                load_dataset, name, data_dir, skip_cache, force_overwrite
+                load_dataset, name, data_dir, skip_cache, force_overwrite, skip_update
             ): name
             for name in names
         }
