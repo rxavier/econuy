@@ -15,7 +15,7 @@ class DatasetRegistry:
         """
         Initialize the DatasetRegistry by loading the dataset information from a JSON file.
         """
-        with open(get_project_root() / "retrieval" / "datasets.json", "r") as f:
+        with open(get_project_root() / "retrieval" / "datasets.json", "r", encoding="utf-8") as f:
             self.registry = json.load(f)
 
     def __getitem__(self, name: str) -> Dict:
