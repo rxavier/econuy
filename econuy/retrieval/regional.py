@@ -18,6 +18,7 @@ from econuy import load_dataset
 from econuy.base import Dataset, DatasetMetadata
 from econuy.utils.chromedriver import _build
 from econuy.utils.operations import get_download_sources, get_name_from_function
+from econuy.utils.retrieval import get_certs_path
 
 
 load_dotenv()
@@ -160,7 +161,8 @@ def regional_cpi() -> pd.DataFrame:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    ssl_context = ssl.create_default_context(cafile="econuy/utils/files/bcra_certs.pem")
+    certs = get_certs_path("bcra")
+    ssl_context = ssl.create_default_context(cafile=str(certs))
     arg = httpx.get(
         sources["ar"].format(
             end_date=dt.datetime.now().strftime("%Y-%m-%d"),
