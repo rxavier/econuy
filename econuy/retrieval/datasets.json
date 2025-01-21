@@ -1575,7 +1575,7 @@
     "function": "financial.sovereign_risk_index",
     "sources": {
       "downloads": {
-        "historical": "https://www4.rafap.com.uy/internet/images/indicadores/UBI_Historico.xls",
+        "historical": "https://www.rafap.com.uy/mvdcms/servlet/com.mvdcomm.cms.aucdocumento?3361,11036",
         "current": "https://www4.rafap.com.uy/internet/servlet/hextubicd"
       },
       "direct": [],
