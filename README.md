@@ -1,11 +1,9 @@
 <img src="https://i.imgur.com/o6cxmaP.jpg" width=400 style="margin-bottom:60px;">
 
-  <a href="https://www.python.org/downloads/release/python-360/"><img src="https://img.shields.io/pypi/pyversions/econuy"></a>
+  <a href="https://www.python.org/downloads/release/python-310/"><img src="https://img.shields.io/pypi/pyversions/econuy"></a>
   <a href="https://img.shields.io/pypi/l/econuy"><img src="https://img.shields.io/pypi/l/econuy"></a>
   <a href="https://pypi.org/project/econuy/"><img src="https://img.shields.io/pypi/v/econuy"></a>
-  <a href="https://travis-ci.com/rxavier/econuy"><img src="https://travis-ci.com/rxavier/econuy.svg?branch=master"></a>
   <a href="https://econuy.readthedocs.io/en/latest/?badge=latest"><img src="https://readthedocs.org/projects/econuy/badge/?version=latest"></a>
-  <a href="https://codecov.io/gh/rxavier/econuy"><img src="https://codecov.io/gh/rxavier/econuy/branch/master/graph/badge.svg"></a>
 
 # Overview
 
@@ -18,10 +16,9 @@ A webapp with a limited but interactive version of econuy is available at [econ.
 The most basic econuy workflow goes like this:
 
 ```python
-from econuy.core import Pipeline
+from econuy import load_dataset, load_datasets_parallel
 
-p = Pipeline()
-p.get("cpi")
+data1 = load_dataset("cpi")
 ```
 
 # Installation
@@ -44,46 +41,71 @@ python setup.py install
 
 **[Full API documentation available at RTD](https://econuy.readthedocs.io/en/latest/api.html)**
 
-## The `Pipeline()` class
+### Cache directory
 
-This is the recommended entry point for the package. It allows setting up the common behavior for downloads, and holds the current working dataset.
+econuy saves and reads data to a directory which by default is at the system `home / .cache / econuy`. This can be modified for all data loading by setting `ECONUY_DATA_DIR` or directly in `load_dataset(data_dir=...)`.
+
+### Dataset load branching
+
+1. Check that the dataset exists in the `REGISTRY`.
+2. Cache check:
+  - If `skip_cache=True`, **download dataset**
+  - If `skip_cache=False` (default):
+    - Check whether the dataset exists in the cache.
+      - If it exists:
+        - Recency check:
+          - If it was created in the last day, **return existing dataset**.
+          - If it was created prior to the last day and `skip_update=False`, **download dataset**.
+          - If it was created prior to the last day and `skip_update=True`, **return existing dataset**.
+      - If it does not exist, **download dataset**
+3. If the dataset was downloaded, try to update the cache:
+- Validation:
+  - If `force_overwrite=True`, **overwrite dataset**.
+  - If `force_overwrite=False` (default):
+    - If the new dataset is similar to the cached dataset, **overwrite dataset**.
+    - If the new dataset is not similar to the cached dataset, **do not overwrite dataset**.
+
+### Loading and transforming data
 
 ```python
-from econuy.core import Pipeline
+from econuy import load_dataset, load_datasets_parallel
 
-p = Pipeline(location="your_directory")
+
+# load a single dataset
+data1 = load_dataset("cpi")
+
+# load a single dataset and chain transformations
+data2 = (
+    load_dataset("fiscal_balance_nonfinancial_public_sector")
+    .select(names="Ingresos: SPNF")
+    .resample("QE-DEC", "sum")
+    .decompose(method="x13", component="t-c")
+    .filter(start_date="2014-01-01")
+    )
+```
+This returns a `Dataset` object, which contains a `Metadata` object.
+
+You can also load multiple datasets fast:
+```python
+# load multiple datasets using threads or processes
+data3 = load_datasets_parallel(["nxr_monthly", "ppi"])
 ```
 
-### The `Pipeline.get()` method
-
-Retrieves datasets (generally downloads them, unless the `download` attribute is `False` and the requested dataset exists at the `location`) and loads them into the `dataset` attribute as a Pandas DataFrame.
-
-The `Pipeline.available_datasets` attribute returns a `dict` with the available options.
+### Finding datasets
 
 ```python
-from econuy.core import Pipeline
-from sqlalchemy import create_engine
+from econuy.utils.operations import REGISTRY
 
-eng = create_engine("dialect+driver://user:pwd@host:port/database")
 
-p = Pipeline(location=eng)
-p.get("industrial_production")
+REGISTRY.list_available()
+REGISTRY.list_by_area("activity")
 ```
-
-Which also shows that econuy supports SQLAlchemy `Engine` or `Connection` objects.
-
-Note that every time a dataset is retrieved, `Pipeline` will
-1. Check if a previous version exists at `location`. If it does, it will read it and combine it with the new data (unless `download=False`, in which case only existing data will be retrieved)
-2. Save the dataset to `location`, unless the `always_save` attribute is set to `False` or no new data is available.
-
-Data can be written and read to and from CSV or Excel files (controlled by the `read_fmt` and `save_fmt` attributes) or SQL (automatically determined from `location`).
-
 ### Dataset metadata
 
-Metadata for each dataset is held in Pandas MultiIndexes with the following:
+Datasets include the following metadata per indicator:
 
 1. Indicator name
-2. Topic or area
+2. Area
 3. Frequency
 4. Currency
 5. Inflation adjustment
@@ -92,11 +114,9 @@ Metadata for each dataset is held in Pandas MultiIndexes with the following:
 8. Type (stock or flow)
 9. Cumulative periods
 
-When writing, metadata can be included as dataset headers (Pandas MultiIndex columns), placed on another sheet if writing to Excel, or dropped. This is controlled by `read_header` and `save_header`.
+### Transformation methods
 
-### Pipeline transformation methods
-
-`Pipeline` objects with a valid dataset can access 6 transformation methods that modify the held dataset.
+`Dataset` objects have multiple methods to transform their underlying data and update their metadata.
 
 * `resample()` - resample data to a different frequency, taking into account whether data is of stock or flow type.
 * `chg_diff()` - calculate percent changes or differences for same period last year, last period or at annual rate.
@@ -104,52 +124,6 @@ When writing, metadata can be included as dataset headers (Pandas MultiIndex col
 * `convert()` - convert to US dollars, constant prices or percent of GDP.
 * `rebase()` - set a period or window as 100, scale rest accordingly
 * `rolling()` - calculate rolling windows, either average or sum.
-
-```python
-from econuy.core import Pipeline
-
-p = Pipeline()
-p.get("fiscal_balance_global_public_sector").convert(flavor="usd").resample(rule="A-DEC", operation="sum")
-```
-
-### Saving the current dataset
-
-While `Pipeline.get()` will generally save the retrieved dataset to `location`, transformation methods won't automatically write data.
-
-However, `Pipeline.save()` can be used, which will overwrite the file on disk (or SQL table) with the contents in `dataset`.
-
-## The `Session()` class
-
-Like a `Pipeline`, except it can hold several datasets.
-
-The `datasets` attribute is a `dict` of name-DataFrame pairs. Additionally, `Session.get()` accepts a sequence of strings representing several datasets.
-
-Transformation and saving methods support a `select` parameter that determines which held datasets are considered.
-
-```python
-from econuy.session import Session
-
-s = Session(location="your/directory")
-s.get(["cpi", "nxr_monthly"]).get("commodity_index").rolling(window=12, operation="mean", select=["nxr_monthly", "commodity_index"])
-```
-
-`Session.get_bulk()` makes it easy to get several datasets in one line.
-
-```python
-from econuy.session import Session
-
-s = Session()
-s.get_bulk("all")
-```
-
-```python
-from econuy.session import Session
-
-s = Session()
-s.get_bulk("fiscal_accounts")
-```
-
-`Session.concat()` combines selected datasets into a single DataFrame with a common frequency, and adds it as a new key-pair in `datasets`.
 
 ## External binaries and libraries
 
@@ -159,8 +133,6 @@ The [patool](https://github.com/wummel/patool) package is used in order to acces
 
 ----
 
-# Caveats and plans
-
-## Caveats
+# Caveats
 
 This project is heavily based on getting data from online sources that could change without notice, causing methods that download data to fail. While I try to stay on my toes and fix these quickly, it helps if you create an issue when you find one of these (or even submit a fix!).
