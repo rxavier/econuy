@@ -212,7 +212,7 @@
     "function": "activity.livestock_slaughter",
     "sources": {
       "downloads": {
-        "main": "https://www.inac.uy/innovaportal/file/11998/1/evolucion-semanal-faena-bovinos-y-ovinos.xlsx"
+        "main": "https://github.com/rxavier/econuy-extras/raw/refs/heads/main/econuy_extras/retrieval/faena.xlsx"
       },
       "direct": [
         "https://www.inac.uy/innovaportal/file/11998/1/evolucion-semanal-faena-bovinos-y-ovinos.xlsx"
@@ -1400,7 +1400,7 @@
     "function": "external.commodity_prices",
     "sources": {
       "downloads": {
-        "beef": "https://www.inac.uy/innovaportal/file/9799/1/evolucion-semanal-exportacion_total-sector-carnico.xlsx",
+        "beef": "https://github.com/rxavier/econuy-extras/raw/refs/heads/main/econuy_extras/retrieval/precios.xlsx",
         "pulp": "https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600341?ordre=antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=12&anneeFin={year}",
         "milk1": "https://www.inale.org/estadisticas/",
         "milk2": "https://agriculture.ec.europa.eu/document/download/62d01488-33a0-4601-a841-ca48fa11d999_en?filename=eu-milk-historical-price-series_en_0.xlsx",
