@@ -1,5 +1,4 @@
 import datetime as dt
-import re
 import time
 from io import BytesIO, StringIO
 from urllib.error import HTTPError, URLError
@@ -355,7 +354,6 @@ def sovereign_risk_index() -> pd.DataFrame:
             index_col=0,
             sheet_name="Valores de Cierre Diarios",
         )
-        r_current = httpx.get(sources["current"])
     except (ConnectError, URLError, HTTPError):
         r_historical = httpx.get(sources["historical"], verify=False)
         historical = pd.read_excel(
@@ -365,13 +363,15 @@ def sovereign_risk_index() -> pd.DataFrame:
             index_col=0,
             sheet_name="Valores de Cierre Diarios",
         )
-        r_current = httpx.get(sources["current"], verify=False)
-    raw_string = re.findall(r"value='(.+)'", r_current.text)[0]
-    raw_list = raw_string.split("],")
-    raw_list = [re.sub(r'["\[\]]', "", line) for line in raw_list]
-    index = [x.split(",")[0] for x in raw_list]
-    values = [x.split(",")[1] for x in raw_list]
-    current = pd.DataFrame(data=values, index=index, columns=["UBI"])
+    driver = _build()
+    driver.get(sources["current"])
+    text = driver.page_source
+    current = (
+        pd.read_html(StringIO(text))[0]
+        .set_index("Fecha")
+        .rename_axis(None)
+        .rename(columns={"Valor": "UBI"})
+    )
     current.index = pd.to_datetime(current.index, format="%d/%m/%y")
     output = pd.concat([historical, current])
     output = output.loc[~output.index.duplicated(keep="last")]
