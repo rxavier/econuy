@@ -378,18 +378,10 @@ def commodity_prices() -> Dataset:
     """
     name = get_name_from_function()
     sources = get_download_sources(name)
-    try:
-        raw_beef = pd.read_excel(
-            sources["beef"], header=4, index_col=0, thousands="."
-        ).dropna(how="all")
-    except URLError as err:
-        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
-            r_bytes = get_with_ssl_context("inac", sources["beef"])
-            raw_beef = pd.read_excel(
-                r_bytes, header=4, index_col=0, thousands="."
+    r_bytes = get_with_ssl_context("inac", sources["beef"])
+    raw_beef = pd.read_excel(
+                r_bytes, header=4, index_col=0, thousands=".", usecols="A:D"
             ).dropna(how="all")
-        else:
-            raise err
 
     raw_beef.columns = raw_beef.columns.str.strip()
     proc_beef = raw_beef["Ing. Prom./Ton."].to_frame()

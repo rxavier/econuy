@@ -212,13 +212,13 @@
     "function": "activity.livestock_slaughter",
     "sources": {
       "downloads": {
-        "main": "https://www.inac.uy/innovaportal/v/11998/10/innova.front/serie-semanal-faena---bovinos-y-ovinos"
+        "main": "https://www.inac.uy/innovaportal/file/11998/1/evolucion-semanal-faena-bovinos-y-ovinos.xlsx"
       },
       "direct": [
-        "https://www.inac.uy/innovaportal/v/11998/10/innova.front/serie-semanal-faena---bovinos-y-ovinos"
+        "https://www.inac.uy/innovaportal/file/11998/1/evolucion-semanal-faena-bovinos-y-ovinos.xlsx"
       ],
       "indirect": [
-        "https://www.inac.uy/innovaportal/v/5539/10/innova.front/faena"
+        "https://www.inac.uy/innovaportal/v/5539/37/innova.bs/faena"
       ],
       "provider": ["INAC"]
     }
@@ -1400,20 +1400,20 @@
     "function": "external.commodity_prices",
     "sources": {
       "downloads": {
-        "beef": "https://www.inac.uy/innovaportal/v/9799/10/innova.front/serie-semanal-ingreso-medio-de-exportacion---bovino-ovino-y-otros-productos",
+        "beef": "https://www.inac.uy/innovaportal/file/9799/1/evolucion-semanal-exportacion_total-sector-carnico.xlsx",
         "pulp": "https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600341?ordre=antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=12&anneeFin={year}",
         "milk1": "https://www.inale.org/estadisticas/",
         "milk2": "https://agriculture.ec.europa.eu/document/download/62d01488-33a0-4601-a841-ca48fa11d999_en?filename=eu-milk-historical-price-series_en_0.xlsx",
         "imf": "https://www.imf.org/en/Research/commodity-prices"
       },
       "direct": [
-        "https://www.inac.uy/innovaportal/v/9799/10/innova.front/serie-semanal-ingreso-medio-de-exportacion---bovino-ovino-y-otros-productos",
+        "https://www.inac.uy/innovaportal/file/9799/1/evolucion-semanal-exportacion_total-sector-carnico.xlsx",
         "https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600341?ordre=antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=12&anneeFin=2023",
         "https://data.nasdaq.com/api/v3/datasets/ODA/PWHEAMT_USD.csv?api_key=3TPxACcrxy9WsE871Lqe",
         "https://agriculture.ec.europa.eu/document/download/62d01488-33a0-4601-a841-ca48fa11d999_en?filename=eu-milk-historical-price-series_en_0.xlsx"
       ],
       "indirect": [
-        "https://www.inac.uy/innovaportal/v/5541/10/innova.front/precios",
+        "https://www.inac.uy/innovaportal/v/5541/37/innova.bs/precios",
         "https://www.insee.fr/fr/statistiques/serie/010600339",
         "https://www.imf.org/en/Research/commodity-prices",
         "https://www.inale.org/estadisticas/",

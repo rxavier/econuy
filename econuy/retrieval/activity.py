@@ -1151,8 +1151,9 @@ def livestock_slaughter() -> Dataset:
     """
     name = get_name_from_function()
     sources = get_download_sources(name)
-
-    excel = pd.ExcelFile(sources["main"])
+    
+    r_bytes = get_with_ssl_context("inac", sources["main"])
+    excel = pd.ExcelFile(r_bytes)
     cattle = pd.read_excel(excel, sheet_name="BOVINOS", skiprows=8, usecols="C:H")
     sheep = pd.read_excel(excel, sheet_name="OVINOS", skiprows=8, usecols="C:H")
     output = pd.concat([cattle, sheep], axis=1).fillna(0).astype(int)
