@@ -15,7 +15,9 @@ class DatasetRegistry:
         """
         Initialize the DatasetRegistry by loading the dataset information from a JSON file.
         """
-        with open(get_project_root() / "retrieval" / "datasets.json", "r", encoding="utf-8") as f:
+        with open(
+            get_project_root() / "retrieval" / "datasets.json", "r", encoding="utf-8"
+        ) as f:
             self.registry = json.load(f)
 
     def __getitem__(self, name: str) -> Dict:
@@ -59,7 +61,11 @@ class DatasetRegistry:
         dict
             A dictionary containing all available datasets.
         """
-        return {k: v for k, v in self.registry.items() if not v["disabled"] and not v["auxiliary"]}
+        return {
+            k: v
+            for k, v in self.registry.items()
+            if not v["disabled"] and not v["auxiliary"]
+        }
 
     def get_custom(self) -> Dict:
         """

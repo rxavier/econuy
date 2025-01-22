@@ -17,7 +17,6 @@ from shutil import copyfile
 sys.path.insert(0, os.path.abspath("../../"))
 
 
-
 copyfile("../../README.md", "README.md")
 
 # -- Project information -----------------------------------------------------
@@ -46,7 +45,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "recommonmark",
-    "sphinx_rtd_theme"
+    "sphinx_rtd_theme",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

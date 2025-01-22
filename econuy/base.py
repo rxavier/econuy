@@ -102,8 +102,10 @@ class DatasetMetadata:
         common_metadata = {}
 
         for key, value in first_metadata.items():
-            if all(metadata_wo_full_names[indicator].get(key) == value
-                  for indicator in self.indicator_ids):
+            if all(
+                metadata_wo_full_names[indicator].get(key) == value
+                for indicator in self.indicator_ids
+            ):
                 common_metadata[key] = value
 
         return common_metadata
@@ -570,13 +572,26 @@ class Dataset:
             transformed=self.transformed,
         )
 
-    def select(self, ids: Union[str, List[str], None] = None, names: Union[str, List[str], None] = None, language: str = "es") -> "Dataset":
-        assert ids is not None or names is not None, "Either 'ids' or 'names' must be provided."
-        assert ids is None or names is None, "Only one of 'ids' or 'names' can be provided."
+    def select(
+        self,
+        ids: Union[str, List[str], None] = None,
+        names: Union[str, List[str], None] = None,
+        language: str = "es",
+    ) -> "Dataset":
+        assert (
+            ids is not None or names is not None
+        ), "Either 'ids' or 'names' must be provided."
+        assert (
+            ids is None or names is None
+        ), "Only one of 'ids' or 'names' can be provided."
 
         if ids is None:
             names = [names] if isinstance(names, str) else names
-            ids = [k for k, v in self.metadata.indicator_metadata.items() if v["names"][language] in names]
+            ids = [
+                k
+                for k, v in self.metadata.indicator_metadata.items()
+                if v["names"][language] in names
+            ]
         return self.__getitem__(ids)
 
     def filter(

@@ -380,8 +380,8 @@ def commodity_prices() -> Dataset:
     sources = get_download_sources(name)
     r_bytes = get_with_ssl_context("inac", sources["beef"])
     raw_beef = pd.read_excel(
-                r_bytes, header=4, index_col=0, thousands=".", usecols="A:D"
-            ).dropna(how="all")
+        r_bytes, header=4, index_col=0, thousands=".", usecols="A:D"
+    ).dropna(how="all")
 
     raw_beef.columns = raw_beef.columns.str.strip()
     proc_beef = raw_beef["Ing. Prom./Ton."].to_frame()
