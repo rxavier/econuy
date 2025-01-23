@@ -527,7 +527,7 @@ def national_accounts_demand_constant_nsa_extended(*args, **kwargs) -> Dataset:
     data_16.columns = data_16.columns.get_level_values(0)
     data_16 = data_16.drop(["Variación de existencias"], axis=1)
 
-    spanish_names = [
+    data_05_names = [
         "Gasto de consumo final",
         "Gasto de consumo final de hogares",
         "Gasto de consumo final del gobierno general",
@@ -552,7 +552,7 @@ def national_accounts_demand_constant_nsa_extended(*args, **kwargs) -> Dataset:
         start="2005-03-31", freq="QE-DEC", periods=len(data_05)
     )
     data_05 = data_05.apply(pd.to_numeric, errors="coerce").rename_axis(None)
-    data_05.columns = spanish_names
+    data_05.columns = data_05_names
     data_05["Importaciones"] = data_05["Importaciones"] * -1
 
     data_05 = data_05.drop(["Sector público", "Sector privado"], axis=1)
@@ -600,7 +600,16 @@ def national_accounts_demand_constant_nsa_extended(*args, **kwargs) -> Dataset:
                 * data_83.loc[quarter, :]
                 / data_83.loc[next_quarter, :]
             )
-
+    spanish_names = [
+        "Gasto de consumo final",
+        "Gasto de consumo final de hogares",
+        "Gasto de consumo final del gobierno general",
+        "Formación bruta de capital",
+        "Formación bruta de capital fijo",
+        "Exportaciones",
+        "Importaciones",
+        "Producto bruto interno",
+    ]
     ids = [f"{name}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
