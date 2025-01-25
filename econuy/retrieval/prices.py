@@ -453,6 +453,7 @@ def nxr_daily() -> Dataset:
 
     output = pd.read_excel(sources["main"], usecols="A,D", index_col=0)
     output.index = pd.to_datetime(output.index, format="%d-%m-%Y")
+    output = output.loc[~output.index.duplicated(keep="last")]
 
     spanish_names = ["Tipo de cambio venta"]
     ids = [f"{name}_{i}" for i in range(output.shape[1])]
