@@ -466,7 +466,7 @@ def nxr_daily() -> Dataset:
         "inflation_adjustment": None,
         "unit": "UYU/USD",
         "seasonal_adjustment": None,
-        "frequency": "ME",
+        "frequency": "D",
         "time_series_type": None,
         "cumulative_periods": 1,
         "transformations": [],
