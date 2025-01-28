@@ -405,7 +405,9 @@ def commodity_prices() -> Dataset:
     raw_milk.drop(["Promedio ", "Variación"], axis=1, inplace=True)
     raw_milk.columns = ["Año/Mes"] + list(range(1, 13))
     proc_milk = pd.melt(raw_milk, id_vars=["Año/Mes"])
-    proc_milk.sort_values(by=["Año/Mes", "variable"], inplace=True)
+    proc_milk["Año/Mes"] = pd.to_numeric(proc_milk["Año/Mes"], errors="coerce")
+    proc_milk = proc_milk.dropna(subset=["Año/Mes"])
+    proc_milk = proc_milk.sort_values(by=["Año/Mes", "variable"])
     proc_milk.index = pd.date_range(
         start="2007-01-31", periods=len(proc_milk), freq="ME"
     )
