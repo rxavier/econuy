@@ -3,7 +3,11 @@ from pandas.tseries.offsets import MonthEnd
 
 from econuy.base import Dataset, DatasetMetadata
 from econuy import load_dataset
-from econuy.utils.operations import get_name_from_function, get_download_sources, get_dataset_columns
+from econuy.utils.operations import (
+    get_name_from_function,
+    get_download_sources,
+    get_dataset_columns,
+)
 
 
 def labor_rates_gender() -> Dataset:
@@ -334,7 +338,9 @@ def unemployment_conditions() -> Dataset:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    raw = pd.read_excel(sources["main"], skiprows=9, na_values=[".."], usecols="A:I").dropna(axis=0, thresh=2)
+    raw = pd.read_excel(
+        sources["main"], skiprows=9, na_values=[".."], usecols="A:I"
+    ).dropna(axis=0, thresh=2)
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
     output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
     output = output.drop(columns="Unnamed: 0")
@@ -378,7 +384,9 @@ def unemployment_duration() -> Dataset:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    raw = pd.read_excel(sources["main"], skiprows=9, usecols="A,J").dropna(axis=0, thresh=2)
+    raw = pd.read_excel(sources["main"], skiprows=9, usecols="A,J").dropna(
+        axis=0, thresh=2
+    )
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
     output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
     output = output.drop(columns="Unnamed: 0")

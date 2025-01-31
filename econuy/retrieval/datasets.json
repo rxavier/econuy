@@ -17,7 +17,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "national_accounts_demand_constant_nsa": {
@@ -38,7 +40,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-Componente-del-gasto.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "national_accounts_supply_current_nsa": {
@@ -59,7 +63,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "national_accounts_demand_current_nsa": {
@@ -80,7 +86,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-Componente-del-gasto.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "gdp_index_constant_sa": {
@@ -101,7 +109,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "monthly_gdp": {
@@ -120,7 +130,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Informe-del-Indicador-Mensual-de-Actividad-Economica-(IMAE).aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "industrial_production": {
@@ -142,7 +154,9 @@
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ivfim-base-2018100"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "electricity_sales": {
@@ -161,7 +175,9 @@
       "indirect": [
         "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-energia-electrica"
       ],
-      "provider": ["MIEM"]
+      "provider": [
+        "MIEM"
+      ]
     }
   },
   "gasoline_sales": {
@@ -180,7 +196,9 @@
       "indirect": [
         "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-petroleo-derivados"
       ],
-      "provider": ["MIEM"]
+      "provider": [
+        "MIEM"
+      ]
     }
   },
   "diesel_sales": {
@@ -199,7 +217,9 @@
       "indirect": [
         "https://www.gub.uy/ministerio-industria-energia-mineria/datos-y-estadisticas/datos/series-estadisticas-petroleo-derivados"
       ],
-      "provider": ["MIEM"]
+      "provider": [
+        "MIEM"
+      ]
     }
   },
   "livestock_slaughter": {
@@ -220,7 +240,9 @@
       "indirect": [
         "https://www.inac.uy/innovaportal/v/5539/37/innova.bs/faena"
       ],
-      "provider": ["INAC"]
+      "provider": [
+        "INAC"
+      ]
     }
   },
   "milk_shipments": {
@@ -236,8 +258,12 @@
         "main": "https://www.inale.org/estadisticas/remision-a-planta/"
       },
       "direct": [],
-      "indirect": ["https://www.inale.org/estadisticas/remision-a-planta/"],
-      "provider": ["INALE"]
+      "indirect": [
+        "https://www.inale.org/estadisticas/remision-a-planta/"
+      ],
+      "provider": [
+        "INALE"
+      ]
     }
   },
   "core_industrial_production": {
@@ -260,7 +286,9 @@
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ivfim-base-2018100",
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ivfim-base-2006100"
       ],
-      "provider": ["econuy en base a INE"]
+      "provider": [
+        "econuy en base a INE"
+      ]
     }
   },
   "national_accounts_supply_constant_nsa_extended": {
@@ -286,7 +314,9 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/PRESENTACION83t.HTM",
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "national_accounts_demand_constant_nsa_extended": {
@@ -312,7 +342,9 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/PRESENTACION83t.HTM",
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-Componente-del-gasto.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "gdp_index_constant_sa_extended": {
@@ -338,7 +370,9 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/PRESENTACION83t.HTM",
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "gdp_constant_nsa_extended": {
@@ -364,7 +398,9 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Cuentas%20Nacionales/base_1983/PRESENTACION83t.HTM",
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "gdp_current_nsa_extended": {
@@ -387,7 +423,9 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/estudios/Paginas/Detalle.aspx?itm=49",
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "gdp_denominator": {
@@ -417,7 +455,9 @@
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ipc-base-octubre-2022100"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "cpi_divisions": {
@@ -438,7 +478,9 @@
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ipc-base-octubre-2022100"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "cpi_classes": {
@@ -468,7 +510,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Encuesta-Inflacion.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "ppi": {
@@ -489,7 +533,9 @@
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ippn-base-octubre-2024100"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "nxr_monthly": {
@@ -510,7 +556,9 @@
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/cotizacion-monedas"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "nxr_daily": {
@@ -525,12 +573,15 @@
       "downloads": {
         "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/Cotizaci%C3%B3n%20monedas/Cotizaci%C3%B3n%20monedas.xlsx"
       },
-      "direct": ["https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/Cotizaci%C3%B3n%20monedas/Cotizaci%C3%B3n%20monedas.xlsx"
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/Cotizaci%C3%B3n%20monedas/Cotizaci%C3%B3n%20monedas.xlsx"
       ],
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-cotizacion%20monedas"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "cpi_measures": {
@@ -567,7 +618,9 @@
       "indirect": [
         "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
       ],
-      "provider": ["MEF"]
+      "provider": [
+        "MEF"
+      ]
     }
   },
   "fiscal_balance_global_public_sector": {
@@ -586,7 +639,9 @@
       "indirect": [
         "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
       ],
-      "provider": ["MEF"]
+      "provider": [
+        "MEF"
+      ]
     }
   },
   "fiscal_balance_nonfinancial_public_sector": {
@@ -605,7 +660,9 @@
       "indirect": [
         "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
       ],
-      "provider": ["MEF"]
+      "provider": [
+        "MEF"
+      ]
     }
   },
   "fiscal_balance_central_government": {
@@ -624,7 +681,9 @@
       "indirect": [
         "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
       ],
-      "provider": ["MEF"]
+      "provider": [
+        "MEF"
+      ]
     }
   },
   "fiscal_balance_soe": {
@@ -643,7 +702,9 @@
       "indirect": [
         "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
       ],
-      "provider": ["MEF"]
+      "provider": [
+        "MEF"
+      ]
     }
   },
   "fiscal_balance_ancap": {
@@ -662,7 +723,9 @@
       "indirect": [
         "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
       ],
-      "provider": ["MEF"]
+      "provider": [
+        "MEF"
+      ]
     }
   },
   "fiscal_balance_ute": {
@@ -681,7 +744,9 @@
       "indirect": [
         "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
       ],
-      "provider": ["MEF"]
+      "provider": [
+        "MEF"
+      ]
     }
   },
   "fiscal_balance_antel": {
@@ -700,7 +765,9 @@
       "indirect": [
         "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
       ],
-      "provider": ["MEF"]
+      "provider": [
+        "MEF"
+      ]
     }
   },
   "fiscal_balance_ose": {
@@ -719,7 +786,9 @@
       "indirect": [
         "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
       ],
-      "provider": ["MEF"]
+      "provider": [
+        "MEF"
+      ]
     }
   },
   "tax_revenue": {
@@ -740,7 +809,9 @@
         "https://www.gub.uy/direccion-general-impositiva/datos-y-estadisticas/estadisticas/recaudacion-anual-mensual-impuesto",
         "https://www.dgi.gub.uy/wdgi/page?2,principal,dgi--datos-y-series-estadisticas--informes-mensuales-de-la-recaudacion-{year},O,es,0,"
       ],
-      "provider": ["DGI"]
+      "provider": [
+        "DGI"
+      ]
     }
   },
   "public_debt": {
@@ -761,7 +832,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Finanzas-Publicas.aspx#deudap%C3%BAblica"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "public_debt_global_public_sector": {
@@ -782,7 +855,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Finanzas-Publicas.aspx#deudap%C3%BAblica"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "public_debt_nonfinancial_public_sector": {
@@ -803,7 +878,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Finanzas-Publicas.aspx#deudap%C3%BAblica"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "public_debt_central_bank": {
@@ -824,7 +901,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Finanzas-Publicas.aspx#deudap%C3%BAblica"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "public_assets": {
@@ -845,7 +924,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Finanzas-Publicas.aspx#deudap%C3%BAblica"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "fiscal_balance_summary": {
@@ -864,7 +945,9 @@
       "indirect": [
         "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
       ],
-      "provider": ["MEF"]
+      "provider": [
+        "MEF"
+      ]
     }
   },
   "net_public_debt_global_public_sector": {
@@ -884,7 +967,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"
       ],
-      "provider": ["econuy en base a BCU"]
+      "provider": [
+        "econuy en base a BCU"
+      ]
     }
   },
   "labor_rates_gender": {
@@ -905,7 +990,9 @@
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "activity_region": {
@@ -916,7 +1003,23 @@
     "disabled": false,
     "auxiliary": false,
     "function": "labor.activity_region",
-    "indicator_ids": {"1": {"es": "Total"}, "2": {"es": "Montevideo"}, "3": {"es": "Interior"}, "4": {"es": "Localidades de 5.000+"}, "5": {"es": "Localidades pequeñas y zonas rurales"}},
+    "indicator_ids": {
+      "1": {
+        "es": "Total"
+      },
+      "2": {
+        "es": "Montevideo"
+      },
+      "3": {
+        "es": "Interior"
+      },
+      "4": {
+        "es": "Localidades de 5.000+"
+      },
+      "5": {
+        "es": "Localidades pequeñas y zonas rurales"
+      }
+    },
     "sources": {
       "downloads": {
         "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0011.xlsx"
@@ -927,7 +1030,9 @@
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "employment_region": {
@@ -938,7 +1043,23 @@
     "disabled": false,
     "auxiliary": false,
     "function": "labor.employment_region",
-    "indicator_ids": {"1": {"es": "Total"}, "2": {"es": "Montevideo"}, "3": {"es": "Interior"}, "4": {"es": "Localidades de 5.000+"}, "5": {"es": "Localidades pequeñas y zonas rurales"}},
+    "indicator_ids": {
+      "1": {
+        "es": "Total"
+      },
+      "2": {
+        "es": "Montevideo"
+      },
+      "3": {
+        "es": "Interior"
+      },
+      "4": {
+        "es": "Localidades de 5.000+"
+      },
+      "5": {
+        "es": "Localidades pequeñas y zonas rurales"
+      }
+    },
     "sources": {
       "downloads": {
         "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0012.xlsx"
@@ -949,7 +1070,9 @@
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "unemployment_region": {
@@ -960,7 +1083,23 @@
     "disabled": false,
     "auxiliary": false,
     "function": "labor.unemployment_region",
-    "indicator_ids": {"1": {"es": "Total"}, "2": {"es": "Montevideo"}, "3": {"es": "Interior"}, "4": {"es": "Localidades de 5.000+"}, "5": {"es": "Localidades pequeñas y zonas rurales"}},
+    "indicator_ids": {
+      "1": {
+        "es": "Total"
+      },
+      "2": {
+        "es": "Montevideo"
+      },
+      "3": {
+        "es": "Interior"
+      },
+      "4": {
+        "es": "Localidades de 5.000+"
+      },
+      "5": {
+        "es": "Localidades pequeñas y zonas rurales"
+      }
+    },
     "sources": {
       "downloads": {
         "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0013.xlsx"
@@ -971,7 +1110,9 @@
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "employment_age": {
@@ -982,7 +1123,17 @@
     "disabled": false,
     "auxiliary": false,
     "function": "labor.employment_age",
-    "indicator_ids": {"1": {"es": "Total"}, "2": {"es": "Menores de 25 años"}, "3": {"es": "25 años y más"}},
+    "indicator_ids": {
+      "1": {
+        "es": "Total"
+      },
+      "2": {
+        "es": "Menores de 25 años"
+      },
+      "3": {
+        "es": "25 años y más"
+      }
+    },
     "sources": {
       "downloads": {
         "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0303.xlsx"
@@ -993,7 +1144,9 @@
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "unemployment_contributions": {
@@ -1004,7 +1157,35 @@
     "disabled": false,
     "auxiliary": false,
     "function": "labor.unemployment_contributions",
-    "indicator_ids": {"1": {"es": "Total"}, "2": {"es": "Buscan por primera vez"}, "3": {"es": "Desocupados propiamente dichos"}, "4": {"es": "Hombre"}, "5": {"es": "Mujer"}, "6": {"es": "Menores de 25 años"}, "7": {"es": "25 años y más"}, "8": {"es": "Jefe"}, "9": {"es": "No jefe"}},
+    "indicator_ids": {
+      "1": {
+        "es": "Total"
+      },
+      "2": {
+        "es": "Buscan por primera vez"
+      },
+      "3": {
+        "es": "Desocupados propiamente dichos"
+      },
+      "4": {
+        "es": "Hombre"
+      },
+      "5": {
+        "es": "Mujer"
+      },
+      "6": {
+        "es": "Menores de 25 años"
+      },
+      "7": {
+        "es": "25 años y más"
+      },
+      "8": {
+        "es": "Jefe"
+      },
+      "9": {
+        "es": "No jefe"
+      }
+    },
     "sources": {
       "downloads": {
         "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0403.xlsx"
@@ -1015,7 +1196,9 @@
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "unemployment_characteristics": {
@@ -1026,7 +1209,35 @@
     "disabled": false,
     "auxiliary": false,
     "function": "labor.unemployment_characteristics",
-    "indicator_ids": {"1": {"es": "Total"}, "2": {"es": "Menores de 25 años: total"}, "3": {"es": "Menores de 25 años: hombres"}, "4": {"es": "Menores de 25 años: mujeres"}, "5": {"es": "25 años y más: total"}, "6": {"es": "25 años y más: hombres"}, "7": {"es": "25 años y más: mujeres"}, "8": {"es": "Jefe"}, "9": {"es": "No jefe"}},
+    "indicator_ids": {
+      "1": {
+        "es": "Total"
+      },
+      "2": {
+        "es": "Menores de 25 años: total"
+      },
+      "3": {
+        "es": "Menores de 25 años: hombres"
+      },
+      "4": {
+        "es": "Menores de 25 años: mujeres"
+      },
+      "5": {
+        "es": "25 años y más: total"
+      },
+      "6": {
+        "es": "25 años y más: hombres"
+      },
+      "7": {
+        "es": "25 años y más: mujeres"
+      },
+      "8": {
+        "es": "Jefe"
+      },
+      "9": {
+        "es": "No jefe"
+      }
+    },
     "sources": {
       "downloads": {
         "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0503.xlsx"
@@ -1037,7 +1248,9 @@
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "unemployment_conditions": {
@@ -1048,7 +1261,32 @@
     "disabled": false,
     "auxiliary": false,
     "function": "labor.unemployment_conditions",
-    "indicator_ids": {"1": {"es": "Total"}, "2": {"es": "Sin condiciones"}, "3": {"es": "Conocimiento o experiencia"}, "4": {"es": "Baja carga horaria"}, "5": {"es": "Horario especial"}, "6": {"es": "Salariales"}, "7": {"es": "Lugar de trabajo"}, "8": {"es": "Horario flexible"}},
+    "indicator_ids": {
+      "1": {
+        "es": "Total"
+      },
+      "2": {
+        "es": "Sin condiciones"
+      },
+      "3": {
+        "es": "Conocimiento o experiencia"
+      },
+      "4": {
+        "es": "Baja carga horaria"
+      },
+      "5": {
+        "es": "Horario especial"
+      },
+      "6": {
+        "es": "Salariales"
+      },
+      "7": {
+        "es": "Lugar de trabajo"
+      },
+      "8": {
+        "es": "Horario flexible"
+      }
+    },
     "sources": {
       "downloads": {
         "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0603.xlsx"
@@ -1059,7 +1297,9 @@
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "unemployment_duration": {
@@ -1070,7 +1310,11 @@
     "disabled": false,
     "auxiliary": false,
     "function": "labor.unemployment_duration",
-    "indicator_ids": {"1": {"es": "Duración media del desempleo"}},
+    "indicator_ids": {
+      "1": {
+        "es": "Duración media del desempleo"
+      }
+    },
     "sources": {
       "downloads": {
         "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0603.xlsx"
@@ -1081,7 +1325,9 @@
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "employment_characteristics": {
@@ -1092,7 +1338,23 @@
     "disabled": false,
     "auxiliary": false,
     "function": "labor.employment_characteristics",
-    "indicator_ids": {"1": {"es": "Total"}, "2": {"es": "Subempleo registrado"}, "3": {"es": "Subempleo no registrado simultáneo"}, "4": {"es": "No registrado"}, "5": {"es": "Sin restricciones"}},
+    "indicator_ids": {
+      "1": {
+        "es": "Total"
+      },
+      "2": {
+        "es": "Subempleo registrado"
+      },
+      "3": {
+        "es": "Subempleo no registrado simultáneo"
+      },
+      "4": {
+        "es": "No registrado"
+      },
+      "5": {
+        "es": "Sin restricciones"
+      }
+    },
     "sources": {
       "downloads": {
         "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0803.xlsx"
@@ -1103,7 +1365,9 @@
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "employment_sector": {
@@ -1115,24 +1379,60 @@
     "auxiliary": false,
     "function": "labor.employment_sector",
     "indicator_ids": {
-        "1": {"es": "Total"},
-        "2": {"es": "Industrias manufactureras"},
-        "3": {"es": "Electricidad, gas, agua y saneamiento"},
-        "4": {"es": "Construcción"},
-        "5": {"es": "Comercio"},
-        "6": {"es": "Transporte y almacenamiento"},
-        "7": {"es": "Alojamiento y servicios de comidas"},
-        "8": {"es": "Información y comunicación"},
-        "9": {"es": "Actividades financieras"},
-        "10": {"es": "Actividades inmobiliarias y administrativas"},
-        "11": {"es": "Actividades profesionales"},
-        "12": {"es": "Administración pública y seguridad social"},
-        "13": {"es": "Enseñanza"},
-        "14": {"es": "Salud"},
-        "15": {"es": "Arte y otros servicios"},
-        "16": {"es": "Act. de hogares como empleadores"},
-        "17": {"es": "Agro, forestación, pesca y minería"},
-        "18": {"es": "Sin rama"}
+      "1": {
+        "es": "Total"
+      },
+      "2": {
+        "es": "Industrias manufactureras"
+      },
+      "3": {
+        "es": "Electricidad, gas, agua y saneamiento"
+      },
+      "4": {
+        "es": "Construcción"
+      },
+      "5": {
+        "es": "Comercio"
+      },
+      "6": {
+        "es": "Transporte y almacenamiento"
+      },
+      "7": {
+        "es": "Alojamiento y servicios de comidas"
+      },
+      "8": {
+        "es": "Información y comunicación"
+      },
+      "9": {
+        "es": "Actividades financieras"
+      },
+      "10": {
+        "es": "Actividades inmobiliarias y administrativas"
+      },
+      "11": {
+        "es": "Actividades profesionales"
+      },
+      "12": {
+        "es": "Administración pública y seguridad social"
+      },
+      "13": {
+        "es": "Enseñanza"
+      },
+      "14": {
+        "es": "Salud"
+      },
+      "15": {
+        "es": "Arte y otros servicios"
+      },
+      "16": {
+        "es": "Act. de hogares como empleadores"
+      },
+      "17": {
+        "es": "Agro, forestación, pesca y minería"
+      },
+      "18": {
+        "es": "Sin rama"
+      }
     },
     "sources": {
       "downloads": {
@@ -1144,7 +1444,9 @@
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "hours_worked": {
@@ -1165,7 +1467,9 @@
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "nominal_wages": {
@@ -1188,7 +1492,9 @@
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-indice-medio-salarios-ims-base-julio-2008100"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "real_wages": {
@@ -1210,7 +1516,9 @@
         "http://www.ine.gub.uy/web/guest/ims-indice-medio-de-salarios",
         "http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo"
       ],
-      "provider": ["econuy en base a INE"]
+      "provider": [
+        "econuy en base a INE"
+      ]
     }
   },
   "labor_rates_persons": {
@@ -1233,7 +1541,9 @@
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo",
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/estimaciones-proyecciones"
       ],
-      "provider": ["econuy en base a INE"]
+      "provider": [
+        "econuy en base a INE"
+      ]
     }
   },
   "balance_of_payments": {
@@ -1254,7 +1564,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/BalanzadePagos.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "trade_exports_sector_value": {
@@ -1275,7 +1587,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "trade_exports_sector_volume": {
@@ -1296,7 +1610,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "trade_exports_sector_price": {
@@ -1317,7 +1633,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "trade_exports_destination_value": {
@@ -1338,7 +1656,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "trade_exports_destination_volume": {
@@ -1359,7 +1679,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "trade_exports_destination_price": {
@@ -1380,7 +1702,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "trade_imports_category_value": {
@@ -1401,7 +1725,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "trade_imports_category_volume": {
@@ -1422,7 +1748,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "trade_imports_category_price": {
@@ -1443,7 +1771,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "trade_imports_origin_value": {
@@ -1464,7 +1794,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "trade_imports_origin_volume": {
@@ -1485,7 +1817,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "trade_imports_origin_price": {
@@ -1506,7 +1840,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "rxr": {
@@ -1527,7 +1863,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Cambio-Real-Efectivo.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "international_reserves": {
@@ -1548,7 +1886,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "international_reserves_changes": {
@@ -1569,7 +1909,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Informe-Diario-Pasivos-Monetarios.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "balance_of_payments_summary": {
@@ -1586,7 +1928,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/BalanzadePagos.aspx"
       ],
-      "provider": ["econuy en base a BCU"]
+      "provider": [
+        "econuy en base a BCU"
+      ]
     }
   },
   "trade_balance": {
@@ -1606,7 +1950,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
       ],
-      "provider": ["econuy en base a BCU"]
+      "provider": [
+        "econuy en base a BCU"
+      ]
     }
   },
   "terms_of_trade": {
@@ -1626,7 +1972,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
       ],
-      "provider": ["econuy en base a BCU"]
+      "provider": [
+        "econuy en base a BCU"
+      ]
     }
   },
   "commodity_prices": {
@@ -1740,7 +2088,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Series-estadisticas-Depositos.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "bank_credit": {
@@ -1761,7 +2111,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Series-Estadisticas-Creditos.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "bank_interest_rates": {
@@ -1782,7 +2134,9 @@
       "indirect": [
         "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Series-Estadisticas-Tasas.aspx"
       ],
-      "provider": ["BCU"]
+      "provider": [
+        "BCU"
+      ]
     }
   },
   "call_rate": {
@@ -1801,7 +2155,9 @@
       "indirect": [
         "https://web.bevsa.com.uy/Mercado/MercadoDinero/CallHistoricoDiario.aspx"
       ],
-      "provider": ["BEVSA"]
+      "provider": [
+        "BEVSA"
+      ]
     }
   },
   "sovereign_risk_index": {
@@ -1818,8 +2174,12 @@
         "current": "https://www4.rafap.com.uy/internet/servlet/hextubicd"
       },
       "direct": [],
-      "indirect": ["https://www.rafap.com.uy/mvdcms/Institucional/UBI-uc89"],
-      "provider": ["República AFAP"]
+      "indirect": [
+        "https://www.rafap.com.uy/mvdcms/Institucional/UBI-uc89"
+      ],
+      "provider": [
+        "República AFAP"
+      ]
     }
   },
   "sovereign_bond_yields": {
@@ -1842,7 +2202,9 @@
         "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceINDUI.aspx",
         "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceITLUP.aspx"
       ],
-      "provider": ["BEVSA"]
+      "provider": [
+        "BEVSA"
+      ]
     }
   },
   "income_household": {
@@ -1863,7 +2225,9 @@
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ech-ingresos-personas-hogares"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "income_capita": {
@@ -1884,7 +2248,9 @@
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ech-ingresos-personas-hogares"
       ],
-      "provider": ["INE"]
+      "provider": [
+        "INE"
+      ]
     }
   },
   "global_gdp": {
@@ -1907,7 +2273,9 @@
         "https://stats.oecd.org/Index.aspx",
         "https://data.stats.gov.cn/english/easyquery.htm?cn=B01"
       ],
-      "provider": ["econuy en base a FRB St. Louis, OECD y NBS China"]
+      "provider": [
+        "econuy en base a FRB St. Louis, OECD y NBS China"
+      ]
     }
   },
   "global_stock_markets": {
@@ -1932,7 +2300,9 @@
         "https://finance.yahoo.com/quote/000001.SS/history/",
         "https://finance.yahoo.com/quote/%5EN225/history/"
       ],
-      "provider": ["Yahoo Finance"]
+      "provider": [
+        "Yahoo Finance"
+      ]
     }
   },
   "global_policy_rates": {
@@ -1947,9 +2317,15 @@
       "downloads": {
         "main": "https://data.bis.org/static/bulk/WS_CBPOL_csv_row.zip"
       },
-      "direct": ["https://data.bis.org/static/bulk/WS_CBPOL_csv_row.zip"],
-      "indirect": ["https://data.bis.org/topics/CBPOL/data"],
-      "provider": ["BIS"]
+      "direct": [
+        "https://data.bis.org/static/bulk/WS_CBPOL_csv_row.zip"
+      ],
+      "indirect": [
+        "https://data.bis.org/topics/CBPOL/data"
+      ],
+      "provider": [
+        "BIS"
+      ]
     }
   },
   "global_long_bond_rates": {
@@ -1983,7 +2359,9 @@
         "https://finance.yahoo.com/quote/USDJPY=X/history/",
         "https://finance.yahoo.com/quote/USDCNY=X/history/"
       ],
-      "provider": ["Yahoo Finance"]
+      "provider": [
+        "Yahoo Finance"
+      ]
     }
   },
   "regional_gdp": {
@@ -2006,7 +2384,10 @@
         "https://www.indec.gob.ar/indec/web/Institucional-Indec-InformacionDeArchivo-5",
         "https://sidra.ibge.gov.br/tabela/1621#/n1/all/v/all/p/all/c11255/90687,90691,90696,90705,90707,93404,93405,93406,93407,93408/d/v584%201/l/v,c11255,t+p/resultado"
       ],
-      "provider": ["INDEC", "IBGE"]
+      "provider": [
+        "INDEC",
+        "IBGE"
+      ]
     }
   },
   "regional_monthly_gdp": {
@@ -2027,7 +2408,10 @@
         "https://www.indec.gob.ar/indec/web/Nivel4-Tema-3-9-48",
         "https://dadosabertos.bcb.gov.br/dataset/24364-indice-de-atividade-economica-do-banco-central-ibc-br---com-ajuste-sazonal"
       ],
-      "provider": ["INDEC", "BCB"]
+      "provider": [
+        "INDEC",
+        "BCB"
+      ]
     }
   },
   "regional_cpi": {
@@ -2051,7 +2435,9 @@
         "http://www.inflacionverdadera.com/",
         "https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html?=&t=o-que-e"
       ],
-      "provider": ["econuy en base a BRCA, Inflación Verdadera e IBGE"]
+      "provider": [
+        "econuy en base a BRCA, Inflación Verdadera e IBGE"
+      ]
     }
   },
   "regional_embi_spreads": {
@@ -2072,7 +2458,9 @@
       "indirect": [
         "https://www.bancentral.gov.do/a/d/2585-entorno-internacional"
       ],
-      "provider": ["BCRD"]
+      "provider": [
+        "BCRD"
+      ]
     }
   },
   "regional_embi_yields": {
@@ -2092,7 +2480,9 @@
         "https://finance.yahoo.com/quote/%5ETNX/history?p=%5ETNX",
         "https://www.bancentral.gov.do/a/d/2585-entorno-internacional"
       ],
-      "provider": ["econuy en base a Yahoo Finance y BCRD"]
+      "provider": [
+        "econuy en base a Yahoo Finance y BCRD"
+      ]
     }
   },
   "regional_nxr": {
@@ -2115,7 +2505,10 @@
         "https://www.ambito.com/contenidos/dolar-informal.html",
         "http://www.ipeadata.gov.br/Default.aspx"
       ],
-      "provider": ["Ámbito", "Ipea"]
+      "provider": [
+        "Ámbito",
+        "Ipea"
+      ]
     }
   },
   "regional_policy_rates": {
@@ -2130,9 +2523,15 @@
       "downloads": {
         "main": "https://data.bis.org/static/bulk/WS_CBPOL_csv_row.zip"
       },
-      "direct": ["https://data.bis.org/static/bulk/WS_CBPOL_csv_row.zip"],
-      "indirect": ["https://data.bis.org/topics/CBPOL/data"],
-      "provider": ["BIS"]
+      "direct": [
+        "https://data.bis.org/static/bulk/WS_CBPOL_csv_row.zip"
+      ],
+      "indirect": [
+        "https://data.bis.org/topics/CBPOL/data"
+      ],
+      "provider": [
+        "BIS"
+      ]
     }
   },
   "regional_stock_markets": {
@@ -2153,7 +2552,9 @@
         "https://finance.yahoo.com/quote/%5EMERV/history?p=%5EMERV",
         "https://finance.yahoo.com/quote/%5EBVSP/history?p=%5EBVSP"
       ],
-      "provider": ["Yahoo Finance"]
+      "provider": [
+        "Yahoo Finance"
+      ]
     }
   },
   "regional_rxr": {
