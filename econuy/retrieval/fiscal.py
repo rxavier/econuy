@@ -447,7 +447,7 @@ def net_public_debt_global_public_sector(*args, **kwargs) -> Dataset:
     output.columns = ids
 
     base_metadata = {
-        "area": "External sector",
+        "area": "Public sector",
         "currency": "USD",
         "inflation_adjustment": None,
         "unit": "Millions",
