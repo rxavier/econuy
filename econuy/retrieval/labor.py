@@ -3,10 +3,10 @@ from pandas.tseries.offsets import MonthEnd
 
 from econuy.base import Dataset, DatasetMetadata
 from econuy import load_dataset
-from econuy.utils.operations import get_name_from_function, get_download_sources
+from econuy.utils.operations import get_name_from_function, get_download_sources, get_dataset_columns
 
 
-def labor_rates() -> Dataset:
+def labor_rates_gender() -> Dataset:
     """Get labor market data (LFPR, employment and unemployment).
 
     Returns
@@ -60,6 +60,401 @@ def labor_rates() -> Dataset:
     return dataset
 
 
+def activity_region() -> Dataset:
+    """Get activity rates by region (LFPR).
+
+    Returns
+    -------
+    Monthly participation rates : Dataset
+
+    """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
+
+    raw = pd.read_excel(sources["main"], skiprows=8).dropna(axis=0, thresh=2)
+    output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
+    output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
+    output = output.drop(columns="Unnamed: 0")
+
+    output = output.apply(pd.to_numeric, errors="coerce")
+    output = output.rename_axis(None)
+
+    dataset_columns = get_dataset_columns(name, "es")
+    spanish_names = dataset_columns.values()
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in dataset_columns.keys()]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Labor market",
+        "currency": None,
+        "inflation_adjustment": None,
+        "unit": "Rate",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
+
+
+def employment_region() -> Dataset:
+    """Get employment rates by region.
+
+    Returns
+    -------
+    Monthly employment rates : Dataset
+
+    """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
+
+    raw = pd.read_excel(sources["main"], skiprows=8).dropna(axis=0, thresh=2)
+    output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
+    output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
+    output = output.drop(columns="Unnamed: 0")
+
+    output = output.apply(pd.to_numeric, errors="coerce")
+    output = output.rename_axis(None)
+
+    dataset_columns = get_dataset_columns(name, "es")
+    spanish_names = dataset_columns.values()
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in dataset_columns.keys()]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Labor market",
+        "currency": None,
+        "inflation_adjustment": None,
+        "unit": "Rate",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
+
+
+def unemployment_region() -> Dataset:
+    """Get unemployment rates by region.
+
+    Returns
+    -------
+    Monthly unemployment rates : Dataset
+
+    """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
+
+    raw = pd.read_excel(sources["main"], skiprows=8).dropna(axis=0, thresh=2)
+    output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
+    output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
+    output = output.drop(columns="Unnamed: 0")
+
+    output = output.apply(pd.to_numeric, errors="coerce")
+    output = output.rename_axis(None)
+
+    dataset_columns = get_dataset_columns(name, "es")
+    spanish_names = dataset_columns.values()
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in dataset_columns.keys()]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Labor market",
+        "currency": None,
+        "inflation_adjustment": None,
+        "unit": "Rate",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
+
+
+def employment_age() -> Dataset:
+    """Get employment rates by age group.
+
+    Returns
+    -------
+    Monthly employment rates : Dataset
+
+    """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
+
+    raw = pd.read_excel(sources["main"], skiprows=7).dropna(axis=0, thresh=2)
+    output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
+    output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
+    output = output.drop(columns="Unnamed: 0")
+
+    output = output.apply(pd.to_numeric, errors="coerce")
+    output = output.rename_axis(None)
+
+    dataset_columns = get_dataset_columns(name, "es")
+    spanish_names = dataset_columns.values()
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in dataset_columns.keys()]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Labor market",
+        "currency": None,
+        "inflation_adjustment": None,
+        "unit": "Rate",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
+
+
+def unemployment_contributions() -> Dataset:
+    """Get contributions to unemployment rates.
+    Returns
+    -------
+    Monthly unemployment rates : Dataset
+
+    """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
+
+    raw = pd.read_excel(sources["main"], skiprows=9).dropna(axis=0, thresh=2)
+    output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
+    output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
+    output = output.drop(columns="Unnamed: 0")
+
+    output = output.apply(pd.to_numeric, errors="coerce")
+    output = output.rename_axis(None)
+
+    dataset_columns = get_dataset_columns(name, "es")
+    spanish_names = dataset_columns.values()
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in dataset_columns.keys()]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Labor market",
+        "currency": None,
+        "inflation_adjustment": None,
+        "unit": "Share",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
+
+
+def unemployment_characteristics() -> Dataset:
+    """Get unemployment rates by characteristics.
+
+    Returns
+    -------
+    Monthly unemployment rates : Dataset
+
+    """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
+
+    raw = pd.read_excel(sources["main"], skiprows=8).dropna(axis=0, thresh=2)
+    output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
+    output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
+    output = output.drop(columns="Unnamed: 0")
+
+    output = output.apply(pd.to_numeric, errors="coerce")
+    output = output.rename_axis(None)
+
+    dataset_columns = get_dataset_columns(name, "es")
+    spanish_names = dataset_columns.values()
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in dataset_columns.keys()]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Labor market",
+        "currency": None,
+        "inflation_adjustment": None,
+        "unit": "Rate",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
+
+
+def unemployment_conditions() -> Dataset:
+    """Get unemployment rates by conditions.
+
+    Returns
+    -------
+    Monthly unemployment rates : Dataset
+
+    """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
+
+    raw = pd.read_excel(sources["main"], skiprows=9, na_values=[".."], usecols="A:I").dropna(axis=0, thresh=2)
+    output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
+    output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
+    output = output.drop(columns="Unnamed: 0")
+
+    output = output.apply(pd.to_numeric, errors="coerce")
+    output = output.rename_axis(None)
+
+    dataset_columns = get_dataset_columns(name, "es")
+    spanish_names = dataset_columns.values()
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in dataset_columns.keys()]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Labor market",
+        "currency": None,
+        "inflation_adjustment": None,
+        "unit": "Share",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
+
+
+def unemployment_duration() -> Dataset:
+    """Get average duration of unemployment in weeks.
+
+    Returns
+    -------
+    Monthly average duration of unemployment : Dataset
+
+    """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
+
+    raw = pd.read_excel(sources["main"], skiprows=9, usecols="A,J").dropna(axis=0, thresh=2)
+    output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
+    output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
+    output = output.drop(columns="Unnamed: 0")
+
+    output = output.apply(pd.to_numeric, errors="coerce")
+    output = output.rename_axis(None)
+
+    dataset_columns = get_dataset_columns(name, "es")
+    spanish_names = dataset_columns.values()
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in dataset_columns.keys()]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Labor market",
+        "currency": None,
+        "inflation_adjustment": None,
+        "unit": "Weeks",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
+
+
+def employment_characteristics() -> Dataset:
+    """Get employment rates by characteristics.
+
+    Returns
+    -------
+    Monthly employment rates : Dataset
+
+    """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
+
+    raw = pd.read_excel(sources["main"], skiprows=8).dropna(axis=0, thresh=2)
+    output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
+    output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
+    output = output.drop(columns="Unnamed: 0")
+
+    output = output.apply(pd.to_numeric, errors="coerce")
+    output = output.rename_axis(None)
+
+    dataset_columns = get_dataset_columns(name, "es")
+    spanish_names = dataset_columns.values()
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in dataset_columns.keys()]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Labor market",
+        "currency": None,
+        "inflation_adjustment": None,
+        "unit": "Share",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
+
+
 def nominal_wages() -> Dataset:
     """Get nominal general, public and private sector wages data
 
@@ -95,6 +490,50 @@ def nominal_wages() -> Dataset:
         "currency": "UYU",
         "inflation_adjustment": None,
         "unit": "2008-07=100",
+        "seasonal_adjustment": None,
+        "frequency": "ME",
+        "time_series_type": "Stock",
+        "cumulative_periods": 1,
+        "transformations": [],
+    }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
+
+
+def employment_sector() -> Dataset:
+    """Get employment data by sector.
+
+    Returns
+    -------
+    Monthly employment data by sector : Dataset
+
+    """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
+
+    raw = pd.read_excel(sources["main"], skiprows=7).dropna(axis=0, thresh=2)
+    output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
+    output.index = pd.date_range(start="2011-01-31", periods=len(output), freq="ME")
+    output = output.drop(columns="Unnamed: 0")
+
+    output = output.apply(pd.to_numeric, errors="coerce")
+    output = output.rename_axis(None)
+
+    dataset_columns = get_dataset_columns(name, "es")
+    spanish_names = dataset_columns.values()
+    spanish_names = [{"es": x} for x in spanish_names]
+    ids = [f"{name}_{i}" for i in dataset_columns.keys()]
+    output.columns = ids
+
+    base_metadata = {
+        "area": "Labor market",
+        "currency": None,
+        "inflation_adjustment": None,
+        "unit": "Share",
         "seasonal_adjustment": None,
         "frequency": "ME",
         "time_series_type": "Stock",

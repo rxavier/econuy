@@ -162,6 +162,11 @@ def get_download_sources(name: str) -> Dict:
     return REGISTRY[name]["sources"]["downloads"]
 
 
+def get_dataset_columns(name: str, language: str = "es") -> Dict:
+    ids = REGISTRY[name]["indicator_ids"]
+    return {k: v[language] for k, v in ids.items()}
+
+
 def get_data_dir() -> Path:
     data_dir = os.getenv("ECONUY_DATA_DIR", "") or Path.home() / ".cache" / "econuy"
     data_dir = Path(data_dir)

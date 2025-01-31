@@ -887,20 +887,259 @@
       "provider": ["econuy en base a BCU"]
     }
   },
-  "labor_rates": {
+  "labor_rates_gender": {
     "description": "Tasas de actividad, empleo y desempleo por sexo",
     "description_en": "Labor force participation, employment and unemployment rates by gender",
     "area": "labor",
     "custom": false,
     "disabled": false,
     "auxiliary": false,
-    "function": "labor.labor_rates",
+    "function": "labor.labor_rates_gender",
     "sources": {
       "downloads": {
         "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0103.xlsx"
       },
       "direct": [
         "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0103.xlsx"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "activity_region": {
+    "description": "Tasa de actividad por región",
+    "description_en": "Labor force participation rate by region",
+    "area": "labor",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "labor.activity_region",
+    "indicator_ids": {"1": {"es": "Total"}, "2": {"es": "Montevideo"}, "3": {"es": "Interior"}, "4": {"es": "Localidades de 5.000+"}, "5": {"es": "Localidades pequeñas y zonas rurales"}},
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0011.xlsx"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0011.xlsx"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "employment_region": {
+    "description": "Tasa de empleo por región",
+    "description_en": "Employment rate by region",
+    "area": "labor",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "labor.employment_region",
+    "indicator_ids": {"1": {"es": "Total"}, "2": {"es": "Montevideo"}, "3": {"es": "Interior"}, "4": {"es": "Localidades de 5.000+"}, "5": {"es": "Localidades pequeñas y zonas rurales"}},
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0012.xlsx"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0012.xlsx"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "unemployment_region": {
+    "description": "Tasa de desempleo por región",
+    "description_en": "Unemployment rate by region",
+    "area": "labor",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "labor.unemployment_region",
+    "indicator_ids": {"1": {"es": "Total"}, "2": {"es": "Montevideo"}, "3": {"es": "Interior"}, "4": {"es": "Localidades de 5.000+"}, "5": {"es": "Localidades pequeñas y zonas rurales"}},
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0013.xlsx"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0013.xlsx"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "employment_age": {
+    "description": "Tasa de empleo por grupo etario",
+    "description_en": "Employment rate by age group",
+    "area": "labor",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "labor.employment_age",
+    "indicator_ids": {"1": {"es": "Total"}, "2": {"es": "Menores de 25 años"}, "3": {"es": "25 años y más"}},
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0303.xlsx"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0303.xlsx"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "unemployment_contributions": {
+    "description": "Contribución a la tasa de desempleo por componentes, sexo, edad y jefatura de hogar",
+    "description_en": "Contribution to the unemployment rate by components, sex, age and household head",
+    "area": "labor",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "labor.unemployment_contributions",
+    "indicator_ids": {"1": {"es": "Total"}, "2": {"es": "Buscan por primera vez"}, "3": {"es": "Desocupados propiamente dichos"}, "4": {"es": "Hombre"}, "5": {"es": "Mujer"}, "6": {"es": "Menores de 25 años"}, "7": {"es": "25 años y más"}, "8": {"es": "Jefe"}, "9": {"es": "No jefe"}},
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0403.xlsx"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0403.xlsx"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "unemployment_characteristics": {
+    "description": "Tasa de desempleo por sexo, edad y jefatura de hogar",
+    "description_en": "Unemployment rate by sex, age and household head",
+    "area": "labor",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "labor.unemployment_characteristics",
+    "indicator_ids": {"1": {"es": "Total"}, "2": {"es": "Menores de 25 años: total"}, "3": {"es": "Menores de 25 años: hombres"}, "4": {"es": "Menores de 25 años: mujeres"}, "5": {"es": "25 años y más: total"}, "6": {"es": "25 años y más: hombres"}, "7": {"es": "25 años y más: mujeres"}, "8": {"es": "Jefe"}, "9": {"es": "No jefe"}},
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0503.xlsx"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0503.xlsx"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "unemployment_conditions": {
+    "description": "Distribución de la tasa de desempleo por condiciones de empleo",
+    "description_en": "Distribution of the unemployment rate by conditions",
+    "area": "labor",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "labor.unemployment_conditions",
+    "indicator_ids": {"1": {"es": "Total"}, "2": {"es": "Sin condiciones"}, "3": {"es": "Conocimiento o experiencia"}, "4": {"es": "Baja carga horaria"}, "5": {"es": "Horario especial"}, "6": {"es": "Salariales"}, "7": {"es": "Lugar de trabajo"}, "8": {"es": "Horario flexible"}},
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0603.xlsx"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0603.xlsx"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "unemployment_duration": {
+    "description": "Duración media del desempleo",
+    "description_en": "Average duration of unemployment",
+    "area": "labor",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "labor.unemployment_duration",
+    "indicator_ids": {"1": {"es": "Duración media del desempleo"}},
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0603.xlsx"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0603.xlsx"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "employment_characteristics": {
+    "description": "Distribución del empleo por características",
+    "description_en": "Distribution of employment by characteristics",
+    "area": "labor",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "labor.employment_characteristics",
+    "indicator_ids": {"1": {"es": "Total"}, "2": {"es": "Subempleo registrado"}, "3": {"es": "Subempleo no registrado simultáneo"}, "4": {"es": "No registrado"}, "5": {"es": "Sin restricciones"}},
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0803.xlsx"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0803.xlsx"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
+      ],
+      "provider": ["INE"]
+    }
+  },
+  "employment_sector": {
+    "description": "Distribución del empleo por sector",
+    "description_en": "Distribution of employment by sector",
+    "area": "labor",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "labor.employment_sector",
+    "indicator_ids": {
+        "1": {"es": "Total"},
+        "2": {"es": "Industrias manufactureras"},
+        "3": {"es": "Electricidad, gas, agua y saneamiento"},
+        "4": {"es": "Construcción"},
+        "5": {"es": "Comercio"},
+        "6": {"es": "Transporte y almacenamiento"},
+        "7": {"es": "Alojamiento y servicios de comidas"},
+        "8": {"es": "Información y comunicación"},
+        "9": {"es": "Actividades financieras"},
+        "10": {"es": "Actividades inmobiliarias y administrativas"},
+        "11": {"es": "Actividades profesionales"},
+        "12": {"es": "Administración pública y seguridad social"},
+        "13": {"es": "Enseñanza"},
+        "14": {"es": "Salud"},
+        "15": {"es": "Arte y otros servicios"},
+        "16": {"es": "Act. de hogares como empleadores"},
+        "17": {"es": "Agro, forestación, pesca y minería"},
+        "18": {"es": "Sin rama"}
+    },
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0203.xlsx"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/SERIES%20Y%20OTROS/ECH/Series%20hist%C3%B3ricas/Actividad,%20empleo%20y%20desempleo/ECH0203.xlsx"
       ],
       "indirect": [
         "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-actividad-empleo-desempleo"
