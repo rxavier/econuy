@@ -172,34 +172,40 @@ def tax_revenue() -> Dataset:
         "https://[A-z0-9-/\.]+Recaudaci%C3%B3n%20por%20impuesto%20-%20Series%20mensuales.csv",
         r.text,
     )[0]
-    output = pd.read_csv(
+    historical = pd.read_csv(
         url, skiprows=2, encoding="Latin", sep=";", thousands="."
     ).iloc[:, 3:41]
-    output.index = pd.date_range("1982-01-31", periods=len(output), freq="ME")
-    output.columns = taxes_columns
-    output = output.div(1000000)
-    latest = pd.read_csv(sources["pdfs"], index_col=0, parse_dates=True)
-    latest.columns = [
-        "IVA - Valor Agregado",
-        "IMESI - Específico Interno",
-        "IMEBA - Enajenación de Bienes Agropecuarios",
-        "IRAE - Rentas de Actividades Económicas",
-        "IRPF Cat I - Renta de las Personas Físicas",
-        "IRPF Cat II - Rentas de las Personas Físicas",
-        "IASS - Asistencia a la Seguridad Social",
-        "IRNR - Rentas de No Residentes",
-        "Impuesto de Educación Primaria",
-        "Recaudación Total de la DGI",
-    ]
-    latest = latest.loc[[x not in output.index for x in latest.index]]
-    for col in latest.columns:
-        for date in latest.index:
-            prev_year = date + MonthEnd(-12)
-            output.loc[date, col] = output.loc[prev_year, col] * (
-                1 + latest.loc[date, col] / 100
-            )
-    output = pd.concat([output, latest], sort=False)
-    output = output.loc[~output.index.duplicated(keep="first")]
+    historical.index = pd.date_range("1982-01-31", periods=len(historical), freq="ME")
+    historical.columns = taxes_columns
+    historical = historical.div(1000000)
+
+    try:
+        aux = historical.copy()
+        latest = pd.read_csv(sources["pdfs"], index_col=0, parse_dates=True)
+        latest.columns = [
+            "IVA - Valor Agregado",
+            "IMESI - Específico Interno",
+            "IMEBA - Enajenación de Bienes Agropecuarios",
+            "IRAE - Rentas de Actividades Económicas",
+            "IRPF Cat I - Renta de las Personas Físicas",
+            "IRPF Cat II - Rentas de las Personas Físicas",
+            "IASS - Asistencia a la Seguridad Social",
+            "IRNR - Rentas de No Residentes",
+            "Impuesto de Educación Primaria",
+            "Recaudación Total de la DGI",
+        ]
+        latest = latest.loc[[x not in aux.index for x in latest.index]]
+        for col in latest.columns:
+            for date in latest.index:
+                prev_year = date + MonthEnd(-12)
+                aux.loc[date, col] = aux.loc[prev_year, col] * (
+                    1 + latest.loc[date, col] / 100
+                )
+        output = pd.concat([aux, latest], sort=False)
+        output = output.loc[~output.index.duplicated(keep="first")]
+    except Exception as e:
+        print(f"Could not get PDF data | {e}")
+        output = historical.copy()
 
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
