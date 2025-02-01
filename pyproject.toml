@@ -1,6 +1,6 @@
 [project]
 name = "econuy"
-version = "0.5.0"
+version = "0.23.0"
 description = "Wrangling Uruguayan economic data so you don't have to."
 readme = "README.md"
 requires-python = ">=3.10"
