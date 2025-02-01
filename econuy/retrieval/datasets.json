@@ -483,6 +483,138 @@
       ]
     }
   },
+  "cpi_core": {
+    "description": "IPC subyacente",
+    "description_en": "Core CPI",
+    "area": "prices",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "prices.cpi_core",
+    "indicator_ids": {
+      "0": {
+        "es": "IPC subyacente"
+      }
+    },
+    "base_metadata": {
+      "area": "Prices",
+      "currency": "UYU",
+      "inflation_adjustment": null,
+      "unit": "2022-10=100",
+      "seasonal_adjustment": null,
+      "frequency": "ME",
+      "time_series_type": "Stock",
+      "cumulative_periods": 1,
+      "transformations": []
+    },
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPC/Base%20Octubre%202022=100/Cuadro_inflaci%C3%B3n%20subyacente.xlsx"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/IPC/Base%20Octubre%202022=100/Cuadro_inflaci%C3%B3n%20subyacente.xlsx"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ipc-base-octubre-2022100"
+      ],
+      "provider": [
+        "INE"
+      ]
+    }
+  },
+  "indexed_unit": {
+    "description": "Unidad indexada",
+    "description_en": "Indexed unit",
+    "area": "prices",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "prices.indexed_unit",
+    "indicator_ids": {
+      "0": {
+        "es": "Unidad indexada"
+      }
+    },
+    "base_metadata": {
+      "area": "Prices",
+      "currency": "UYU",
+      "inflation_adjustment": null,
+      "unit": "Pesos",
+      "seasonal_adjustment": null,
+      "frequency": "D",
+      "time_series_type": "Stock",
+      "cumulative_periods": 1,
+      "transformations": []
+    },
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/UI/Unidad%20Indexada.xls"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/UI/Unidad%20Indexada.xls"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ui"
+      ],
+      "provider": [
+        "INE"
+      ]
+    }
+  },
+  "inflation_expectations_corporate": {
+    "description": "Expectativas de inflación empresariales",
+    "description_en": "Corporate inflation expectations",
+    "area": "prices",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "prices.inflation_expectations_corporate",
+    "indicator_ids": {
+      "0": {
+        "es": "Año corriente: media"
+      },
+      "1": {
+        "es": "12 meses móviles: media"
+      },
+      "2": {
+        "es": "12 a 24 meses móviles: media"
+      },
+      "3": {
+        "es": "Año corriente: mediana"
+      },
+      "4": {
+        "es": "12 meses móviles: mediana"
+      },
+      "5": {
+        "es": "12 a 24 meses móviles: mediana"
+      }
+    },
+    "base_metadata": {
+      "area": "Prices",
+      "currency": "UYU",
+      "inflation_adjustment": null,
+      "unit": "%",
+      "seasonal_adjustment": null,
+      "frequency": "ME",
+      "time_series_type": "Flow",
+      "cumulative_periods": 1,
+      "transformations": []
+    },
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/EEE/Serie%20EEE.xlsx"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/EEE/Serie%20EEE.xlsx"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/expectativas-empresariales"
+      ],
+      "provider": [
+        "INE"
+      ]
+    }
+  },
   "cpi_classes": {
     "description": "Índice de precios al consumidor por división, grupo y clase - IPC",
     "description_en": "Consumer price index by division, group and class - CPI",
@@ -1004,21 +1136,32 @@
     "auxiliary": false,
     "function": "labor.activity_region",
     "indicator_ids": {
-      "1": {
+      "0": {
         "es": "Total"
       },
-      "2": {
+      "1": {
         "es": "Montevideo"
       },
-      "3": {
+      "2": {
         "es": "Interior"
       },
-      "4": {
+      "3": {
         "es": "Localidades de 5.000+"
       },
-      "5": {
+      "4": {
         "es": "Localidades pequeñas y zonas rurales"
       }
+    },
+    "base_metadata": {
+      "area": "Labor market",
+      "currency": null,
+      "inflation_adjustment": null,
+      "unit": "Rate",
+      "seasonal_adjustment": null,
+      "frequency": "ME",
+      "time_series_type": "Stock",
+      "cumulative_periods": 1,
+      "transformations": []
     },
     "sources": {
       "downloads": {
@@ -1044,21 +1187,32 @@
     "auxiliary": false,
     "function": "labor.employment_region",
     "indicator_ids": {
-      "1": {
+      "0": {
         "es": "Total"
       },
-      "2": {
+      "1": {
         "es": "Montevideo"
       },
-      "3": {
+      "2": {
         "es": "Interior"
       },
-      "4": {
+      "3": {
         "es": "Localidades de 5.000+"
       },
-      "5": {
+      "4": {
         "es": "Localidades pequeñas y zonas rurales"
       }
+    },
+    "base_metadata": {
+      "area": "Labor market",
+      "currency": null,
+      "inflation_adjustment": null,
+      "unit": "Rate",
+      "seasonal_adjustment": null,
+      "frequency": "ME",
+      "time_series_type": "Stock",
+      "cumulative_periods": 1,
+      "transformations": []
     },
     "sources": {
       "downloads": {
@@ -1084,21 +1238,32 @@
     "auxiliary": false,
     "function": "labor.unemployment_region",
     "indicator_ids": {
-      "1": {
+      "0": {
         "es": "Total"
       },
-      "2": {
+      "1": {
         "es": "Montevideo"
       },
-      "3": {
+      "2": {
         "es": "Interior"
       },
-      "4": {
+      "3": {
         "es": "Localidades de 5.000+"
       },
-      "5": {
+      "4": {
         "es": "Localidades pequeñas y zonas rurales"
       }
+    },
+    "base_metadata": {
+      "area": "Labor market",
+      "currency": null,
+      "inflation_adjustment": null,
+      "unit": "Rate",
+      "seasonal_adjustment": null,
+      "frequency": "ME",
+      "time_series_type": "Stock",
+      "cumulative_periods": 1,
+      "transformations": []
     },
     "sources": {
       "downloads": {
@@ -1124,15 +1289,26 @@
     "auxiliary": false,
     "function": "labor.employment_age",
     "indicator_ids": {
-      "1": {
+      "0": {
         "es": "Total"
       },
-      "2": {
+      "1": {
         "es": "Menores de 25 años"
       },
-      "3": {
+      "2": {
         "es": "25 años y más"
       }
+    },
+    "base_metadata": {
+      "area": "Labor market",
+      "currency": null,
+      "inflation_adjustment": null,
+      "unit": "Rate",
+      "seasonal_adjustment": null,
+      "frequency": "ME",
+      "time_series_type": "Stock",
+      "cumulative_periods": 1,
+      "transformations": []
     },
     "sources": {
       "downloads": {
@@ -1158,33 +1334,44 @@
     "auxiliary": false,
     "function": "labor.unemployment_contributions",
     "indicator_ids": {
-      "1": {
+      "0": {
         "es": "Total"
       },
-      "2": {
+      "1": {
         "es": "Buscan por primera vez"
       },
-      "3": {
+      "2": {
         "es": "Desocupados propiamente dichos"
       },
-      "4": {
+      "3": {
         "es": "Hombre"
       },
-      "5": {
+      "4": {
         "es": "Mujer"
       },
-      "6": {
+      "5": {
         "es": "Menores de 25 años"
       },
-      "7": {
+      "6": {
         "es": "25 años y más"
       },
-      "8": {
+      "7": {
         "es": "Jefe"
       },
-      "9": {
+      "8": {
         "es": "No jefe"
       }
+    },
+    "base_metadata": {
+      "area": "Labor market",
+      "currency": null,
+      "inflation_adjustment": null,
+      "unit": "Share",
+      "seasonal_adjustment": null,
+      "frequency": "ME",
+      "time_series_type": "Stock",
+      "cumulative_periods": 1,
+      "transformations": []
     },
     "sources": {
       "downloads": {
@@ -1210,33 +1397,44 @@
     "auxiliary": false,
     "function": "labor.unemployment_characteristics",
     "indicator_ids": {
-      "1": {
+      "0": {
         "es": "Total"
       },
-      "2": {
+      "1": {
         "es": "Menores de 25 años: total"
       },
-      "3": {
+      "2": {
         "es": "Menores de 25 años: hombres"
       },
-      "4": {
+      "3": {
         "es": "Menores de 25 años: mujeres"
       },
-      "5": {
+      "4": {
         "es": "25 años y más: total"
       },
-      "6": {
+      "5": {
         "es": "25 años y más: hombres"
       },
-      "7": {
+      "6": {
         "es": "25 años y más: mujeres"
       },
-      "8": {
+      "7": {
         "es": "Jefe"
       },
-      "9": {
+      "8": {
         "es": "No jefe"
       }
+    },
+    "base_metadata": {
+      "area": "Labor market",
+      "currency": null,
+      "inflation_adjustment": null,
+      "unit": "Rate",
+      "seasonal_adjustment": null,
+      "frequency": "ME",
+      "time_series_type": "Stock",
+      "cumulative_periods": 1,
+      "transformations": []
     },
     "sources": {
       "downloads": {
@@ -1262,30 +1460,41 @@
     "auxiliary": false,
     "function": "labor.unemployment_conditions",
     "indicator_ids": {
-      "1": {
+      "0": {
         "es": "Total"
       },
-      "2": {
+      "1": {
         "es": "Sin condiciones"
       },
-      "3": {
+      "2": {
         "es": "Conocimiento o experiencia"
       },
-      "4": {
+      "3": {
         "es": "Baja carga horaria"
       },
-      "5": {
+      "4": {
         "es": "Horario especial"
       },
-      "6": {
+      "5": {
         "es": "Salariales"
       },
-      "7": {
+      "6": {
         "es": "Lugar de trabajo"
       },
-      "8": {
+      "7": {
         "es": "Horario flexible"
       }
+    },
+    "base_metadata": {
+      "area": "Labor market",
+      "currency": null,
+      "inflation_adjustment": null,
+      "unit": "Share",
+      "seasonal_adjustment": null,
+      "frequency": "ME",
+      "time_series_type": "Stock",
+      "cumulative_periods": 1,
+      "transformations": []
     },
     "sources": {
       "downloads": {
@@ -1311,9 +1520,20 @@
     "auxiliary": false,
     "function": "labor.unemployment_duration",
     "indicator_ids": {
-      "1": {
+      "0": {
         "es": "Duración media del desempleo"
       }
+    },
+    "base_metadata": {
+      "area": "Labor market",
+      "currency": null,
+      "inflation_adjustment": null,
+      "unit": "Weeks",
+      "seasonal_adjustment": null,
+      "frequency": "ME",
+      "time_series_type": "Stock",
+      "cumulative_periods": 1,
+      "transformations": []
     },
     "sources": {
       "downloads": {
@@ -1339,21 +1559,32 @@
     "auxiliary": false,
     "function": "labor.employment_characteristics",
     "indicator_ids": {
-      "1": {
+      "0": {
         "es": "Total"
       },
-      "2": {
+      "1": {
         "es": "Subempleo registrado"
       },
-      "3": {
+      "2": {
         "es": "Subempleo no registrado simultáneo"
       },
-      "4": {
+      "3": {
         "es": "No registrado"
       },
-      "5": {
+      "4": {
         "es": "Sin restricciones"
       }
+    },
+    "base_metadata": {
+      "area": "Labor market",
+      "currency": null,
+      "inflation_adjustment": null,
+      "unit": "Share",
+      "seasonal_adjustment": null,
+      "frequency": "ME",
+      "time_series_type": "Stock",
+      "cumulative_periods": 1,
+      "transformations": []
     },
     "sources": {
       "downloads": {
@@ -1379,60 +1610,71 @@
     "auxiliary": false,
     "function": "labor.employment_sector",
     "indicator_ids": {
-      "1": {
+      "0": {
         "es": "Total"
       },
-      "2": {
+      "1": {
         "es": "Industrias manufactureras"
       },
-      "3": {
+      "2": {
         "es": "Electricidad, gas, agua y saneamiento"
       },
-      "4": {
+      "3": {
         "es": "Construcción"
       },
-      "5": {
+      "4": {
         "es": "Comercio"
       },
-      "6": {
+      "5": {
         "es": "Transporte y almacenamiento"
       },
-      "7": {
+      "6": {
         "es": "Alojamiento y servicios de comidas"
       },
-      "8": {
+      "7": {
         "es": "Información y comunicación"
       },
-      "9": {
+      "8": {
         "es": "Actividades financieras"
       },
-      "10": {
+      "9": {
         "es": "Actividades inmobiliarias y administrativas"
       },
-      "11": {
+      "10": {
         "es": "Actividades profesionales"
       },
-      "12": {
+      "11": {
         "es": "Administración pública y seguridad social"
       },
-      "13": {
+      "12": {
         "es": "Enseñanza"
       },
-      "14": {
+      "13": {
         "es": "Salud"
       },
-      "15": {
+      "14": {
         "es": "Arte y otros servicios"
       },
-      "16": {
+      "15": {
         "es": "Act. de hogares como empleadores"
       },
-      "17": {
+      "16": {
         "es": "Agro, forestación, pesca y minería"
       },
-      "18": {
+      "17": {
         "es": "Sin rama"
       }
+    },
+    "base_metadata": {
+      "area": "Labor market",
+      "currency": null,
+      "inflation_adjustment": null,
+      "unit": "Share",
+      "seasonal_adjustment": null,
+      "frequency": "ME",
+      "time_series_type": "Stock",
+      "cumulative_periods": 1,
+      "transformations": []
     },
     "sources": {
       "downloads": {

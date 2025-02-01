@@ -2,7 +2,7 @@ import inspect
 import json
 import os
 from pathlib import Path
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Tuple
 
 import pandas as pd
 
@@ -162,9 +162,16 @@ def get_download_sources(name: str) -> Dict:
     return REGISTRY[name]["sources"]["downloads"]
 
 
-def get_dataset_columns(name: str, language: str = "es") -> Dict:
-    ids = REGISTRY[name]["indicator_ids"]
-    return {k: v[language] for k, v in ids.items()}
+def get_base_metadata(name: str) -> Dict:
+    return REGISTRY[name]["base_metadata"]
+
+
+def get_names_and_ids(name: str, language: str = "es") -> Tuple[List[str], List[Dict]]:
+    ids_names = REGISTRY[name]["indicator_ids"]
+    ids_names = {k: v[language] for k, v in ids_names.items()}
+    language_names = [{"es": x} for x in ids_names.values()]
+    ids = [f"{name}_{i}" for i in ids_names.keys()]
+    return ids, language_names
 
 
 def get_data_dir() -> Path:

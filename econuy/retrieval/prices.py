@@ -3,7 +3,12 @@ from urllib.error import URLError
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
-from econuy.utils.operations import get_name_from_function, get_download_sources
+from econuy.utils.operations import (
+    get_name_from_function,
+    get_download_sources,
+    get_names_and_ids,
+    get_base_metadata,
+)
 from econuy.base import Dataset, DatasetMetadata
 from econuy import load_dataset
 from econuy.utils.retrieval import get_with_ssl_context
@@ -38,10 +43,67 @@ def cpi() -> Dataset:
         "unit": "2022-10=100",
         "seasonal_adjustment": None,
         "frequency": "ME",
-        "time_series_type": None,
+        "time_series_type": "Stock",
         "cumulative_periods": 1,
         "transformations": [],
     }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
+
+
+def cpi_core() -> Dataset:
+    """Get core CPI data.
+
+    Returns
+    -------
+    Monthly CPI : Dataset
+
+    """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
+
+    raw = pd.read_excel(sources["main"], usecols="D")
+    output = raw.set_index(
+        pd.date_range(start="2022-10-31", freq="ME", periods=len(raw))
+    ).rename_axis(None)
+    output = output.apply(pd.to_numeric, errors="coerce")
+
+    ids, spanish_names = get_names_and_ids(name, "es")
+    output.columns = ids
+
+    base_metadata = get_base_metadata(name)
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
+
+
+def indexed_unit() -> Dataset:
+    """Get indexed unit data.
+
+    Returns
+    -------
+    Monthly indexed unit : Dataset
+
+    """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
+
+    raw = pd.read_excel(sources["main"], usecols="A:B", skiprows=5, index_col=0)
+    output = raw.copy().rename_axis(None).dropna(how="any")
+    output.index = pd.to_datetime(output.index, format="%m/%d/%Y")
+    output = output.apply(pd.to_numeric, errors="coerce")
+
+    ids, spanish_names = get_names_and_ids(name, "es")
+    output.columns = ids
+
+    base_metadata = get_base_metadata(name)
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
     )
@@ -100,7 +162,7 @@ def cpi_divisions() -> Dataset:
         "unit": "2022-10=100",
         "seasonal_adjustment": None,
         "frequency": "ME",
-        "time_series_type": None,
+        "time_series_type": "Stock",
         "cumulative_periods": 1,
         "transformations": [],
     }
@@ -232,10 +294,38 @@ def inflation_expectations() -> Dataset:
         "unit": "%",
         "seasonal_adjustment": None,
         "frequency": "ME",
-        "time_series_type": None,
+        "time_series_type": "Flow",
         "cumulative_periods": 1,
         "transformations": [],
     }
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
+
+
+def inflation_expectations_corporate() -> Dataset:
+    """Get data for the INE corporate inflation expectations survey.
+
+    Returns
+    -------
+    Monthly corporate inflation expectations : Dataset
+
+    """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
+
+    raw = pd.read_excel(sources["main"], skiprows=3, usecols="A:G", index_col=0)
+    output = raw.copy()
+    output.index = pd.date_range(start="2020-10-31", freq="ME", periods=len(output))
+    output = output.apply(pd.to_numeric, errors="coerce")
+
+    ids, spanish_names = get_names_and_ids(name, "es")
+    output.columns = ids
+
+    base_metadata = get_base_metadata(name)
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
     )

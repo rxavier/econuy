@@ -6,7 +6,8 @@ from econuy import load_dataset
 from econuy.utils.operations import (
     get_name_from_function,
     get_download_sources,
-    get_dataset_columns,
+    get_names_and_ids,
+    get_base_metadata,
 )
 
 
@@ -83,23 +84,10 @@ def activity_region() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    dataset_columns = get_dataset_columns(name, "es")
-    spanish_names = dataset_columns.values()
-    spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in dataset_columns.keys()]
+    ids, spanish_names = get_names_and_ids(name, "es")
     output.columns = ids
 
-    base_metadata = {
-        "area": "Labor market",
-        "currency": None,
-        "inflation_adjustment": None,
-        "unit": "Rate",
-        "seasonal_adjustment": None,
-        "frequency": "ME",
-        "time_series_type": "Stock",
-        "cumulative_periods": 1,
-        "transformations": [],
-    }
+    base_metadata = get_base_metadata(name)
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
     )
@@ -127,23 +115,10 @@ def employment_region() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    dataset_columns = get_dataset_columns(name, "es")
-    spanish_names = dataset_columns.values()
-    spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in dataset_columns.keys()]
+    ids, spanish_names = get_names_and_ids(name, "es")
     output.columns = ids
 
-    base_metadata = {
-        "area": "Labor market",
-        "currency": None,
-        "inflation_adjustment": None,
-        "unit": "Rate",
-        "seasonal_adjustment": None,
-        "frequency": "ME",
-        "time_series_type": "Stock",
-        "cumulative_periods": 1,
-        "transformations": [],
-    }
+    base_metadata = get_base_metadata(name)
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
     )
@@ -171,23 +146,10 @@ def unemployment_region() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    dataset_columns = get_dataset_columns(name, "es")
-    spanish_names = dataset_columns.values()
-    spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in dataset_columns.keys()]
+    ids, spanish_names = get_names_and_ids(name, "es")
     output.columns = ids
 
-    base_metadata = {
-        "area": "Labor market",
-        "currency": None,
-        "inflation_adjustment": None,
-        "unit": "Rate",
-        "seasonal_adjustment": None,
-        "frequency": "ME",
-        "time_series_type": "Stock",
-        "cumulative_periods": 1,
-        "transformations": [],
-    }
+    base_metadata = get_base_metadata(name)
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
     )
@@ -215,23 +177,10 @@ def employment_age() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    dataset_columns = get_dataset_columns(name, "es")
-    spanish_names = dataset_columns.values()
-    spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in dataset_columns.keys()]
+    ids, spanish_names = get_names_and_ids(name, "es")
     output.columns = ids
 
-    base_metadata = {
-        "area": "Labor market",
-        "currency": None,
-        "inflation_adjustment": None,
-        "unit": "Rate",
-        "seasonal_adjustment": None,
-        "frequency": "ME",
-        "time_series_type": "Stock",
-        "cumulative_periods": 1,
-        "transformations": [],
-    }
+    base_metadata = get_base_metadata(name)
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
     )
@@ -258,23 +207,10 @@ def unemployment_contributions() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    dataset_columns = get_dataset_columns(name, "es")
-    spanish_names = dataset_columns.values()
-    spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in dataset_columns.keys()]
+    ids, spanish_names = get_names_and_ids(name, "es")
     output.columns = ids
 
-    base_metadata = {
-        "area": "Labor market",
-        "currency": None,
-        "inflation_adjustment": None,
-        "unit": "Share",
-        "seasonal_adjustment": None,
-        "frequency": "ME",
-        "time_series_type": "Stock",
-        "cumulative_periods": 1,
-        "transformations": [],
-    }
+    base_metadata = get_base_metadata(name)
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
     )
@@ -302,23 +238,10 @@ def unemployment_characteristics() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    dataset_columns = get_dataset_columns(name, "es")
-    spanish_names = dataset_columns.values()
-    spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in dataset_columns.keys()]
+    ids, spanish_names = get_names_and_ids(name, "es")
     output.columns = ids
 
-    base_metadata = {
-        "area": "Labor market",
-        "currency": None,
-        "inflation_adjustment": None,
-        "unit": "Rate",
-        "seasonal_adjustment": None,
-        "frequency": "ME",
-        "time_series_type": "Stock",
-        "cumulative_periods": 1,
-        "transformations": [],
-    }
+    base_metadata = get_base_metadata(name)
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
     )
@@ -348,23 +271,10 @@ def unemployment_conditions() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    dataset_columns = get_dataset_columns(name, "es")
-    spanish_names = dataset_columns.values()
-    spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in dataset_columns.keys()]
+    ids, spanish_names = get_names_and_ids(name, "es")
     output.columns = ids
 
-    base_metadata = {
-        "area": "Labor market",
-        "currency": None,
-        "inflation_adjustment": None,
-        "unit": "Share",
-        "seasonal_adjustment": None,
-        "frequency": "ME",
-        "time_series_type": "Stock",
-        "cumulative_periods": 1,
-        "transformations": [],
-    }
+    base_metadata = get_base_metadata(name)
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
     )
@@ -394,23 +304,10 @@ def unemployment_duration() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    dataset_columns = get_dataset_columns(name, "es")
-    spanish_names = dataset_columns.values()
-    spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in dataset_columns.keys()]
+    ids, spanish_names = get_names_and_ids(name, "es")
     output.columns = ids
 
-    base_metadata = {
-        "area": "Labor market",
-        "currency": None,
-        "inflation_adjustment": None,
-        "unit": "Weeks",
-        "seasonal_adjustment": None,
-        "frequency": "ME",
-        "time_series_type": "Stock",
-        "cumulative_periods": 1,
-        "transformations": [],
-    }
+    base_metadata = get_base_metadata(name)
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
     )
@@ -438,23 +335,10 @@ def employment_characteristics() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    dataset_columns = get_dataset_columns(name, "es")
-    spanish_names = dataset_columns.values()
-    spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in dataset_columns.keys()]
+    ids, spanish_names = get_names_and_ids(name, "es")
     output.columns = ids
 
-    base_metadata = {
-        "area": "Labor market",
-        "currency": None,
-        "inflation_adjustment": None,
-        "unit": "Share",
-        "seasonal_adjustment": None,
-        "frequency": "ME",
-        "time_series_type": "Stock",
-        "cumulative_periods": 1,
-        "transformations": [],
-    }
+    base_metadata = get_base_metadata(name)
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
     )
@@ -531,23 +415,10 @@ def employment_sector() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    dataset_columns = get_dataset_columns(name, "es")
-    spanish_names = dataset_columns.values()
-    spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in dataset_columns.keys()]
+    ids, spanish_names = get_names_and_ids(name, "es")
     output.columns = ids
 
-    base_metadata = {
-        "area": "Labor market",
-        "currency": None,
-        "inflation_adjustment": None,
-        "unit": "Share",
-        "seasonal_adjustment": None,
-        "frequency": "ME",
-        "time_series_type": "Stock",
-        "cumulative_periods": 1,
-        "transformations": [],
-    }
+    base_metadata = get_base_metadata(name)
     metadata = DatasetMetadata.from_cast(
         name, base_metadata, output.columns, spanish_names
     )

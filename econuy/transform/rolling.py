@@ -1,4 +1,3 @@
-import warnings
 from typing import Optional, Tuple
 
 import pandas as pd
@@ -10,11 +9,9 @@ def _rolling(
     window: Optional[int] = None,
     operation: str = "sum",
 ) -> Tuple[pd.DataFrame, "Metadata"]:  # type: ignore # noqa: F821
-    indicators = metadata.indicator_ids
     metadata = metadata.copy()
     # We get the first one because we validated that all indicators have the same metadata, or pass them one by one
-    single_metadata = metadata.indicator_metadata[indicators[0]]
-    time_series_type = single_metadata["time_series_type"]
+
     pd_frequencies = {
         "YE": 1,
         "YE-DEC": 1,
@@ -33,12 +30,6 @@ def _rolling(
         "sum": lambda x: x.rolling(window=window, min_periods=window).sum(),
         "mean": lambda x: x.rolling(window=window, min_periods=window).mean(),
     }
-
-    if time_series_type == "Stock":
-        warnings.warn(
-            "Rolling operations should not be " "calculated on stock variables",
-            UserWarning,
-        )
 
     if window is None:
         inferred_freq = pd.infer_freq(data.index)
