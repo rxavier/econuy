@@ -74,6 +74,14 @@ def load_dataset(
             if (
                 dt.datetime.now() - created_at
             ) < OUTDATED_DELTA_THRESHOLD or skip_update:
+                if not skip_update:
+                    existing_dataset.metadata.checked_at = dt.datetime.now()
+                    existing_dataset.save(data_dir)
+                    logger.info(
+                        f"Using saved dataset {name} "
+                        f"(created: {created_at.strftime('%Y-%m-%d %H:%M:%S')}, "
+                        f"last checked: {existing_dataset.metadata.checked_at.strftime('%Y-%m-%d %H:%M:%S')})"
+                    )
                 return existing_dataset
             else:
                 logger.info(
@@ -105,12 +113,16 @@ def load_dataset(
         if existing_dataset is not None:
             try:
                 check_updated_dataset(existing_dataset, dataset)
+                dataset.metadata.created_at = existing_dataset.metadata.created_at
+                dataset.metadata.checked_at = dt.datetime.now()
                 dataset.save(data_dir)
             except AssertionError as exc:
                 logger.warning(f"Dataset {name} has changed. Will not overwrite. Error: {exc}")
         else:
+            dataset.metadata.checked_at = dataset.metadata.created_at
             dataset.save(data_dir)
     else:
+        dataset.metadata.checked_at = dataset.metadata.created_at
         dataset.save(data_dir)
 
     return dataset

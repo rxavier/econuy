@@ -38,11 +38,13 @@ class DatasetMetadata:
         name: str,
         indicator_metadata: dict,
         created_at: Optional[datetime] = None,
+        checked_at: Optional[datetime] = None,
         config: Optional[DatasetConfig] = None,
     ) -> None:
         self.name = name
         self.indicator_metadata = indicator_metadata
         self.created_at = created_at or datetime.now()
+        self.checked_at = checked_at or self.created_at
         self.config = config or DatasetConfig(name)
 
     def __getitem__(self, indicator) -> "DatasetMetadata":
@@ -231,6 +233,7 @@ class DatasetMetadata:
     def to_dict(self) -> Dict:
         d = self.__dict__.copy()
         d["created_at"] = d["created_at"].isoformat()
+        d["checked_at"] = d["checked_at"].isoformat()
         d["config"] = self.config.__dict__
         return d
 
@@ -323,6 +326,9 @@ class DatasetMetadata:
         metadata_dict["created_at"] = datetime.fromisoformat(
             metadata_dict["created_at"]
         )
+        metadata_dict["checked_at"] = datetime.fromisoformat(
+            metadata_dict.get("checked_at", metadata_dict["created_at"])
+        )
         metadata_dict["config"] = DatasetConfig(metadata_dict["name"])
         return cls(**metadata_dict)
 
@@ -331,6 +337,7 @@ class DatasetMetadata:
             [
                 f"Name: {self.name}",
                 f"Created at: {self.created_at}",
+                f"Checked at: {self.checked_at}",
                 f"Indicator metadata: {self.indicator_metadata}",
             ]
         )
