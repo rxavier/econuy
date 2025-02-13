@@ -4,6 +4,8 @@ from pathlib import Path
 
 import httpx
 
+from econuy.utils.logging import logger
+
 
 def _get_binary() -> None:
     if "X13PATH" in os.environ:
@@ -46,7 +48,7 @@ def _get_binary() -> None:
     if binary_path.exists():
         os.chmod(binary_path, 0o755)
         os.environ["X13PATH"] = binary_path.as_posix()
-        print(f"Using existing binary at {binary_path}")
+        logger.info(f"Using existing binary at {binary_path}")
         return binary_path.as_posix()
 
     r = httpx.get(urls[system_string])
@@ -56,7 +58,7 @@ def _get_binary() -> None:
     os.chmod(binary_path, 0o755)
     os.environ["X13PATH"] = binary_path.as_posix()
 
-    print(
+    logger.info(
         f"Download complete. Saved binary to {base_dir} and set X13PATH to {binary_path}"
     )
 

@@ -15,6 +15,7 @@ from tqdm.auto import tqdm
 
 from econuy.utils.operations import REGISTRY, read_dataset, get_data_dir
 from econuy.base import Dataset
+from econuy.utils.logging import logger
 
 
 OUTDATED_DELTA_THRESHOLD = dt.timedelta(days=1)  # TODO: Use an env var or config file
@@ -75,7 +76,7 @@ def load_dataset(
             ) < OUTDATED_DELTA_THRESHOLD or skip_update:
                 return existing_dataset
             else:
-                print(
+                logger.info(
                     f"Dataset {name} exists in cache but is outdated "
                     f"(created at {created_at.strftime('%Y-%m-%d %H:%M:%S')}). "
                     "Retrieving new data."
@@ -106,7 +107,7 @@ def load_dataset(
                 check_updated_dataset(existing_dataset, dataset)
                 dataset.save(data_dir)
             except AssertionError as exc:
-                print(f"Dataset {name} has changed. Will not overwrite. Error: {exc}")
+                logger.warning(f"Dataset {name} has changed. Will not overwrite. Error: {exc}")
         else:
             dataset.save(data_dir)
     else:
@@ -184,7 +185,7 @@ def load_datasets_parallel(
                     dataset = future.result()
                     datasets[name] = dataset
                 except Exception as exc:
-                    print(f"Error loading dataset {name} | {exc}")
+                    logger.error(f"Error loading dataset {name} | {exc}")
                 pbar.update(1)
     return datasets
 

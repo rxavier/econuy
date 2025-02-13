@@ -11,6 +11,7 @@ from econuy.base import Dataset, DatasetMetadata
 from econuy.utils.extras import FISCAL_SHEETS, taxes_columns
 from econuy.utils.operations import get_name_from_function, get_download_sources
 from econuy.utils.retrieval import get_with_ssl_context
+from econuy.utils.logging import logger
 
 
 def _get_fiscal_balances(dataset_name: str) -> Dataset:
@@ -204,7 +205,7 @@ def tax_revenue() -> Dataset:
         output = pd.concat([aux, latest], sort=False)
         output = output.loc[~output.index.duplicated(keep="first")]
     except Exception as e:
-        print(f"Could not get PDF data | {e}")
+        logger.error(f"Could not get PDF data | {e}")
         output = historical.copy()
 
     output = output.apply(pd.to_numeric, errors="coerce")

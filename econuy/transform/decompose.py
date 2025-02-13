@@ -9,6 +9,7 @@ from statsmodels.tsa.seasonal import STL, seasonal_decompose, MSTL
 
 from econuy.utils import x13 as x13_utils
 from econuy.utils.transform import error_handler
+from econuy.utils.logging import logger
 
 
 # The `_open_and_read` function needs to be monkey-patched to specify the
@@ -71,7 +72,7 @@ def _decompose(
                     seas_adjs = results.seasadj.reindex(data_proc.index).T
 
             except X13Error:
-                print(f"X13 error. Falling back to {fallback}")
+                logger.warning(f"X13 error. Falling back to {fallback}")
                 if fallback == "loess":
                     results = STL(col_df).fit()
                 elif fallback == "mloess":
