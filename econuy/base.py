@@ -39,12 +39,16 @@ class DatasetMetadata:
         indicator_metadata: dict,
         created_at: Optional[datetime] = None,
         checked_at: Optional[datetime] = None,
+        updated_at: Optional[datetime] = None,
+        last_update: Optional[Dict[str, List[datetime]]] = None,
         config: Optional[DatasetConfig] = None,
     ) -> None:
         self.name = name
         self.indicator_metadata = indicator_metadata
         self.created_at = created_at or datetime.now()
         self.checked_at = checked_at or self.created_at
+        self.updated_at = updated_at
+        self.last_update = last_update or {"updated": [], "new": []}
         self.config = config or DatasetConfig(name)
 
     def __getitem__(self, indicator) -> "DatasetMetadata":
@@ -234,6 +238,11 @@ class DatasetMetadata:
         d = self.__dict__.copy()
         d["created_at"] = d["created_at"].isoformat()
         d["checked_at"] = d["checked_at"].isoformat()
+        d["updated_at"] = d["updated_at"].isoformat() if d["updated_at"] is not None else None
+        d["last_update"] = {
+            k: [dt.isoformat() for dt in v]
+            for k, v in d["last_update"].items()
+        }
         d["config"] = self.config.__dict__
         return d
 
@@ -329,6 +338,15 @@ class DatasetMetadata:
         metadata_dict["checked_at"] = datetime.fromisoformat(
             metadata_dict.get("checked_at", metadata_dict["created_at"])
         )
+        metadata_dict["updated_at"] = (
+            datetime.fromisoformat(metadata_dict["updated_at"])
+            if metadata_dict.get("updated_at") is not None
+            else None
+        )
+        metadata_dict["last_update"] = {
+            k: [datetime.fromisoformat(dt) for dt in v]
+            for k, v in metadata_dict.get("last_update", {"updated": [], "new": []}).items()
+        }
         metadata_dict["config"] = DatasetConfig(metadata_dict["name"])
         return cls(**metadata_dict)
 
@@ -337,6 +355,7 @@ class DatasetMetadata:
             [
                 f"Name: {self.name}",
                 f"Created at: {self.created_at}",
+                f"Updated at: {self.updated_at}",
                 f"Checked at: {self.checked_at}",
                 f"Indicator metadata: {self.indicator_metadata}",
             ]

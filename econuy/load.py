@@ -2,13 +2,12 @@ import importlib
 import datetime as dt
 import inspect
 import os
-from typing import Union, List, Optional, Dict, Literal
+from typing import Union, List, Optional, Dict, Literal, Tuple
 from pathlib import Path
 from urllib.error import URLError
 from json.decoder import JSONDecodeError
 from concurrent import futures
 
-import pandas as pd
 from httpx import ReadTimeout
 from opnieuw import retry
 from tqdm.auto import tqdm
@@ -70,23 +69,22 @@ def load_dataset(
     if not skip_cache:
         existing_dataset = read_dataset(name, data_dir)
         if existing_dataset is not None:
-            created_at = existing_dataset.metadata.created_at
+            checked_at = existing_dataset.metadata.checked_at
             if (
-                dt.datetime.now() - created_at
+                dt.datetime.now() - checked_at
             ) < OUTDATED_DELTA_THRESHOLD or skip_update:
                 if not skip_update:
                     existing_dataset.metadata.checked_at = dt.datetime.now()
                     existing_dataset.save(data_dir)
                     logger.info(
-                        f"Using saved dataset {name} "
-                        f"(created: {created_at.strftime('%Y-%m-%d %H:%M:%S')}, "
-                        f"last checked: {existing_dataset.metadata.checked_at.strftime('%Y-%m-%d %H:%M:%S')})"
+                        f"Using cached dataset {name} "
+                        f"(last checked: {existing_dataset.metadata.checked_at.strftime('%Y-%m-%d %H:%M:%S')})"
                     )
                 return existing_dataset
             else:
                 logger.info(
-                    f"Dataset {name} exists in cache but is outdated "
-                    f"(created at {created_at.strftime('%Y-%m-%d %H:%M:%S')}). "
+                    f"Dataset {name} exists in cache but may be outdated "
+                    f"(last checked: {checked_at.strftime('%Y-%m-%d %H:%M:%S')}). "
                     "Retrieving new data."
                 )
 
@@ -111,18 +109,35 @@ def load_dataset(
     if not force_overwrite:
         existing_dataset = read_dataset(name, data_dir)
         if existing_dataset is not None:
-            try:
-                check_updated_dataset(existing_dataset, dataset)
+            compatible, updated_timestamps, new_timestamps = compare_datasets(existing_dataset, dataset)
+            if compatible:
                 dataset.metadata.created_at = existing_dataset.metadata.created_at
+                dataset.metadata.updated_at = existing_dataset.metadata.updated_at
                 dataset.metadata.checked_at = dt.datetime.now()
+                if updated_timestamps or new_timestamps:
+                    logger.info(
+                        f"Dataset {name} has changes: "
+                        f"{len(updated_timestamps)} updated timestamps, "
+                        f"{len(new_timestamps)} new timestamps"
+                    )
+                    dataset.metadata.last_update = {
+                        "updated": updated_timestamps,
+                        "new": new_timestamps
+                    }
+                    dataset.metadata.updated_at = dt.datetime.now()
                 dataset.save(data_dir)
-            except AssertionError as exc:
-                logger.warning(f"Dataset {name} has changed. Will not overwrite. Error: {exc}")
+            else:
+                logger.warning(f"Dataset {name} has incompatible changes, will not overwrite")
+                return existing_dataset
         else:
             dataset.metadata.checked_at = dataset.metadata.created_at
+            dataset.metadata.updated_at = None
+            dataset.metadata.last_update = {"updated": [], "new": []}
             dataset.save(data_dir)
     else:
         dataset.metadata.checked_at = dataset.metadata.created_at
+        dataset.metadata.updated_at = None
+        dataset.metadata.last_update = {"updated": [], "new": []}
         dataset.save(data_dir)
 
     return dataset
@@ -202,33 +217,65 @@ def load_datasets_parallel(
     return datasets
 
 
-def check_updated_dataset(original: Dataset, new: Dataset) -> None:  # noqa: F821
-    assert original.metadata.name == new.metadata.name, "Datasets have different names"
-    assert (
-        original.metadata.indicator_metadata == new.metadata.indicator_metadata
-    ), "Datasets have different indicator metadata"
-    assert (
-        original.data.shape[1] == new.data.shape[1]
-    ), "Datasets have different number of columns"
-    assert (
-        original.data.index[0] == new.data.index[0]
-    ), "Datasets have different start date"
+def compare_datasets(
+    original: Dataset,
+    new: Dataset,
+    value_change_threshold: float = 0.05,
+    update_epsilon: float = 1e-10  # Small threshold for floating point differences
+) -> Tuple[bool, List[dt.datetime], List[dt.datetime]]:
+    """Compare two datasets and identify changes.
 
-    shortened_n = int(original.data.shape[0] * 0.9)
-    shortened_original = original.data.head(shortened_n)
-    shortened_new = new.data.head(shortened_n)
-    assert (
-        shortened_original.notna().sum().sum() == shortened_new.notna().sum().sum()
-    ), "Datasets have different number of missing values"
-    try:
-        pd.testing.assert_series_equal(
-            shortened_original.mean(), shortened_new.mean(), atol=0, rtol=0.05
-        )
-    except AssertionError as exc:
-        raise AssertionError("Datasets have different means") from exc
-    try:
-        pd.testing.assert_series_equal(
-            shortened_original.std(), shortened_new.std(), atol=0, rtol=0.05
-        )
-    except AssertionError as exc:
-        raise AssertionError("Datasets have different standard deviations") from exc
+    Parameters
+    ----------
+    original : Dataset
+        The original dataset to compare against
+    new : Dataset
+        The new dataset to compare
+    value_change_threshold : float, default 0.05
+        The relative threshold for considering a value as changed for compatibility checks.
+    update_epsilon : float, default 1e-10
+        The absolute threshold for considering a value as changed for update detection.
+        Used to handle floating point precision issues.
+
+    Returns
+    -------
+    Tuple[bool, List[datetime], List[datetime]]
+        A tuple containing:
+        - bool: Whether the datasets are compatible (same structure, etc)
+        - List[datetime]: Timestamps where values changed (beyond floating point differences)
+        - List[datetime]: Timestamps that are new in the new dataset
+    """
+    if original.metadata.name != new.metadata.name:
+        logger.error(f"Datasets have different names: {original.metadata.name} vs {new.metadata.name}")
+        return False, [], []
+    if original.metadata.indicator_metadata != new.metadata.indicator_metadata:
+        logger.error("Datasets have different indicator metadata")
+        return False, [], []
+    if original.data.shape[1] != new.data.shape[1]:
+        logger.error(f"Datasets have different number of columns: {original.data.shape[1]} vs {new.data.shape[1]}")
+        return False, [], []
+    if original.data.index[0] != new.data.index[0]:
+        logger.error(f"Datasets have different start dates: {original.data.index[0]} vs {new.data.index[0]}")
+        return False, [], []
+
+    # Find new timestamps
+    new_timestamps = new.data.index.difference(original.data.index).to_list()
+
+    # Find updated values
+    common_timestamps = original.data.index.intersection(new.data.index)
+    original_subset = original.data.loc[common_timestamps]
+    new_subset = new.data.loc[common_timestamps]
+
+    # For compatibility check - use relative threshold
+    abs_mean = (original_subset.abs() + new_subset.abs()) / 2
+    abs_mean = abs_mean.replace(0, 1e-10)
+    relative_changes = (new_subset - original_subset).abs() / abs_mean
+    if (relative_changes > value_change_threshold).any().any():
+        logger.error("Datasets have incompatible changes (differences larger than threshold)")
+        return False, [], []
+
+    # For update detection - use absolute epsilon threshold
+    differences = (new_subset - original_subset).abs()
+    updated_timestamps = common_timestamps[differences.gt(update_epsilon).any(axis=1)].to_list()
+
+    return True, updated_timestamps, new_timestamps
