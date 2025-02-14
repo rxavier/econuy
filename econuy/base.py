@@ -625,6 +625,11 @@ class Dataset:
         start_date: Union[str, datetime, None] = None,
         end_date: Union[str, datetime, None] = None,
     ) -> "Dataset":
+        if start_date is not None and end_date is not None:
+            start_date = pd.to_datetime(start_date)
+            end_date = pd.to_datetime(end_date)
+            assert start_date < end_date, "Start date must be before end date"
+
         return self.__class__(
             data=self.data.loc[start_date:end_date],
             metadata=self.metadata,
