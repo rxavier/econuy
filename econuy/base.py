@@ -338,9 +338,10 @@ class DatasetMetadata:
         metadata_dict["checked_at"] = datetime.fromisoformat(
             metadata_dict.get("checked_at", metadata_dict["created_at"])
         )
+        updated_at = metadata_dict.get("updated_at")
         metadata_dict["updated_at"] = (
-            datetime.fromisoformat(metadata_dict["updated_at"])
-            if metadata_dict.get("updated_at") is not None
+            datetime.fromisoformat(updated_at)
+            if updated_at is not None
             else None
         )
         metadata_dict["last_update"] = {
