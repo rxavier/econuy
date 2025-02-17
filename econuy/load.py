@@ -221,7 +221,7 @@ def compare_datasets(
     original: Dataset,
     new: Dataset,
     value_change_threshold: float = 0.05,
-    update_epsilon: float = 1e-10  # Small threshold for floating point differences
+    max_changes_pct: float = 0.1,
 ) -> Tuple[bool, List[dt.datetime], List[dt.datetime]]:
     """Compare two datasets and identify changes.
 
@@ -233,9 +233,8 @@ def compare_datasets(
         The new dataset to compare
     value_change_threshold : float, default 0.05
         The relative threshold for considering a value as changed for compatibility checks.
-    update_epsilon : float, default 1e-10
-        The absolute threshold for considering a value as changed for update detection.
-        Used to handle floating point precision issues.
+    max_changes_pct : float, default 0.1
+        The maximum percentage of changes allowed for a column to be considered compatible.
 
     Returns
     -------
@@ -258,24 +257,26 @@ def compare_datasets(
         logger.error(f"Datasets have different start dates: {original.data.index[0]} vs {new.data.index[0]}")
         return False, [], []
 
-    # Find new timestamps
     new_timestamps = new.data.index.difference(original.data.index).to_list()
 
-    # Find updated values
     common_timestamps = original.data.index.intersection(new.data.index)
     original_subset = original.data.loc[common_timestamps]
     new_subset = new.data.loc[common_timestamps]
 
-    # For compatibility check - use relative threshold
     abs_mean = (original_subset.abs() + new_subset.abs()) / 2
     abs_mean = abs_mean.replace(0, 1e-10)
     relative_changes = (new_subset - original_subset).abs() / abs_mean
-    if (relative_changes > value_change_threshold).any().any():
-        logger.error("Datasets have incompatible changes (differences larger than threshold)")
+    pct_significant_changes = (relative_changes > value_change_threshold).mean()
+
+    if (pct_significant_changes > max_changes_pct).any():
+        problematic_cols = pct_significant_changes[pct_significant_changes > max_changes_pct]
+        logger.error(
+            "Datasets have incompatible changes. Columns with too many significant changes: "
+            f"{', '.join(f'{col}: {pct:.1%}' for col, pct in problematic_cols.items())}"
+        )
         return False, [], []
 
-    # For update detection - use absolute epsilon threshold
     differences = (new_subset - original_subset).abs()
-    updated_timestamps = common_timestamps[differences.gt(update_epsilon).any(axis=1)].to_list()
+    updated_timestamps = common_timestamps[differences.gt(1e-10).any(axis=1)].to_list()
 
     return True, updated_timestamps, new_timestamps
