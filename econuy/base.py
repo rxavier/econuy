@@ -236,11 +236,20 @@ class DatasetMetadata:
 
     def to_dict(self) -> Dict:
         d = self.__dict__.copy()
-        d["created_at"] = d["created_at"].astimezone(timezone.utc).isoformat()
-        d["checked_at"] = d["checked_at"].astimezone(timezone.utc).isoformat()
-        d["updated_at"] = d["updated_at"].astimezone(timezone.utc).isoformat() if d["updated_at"] is not None else None
+
+        def format_datetime(dt_value: Optional[datetime]) -> Optional[str]:
+            """Helper to format datetime values that might be naive."""
+            if dt_value is None:
+                return None
+            if dt_value.tzinfo is None:
+                dt_value = dt_value.replace(tzinfo=timezone.utc)
+            return dt_value.astimezone(timezone.utc).isoformat()
+
+        d["created_at"] = format_datetime(d["created_at"])
+        d["checked_at"] = format_datetime(d["checked_at"])
+        d["updated_at"] = format_datetime(d["updated_at"])
         d["last_update"] = {
-            k: [dt.astimezone(timezone.utc).isoformat() for dt in v]
+            k: [format_datetime(dt) for dt in v]
             for k, v in d["last_update"].items()
         }
         d["config"] = self.config.__dict__
@@ -338,7 +347,11 @@ class DatasetMetadata:
             if dt_value is None:
                 return None
             if isinstance(dt_value, str):
-                return datetime.fromisoformat(dt_value).replace(tzinfo=timezone.utc)
+                dt = datetime.fromisoformat(dt_value)
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                return dt.astimezone(timezone.utc)
+            raise TypeError(f"Expected string or None for datetime, got {type(dt_value)}")
 
         try:
             metadata_dict["created_at"] = parse_datetime(metadata_dict["created_at"])
