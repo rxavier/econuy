@@ -332,24 +332,28 @@ class DatasetMetadata:
         """
         with open(path, "r") as f:
             metadata_dict = json.load(f)
-        metadata_dict["created_at"] = datetime.fromisoformat(
-            metadata_dict["created_at"]
-        ).replace(tzinfo=timezone.utc)
-        metadata_dict["checked_at"] = datetime.fromisoformat(
-            metadata_dict.get("checked_at", metadata_dict["created_at"])
-        ).replace(tzinfo=timezone.utc)
-        updated_at = metadata_dict.get("updated_at")
-        metadata_dict["updated_at"] = (
-            datetime.fromisoformat(updated_at).replace(tzinfo=timezone.utc)
-            if updated_at is not None
-            else None
-        )
-        metadata_dict["last_update"] = {
-            k: [datetime.fromisoformat(dt).replace(tzinfo=timezone.utc) for dt in v]
-            for k, v in metadata_dict.get("last_update", {"updated": [], "new": []}).items()
-        }
-        metadata_dict["config"] = DatasetConfig(metadata_dict["name"])
-        return cls(**metadata_dict)
+
+        def parse_datetime(dt_value: Union[str, None]) -> Optional[datetime]:
+            """Helper to parse datetime values that might be None or non-string."""
+            if dt_value is None:
+                return None
+            if isinstance(dt_value, str):
+                return datetime.fromisoformat(dt_value).replace(tzinfo=timezone.utc)
+
+        try:
+            metadata_dict["created_at"] = parse_datetime(metadata_dict["created_at"])
+            metadata_dict["checked_at"] = parse_datetime(
+                metadata_dict.get("checked_at", metadata_dict["created_at"])
+            )
+            metadata_dict["updated_at"] = parse_datetime(metadata_dict.get("updated_at"))
+            metadata_dict["last_update"] = {
+                k: [parse_datetime(dt) for dt in v]
+                for k, v in metadata_dict.get("last_update", {"updated": [], "new": []}).items()
+            }
+            metadata_dict["config"] = DatasetConfig(metadata_dict["name"])
+            return cls(**metadata_dict)
+        except (KeyError, TypeError, ValueError) as e:
+            raise ValueError(f"Invalid metadata format in {path}: {str(e)}") from e
 
     def __repr__(self) -> str:
         return "\n".join(
