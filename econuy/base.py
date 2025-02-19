@@ -342,16 +342,20 @@ class DatasetMetadata:
         with open(path, "r") as f:
             metadata_dict = json.load(f)
 
-        def parse_datetime(dt_value: Union[str, None]) -> Optional[datetime]:
-            """Helper to parse datetime values that might be None or non-string."""
+        def parse_datetime(dt_value: Union[str, datetime, None]) -> Optional[datetime]:
+            """Helper to parse datetime values that might be None, string, or datetime."""
             if dt_value is None:
                 return None
             if isinstance(dt_value, str):
                 dt = datetime.fromisoformat(dt_value)
-                if dt.tzinfo is None:
-                    dt = dt.replace(tzinfo=timezone.utc)
-                return dt.astimezone(timezone.utc)
-            raise TypeError(f"Expected string or None for datetime, got {type(dt_value)}")
+            elif isinstance(dt_value, datetime):
+                dt = dt_value
+            else:
+                raise TypeError(f"Expected string, datetime, or None for datetime, got {type(dt_value)}")
+
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return dt.astimezone(timezone.utc)
 
         try:
             metadata_dict["created_at"] = parse_datetime(metadata_dict["created_at"])
