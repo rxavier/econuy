@@ -1,4 +1,4 @@
-import pandas as pd
+﻿import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
 from econuy.base import Dataset, DatasetMetadata
@@ -502,7 +502,7 @@ def labor_rates_persons(*args, **kwargs) -> Dataset:
     name = get_name_from_function()
     sources = get_download_sources(name)
 
-    rates = load_dataset("labor_rates", *args, **kwargs).to_named()
+    rates = load_dataset("labor_rates_gender", *args, **kwargs).to_named()
     rates = rates.loc[
         :,
         [
