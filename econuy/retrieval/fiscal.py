@@ -34,6 +34,10 @@ def _get_fiscal_balances(dataset_name: str) -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
+    if dataset_name == "fiscal_balance_central_government":
+        # this handles a rogue row in the central government sheet under Egresos totales
+        output = output.dropna(axis=1, how="any")
+
     ids = [f"{dataset_name}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = dataset_details["colnames"]
@@ -54,7 +58,6 @@ def _get_fiscal_balances(dataset_name: str) -> Dataset:
         dataset_name, base_metadata, output.columns, spanish_names
     )
     dataset = Dataset(dataset_name, output, metadata)
-
     return dataset
 
 
