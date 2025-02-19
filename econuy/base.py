@@ -2,7 +2,7 @@ import copy
 import warnings
 import json
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Union, Optional, Literal, Dict
 
 import pandas as pd
@@ -45,7 +45,7 @@ class DatasetMetadata:
     ) -> None:
         self.name = name
         self.indicator_metadata = indicator_metadata
-        self.created_at = created_at or datetime.now()
+        self.created_at = created_at or datetime.now(timezone.utc)
         self.checked_at = checked_at or self.created_at
         self.updated_at = updated_at
         self.last_update = last_update or {"updated": [], "new": []}
@@ -236,11 +236,11 @@ class DatasetMetadata:
 
     def to_dict(self) -> Dict:
         d = self.__dict__.copy()
-        d["created_at"] = d["created_at"].isoformat()
-        d["checked_at"] = d["checked_at"].isoformat()
-        d["updated_at"] = d["updated_at"].isoformat() if d["updated_at"] is not None else None
+        d["created_at"] = d["created_at"].astimezone(timezone.utc).isoformat()
+        d["checked_at"] = d["checked_at"].astimezone(timezone.utc).isoformat()
+        d["updated_at"] = d["updated_at"].astimezone(timezone.utc).isoformat() if d["updated_at"] is not None else None
         d["last_update"] = {
-            k: [dt.isoformat() for dt in v]
+            k: [dt.astimezone(timezone.utc).isoformat() for dt in v]
             for k, v in d["last_update"].items()
         }
         d["config"] = self.config.__dict__
@@ -334,18 +334,18 @@ class DatasetMetadata:
             metadata_dict = json.load(f)
         metadata_dict["created_at"] = datetime.fromisoformat(
             metadata_dict["created_at"]
-        )
+        ).replace(tzinfo=timezone.utc)
         metadata_dict["checked_at"] = datetime.fromisoformat(
             metadata_dict.get("checked_at", metadata_dict["created_at"])
-        )
+        ).replace(tzinfo=timezone.utc)
         updated_at = metadata_dict.get("updated_at")
         metadata_dict["updated_at"] = (
-            datetime.fromisoformat(updated_at)
+            datetime.fromisoformat(updated_at).replace(tzinfo=timezone.utc)
             if updated_at is not None
             else None
         )
         metadata_dict["last_update"] = {
-            k: [datetime.fromisoformat(dt) for dt in v]
+            k: [datetime.fromisoformat(dt).replace(tzinfo=timezone.utc) for dt in v]
             for k, v in metadata_dict.get("last_update", {"updated": [], "new": []}).items()
         }
         metadata_dict["config"] = DatasetConfig(metadata_dict["name"])
