@@ -46,6 +46,14 @@ def _decompose(
         )
         return output, metadata
 
+    if single_metadata["frequency"] not in ["ME", "QE-DEC"] and method == "x13":
+        output = error_handler(
+            data,
+            errors=error_handling,
+            msg="X13 seasonal adjustment only supported for monthly and quarterly data.",
+        )
+        return output, metadata
+
     data_proc = data.copy()
     columns = data_proc.columns
     trends_array = []
