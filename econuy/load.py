@@ -65,21 +65,17 @@ def load_dataset(
     data_dir = data_dir or get_data_dir()
     data_dir = Path(data_dir)
     data_dir.mkdir(parents=True, exist_ok=True, mode=0o755)
+    now = dt.datetime.now(dt.timezone.utc)
 
     if not skip_cache:
         existing_dataset = read_dataset(name, data_dir)
         if existing_dataset is not None:
             checked_at = existing_dataset.metadata.checked_at
-            if (
-                dt.datetime.now(dt.timezone.utc) - checked_at
-            ) < OUTDATED_DELTA_THRESHOLD or skip_update:
-                if not skip_update:
-                    existing_dataset.metadata.checked_at = dt.datetime.now(dt.timezone.utc)
-                    existing_dataset.save(data_dir)
-                    logger.info(
-                        f"Using cached dataset {name} "
-                        f"(last checked: {existing_dataset.metadata.checked_at.strftime('%Y-%m-%d %H:%M:%S')})"
-                    )
+            if (now - checked_at) < OUTDATED_DELTA_THRESHOLD or skip_update:
+                logger.info(
+                    f"Using cached dataset {name} "
+                    f"(last checked: {existing_dataset.metadata.checked_at.strftime('%Y-%m-%d %H:%M:%S')})"
+                )
                 return existing_dataset
             else:
                 logger.info(
@@ -113,7 +109,8 @@ def load_dataset(
             if compatible:
                 dataset.metadata.created_at = existing_dataset.metadata.created_at
                 dataset.metadata.updated_at = existing_dataset.metadata.updated_at
-                dataset.metadata.checked_at = dt.datetime.now(dt.timezone.utc)
+                dataset.metadata.last_update = existing_dataset.metadata.last_update
+                dataset.metadata.checked_at = now
                 if updated_timestamps or new_timestamps:
                     logger.info(
                         f"Dataset {name} has changes: "
@@ -124,7 +121,7 @@ def load_dataset(
                         "updated": updated_timestamps,
                         "new": new_timestamps
                     }
-                    dataset.metadata.updated_at = dt.datetime.now(dt.timezone.utc)
+                    dataset.metadata.updated_at = now
                 dataset.save(data_dir)
             else:
                 logger.warning(f"Dataset {name} has incompatible changes, will not overwrite")
