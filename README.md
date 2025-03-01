@@ -129,7 +129,7 @@ Datasets include the following metadata per indicator:
 
 ### unrar libraries
 
-The [patool](https://github.com/wummel/patool) package is used in order to access data provided in `.rar` format. This package requires that you have the `unrar` binaries in your system, which in most cases you should already have. You can can get them from [here](https://www.rarlab.com/rar_add.htm) if you don't.
+The [patool](https://github.com/wummel/patool) package is used in order to access data provided in `.rar` format. This package requires that you have the `unrar` binaries in your system, which in most cases you should already have. You can get them from [here](https://www.rarlab.com/rar_add.htm) if you don't.
 
 ----
 
