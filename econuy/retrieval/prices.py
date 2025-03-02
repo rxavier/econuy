@@ -112,6 +112,34 @@ def indexed_unit() -> Dataset:
     return dataset
 
 
+def readjustable_unit() -> Dataset:
+    """Get readjustable unit data.
+
+    Returns
+    -------
+    Monthly readjustable unit : Dataset
+
+    """
+    name = get_name_from_function()
+    sources = get_download_sources(name)
+
+    raw = pd.read_excel(sources["main"], usecols="A:B", skiprows=5, index_col=0)
+    output = raw.copy().rename_axis(None).dropna(how="any")
+    output.index = pd.to_datetime(output.index, format="%m/%d/%Y")
+    output = output.apply(pd.to_numeric, errors="coerce")
+
+    ids, spanish_names = get_names_and_ids(name, "es")
+    output.columns = ids
+
+    base_metadata = get_base_metadata(name)
+    metadata = DatasetMetadata.from_cast(
+        name, base_metadata, output.columns, spanish_names
+    )
+    dataset = Dataset(name, output, metadata)
+
+    return dataset
+
+
 def cpi_divisions() -> Dataset:
     """Get CPI data by division.
 

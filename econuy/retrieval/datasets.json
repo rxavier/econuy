@@ -561,6 +561,45 @@
       ]
     }
   },
+  "readjustable_unit": {
+    "description": "Unidad reajustable",
+    "description_en": "Readjustable unit",
+    "area": "prices",
+    "custom": false,
+    "disabled": false,
+    "auxiliary": false,
+    "function": "prices.readjustable_unit",
+    "indicator_ids": {
+      "0": {
+        "es": "Unidad reajustable"
+      }
+    },
+    "base_metadata": {
+      "area": "Prices",
+      "currency": "UYU",
+      "inflation_adjustment": null,
+      "unit": "Pesos",
+      "seasonal_adjustment": null,
+      "frequency": "ME",
+      "time_series_type": "Stock",
+      "cumulative_periods": 1,
+      "transformations": []
+    },
+    "sources": {
+      "downloads": {
+        "main": "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/UR/UR.xls"
+      },
+      "direct": [
+        "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/SERIES%20Y%20OTROS/UR/UR.xls"
+      ],
+      "indirect": [
+        "https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ur-ura-coeficiente-alquileres"
+      ],
+      "provider": [
+        "INE"
+      ]
+    }
+  },
   "inflation_expectations_corporate": {
     "description": "Expectativas de inflación empresariales",
     "description_en": "Corporate inflation expectations",
