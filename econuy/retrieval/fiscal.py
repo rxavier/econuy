@@ -355,7 +355,7 @@ def _get_public_debt(dataset_name: str) -> Dataset:
         "inflation_adjustment": None,
         "unit": "Millions",
         "seasonal_adjustment": None,
-        "frequency": "ME",
+        "frequency": "QE-DEC",
         "time_series_type": "Stock",
         "cumulative_periods": 1,
         "transformations": [],
