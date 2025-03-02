@@ -901,15 +901,16 @@ class Dataset:
 
     def rebase(
         self,
-        start_date: Union[str, datetime],
+        start_date: Union[str, datetime, None] = None,
         end_date: Union[str, datetime, None] = None,
         base: float = 100.0,
     ) -> "Dataset":
-        """Rebase dataset to a date or range of dates.
+        """Rebase dataset to a date or range of dates. If no dates are provided,
+        rebase to the average of the series.
 
         Parameters
         ----------
-        start_date : string or datetime.datetime
+        start_date : string or datetime.datetime, default None
             Date to which series will be rebased.
         end_date : string or datetime.datetime, default None
             If specified, series will be rebased to the average between

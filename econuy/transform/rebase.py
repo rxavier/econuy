@@ -7,12 +7,12 @@ import pandas as pd
 def _rebase(
     data: pd.DataFrame,
     metadata: "Metadata",  # type: ignore # noqa: F821
-    start_date: Union[str, datetime],
+    start_date: Union[str, datetime, None] = None,
     end_date: Union[str, datetime, None] = None,
     base: float = 100.0,
 ) -> Tuple[pd.DataFrame, "Metadata"]:  # type: ignore # noqa: F821
     metadata = metadata.copy()
-    if end_date is None:
+    if end_date is None and start_date is not None:
         m_end = None
         start_date = data.iloc[
             data.index.get_indexer([start_date], method="nearest")
@@ -26,7 +26,7 @@ def _rebase(
         m_start = start_date.strftime("%Y-%m")
         metadata.update_dataset_metadata({"unit": f"{m_start}={base}"})
 
-    else:
+    elif start_date is not None and end_date is not None:
         output = data.apply(lambda x: x / x[start_date:end_date].mean() * base)
         if isinstance(start_date, str):
             start_date = datetime.strptime(start_date, "%Y-%m-%d")
@@ -41,6 +41,14 @@ def _rebase(
             metadata.update_dataset_metadata({"unit": f"{m_start}={base}"})
         else:
             metadata.update_dataset_metadata({"unit": f"{m_start}_{m_end}={base}"})
+    else:
+        m_start = None
+        m_end = None
+        output = data.apply(lambda x: x / x.mean() * base)
+        if not isinstance(base, int):
+            if base.is_integer():
+                base = int(base)
+        metadata.update_dataset_metadata({"unit": f"avg={base}"})
 
     metadata.add_transformation_step(
         {"rebase": {"start_date": m_start, "end_date": m_end, "base": base}}
