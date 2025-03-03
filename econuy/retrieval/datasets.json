@@ -2229,7 +2229,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/imp_pais_val.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
       "provider": [
         "econuy en base a BCU"
@@ -2251,7 +2251,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/ComercioExterior_ICB/web_imp_pais_ip.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Intercambio-Comercial-.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Comercio-Exterior.aspx"
       ],
       "provider": [
         "econuy en base a BCU"
