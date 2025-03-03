@@ -46,11 +46,14 @@ def _decompose(
         )
         return output, metadata
 
-    if single_metadata["frequency"] not in ["ME", "QE-DEC"] and method == "x13":
+    if (
+        (single_metadata["frequency"] not in ["ME", "QE-DEC"] and method == "x13")
+        or (pd.infer_freq(data.index) is None)
+    ):
         output = error_handler(
             data,
             errors=error_handling,
-            msg="X13 seasonal adjustment only supported for monthly and quarterly data.",
+            msg="X13 seasonal adjustment only supported for monthly and quarterly data. For remaining methods, frequency cannot be None.",
         )
         return output, metadata
 
