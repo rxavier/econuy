@@ -315,7 +315,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"
       ],
       "provider": [
-        "BCU"
+        "econuy en base a BCU"
       ]
     }
   },
@@ -343,7 +343,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-Componente-del-gasto.aspx"
       ],
       "provider": [
-        "BCU"
+        "econuy en base a BCU"
       ]
     }
   },
@@ -371,7 +371,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"
       ],
       "provider": [
-        "BCU"
+        "econuy en base a BCU"
       ]
     }
   },
@@ -399,7 +399,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"
       ],
       "provider": [
-        "BCU"
+        "econuy en base a BCU"
       ]
     }
   },
@@ -424,7 +424,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Series-Estadisticas-del-PIB-por-industrias.aspx"
       ],
       "provider": [
-        "BCU"
+        "econuy en base a BCU"
       ]
     }
   },
@@ -1117,7 +1117,7 @@
         "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
       ],
       "provider": [
-        "MEF"
+        "econuy en base a MEF"
       ]
     }
   },
@@ -1136,7 +1136,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/MonedayCredito/Activos-de-Reserva/reservas.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Finanzas-Publicas.aspx#deudap%C3%BAblica"
       ],
       "provider": [
         "econuy en base a BCU"
@@ -2165,7 +2165,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/MonedayCredito/Activos-de-Reserva/reservas.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Default.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Activos-de-reserva.aspx#activos-reserva"
       ],
       "provider": [
         "BCU"
@@ -2484,7 +2484,7 @@
         "https://web.bevsa.com.uy/CurvasVectorPrecios/CurvasIndices/Indices/IndiceITLUP.aspx"
       ],
       "provider": [
-        "BEVSA"
+        "econuy en base a BEVSA"
       ]
     }
   },
@@ -2582,7 +2582,7 @@
         "https://finance.yahoo.com/quote/%5EN225/history/"
       ],
       "provider": [
-        "Yahoo Finance"
+        "econuy en base a Yahoo Finance"
       ]
     }
   },
@@ -2590,7 +2590,7 @@
     "description": "Tasas de interés de política monetaria de EE.UU., Eurozona, Japón y China",
     "description_en": "Monetary policy interest rates of the United States, Eurozone, Japan and China",
     "area": "global",
-    "custom": true,
+    "custom": false,
     "disabled": true,
     "auxiliary": false,
     "function": "global_.global_policy_rates",
@@ -2641,7 +2641,7 @@
         "https://finance.yahoo.com/quote/USDCNY=X/history/"
       ],
       "provider": [
-        "Yahoo Finance"
+        "econuy en base a Yahoo Finance"
       ]
     }
   },
@@ -2666,8 +2666,7 @@
         "https://sidra.ibge.gov.br/tabela/1621#/n1/all/v/all/p/all/c11255/90687,90691,90696,90705,90707,93404,93405,93406,93407,93408/d/v584%201/l/v,c11255,t+p/resultado"
       ],
       "provider": [
-        "INDEC",
-        "IBGE"
+        "econuy en base a INDEC y IBGE"
       ]
     }
   },
@@ -2690,8 +2689,7 @@
         "https://dadosabertos.bcb.gov.br/dataset/24364-indice-de-atividade-economica-do-banco-central-ibc-br---com-ajuste-sazonal"
       ],
       "provider": [
-        "INDEC",
-        "BCB"
+        "econuy en base a INDEC y BCB"
       ]
     }
   },
@@ -2725,7 +2723,7 @@
     "description": "EMBI spread (JP Morgan) de Argentina, Brasil y Global",
     "description_en": "EMBI spread (JP Morgan) of Argentina, Brazil and Global",
     "area": "regional",
-    "custom": true,
+    "custom": false,
     "disabled": false,
     "auxiliary": false,
     "function": "regional.regional_embi_spreads",
@@ -2787,8 +2785,7 @@
         "http://www.ipeadata.gov.br/Default.aspx"
       ],
       "provider": [
-        "Ámbito",
-        "Ipea"
+        "econuy en base a Ámbito y Ipeadata"
       ]
     }
   },
@@ -2796,7 +2793,7 @@
     "description": "Tasas de interés de política monetaria de Argentina y Brasil",
     "description_en": "Monetary policy interest rates of Argentina and Brazil",
     "area": "regional",
-    "custom": true,
+    "custom": false,
     "disabled": false,
     "auxiliary": false,
     "function": "regional.regional_policy_rates",
@@ -2834,7 +2831,7 @@
         "https://finance.yahoo.com/quote/%5EBVSP/history?p=%5EBVSP"
       ],
       "provider": [
-        "Yahoo Finance"
+        "econuy en base a Yahoo Finance"
       ]
     }
   },
