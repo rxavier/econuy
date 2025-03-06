@@ -787,7 +787,7 @@
       },
       "direct": [],
       "indirect": [
-        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/estadisticas/informacion-resultados-del-sector-publico"
       ],
       "provider": [
         "MEF"
@@ -808,7 +808,7 @@
       },
       "direct": [],
       "indirect": [
-        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/estadisticas/informacion-resultados-del-sector-publico"
       ],
       "provider": [
         "MEF"
@@ -825,11 +825,11 @@
     "function": "fiscal.fiscal_balance_nonfinancial_public_sector",
     "sources": {
       "downloads": {
-        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/estadisticas/informacion-resultados-del-sector-publico"
       },
       "direct": [],
       "indirect": [
-        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/estadisticas/informacion-resultados-del-sector-publico"
       ],
       "provider": [
         "MEF"
@@ -846,11 +846,11 @@
     "function": "fiscal.fiscal_balance_central_government",
     "sources": {
       "downloads": {
-        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/estadisticas/informacion-resultados-del-sector-publico"
       },
       "direct": [],
       "indirect": [
-        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/estadisticas/informacion-resultados-del-sector-publico"
       ],
       "provider": [
         "MEF"
@@ -867,11 +867,11 @@
     "function": "fiscal.fiscal_balance_soe",
     "sources": {
       "downloads": {
-        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/estadisticas/informacion-resultados-del-sector-publico"
       },
       "direct": [],
       "indirect": [
-        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/estadisticas/informacion-resultados-del-sector-publico"
       ],
       "provider": [
         "MEF"
@@ -888,11 +888,11 @@
     "function": "fiscal.fiscal_balance_ancap",
     "sources": {
       "downloads": {
-        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/estadisticas/informacion-resultados-del-sector-publico"
       },
       "direct": [],
       "indirect": [
-        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/estadisticas/informacion-resultados-del-sector-publico"
       ],
       "provider": [
         "MEF"
@@ -909,11 +909,11 @@
     "function": "fiscal.fiscal_balance_ute",
     "sources": {
       "downloads": {
-        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/estadisticas/informacion-resultados-del-sector-publico"
       },
       "direct": [],
       "indirect": [
-        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/estadisticas/informacion-resultados-del-sector-publico"
       ],
       "provider": [
         "MEF"
@@ -930,11 +930,11 @@
     "function": "fiscal.fiscal_balance_antel",
     "sources": {
       "downloads": {
-        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/estadisticas/informacion-resultados-del-sector-publico"
       },
       "direct": [],
       "indirect": [
-        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/estadisticas/informacion-resultados-del-sector-publico"
       ],
       "provider": [
         "MEF"
@@ -951,11 +951,11 @@
     "function": "fiscal.fiscal_balance_ose",
     "sources": {
       "downloads": {
-        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/estadisticas/informacion-resultados-del-sector-publico"
       },
       "direct": [],
       "indirect": [
-        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/estadisticas/informacion-resultados-del-sector-publico"
       ],
       "provider": [
         "MEF"
@@ -1110,11 +1110,11 @@
     "function": "fiscal.fiscal_balance_summary",
     "sources": {
       "downloads": {
-        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+        "main": "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/estadisticas/informacion-resultados-del-sector-publico"
       },
       "direct": [],
       "indirect": [
-        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/datos/informacion-resultados-del-sector-publico"
+        "https://www.gub.uy/ministerio-economia-finanzas/datos-y-estadisticas/estadisticas/informacion-resultados-del-sector-publico"
       ],
       "provider": [
         "econuy en base a MEF"
