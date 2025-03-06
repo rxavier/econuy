@@ -2681,7 +2681,7 @@
     "sources": {
       "downloads": {
         "arg": "https://www.indec.gob.ar/ftp/cuadros/economia/sh_emae_mensual_base2004.xls",
-        "bra": "http://api.bcb.gov.br/dados/serie/bcdata.sgs.24364/dados?formato=csv"
+        "bra": "https://api.bcb.gov.br/dados/serie/bcdata.sgs.24364/dados?formato=csv"
       },
       "direct": [],
       "indirect": [
