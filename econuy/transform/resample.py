@@ -56,10 +56,17 @@ def _resample(
         try:
             base_freq = pd_frequencies[infer_base]
             target_freq = pd_frequencies[rule]
+
+            # We check whether all the bins are filled (i.e. if going from ME to YE, each year needs 12 obs),
+            # then drop the incomplete ones. This way we don't show data for the year 2025 until all the
+            # months in 2025 are available.
             if target_freq < base_freq:
                 count = int(base_freq / target_freq)
                 proc = data.resample(rule).count()
                 antimask = np.where(proc >= count, False, True)
+                # We always consider bins in the middle to be complete, so we replace all values in antimask
+                # with False if they are not the first or last index
+                antimask[1:-1] = False
                 output = output.mask(antimask, np.nan)
         except KeyError:
             warnings.warn(
