@@ -978,7 +978,7 @@
       "direct": [],
       "indirect": [
         "https://www.gub.uy/direccion-general-impositiva/datos-y-estadisticas/estadisticas/recaudacion-anual-mensual-impuesto",
-        "https://www.dgi.gub.uy/wdgi/page?2,principal,dgi--datos-y-series-estadisticas--informes-mensuales-de-la-recaudacion-{year},O,es,0,"
+        "https://www.gub.uy/direccion-general-impositiva/datos-y-estadisticas/estadisticas?field_tematica_gubuy_to_ct_datos=563&field_fecha_by_year_to_ct_datos=All&field_fecha_by_month=All&field_publico_gubuy_to_ct_datos=All"
       ],
       "provider": [
         "DGI"
@@ -2142,7 +2142,7 @@
         "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Indice_Cambio_Real/TCRE.xls"
       ],
       "indirect": [
-        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Cambio-Real-Efectivo.aspx"
+        "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Tipo-de-cambio-real-efectivo.aspx"
       ],
       "provider": [
         "BCU"
@@ -2313,8 +2313,6 @@
       "indirect": [
         "https://www.inac.uy/innovaportal/v/5541/10/innova.front/precios",
         "https://www.insee.fr/fr/statistiques/serie/010600339",
-        "https://www.quandl.com/data/CHRIS/CME_S1-Soybean-Futures-Continuous-Contract-1-S1-Front-Month",
-        "https://www.quandl.com/data/CHRIS/CME_W1-Wheat-Futures-Continuous-Contract-1-W1-Front-Month",
         "https://www.inale.org/estadisticas/",
         "https://agriculture.ec.europa.eu/data-and-analysis/markets/overviews/market-observatories/milk_es",
         "https://www.imf.org/en/Research/commodity-prices",
@@ -2341,7 +2339,7 @@
         "http://www.ine.gub.uy/web/guest/ipc-indice-de-precios-del-consumo",
         "http://www.ine.gub.uy/web/guest/cotizacion-de-monedas2",
         "https://www.ambito.com/contenidos/dolar-informal.html",
-        "http://www.bcra.gov.ar/PublicacionesEstadisticas/Principales_variables_datos.asp?serie=7931&detalle=Inflaci%F3n%20mensual%A0(variaci%F3n%20en%20%)",
+        "http://www.bcra.gob.ar/PublicacionesEstadisticas/Principales_variables_datos.asp?serie=7931&detalle=Inflaci%F3n%20mensual%A0(variaci%F3n%20en%20%)",
         "http://www.inflacionverdadera.com/argentina/",
         "http://www.ipeadata.gov.br/Default.aspx",
         "https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html?=&t=o-que-e"
@@ -2710,7 +2708,7 @@
       },
       "direct": [],
       "indirect": [
-        "http://www.bcra.gov.ar/PublicacionesEstadisticas/Principales_variables_datos.asp",
+        "http://www.bcra.gob.ar/PublicacionesEstadisticas/Principales_variables_datos.asp",
         "http://www.inflacionverdadera.com/",
         "https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html?=&t=o-que-e"
       ],
@@ -2756,7 +2754,7 @@
       },
       "direct": [],
       "indirect": [
-        "https://finance.yahoo.com/quote/%5ETNX/history?p=%5ETNX",
+        "https://finance.yahoo.com/quote/%5ETNX/history/?p=%5ETNX",
         "https://www.bancentral.gov.do/a/d/2585-entorno-internacional"
       ],
       "provider": [
@@ -2849,7 +2847,7 @@
       "indirect": [
         "https://data.imf.org/?sk=4c514d48-b6ba-49ed-8ab9-52b0c1a0179b",
         "https://www.ambito.com/contenidos/dolar-informal.html",
-        "http://www.bcra.gov.ar/PublicacionesEstadisticas/Principales_variables_datos.asp?serie=7931&detalle=Inflaci%F3n%20mensual%A0(variaci%F3n%20en%20%)",
+        "http://www.bcra.gob.ar/PublicacionesEstadisticas/Principales_variables_datos.asp?serie=7931&detalle=Inflaci%F3n%20mensual%A0(variaci%F3n%20en%20%)",
         "http://www.inflacionverdadera.com/argentina/",
         "http://www.ipeadata.gov.br/Default.aspx",
         "https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html?=&t=o-que-e"
