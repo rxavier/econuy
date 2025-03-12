@@ -2,6 +2,8 @@
   "national_accounts_supply_constant_nsa": {
     "description": "Cuentas nacionales: oferta, precios constantes",
     "description_en": "National accounts: supply, constant prices",
+    "detailed_description": "Serie trimestral de cuentas nacionales por el lado de la oferta a precios constantes (base 2016), no ajustada estacionalmente. Incluye datos del PIB y valor agregado por sectores económicos como agropecuario, industria manufacturera, construcción, comercio, entre otros, expresados en millones de pesos uruguayos.",
+    "detailed_description_en": "Quarterly time series of supply-side national accounts at constant prices (base year 2016), not seasonally adjusted. Includes GDP data and value added by economic sectors such as agriculture, manufacturing, construction, commerce, among others, expressed in millions of Uruguayan pesos.",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -25,6 +27,8 @@
   "national_accounts_demand_constant_nsa": {
     "description": "Cuentas nacionales: demanda, precios constantes",
     "description_en": "National accounts: demand, constant prices",
+    "detailed_description": "Serie trimestral de cuentas nacionales por el lado de la demanda a precios constantes (base 2016), no ajustada estacionalmente. Incluye datos del PIB y sus componentes como gasto de consumo (hogares y gobierno), formación bruta de capital, exportaciones e importaciones, expresados en millones de pesos uruguayos.",
+    "detailed_description_en": "Quarterly time series of demand-side national accounts at constant prices (base year 2016), not seasonally adjusted. Includes GDP data and its components such as consumption expenditure (households and government), gross capital formation, exports and imports, expressed in millions of Uruguayan pesos.",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -48,6 +52,8 @@
   "national_accounts_supply_current_nsa": {
     "description": "Cuentas nacionales: oferta, precios corrientes",
     "description_en": "National accounts: supply, current prices",
+    "detailed_description": "Serie trimestral de cuentas nacionales por el lado de la oferta a precios corrientes, no ajustada estacionalmente. Incluye datos del PIB y valor agregado por sectores económicos como agropecuario, industria manufacturera, construcción, comercio, entre otros, expresados en millones de pesos uruguayos a valores nominales.",
+    "detailed_description_en": "Quarterly time series of supply-side national accounts at current prices, not seasonally adjusted. Includes GDP data and value added by economic sectors such as agriculture, manufacturing, construction, commerce, among others, expressed in millions of Uruguayan pesos at nominal values.",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -71,6 +77,8 @@
   "national_accounts_demand_current_nsa": {
     "description": "Cuentas nacionales: demanda, precios corrientes",
     "description_en": "National accounts: demand, current prices",
+    "detailed_description": "Serie trimestral de cuentas nacionales por el lado de la demanda a precios corrientes, no ajustada estacionalmente. Incluye datos del PIB y sus componentes como gasto de consumo (hogares y gobierno), formación bruta de capital, exportaciones e importaciones, expresados en millones de pesos uruguayos a valores nominales.",
+    "detailed_description_en": "Quarterly time series of demand-side national accounts at current prices, not seasonally adjusted. Includes GDP data and its components such as consumption expenditure (households and government), gross capital formation, exports and imports, expressed in millions of Uruguayan pesos at nominal values.",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -94,6 +102,8 @@
   "gdp_index_constant_sa": {
     "description": "PBI: índice real, desestacionalizado",
     "description_en": "GDP: real index, seasonally adjusted",
+    "detailed_description": "Serie trimestral del Producto Bruto Interno (PBI) como índice a precios constantes (base 2016=100), con ajuste estacional. Proporciona una medida del crecimiento económico real de Uruguay ajustada por factores estacionales, permitiendo comparaciones más precisas entre trimestres consecutivos.",
+    "detailed_description_en": "Quarterly time series of Gross Domestic Product (GDP) as an index at constant prices (base year 2016=100), seasonally adjusted. Provides a measure of Uruguay's real economic growth adjusted for seasonal factors, allowing for more accurate comparisons between consecutive quarters.",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -117,6 +127,8 @@
   "monthly_gdp": {
     "description": "Indicador mensual de actividad económica: índice 2016=100, desestacionalizado y tendencia-ciclo",
     "description_en": "Monthly indicator of economic activity: index 2016=100, seasonally adjusted and trend-cycle",
+    "detailed_description": "Serie mensual del Indicador Mensual de Actividad Económica (IMAE) con base 2016=100, que proporciona una medida de la evolución de la actividad económica de Uruguay con mayor frecuencia que el PIB trimestral. Incluye tres versiones: el indicador original (no ajustado), el indicador con ajuste estacional, y el componente de tendencia-ciclo, permitiendo análisis de corto plazo de la economía uruguaya.",
+    "detailed_description_en": "Monthly time series of the Monthly Economic Activity Indicator (IMAE) with base year 2016=100, which provides a measure of the evolution of Uruguay's economic activity with higher frequency than quarterly GDP. Includes three versions: the original indicator (not adjusted), the seasonally adjusted indicator, and the trend-cycle component, allowing short-term analysis of the Uruguayan economy.",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -138,6 +150,8 @@
   "industrial_production": {
     "description": "Producción industrial: por división, agrupaciones y clases",
     "description_en": "Industrial production: by division, groups and classes",
+    "detailed_description": "Serie mensual del Índice de Volumen Físico de la Industria Manufacturera (IVFIM) con base 2018=100. Incluye datos detallados de la producción industrial por divisiones, grupos y clases según la Clasificación Industrial Internacional Uniforme (CIIU), permitiendo analizar el desempeño de sectores específicos de la industria uruguaya.",
+    "detailed_description_en": "Monthly time series of the Physical Volume Index of Manufacturing Industry (IVFIM) with base year 2018=100. Includes detailed data on industrial production by divisions, groups and classes according to the International Standard Industrial Classification (ISIC), allowing analysis of the performance of specific sectors of Uruguayan industry.",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -162,6 +176,8 @@
   "electricity_sales": {
     "description": "Ventas de energía eléctrica por sector",
     "description_en": "Electricity sales by sector",
+    "detailed_description": "Serie mensual de ventas de energía eléctrica por sector económico en Uruguay desde el año 2000. Incluye datos de consumo eléctrico en megavatios-hora (MWh) para sectores residencial, primario, industrial, electricidad/gas/agua, construcción, comercio y servicios, y alumbrado público, permitiendo analizar patrones de consumo energético por actividad económica.",
+    "detailed_description_en": "Monthly time series of electricity sales by economic sector in Uruguay since 2000. Includes data on electricity consumption in megawatt-hours (MWh) for residential, primary, industrial, electricity/gas/water, construction, commerce and services, and public lighting sectors, allowing analysis of energy consumption patterns by economic activity.",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -183,6 +199,8 @@
   "gasoline_sales": {
     "description": "Ventas de nafta por departamento",
     "description_en": "Gasoline sales by department",
+    "detailed_description": "Serie mensual de ventas de nafta por departamento en Uruguay desde 2004. Incluye datos de volumen de ventas en metros cúbicos para cada uno de los 19 departamentos del país y el total nacional, permitiendo analizar patrones de consumo de combustible por región geográfica.",
+    "detailed_description_en": "Monthly time series of gasoline sales by department in Uruguay since 2004. Includes data on sales volume in cubic meters for each of the country's 19 departments and the national total, allowing analysis of fuel consumption patterns by geographic region.",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -204,6 +222,8 @@
   "diesel_sales": {
     "description": "Ventas de gasoil por departamento",
     "description_en": "Diesel sales by department",
+    "detailed_description": "Serie mensual de ventas de gasoil (diésel) por departamento en Uruguay desde 2004. Incluye datos de volumen de ventas en metros cúbicos para cada uno de los 19 departamentos del país y el total nacional, permitiendo analizar patrones de consumo de combustible por región geográfica.",
+    "detailed_description_en": "Monthly time series of diesel sales by department in Uruguay since 2004. Includes data on sales volume in cubic meters for each of the country's 19 departments and the national total, allowing analysis of fuel consumption patterns by geographic region.",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -225,6 +245,8 @@
   "livestock_slaughter": {
     "description": "Faena de bovinos y ovinos",
     "description_en": "Livestock slaughter",
+    "detailed_description": "Serie semanal de faena de ganado bovino y ovino en Uruguay desde 2005. Incluye datos de cantidad de cabezas faenadas por categoría (novillos, vacas, vaquillonas, terneros, toros, borregos, capones, carneros, corderos y ovejas), permitiendo analizar la actividad del sector ganadero uruguayo.",
+    "detailed_description_en": "Weekly time series of cattle and sheep slaughter in Uruguay since 2005. Includes data on number of heads slaughtered by category (steers, cows, heifers, calves, bulls, yearling lambs, wethers, rams, lambs, and ewes), allowing analysis of activity in the Uruguayan livestock sector.",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -248,6 +270,8 @@
   "milk_shipments": {
     "description": "Remisión de leche a planta",
     "description_en": "Milk delivery to plant",
+    "detailed_description": "Serie mensual de remisión de leche desde establecimientos productores a plantas industriales en Uruguay desde 2002. Incluye datos de volumen en miles de litros y kilogramos, proporcionando un indicador clave de la producción del sector lácteo uruguayo.",
+    "detailed_description_en": "Monthly time series of milk shipments from producing farms to industrial plants in Uruguay since 2002. Includes volume data in thousands of liters and kilograms, providing a key indicator of production in the Uruguayan dairy sector.",
     "area": "activity",
     "custom": false,
     "disabled": false,
@@ -269,6 +293,8 @@
   "core_industrial_production": {
     "description": "Producción industrial: total, sin refinería y núcleo",
     "description_en": "Industrial production: total, ex-refinery and core",
+    "detailed_description": "Serie mensual de producción industrial en Uruguay desde 2002 con base 2018=100, que incluye tres medidas: producción industrial total, producción industrial sin refinería de petróleo, y núcleo industrial (que excluye sectores volátiles como refinería, alimentos preparados y pasta de celulosa). Construida mediante el empalme de los conjuntos de datos con base 2018 y 2006, permite analizar tendencias subyacentes en la actividad manufacturera uruguaya.",
+    "detailed_description_en": "Monthly time series of industrial production in Uruguay since 2002 with base year 2018=100, including three measures: total industrial production, industrial production excluding oil refinery, and core industrial production (which excludes volatile sectors such as refinery, prepared foods, and pulp). Built by joining the 2018 and 2006 base year datasets, it allows analysis of underlying trends in Uruguayan manufacturing activity.",
     "area": "activity",
     "custom": true,
     "disabled": false,
@@ -294,6 +320,8 @@
   "national_accounts_supply_constant_nsa_extended": {
     "description": "Cuentas nacionales: oferta, precios constantes, serie empalmada",
     "description_en": "National accounts: supply, constant prices, spliced series",
+    "detailed_description": "Serie trimestral de cuentas nacionales por el lado de la oferta a precios constantes (base 2016) desde 1988, empalmando tres conjuntos de datos con diferentes años base (1983, 2005 y 2016). Incluye datos del PIB y valor agregado por sectores económicos principales, con una estructura simplificada respecto a la serie original, expresados en millones de pesos uruguayos.",
+    "detailed_description_en": "Quarterly time series of supply-side national accounts at constant prices (base year 2016) since 1988, splicing three datasets with different base years (1983, 2005, and 2016). Includes GDP data and value added by main economic sectors, with a simplified structure compared to the original series, expressed in millions of Uruguayan pesos.",
     "area": "activity",
     "custom": true,
     "disabled": false,
@@ -322,6 +350,8 @@
   "national_accounts_demand_constant_nsa_extended": {
     "description": "Cuentas nacionales: demanda, precios constantes, serie empalmada",
     "description_en": "National accounts: demand, constant prices, spliced series",
+    "detailed_description": "Serie trimestral de cuentas nacionales por el lado de la demanda a precios constantes (base 2016) desde 1988, empalmando tres conjuntos de datos con diferentes años base (1983, 2005 y 2016). Incluye datos del PIB y sus componentes como gasto de consumo (hogares y gobierno), formación bruta de capital, exportaciones e importaciones, con una estructura simplificada respecto a la serie original, expresados en millones de pesos uruguayos.",
+    "detailed_description_en": "Quarterly time series of demand-side national accounts at constant prices (base year 2016) since 1988, splicing three datasets with different base years (1983, 2005, and 2016). Includes GDP data and its components such as consumption expenditure (households and government), gross capital formation, exports and imports, with a simplified structure compared to the original series, expressed in millions of Uruguayan pesos.",
     "area": "activity",
     "custom": true,
     "disabled": false,
@@ -350,6 +380,8 @@
   "gdp_index_constant_sa_extended": {
     "description": "PBI: índice real, desestacionalizado, serie empalmada",
     "description_en": "GDP: real index, seasonally adjusted, spliced series",
+    "detailed_description": "Serie trimestral del Producto Bruto Interno (PBI) como índice a precios constantes (base 2016=100) con ajuste estacional desde 1988, empalmando tres conjuntos de datos con diferentes años base (1983, 2005 y 2016). Proporciona una serie histórica larga y consistente del crecimiento económico real de Uruguay ajustada por factores estacionales.",
+    "detailed_description_en": "Quarterly time series of Gross Domestic Product (GDP) as an index at constant prices (base year 2016=100) with seasonal adjustment since 1988, splicing three datasets with different base years (1983, 2005, and 2016). Provides a long and consistent historical series of Uruguay's real economic growth adjusted for seasonal factors.",
     "area": "activity",
     "custom": true,
     "disabled": false,
@@ -378,6 +410,8 @@
   "gdp_constant_nsa_extended": {
     "description": "PBI: constante, serie empalmada (wp BCU 12-15)",
     "description_en": "GDP: constant prices, spliced series (wp BCU 12-15)",
+    "detailed_description": "Serie trimestral del Producto Bruto Interno (PBI) a precios constantes (base 2016) desde 1988, empalmando tres conjuntos de datos con diferentes años base (1983 y 2016). Utiliza el documento de trabajo del BCU para retropolación del PIB a precios constantes para 1997-2015, proporcionando una serie histórica larga y consistente del PIB real uruguayo expresado en millones de pesos.",
+    "detailed_description_en": "Quarterly time series of Gross Domestic Product (GDP) at constant prices (base year 2016) since 1988, splicing three datasets with different base years (1983 and 2016). Uses the BCU working paper for retropolated GDP at constant prices for 1997-2015, providing a long and consistent historical series of Uruguayan real GDP expressed in millions of pesos.",
     "area": "activity",
     "custom": true,
     "disabled": false,
@@ -406,6 +440,8 @@
   "gdp_current_nsa_extended": {
     "description": "PBI: corriente, serie empalmada (wp BCU 12-15)",
     "description_en": "GDP: current prices, spliced series (wp BCU 12-15)",
+    "detailed_description": "Serie trimestral del Producto Bruto Interno (PBI) a precios corrientes desde 1997, empalmando datos actuales con series históricas. Utiliza el documento de trabajo del BCU para retropolación del PIB a precios corrientes para 1997-2015, proporcionando una serie histórica consistente del PIB nominal uruguayo expresado en millones de pesos.",
+    "detailed_description_en": "Quarterly time series of Gross Domestic Product (GDP) at current prices since 1997, splicing current data with historical series. Uses the BCU working paper for retropolated GDP at current prices for 1997-2015, providing a consistent historical series of Uruguayan nominal GDP expressed in millions of pesos.",
     "area": "activity",
     "custom": true,
     "disabled": false,
@@ -431,6 +467,8 @@
   "gdp_denominator": {
     "description": "PBI corriente acumulado anual en frecuencia trimestral, con forecasts IMF al siguiente año calendario",
     "description_en": "Current prices GDP annual cumulative in quarterly frequency, with IMF forecasts for the following calendar year",
+    "detailed_description": "Serie trimestral del Producto Bruto Interno (PBI) a precios corrientes acumulado anual, en pesos uruguayos y dólares estadounidenses, con proyecciones del FMI para el año en curso y el siguiente. Dataset auxiliar utilizado internamente para cálculos que requieren el PIB como denominador, como ratios de deuda/PIB o déficit fiscal/PIB.",
+    "detailed_description_en": "Quarterly time series of annual cumulative Gross Domestic Product (GDP) at current prices, in Uruguayan pesos and US dollars, with IMF projections for the current and following year. Auxiliary dataset used internally for calculations requiring GDP as a denominator, such as debt/GDP or fiscal deficit/GDP ratios.",
     "area": "activity",
     "custom": true,
     "disabled": false,
@@ -440,6 +478,8 @@
   "cpi": {
     "description": "Índice de precios al consumidor - IPC",
     "description_en": "Consumer price index - CPI",
+    "detailed_description": "Serie mensual del Índice de Precios al Consumidor (IPC) con base octubre 2022=100 desde 1937. Mide la evolución del costo de una canasta representativa de bienes y servicios consumidos por los hogares uruguayos, siendo el principal indicador de inflación del país y referencia para ajustes de salarios, contratos y políticas monetarias.",
+    "detailed_description_en": "Monthly time series of the Consumer Price Index (CPI) with base October 2022=100 since 1937. Measures the evolution of the cost of a representative basket of goods and services consumed by Uruguayan households, being the main inflation indicator in the country and a reference for wage adjustments, contracts, and monetary policies.",
     "area": "prices",
     "custom": false,
     "disabled": false,
@@ -463,6 +503,8 @@
   "cpi_divisions": {
     "description": "Índice de precios al consumidor por división - IPC",
     "description_en": "Consumer price index by division - CPI",
+    "detailed_description": "Serie mensual del Índice de Precios al Consumidor (IPC) con base octubre 2022=100 desde 2010, desagregada por las 13 divisiones de la canasta de consumo. Permite analizar la evolución de precios por categorías específicas como alimentos, vivienda, transporte, salud, educación, entre otras.",
+    "detailed_description_en": "Monthly time series of the Consumer Price Index (CPI) with base October 2022=100 since 2010, disaggregated by the 13 divisions of the consumption basket. Allows analysis of price evolution by specific categories such as food, housing, transportation, health, education, among others.",
     "area": "prices",
     "custom": false,
     "disabled": false,
@@ -486,6 +528,8 @@
   "cpi_core": {
     "description": "IPC subyacente",
     "description_en": "Core CPI",
+    "detailed_description": "Serie mensual del Índice de Precios al Consumidor (IPC) subyacente con base octubre 2022=100. Representa una medida de inflación que excluye componentes volátiles de la canasta de consumo (principalmente alimentos y energía), proporcionando una visión más estable de las tendencias inflacionarias y siendo un indicador clave para la política monetaria.",
+    "detailed_description_en": "Monthly time series of the Core Consumer Price Index (CPI) with base October 2022=100. Represents a measure of inflation that excludes volatile components from the consumption basket (mainly food and energy), providing a more stable view of inflationary trends and being a key indicator for monetary policy.",
     "area": "prices",
     "custom": false,
     "disabled": false,
@@ -525,6 +569,8 @@
   "indexed_unit": {
     "description": "Unidad indexada",
     "description_en": "Indexed unit",
+    "detailed_description": "Serie diaria de la Unidad Indexada (UI), una unidad de cuenta ajustada por inflación creada en 2002. Su valor se actualiza diariamente en función de la variación del IPC, sirviendo como instrumento para mantener el valor real de contratos, préstamos, valores y otros instrumentos financieros en un contexto inflacionario, protegiendo así el poder adquisitivo.",
+    "detailed_description_en": "Daily time series of the Indexed Unit (UI), an inflation-adjusted unit of account created in 2002. Its value is updated daily based on CPI variation, serving as an instrument to maintain the real value of contracts, loans, securities, and other financial instruments in an inflationary context, thus protecting purchasing power.",
     "area": "prices",
     "custom": false,
     "disabled": false,
@@ -564,6 +610,8 @@
   "readjustable_unit": {
     "description": "Unidad reajustable",
     "description_en": "Readjustable unit",
+    "detailed_description": "Serie mensual de la Unidad Reajustable (UR), una unidad de cuenta ajustada por salarios creada en 1968. Su valor se actualiza mensualmente según la variación del Índice Medio de Salarios, siendo utilizada principalmente para préstamos hipotecarios, contratos de arrendamiento y otros instrumentos financieros de largo plazo, proporcionando un mecanismo de indexación basado en la evolución salarial.",
+    "detailed_description_en": "Monthly time series of the Readjustable Unit (UR), an wage-adjusted unit of account created in 1968. Its value is updated monthly according to the variation of the Average Wage Index, being used mainly for mortgage loans, lease contracts, and other long-term financial instruments, providing an indexation mechanism based on wage evolution.",
     "area": "prices",
     "custom": false,
     "disabled": false,
@@ -603,6 +651,8 @@
   "inflation_expectations_corporate": {
     "description": "Expectativas de inflación empresariales",
     "description_en": "Corporate inflation expectations",
+    "detailed_description": "Serie mensual de expectativas de inflación del sector empresarial desde 2020, basada en la Encuesta de Expectativas Empresariales del INE. Incluye proyecciones de inflación para diferentes horizontes temporales (año corriente, próximos 12 meses, y 12 a 24 meses), presentando tanto la media como la mediana de las respuestas, lo que proporciona información valiosa sobre las perspectivas inflacionarias del sector privado.",
+    "detailed_description_en": "Monthly time series of inflation expectations from the business sector since 2020, based on the INE Business Expectations Survey. Includes inflation projections for different time horizons (current year, next 12 months, and 12 to 24 months), presenting both the mean and median of responses, providing valuable information on private sector inflation perspectives.",
     "area": "prices",
     "custom": false,
     "disabled": false,
@@ -666,6 +716,8 @@
   "inflation_expectations": {
     "description": "Expectativas de inflación",
     "description_en": "Inflation expectations",
+    "detailed_description": "Serie mensual de expectativas de inflación desde 2004, basada en la Encuesta de Expectativas de Inflación del BCU. Incluye proyecciones para siete horizontes temporales diferentes (mes corriente, próximos 6 meses, año calendario corriente, próximos 12 meses, año calendario siguiente, próximos 24 meses, y a dos años calendario), presentando para cada horizonte cinco estadísticos (promedio simple, mediana, desvío estándar, mínimo y máximo), proporcionando una visión completa de las expectativas inflacionarias de los agentes económicos.",
+    "detailed_description_en": "Monthly time series of inflation expectations since 2004, based on the BCU Inflation Expectations Survey. Includes projections for seven different time horizons (current month, next 6 months, current calendar year, next 12 months, next calendar year, next 24 months, and two calendar years ahead), presenting five statistics for each horizon (simple average, median, standard deviation, minimum and maximum), providing a comprehensive view of economic agents' inflation expectations.",
     "area": "prices",
     "custom": false,
     "disabled": false,
@@ -687,8 +739,10 @@
     }
   },
   "ppi": {
-    "description": "Índice de precios al productor de productos nacionales por letra - IPPN Plza",
+    "description": "Índice de precios al productor de productos nacionales por letra - IPPN Plaza",
     "description_en": "Producer price index by letter - PPI",
+    "detailed_description": "Serie mensual del Índice de Precios al Productor de Productos Nacionales (IPPN) con base octubre 2024=100 desde 1988. Mide la evolución de los precios de los bienes producidos en el país para el mercado interno, desagregados por sectores económicos principales: producción agropecuaria, explotación de minas y canteras, e industria manufacturera. Es un indicador clave para analizar presiones inflacionarias en etapas tempranas de la cadena productiva.",
+    "detailed_description_en": "Monthly time series of the Producer Price Index (PPI) with base October 2024=100 since 1988. Measures the evolution of prices of domestically produced goods for the internal market, disaggregated by main economic sectors: agricultural production, mining and quarrying, and manufacturing industry. It is a key indicator for analyzing inflationary pressures in early stages of the production chain.",
     "area": "prices",
     "custom": false,
     "disabled": false,
@@ -712,6 +766,8 @@
   "nxr_monthly": {
     "description": "Tipo de cambio, interbancario, mensual",
     "description_en": "Exchange rate, interbank, monthly",
+    "detailed_description": "Serie mensual del tipo de cambio interbancario peso uruguayo/dólar estadounidense desde 1972. Incluye dos indicadores: el valor de fin de período (último día del mes) y el promedio mensual. Es una variable clave para la economía uruguaya, afectando precios relativos, competitividad externa, valor de activos y pasivos en moneda extranjera, y siendo un canal importante de transmisión de la política monetaria.",
+    "detailed_description_en": "Monthly time series of the interbank exchange rate Uruguayan peso/US dollar since 1972. Includes two indicators: the end-of-period value (last day of the month) and the monthly average. It is a key variable for the Uruguayan economy, affecting relative prices, external competitiveness, value of assets and liabilities in foreign currency, and being an important channel for monetary policy transmission.",
     "area": "prices",
     "custom": false,
     "disabled": false,
@@ -735,6 +791,8 @@
   "nxr_daily": {
     "description": "Tipo de cambio, interbancario, diario",
     "description_en": "Exchange rate, interbank, daily",
+    "detailed_description": "Serie diaria del tipo de cambio interbancario peso uruguayo/dólar estadounidense (valor de venta). Proporciona información de alta frecuencia sobre la cotización del dólar en el mercado interbancario uruguayo, permitiendo análisis detallados de la dinámica cambiaria, volatilidad, y respuestas a eventos económicos y financieros específicos.",
+    "detailed_description_en": "Daily time series of the interbank exchange rate Uruguayan peso/US dollar (sell rate). Provides high-frequency information on the dollar quotation in the Uruguayan interbank market, allowing detailed analysis of exchange rate dynamics, volatility, and responses to specific economic and financial events.",
     "area": "prices",
     "custom": false,
     "disabled": false,
@@ -797,6 +855,8 @@
   "fiscal_balance_global_public_sector": {
     "description": "Resultado fiscal: sector público consolidado",
     "description_en": "Fiscal balance: consolidated public sector",
+    "detailed_description": "Serie mensual del resultado fiscal del Sector Público Consolidado (SPC) desde 1999. Incluye los resultados primario y global del Sector Público No Financiero (SPNF) y del Banco Central del Uruguay (BCU), así como los intereses pagados por ambos. El SPC representa la medida más amplia de las finanzas públicas uruguayas, abarcando gobierno central, empresas públicas, gobiernos departamentales y autoridad monetaria.",
+    "detailed_description_en": "Monthly time series of the fiscal balance of the Consolidated Public Sector (SPC) since 1999. Includes primary and overall balances of the Non-Financial Public Sector (SPNF) and the Central Bank of Uruguay (BCU), as well as interest payments by both. The SPC represents the broadest measure of Uruguayan public finances, encompassing central government, state-owned enterprises, departmental governments, and monetary authority.",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -818,6 +878,8 @@
   "fiscal_balance_nonfinancial_public_sector": {
     "description": "Resultado fiscal: sector público no financiero",
     "description_en": "Fiscal balance: non-financial public sector",
+    "detailed_description": "Serie mensual detallada del resultado fiscal del Sector Público No Financiero (SPNF) desde 1999. Incluye un desglose completo de ingresos (DGI, comercio exterior, BPS, empresas públicas) y egresos (remuneraciones, no personales, pasividades, transferencias, inversiones), así como los resultados primarios y globales de los distintos componentes del SPNF (gobierno central, BPS, empresas públicas, intendencias, BSE). Proporciona una visión detallada de las finanzas públicas excluyendo al Banco Central.",
+    "detailed_description_en": "Detailed monthly time series of the fiscal balance of the Non-Financial Public Sector (SPNF) since 1999. Includes a complete breakdown of revenues (tax authority, foreign trade, social security, state-owned enterprises) and expenditures (wages, non-personnel, pensions, transfers, investments), as well as primary and overall balances of the different components of the SPNF (central government, social security, state-owned enterprises, local governments, state insurance). Provides a detailed view of public finances excluding the Central Bank.",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -839,6 +901,8 @@
   "fiscal_balance_central_government": {
     "description": "Resultado fiscal: gobierno central-BPS",
     "description_en": "Fiscal balance: central government-BPS",
+    "detailed_description": "Serie mensual extremadamente detallada del resultado fiscal del Gobierno Central y el Banco de Previsión Social (BPS) desde 1999. Incluye un desglose exhaustivo de ingresos (DGI, comercio exterior, loterías, BPS) y egresos (remuneraciones por organismo, pasividades por caja, gastos no personales, transferencias, inversiones por organismo), así como intereses y resultado global. Representa el componente principal de las finanzas públicas uruguayas, abarcando la administración central, organismos docentes y el sistema de seguridad social.",
+    "detailed_description_en": "Extremely detailed monthly time series of the fiscal balance of the Central Government and Social Security Bank (BPS) since 1999. Includes an exhaustive breakdown of revenues (tax authority, foreign trade, lotteries, social security) and expenditures (wages by agency, pensions by fund, non-personnel expenses, transfers, investments by agency), as well as interest payments and overall balance. Represents the main component of Uruguayan public finances, encompassing central administration, educational agencies, and the social security system.",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -860,6 +924,8 @@
   "fiscal_balance_soe": {
     "description": "Resultado fiscal: empresas públicas",
     "description_en": "Fiscal balance: public enterprises",
+    "detailed_description": "Serie mensual del resultado fiscal consolidado de las empresas públicas uruguayas desde 2001. Incluye un desglose de ingresos (venta de bienes y servicios, otros, transferencias del gobierno central) y egresos (corrientes, remuneraciones, compras de bienes y servicios, intereses, pagos a DGI y BPS, inversiones, dividendos), así como el resultado global. Proporciona una visión agregada del desempeño financiero de las empresas estatales, que son actores clave en sectores estratégicos de la economía uruguaya.",
+    "detailed_description_en": "Monthly time series of the consolidated fiscal balance of Uruguayan state-owned enterprises since 2001. Includes a breakdown of revenues (sale of goods and services, others, transfers from central government) and expenditures (current, wages, purchases of goods and services, interest payments, payments to tax and social security authorities, investments, dividends), as well as the overall balance. Provides an aggregate view of the financial performance of state companies, which are key players in strategic sectors of the Uruguayan economy.",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -881,6 +947,8 @@
   "fiscal_balance_ancap": {
     "description": "Resultado fiscal: ANCAP",
     "description_en": "Fiscal balance: ANCAP",
+    "detailed_description": "Serie mensual del resultado fiscal de ANCAP (Administración Nacional de Combustibles, Alcohol y Portland) desde 2001. Incluye un desglose de ingresos (venta de bienes y servicios, otros, transferencias del gobierno central) y egresos (corrientes, remuneraciones, compras de bienes y servicios, intereses, pagos a DGI y BPS, inversiones, variación de stock de petróleo, dividendos), así como el resultado global. Proporciona información detallada sobre el desempeño financiero de la empresa estatal encargada del monopolio de refinación de petróleo y producción de combustibles en Uruguay.",
+    "detailed_description_en": "Monthly time series of the fiscal balance of ANCAP (National Administration of Fuels, Alcohol and Portland) since 2001. Includes a breakdown of revenues (sale of goods and services, others, transfers from central government) and expenditures (current, wages, purchases of goods and services, interest payments, payments to tax and social security authorities, investments, variation in oil stock, dividends), as well as the overall balance. Provides detailed information on the financial performance of the state company responsible for the oil refining and fuel production monopoly in Uruguay.",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -902,6 +970,8 @@
   "fiscal_balance_ute": {
     "description": "Resultado fiscal: UTE",
     "description_en": "Fiscal balance: UTE",
+    "detailed_description": "Serie mensual del resultado fiscal de UTE (Administración Nacional de Usinas y Trasmisiones Eléctricas) desde 1999. Incluye un desglose de ingresos (venta de bienes y servicios, otros, transferencias del gobierno central) y egresos (corrientes, remuneraciones, compras de bienes y servicios, intereses, pagos a DGI y BPS, inversiones, dividendos), así como el resultado global. Proporciona información detallada sobre el desempeño financiero de la empresa estatal encargada del monopolio de generación, transmisión y distribución de energía eléctrica en Uruguay.",
+    "detailed_description_en": "Monthly time series of the fiscal balance of UTE (National Administration of Power Plants and Electric Transmissions) since 1999. Includes a breakdown of revenues (sale of goods and services, others, transfers from central government) and expenditures (current, wages, purchases of goods and services, interest payments, payments to tax and social security authorities, investments, dividends), as well as the overall balance. Provides detailed information on the financial performance of the state company responsible for the electricity generation, transmission, and distribution monopoly in Uruguay.",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -923,6 +993,8 @@
   "fiscal_balance_antel": {
     "description": "Resultado fiscal: ANTEL",
     "description_en": "Fiscal balance: ANTEL",
+    "detailed_description": "Serie mensual del resultado fiscal de ANTEL (Administración Nacional de Telecomunicaciones) desde 1999. Incluye un desglose de ingresos (venta de bienes y servicios, otros, transferencias del gobierno central) y egresos (corrientes, remuneraciones, compras de bienes y servicios, intereses, pagos a DGI y BPS, inversiones, dividendos), así como el resultado global. Proporciona información detallada sobre el desempeño financiero de la empresa estatal encargada de los servicios de telefonía fija, móvil e internet en Uruguay.",
+    "detailed_description_en": "Monthly time series of the fiscal balance of ANTEL (National Telecommunications Administration) since 1999. Includes a breakdown of revenues (sale of goods and services, others, transfers from central government) and expenditures (current, wages, purchases of goods and services, interest payments, payments to tax and social security authorities, investments, dividends), as well as the overall balance. Provides detailed information on the financial performance of the state company responsible for fixed and mobile telephony and internet services in Uruguay.",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -944,6 +1016,8 @@
   "fiscal_balance_ose": {
     "description": "Resultado fiscal: OSE",
     "description_en": "Fiscal balance: OSE",
+    "detailed_description": "Serie mensual del resultado fiscal de OSE (Obras Sanitarias del Estado) desde 1999. Incluye un desglose de ingresos (venta de bienes y servicios, otros, transferencias del gobierno central) y egresos (corrientes, remuneraciones, compras de bienes y servicios, intereses, pagos a DGI y BPS, inversiones, dividendos), así como el resultado global. Proporciona información detallada sobre el desempeño financiero de la empresa estatal encargada del monopolio de suministro de agua potable y servicios de saneamiento en Uruguay.",
+    "detailed_description_en": "Monthly time series of the fiscal balance of OSE (State Sanitary Works) since 1999. Includes a breakdown of revenues (sale of goods and services, others, transfers from central government) and expenditures (current, wages, purchases of goods and services, interest payments, payments to tax and social security authorities, investments, dividends), as well as the overall balance. Provides detailed information on the financial performance of the state company responsible for the drinking water supply and sanitation services monopoly in Uruguay.",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -965,6 +1039,8 @@
   "tax_revenue": {
     "description": "Recaudación por impuesto",
     "description_en": "Tax revenue by source",
+    "detailed_description": "Serie mensual de la recaudación de impuestos por la Dirección General Impositiva (DGI) desde 1982, desagregada por tipo de impuesto. Incluye todos los impuestos administrados por la DGI, como IRAE, IRPF, IVA, IMESI, impuestos al patrimonio, entre otros. Proporciona información detallada sobre la estructura tributaria uruguaya y la evolución de la recaudación por fuente, siendo un indicador clave para el análisis de la política fiscal y la sostenibilidad de las finanzas públicas.",
+    "detailed_description_en": "Monthly time series of tax collection by the General Tax Directorate (DGI) since 1982, disaggregated by type of tax. Includes all taxes administered by the DGI, such as corporate income tax, personal income tax, value-added tax, excise taxes, wealth taxes, among others. Provides detailed information on the Uruguayan tax structure and the evolution of revenue by source, being a key indicator for the analysis of fiscal policy and public finance sustainability.",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -1011,6 +1087,8 @@
   "public_debt_global_public_sector": {
     "description": "Deuda del sector público global: por plazo contractual, residual, moneda y residencia",
     "description_en": "General government debt: by contractual term, residual, currency and residence",
+    "detailed_description": "Serie trimestral de la deuda bruta del Sector Público Global (SPG) desde 1999, desagregada por plazo contractual (hasta 1 año, entre 1 y 5 años, más de 5 años), plazo residual (hasta 1 año, entre 1 y 5 años, más de 5 años), moneda (pesos, dólares, euros, yenes, DEG, otras) y residencia (residentes, no residentes). El SPG incluye al gobierno central, gobiernos departamentales, empresas públicas, banco central y otras entidades públicas. Proporciona información detallada sobre la estructura y composición de la deuda pública uruguaya, siendo un indicador clave para el análisis de la sostenibilidad fiscal y la vulnerabilidad externa.",
+    "detailed_description_en": "Quarterly time series of the gross debt of the Global Public Sector (SPG) since 1999, disaggregated by contractual term (up to 1 year, between 1 and 5 years, more than 5 years), residual term (up to 1 year, between 1 and 5 years, more than 5 years), currency (pesos, dollars, euros, yen, SDR, others) and residence (residents, non-residents). The SPG includes the central government, departmental governments, state-owned enterprises, central bank, and other public entities. Provides detailed information on the structure and composition of Uruguayan public debt, being a key indicator for the analysis of fiscal sustainability and external vulnerability.",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -1034,6 +1112,8 @@
   "public_debt_nonfinancial_public_sector": {
     "description": "Deuda del sector público no monetario: por plazo contractual, residual, moneda y residencia",
     "description_en": "Non-monetary government debt: by contractual term, residual, currency and residence",
+    "detailed_description": "Serie trimestral de la deuda bruta del Sector Público No Monetario (SPNM) desde 1999, desagregada por plazo contractual (hasta 1 año, entre 1 y 5 años, más de 5 años), plazo residual (hasta 1 año, entre 1 y 5 años, más de 5 años), moneda (pesos, dólares, euros, yenes, DEG, otras) y residencia (residentes, no residentes). El SPNM incluye al gobierno central, gobiernos departamentales y empresas públicas, excluyendo al banco central. Proporciona información detallada sobre la estructura y composición de la deuda pública uruguaya excluyendo la deuda del banco central, siendo un indicador clave para el análisis de la sostenibilidad fiscal.",
+    "detailed_description_en": "Quarterly time series of the gross debt of the Non-Monetary Public Sector (SPNM) since 1999, disaggregated by contractual term (up to 1 year, between 1 and 5 years, more than 5 years), residual term (up to 1 year, between 1 and 5 years, more than 5 years), currency (pesos, dollars, euros, yen, SDR, others) and residence (residents, non-residents). The SPNM includes the central government, departmental governments, and state-owned enterprises, excluding the central bank. Provides detailed information on the structure and composition of Uruguayan public debt excluding central bank debt, being a key indicator for the analysis of fiscal sustainability.",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -1057,6 +1137,8 @@
   "public_debt_central_bank": {
     "description": "Deuda del Banco Central: por plazo contractual, residual, moneda y residencia",
     "description_en": "Central bank debt: by contractual term, residual, currency and residence",
+    "detailed_description": "Serie trimestral de la deuda del Banco Central del Uruguay (BCU) desde 1999, con múltiples desagregaciones. Incluye clasificaciones por plazo contractual (hasta 1 año, entre 1 y 5 años, más de 5 años), plazo residual (mismas categorías), moneda (pesos, dólares, euros, yenes, DEG, otras) y residencia (residentes y no residentes). Estos datos permiten analizar la estructura y composición de la deuda del BCU, complementando la información sobre la deuda del sector público no financiero.",
+    "detailed_description_en": "Quarterly time series of the Central Bank of Uruguay (BCU) debt since 1999, with multiple breakdowns. Includes classifications by contractual term (up to 1 year, between 1 and 5 years, more than 5 years), residual term (same categories), currency (pesos, dollars, euros, yen, SDR, others) and residence (residents and non-residents). This data allows for analysis of the structure and composition of the BCU debt, complementing information on non-financial public sector debt.",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -1080,6 +1162,8 @@
   "public_assets": {
     "description": "Activos del sector público",
     "description_en": "Public assets",
+    "detailed_description": "Serie trimestral de los activos financieros del Sector Público desde 1999, desagregada por el Sector Público No Monetario (SPNM) y el Banco Central del Uruguay (BCU). Incluye los activos financieros totales del sector público, que se utilizan para calcular la deuda neta. Proporciona información complementaria a los datos de deuda bruta, permitiendo un análisis más completo de la posición financiera neta del sector público uruguayo.",
+    "detailed_description_en": "Quarterly time series of the financial assets of the Public Sector since 1999, disaggregated by the Non-Monetary Public Sector (SPNM) and the Central Bank of Uruguay (BCU). Includes the total financial assets of the public sector, which are used to calculate net debt. Provides complementary information to gross debt data, allowing a more complete analysis of the net financial position of the Uruguayan public sector.",
     "area": "fiscal",
     "custom": false,
     "disabled": false,
@@ -1103,6 +1187,8 @@
   "fiscal_balance_summary": {
     "description": "Resultado fiscal: Todas las agregaciones, inc. aj. FSS",
     "description_en": "Fiscal balance: all aggregations, inc. FSS adjustment",
+    "detailed_description": "Serie mensual completa del resultado fiscal uruguayo con todas las agregaciones relevantes, incluyendo ajustes por el Fideicomiso de la Seguridad Social (FSS). Contiene datos desagregados para el Gobierno Central-BPS, Empresas Públicas, Intendencias, BSE, Sector Público No Financiero (SPNF), Banco Central (BCU) y Sector Público Consolidado (SPC). Para cada entidad, incluye ingresos, egresos primarios, resultado primario, intereses y resultado global, con y sin ajustes por el FSS. Esta tabla resumen es similar a la que se encuentra en la Ley de Presupuesto y permite un análisis integral de las finanzas públicas uruguayas.",
+    "detailed_description_en": "Complete monthly time series of the Uruguayan fiscal balance with all relevant aggregations, including adjustments for the Social Security Fund (FSS). Contains disaggregated data for the Central Government-BPS, State-Owned Enterprises, Local Governments, BSE (State Insurance Bank), Non-Financial Public Sector (SPNF), Central Bank (BCU), and Consolidated Public Sector (SPC). For each entity, it includes revenues, primary expenditures, primary balance, interest payments, and overall balance, both with and without FSS adjustments. This summary table is similar to the one found in the Budget Law and allows for a comprehensive analysis of Uruguayan public finances.",
     "area": "fiscal",
     "custom": true,
     "disabled": false,
@@ -1124,6 +1210,8 @@
   "net_public_debt_global_public_sector": {
     "description": "Deuda neta del sector público global excl. encajes",
     "description_en": "Net public debt excluding bank deposits",
+    "detailed_description": "Serie trimestral de la deuda neta del Sector Público Global (SPG) desde 2003, calculada como la deuda bruta total menos los activos financieros del sector público, excluyendo los encajes bancarios. Este indicador proporciona una medida más precisa de la posición financiera neta del sector público uruguayo al considerar tanto los pasivos como los activos financieros. La serie se construye combinando datos de deuda bruta del SPG, activos del sector público y reservas internacionales, ofreciendo una visión más completa de la sostenibilidad fiscal que la deuda bruta por sí sola.",
+    "detailed_description_en": "Quarterly time series of the net debt of the Global Public Sector (SPG) since 2003, calculated as the total gross debt minus the financial assets of the public sector, excluding bank deposits. This indicator provides a more accurate measure of the net financial position of the Uruguayan public sector by considering both liabilities and financial assets. The series is constructed by combining data on SPG gross debt, public sector assets, and international reserves, offering a more complete view of fiscal sustainability than gross debt alone.",
     "area": "fiscal",
     "custom": true,
     "disabled": false,
@@ -1146,6 +1234,8 @@
   "labor_rates_gender": {
     "description": "Tasas de actividad, empleo y desempleo por sexo",
     "description_en": "Labor force participation, employment and unemployment rates by gender",
+    "detailed_description": "Serie mensual de las principales tasas del mercado laboral uruguayo desde 2006, desagregadas por sexo. Incluye la tasa de actividad (porcentaje de la población en edad de trabajar que está activa en el mercado laboral), tasa de empleo (porcentaje de la población en edad de trabajar que está empleada) y tasa de desempleo (porcentaje de la población económicamente activa que está desempleada), tanto para el total de la población como desagregada para hombres y mujeres. Estos indicadores son fundamentales para analizar la evolución del mercado laboral y las brechas de género existentes.",
+    "detailed_description_en": "Monthly time series of the main Uruguayan labor market rates since 2006, disaggregated by gender. Includes the labor force participation rate (percentage of the working-age population that is active in the labor market), employment rate (percentage of the working-age population that is employed), and unemployment rate (percentage of the economically active population that is unemployed), both for the total population and disaggregated for men and women. These indicators are fundamental for analyzing the evolution of the labor market and existing gender gaps.",
     "area": "labor",
     "custom": false,
     "disabled": false,
@@ -1169,6 +1259,8 @@
   "activity_region": {
     "description": "Tasa de actividad por región",
     "description_en": "Labor force participation rate by region",
+    "detailed_description": "Serie mensual de la tasa de actividad (porcentaje de la población en edad de trabajar que está activa en el mercado laboral) en Uruguay desde 2006, desagregada por región geográfica. Incluye datos para el total del país, Montevideo, Interior, localidades de más de 5.000 habitantes, y localidades pequeñas y zonas rurales. Este indicador permite analizar las diferencias regionales en la participación laboral y es fundamental para entender las dinámicas territoriales del mercado de trabajo uruguayo.",
+    "detailed_description_en": "Monthly time series of the labor force participation rate (percentage of the working-age population that is active in the labor market) in Uruguay since 2006, disaggregated by geographic region. Includes data for the total country, Montevideo, Interior, localities with more than 5,000 inhabitants, and small localities and rural areas. This indicator allows for the analysis of regional differences in labor participation and is fundamental for understanding the territorial dynamics of the Uruguayan labor market.",
     "area": "labor",
     "custom": false,
     "disabled": false,
@@ -1220,6 +1312,8 @@
   "employment_region": {
     "description": "Tasa de empleo por región",
     "description_en": "Employment rate by region",
+    "detailed_description": "Serie mensual de la tasa de empleo (porcentaje de la población en edad de trabajar que está empleada) en Uruguay desde 2006, desagregada por región geográfica. Incluye datos para el total del país, Montevideo, Interior, localidades de más de 5.000 habitantes, y localidades pequeñas y zonas rurales. Este indicador permite analizar las diferencias regionales en la ocupación laboral y es fundamental para entender las dinámicas territoriales del mercado de trabajo uruguayo y las disparidades en oportunidades de empleo entre diferentes zonas del país.",
+    "detailed_description_en": "Monthly time series of the employment rate (percentage of the working-age population that is employed) in Uruguay since 2006, disaggregated by geographic region. Includes data for the total country, Montevideo, Interior, localities with more than 5,000 inhabitants, and small localities and rural areas. This indicator allows for the analysis of regional differences in labor occupation and is fundamental for understanding the territorial dynamics of the Uruguayan labor market and the disparities in employment opportunities between different areas of the country.",
     "area": "labor",
     "custom": false,
     "disabled": false,
@@ -1271,6 +1365,8 @@
   "unemployment_region": {
     "description": "Tasa de desempleo por región",
     "description_en": "Unemployment rate by region",
+    "detailed_description": "Serie mensual de la tasa de desempleo (porcentaje de la población económicamente activa que está desempleada) en Uruguay desde 2006, desagregada por región geográfica. Incluye datos para el total del país, Montevideo, Interior, localidades de más de 5.000 habitantes, y localidades pequeñas y zonas rurales. Este indicador permite analizar las diferencias regionales en el desempleo y es fundamental para entender las dinámicas territoriales del mercado de trabajo uruguayo, identificar áreas con mayores problemas de desocupación y diseñar políticas de empleo focalizadas geográficamente.",
+    "detailed_description_en": "Monthly time series of the unemployment rate (percentage of the economically active population that is unemployed) in Uruguay since 2006, disaggregated by geographic region. Includes data for the total country, Montevideo, Interior, localities with more than 5,000 inhabitants, and small localities and rural areas. This indicator allows for the analysis of regional differences in unemployment and is fundamental for understanding the territorial dynamics of the Uruguayan labor market, identifying areas with greater unemployment problems, and designing geographically focused employment policies.",
     "area": "labor",
     "custom": false,
     "disabled": false,
@@ -1322,6 +1418,8 @@
   "employment_age": {
     "description": "Tasa de empleo por grupo etario",
     "description_en": "Employment rate by age group",
+    "detailed_description": "Serie mensual de la tasa de empleo (porcentaje de la población en edad de trabajar que está empleada) en Uruguay desde 2006, desagregada por grupos de edad. Incluye datos para el total de la población, menores de 25 años y personas de 25 años y más. Este indicador permite analizar las diferencias en la ocupación laboral entre distintos grupos etarios, siendo especialmente relevante para evaluar la situación laboral de los jóvenes en comparación con los adultos y diseñar políticas de empleo específicas para cada grupo de edad.",
+    "detailed_description_en": "Monthly time series of the employment rate (percentage of the working-age population that is employed) in Uruguay since 2006, disaggregated by age groups. Includes data for the total population, people under 25 years of age, and people 25 years and older. This indicator allows for the analysis of differences in labor occupation between different age groups, being especially relevant for evaluating the labor situation of young people compared to adults and designing specific employment policies for each age group.",
     "area": "labor",
     "custom": false,
     "disabled": false,
@@ -1367,6 +1465,8 @@
   "unemployment_contributions": {
     "description": "Contribución a la tasa de desempleo por componentes, sexo, edad y jefatura de hogar",
     "description_en": "Contribution to the unemployment rate by components, sex, age and household head",
+    "detailed_description": "Serie mensual de la contribución a la tasa de desempleo en Uruguay desde 2006, desagregada por componentes, sexo, edad y jefatura de hogar. Incluye datos para el total de desempleados y desagregaciones por buscan por primera vez, desocupados propiamente dichos, hombre, mujer, menores de 25 años, 25 años y más, jefe y no jefe. Este indicador permite analizar la composición de la tasa de desempleo y entender mejor las barreras para la inserción laboral de los desempleados.",
+    "detailed_description_en": "Monthly time series of the contribution to the unemployment rate in Uruguay since 2006, disaggregated by components, sex, age and household head. Includes data for the total unemployed and breakdowns by first-time job seekers, unemployed properly speaking, male, female, under 25 years old, 25 years and older, head of household, and non-head of household. This indicator allows for the analysis of the composition of the unemployment rate and a better understanding of the barriers to labor insertion for the unemployed.",
     "area": "labor",
     "custom": false,
     "disabled": false,
@@ -1430,6 +1530,8 @@
   "unemployment_characteristics": {
     "description": "Tasa de desempleo por sexo, edad y jefatura de hogar",
     "description_en": "Unemployment rate by sex, age and household head",
+    "detailed_description": "Serie mensual de la tasa de desempleo en Uruguay desde 2006, desagregada por sexo, edad y jefatura de hogar. Incluye datos para el total de desempleados y desagregaciones por menores de 25 años (total, hombres, mujeres) y 25 años y más (total, hombres, mujeres), jefe y no jefe. Este indicador permite analizar la composición de la tasa de desempleo y entender mejor las barreras para la inserción laboral de los desempleados.",
+    "detailed_description_en": "Monthly time series of the unemployment rate in Uruguay since 2006, disaggregated by sex, age and household head. Includes data for the total unemployed and breakdowns by under 25 years old (total, male, female) and 25 years and older (total, male, female), head of household, and non-head of household. This indicator allows for the analysis of the composition of the unemployment rate and a better understanding of the barriers to labor insertion for the unemployed.",
     "area": "labor",
     "custom": false,
     "disabled": false,
@@ -1493,6 +1595,8 @@
   "unemployment_conditions": {
     "description": "Distribución de la tasa de desempleo por condiciones de empleo",
     "description_en": "Distribution of the unemployment rate by conditions",
+    "detailed_description": "Serie mensual de la distribución de la tasa de desempleo en Uruguay desde 2006, desagregada por las condiciones que los desempleados establecen para aceptar un empleo. Incluye datos para el total de desempleados y para aquellos que buscan trabajo sin condiciones, con requisitos de conocimiento o experiencia, baja carga horaria, horario especial, condiciones salariales, lugar de trabajo y horario flexible. Este indicador permite analizar la rigidez o flexibilidad de la oferta laboral y entender mejor las barreras para la inserción laboral de los desempleados.",
+    "detailed_description_en": "Monthly time series of the distribution of the unemployment rate in Uruguay since 2006, disaggregated by the conditions that the unemployed establish to accept a job. Includes data for the total unemployed and for those seeking work without conditions, with requirements for knowledge or experience, low workload, special schedule, salary conditions, workplace, and flexible hours. This indicator allows for the analysis of the rigidity or flexibility of the labor supply and a better understanding of the barriers to labor insertion for the unemployed.",
     "area": "labor",
     "custom": false,
     "disabled": false,
@@ -1553,6 +1657,8 @@
   "unemployment_duration": {
     "description": "Duración media del desempleo",
     "description_en": "Average duration of unemployment",
+    "detailed_description": "Serie mensual de la duración media del desempleo en Uruguay desde 2006, medida en semanas. Este indicador proporciona información sobre el tiempo promedio que las personas desempleadas permanecen en esa situación antes de encontrar un nuevo empleo o abandonar la búsqueda. Es un indicador clave para evaluar la eficiencia del mercado laboral y la gravedad del desempleo, ya que períodos prolongados de desempleo pueden indicar problemas estructurales en el mercado de trabajo, obsolescencia de habilidades y dificultades para la reinserción laboral.",
+    "detailed_description_en": "Monthly time series of the average duration of unemployment in Uruguay since 2006, measured in weeks. This indicator provides information on the average time that unemployed people remain in that situation before finding new employment or abandoning the search. It is a key indicator for evaluating the efficiency of the labor market and the severity of unemployment, as prolonged periods of unemployment can indicate structural problems in the labor market, skills obsolescence, and difficulties for labor reintegration.",
     "area": "labor",
     "custom": false,
     "disabled": false,
@@ -1592,6 +1698,8 @@
   "employment_characteristics": {
     "description": "Distribución del empleo por características",
     "description_en": "Distribution of employment by characteristics",
+    "detailed_description": "Serie mensual de la distribución del empleo en Uruguay desde 2006, desagregada por características de formalidad y subempleo. Incluye datos para el total de empleados y desagregaciones por subempleo registrado, subempleo no registrado simultáneo, empleo no registrado, y empleo sin restricciones. Este indicador permite analizar la calidad del empleo en Uruguay, identificando la proporción de trabajadores en situación de informalidad o subempleo, lo que es fundamental para evaluar la precariedad laboral y diseñar políticas orientadas a mejorar las condiciones de trabajo.",
+    "detailed_description_en": "Monthly time series of the distribution of employment in Uruguay since 2006, disaggregated by formality and underemployment characteristics. Includes data for total employment and breakdowns by registered underemployment, simultaneous unregistered underemployment, unregistered employment, and employment without restrictions. This indicator allows for the analysis of the quality of employment in Uruguay, identifying the proportion of workers in informal or underemployment situations, which is fundamental for evaluating labor precariousness and designing policies aimed at improving working conditions.",
     "area": "labor",
     "custom": false,
     "disabled": false,
@@ -1643,6 +1751,8 @@
   "employment_sector": {
     "description": "Distribución del empleo por sector",
     "description_en": "Distribution of employment by sector",
+    "detailed_description": "Serie mensual de la distribución del empleo en Uruguay desde 2011, desagregada por sectores económicos. Incluye datos para el total de empleados y desagregaciones por industrias manufactureras, electricidad, gas, agua y saneamiento, construcción, comercio, transporte y almacenamiento, alojamiento y servicios de comidas, información y comunicación, actividades financieras, actividades inmobiliarias y administrativas, actividades profesionales, administración pública y seguridad social, enseñanza, salud, y otros sectores. Este indicador permite analizar la estructura sectorial del empleo en Uruguay, identificar los sectores con mayor capacidad de generación de puestos de trabajo, y evaluar los cambios en la composición del empleo a lo largo del tiempo.",
+    "detailed_description_en": "Monthly time series of the distribution of employment in Uruguay since 2011, disaggregated by economic sectors. Includes data for total employment and breakdowns by manufacturing industries, electricity, gas, water and sanitation, construction, commerce, transportation and storage, accommodation and food services, information and communication, financial activities, real estate and administrative activities, professional activities, public administration and social security, education, health, and other sectors. This indicator allows for the analysis of the sectoral structure of employment in Uruguay, identification of sectors with greater capacity for job creation, and evaluation of changes in the composition of employment over time.",
     "area": "labor",
     "custom": false,
     "disabled": false,
@@ -1733,6 +1843,8 @@
   "hours_worked": {
     "description": "Horas promedio trabajadas por sector",
     "description_en": "Average hours worked by sector",
+    "detailed_description": "Serie mensual de las horas promedio trabajadas por semana en Uruguay desde 2011, desagregada por sectores económicos. Incluye datos para el total de trabajadores y desagregaciones por industrias manufactureras, electricidad, gas, agua y saneamiento, construcción, comercio, transporte y almacenamiento, alojamiento y servicios de comidas, información y comunicación, actividades financieras, actividades inmobiliarias y administrativas, actividades profesionales, administración pública y seguridad social, enseñanza, salud, arte y otros servicios, actividades de hogares como empleadores, y agro, forestación, pesca y minería. Este indicador permite analizar la intensidad laboral por sector, identificar diferencias sectoriales en la jornada laboral, y evaluar tendencias en el uso del tiempo de trabajo en la economía uruguaya.",
+    "detailed_description_en": "Monthly time series of average hours worked per week in Uruguay since 2011, disaggregated by economic sectors. Includes data for total workers and breakdowns by manufacturing industries, electricity, gas, water and sanitation, construction, commerce, transportation and storage, accommodation and food services, information and communication, financial activities, real estate and administrative activities, professional activities, public administration and social security, education, health, arts and other services, household activities as employers, and agriculture, forestry, fishing and mining. This indicator allows for the analysis of labor intensity by sector, identification of sectoral differences in working hours, and evaluation of trends in the use of working time in the Uruguayan economy.",
     "area": "labor",
     "custom": false,
     "disabled": false,
@@ -1756,6 +1868,8 @@
   "nominal_wages": {
     "description": "Salarios nominales: total, públicos y privados",
     "description_en": "Nominal wages: total, public and private",
+    "detailed_description": "Serie mensual de los índices de salarios nominales en Uruguay (base julio 2008=100), con datos desde 1968. Incluye el índice medio de salarios general, el índice medio de salarios privados y el índice medio de salarios públicos. Este indicador mide la evolución de las remuneraciones nominales de los trabajadores, permitiendo analizar la dinámica salarial en términos corrientes, tanto para el conjunto de la economía como diferenciando entre el sector público y el privado. Es un insumo fundamental para el análisis de la política salarial, las negociaciones colectivas y la evolución del poder adquisitivo de los trabajadores cuando se compara con la inflación.",
+    "detailed_description_en": "Monthly time series of nominal wage indices in Uruguay (base July 2008=100), with data since 1968. Includes the general average wage index, the private sector average wage index, and the public sector average wage index. This indicator measures the evolution of workers' nominal remuneration, allowing for the analysis of wage dynamics in current terms, both for the economy as a whole and differentiating between the public and private sectors. It is a fundamental input for the analysis of wage policy, collective bargaining, and the evolution of workers' purchasing power when compared with inflation.",
     "area": "labor",
     "custom": false,
     "disabled": false,
@@ -1781,6 +1895,8 @@
   "real_wages": {
     "description": "Salarios reales: total, públicos y privados",
     "description_en": "Real wages: total, public and private",
+    "detailed_description": "Serie mensual de los índices de salarios reales en Uruguay (base julio 2008=100), con datos desde 1968. Incluye el índice medio de salarios reales general, el índice medio de salarios reales privados y el índice medio de salarios reales públicos. Este indicador mide la evolución del poder adquisitivo de los salarios, al ajustar los salarios nominales por la inflación. Permite analizar la dinámica salarial en términos de capacidad de compra, tanto para el conjunto de la economía como diferenciando entre el sector público y el privado. Es fundamental para evaluar la evolución del bienestar de los trabajadores, la distribución funcional del ingreso y el impacto de las políticas económicas sobre los salarios.",
+    "detailed_description_en": "Monthly time series of real wage indices in Uruguay (base July 2008=100), with data since 1968. Includes the general real average wage index, the private sector real average wage index, and the public sector real average wage index. This indicator measures the evolution of the purchasing power of wages by adjusting nominal wages for inflation. It allows for the analysis of wage dynamics in terms of purchasing capacity, both for the economy as a whole and differentiating between the public and private sectors. It is essential for evaluating the evolution of workers' welfare, the functional distribution of income, and the impact of economic policies on wages.",
     "area": "labor",
     "custom": false,
     "disabled": false,
@@ -1805,6 +1921,8 @@
   "labor_rates_persons": {
     "description": "Actividad, empleo y desempleo: series extendidas de tasas y personas",
     "description_en": "Labor force participation, employment and unemployment: extended series of rates and people",
+    "detailed_description": "Serie mensual de indicadores del mercado laboral uruguayo desde 1991, que incluye tanto tasas como cantidades de personas. Contiene datos de la tasa de actividad, tasa de empleo y tasa de desempleo, así como estimaciones de la cantidad de personas activas, empleadas y desempleadas. Este indicador extiende las series nacionales entre 1991 y 2005 con datos para localidades de más de 5.000 habitantes, y combina información de la Encuesta Continua de Hogares con proyecciones de población para estimar las cantidades absolutas. Permite analizar la evolución del mercado laboral uruguayo tanto en términos relativos como absolutos, siendo fundamental para estudiar tendencias de largo plazo en la participación laboral, la creación de empleo y el desempleo.",
+    "detailed_description_en": "Monthly time series of Uruguayan labor market indicators since 1991, including both rates and numbers of people. Contains data on the labor force participation rate, employment rate, and unemployment rate, as well as estimates of the number of active people, employed people, and unemployed people. This indicator extends the national series between 1991 and 2005 with data for localities with more than 5,000 inhabitants, and combines information from the Continuous Household Survey with population projections to estimate absolute quantities. It allows for the analysis of the evolution of the Uruguayan labor market in both relative and absolute terms, being fundamental for studying long-term trends in labor participation, job creation, and unemployment.",
     "area": "labor",
     "custom": true,
     "disabled": false,
@@ -1830,6 +1948,8 @@
   "balance_of_payments": {
     "description": "Balanza de pagos",
     "description_en": "Balance of payments",
+    "detailed_description": "Serie trimestral de la balanza de pagos de Uruguay desde 2012, siguiendo la metodología del sexto Manual de Balanza de Pagos del FMI. Incluye datos detallados de la cuenta corriente (bienes, servicios, ingreso primario e ingreso secundario), cuenta de capital y cuenta financiera (inversión directa, inversión de cartera, derivados financieros y otra inversión), así como activos de reserva y errores y omisiones. Este indicador proporciona una visión completa de las transacciones económicas entre residentes y no residentes de Uruguay, permitiendo analizar la posición externa del país, los flujos de comercio internacional, las inversiones extranjeras y la sostenibilidad de las cuentas externas.",
+    "detailed_description_en": "Quarterly time series of Uruguay's balance of payments since 2012, following the methodology of the IMF's sixth Balance of Payments Manual. Includes detailed data on the current account (goods, services, primary income, and secondary income), capital account, and financial account (direct investment, portfolio investment, financial derivatives, and other investment), as well as reserve assets and errors and omissions. This indicator provides a comprehensive view of economic transactions between residents and non-residents of Uruguay, allowing for the analysis of the country's external position, international trade flows, foreign investments, and the sustainability of external accounts.",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1853,6 +1973,8 @@
   "trade_exports_sector_value": {
     "description": "Exportaciones por sector, valor",
     "description_en": "Exports by sector, value",
+    "detailed_description": "Serie mensual del valor de las exportaciones de Uruguay desde 2000, desagregada por sectores económicos. Incluye datos para el total de exportaciones y desagregaciones por actividades primarias (agricultura, ganadería, silvicultura) e industrias manufactureras (alimentos y bebidas, textiles, cueros, madera, papel, químicos, entre otros). Este indicador permite analizar la composición sectorial de las exportaciones uruguayas, identificar los sectores con mayor peso en la canasta exportadora, y evaluar la evolución de la especialización productiva del país en el comercio internacional.",
+    "detailed_description_en": "Monthly time series of the value of Uruguay's exports since 2000, disaggregated by economic sectors. Includes data for total exports and breakdowns by primary activities (agriculture, livestock, forestry) and manufacturing industries (food and beverages, textiles, leather, wood, paper, chemicals, among others). This indicator allows for the analysis of the sectoral composition of Uruguayan exports, identification of the sectors with the greatest weight in the export basket, and evaluation of the evolution of the country's productive specialization in international trade.",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1876,6 +1998,8 @@
   "trade_exports_sector_volume": {
     "description": "Exportaciones por sector, volumen",
     "description_en": "Exports by sector, volume",
+    "detailed_description": "Serie mensual del volumen de las exportaciones de Uruguay desde 2005 (base 2005=100), desagregada por sectores económicos. Incluye datos para el total de exportaciones y desagregaciones por actividades primarias (trigo, soja, ganadería, silvicultura) e industrias manufactureras (alimentos y bebidas, textiles, cueros, madera, papel, químicos, entre otros). Este indicador permite analizar la evolución de las cantidades exportadas por sector, independientemente de los cambios en los precios, facilitando la identificación de tendencias en la capacidad exportadora real del país por actividad económica.",
+    "detailed_description_en": "Monthly time series of the volume of Uruguay's exports since 2005 (base 2005=100), disaggregated by economic sectors. Includes data for total exports and breakdowns by primary activities (wheat, soybeans, livestock, forestry) and manufacturing industries (food and beverages, textiles, leather, wood, paper, chemicals, among others). This indicator allows for the analysis of the evolution of export quantities by sector, regardless of price changes, facilitating the identification of trends in the country's real export capacity by economic activity.",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1899,6 +2023,8 @@
   "trade_exports_sector_price": {
     "description": "Exportaciones por sector, precio",
     "description_en": "Exports by sector, price",
+    "detailed_description": "Serie mensual de los precios de las exportaciones de Uruguay desde 2005 (base 2005=100), desagregada por sectores económicos. Incluye datos para el total de exportaciones y desagregaciones por actividades primarias (trigo, soja, ganadería, silvicultura) e industrias manufactureras (alimentos y bebidas, textiles, cueros, madera, papel, químicos, entre otros). Este indicador permite analizar la evolución de los precios de exportación por sector, facilitando la identificación de tendencias en los términos de intercambio sectoriales y el impacto de los precios internacionales en los diferentes rubros exportadores del país.",
+    "detailed_description_en": "Monthly time series of Uruguay's export prices since 2005 (base 2005=100), disaggregated by economic sectors. Includes data for total exports and breakdowns by primary activities (wheat, soybeans, livestock, forestry) and manufacturing industries (food and beverages, textiles, leather, wood, paper, chemicals, among others). This indicator allows for the analysis of the evolution of export prices by sector, facilitating the identification of trends in sectoral terms of trade and the impact of international prices on the different export sectors of the country.",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1922,6 +2048,8 @@
   "trade_exports_destination_value": {
     "description": "Exportaciones por destino, valor",
     "description_en": "Exports by destination, value",
+    "detailed_description": "Serie mensual del valor de las exportaciones de Uruguay desde 2000, desagregada por países y regiones de destino. Incluye datos para el total de exportaciones y desagregaciones por principales socios comerciales y bloques regionales, como Argentina, Brasil, Paraguay, MERCOSUR, Estados Unidos, Unión Europea, China y otros países asiáticos. Este indicador permite analizar la distribución geográfica de las exportaciones uruguayas, identificar los mercados más importantes para los productos nacionales, y evaluar la evolución de la inserción comercial del país en diferentes regiones del mundo.",
+    "detailed_description_en": "Monthly time series of the value of Uruguay's exports since 2000, disaggregated by destination countries and regions. Includes data for total exports and breakdowns by main trading partners and regional blocs, such as Argentina, Brazil, Paraguay, MERCOSUR, United States, European Union, China, and other Asian countries. This indicator allows for the analysis of the geographical distribution of Uruguayan exports, identification of the most important markets for national products, and evaluation of the evolution of the country's commercial insertion in different regions of the world.",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1945,6 +2073,8 @@
   "trade_exports_destination_volume": {
     "description": "Exportaciones por destino, volumen",
     "description_en": "Exports by destination, volume",
+    "detailed_description": "Serie mensual del volumen de las exportaciones de Uruguay desde 2005 (base 2005=100), desagregada por países y regiones de destino. Incluye datos para el total de exportaciones y desagregaciones por principales socios comerciales y bloques regionales, como Argentina, Brasil, Paraguay, MERCOSUR, Estados Unidos, Unión Europea, y otros países. Este indicador permite analizar la evolución de las cantidades exportadas por destino, independientemente de los cambios en los precios, facilitando la identificación de tendencias en la capacidad exportadora real del país hacia diferentes mercados internacionales.",
+    "detailed_description_en": "Monthly time series of the volume of Uruguay's exports since 2005 (base 2005=100), disaggregated by destination countries and regions. Includes data for total exports and breakdowns by main trading partners and regional blocs, such as Argentina, Brazil, Paraguay, MERCOSUR, United States, European Union, and other countries. This indicator allows for the analysis of the evolution of export quantities by destination, regardless of price changes, facilitating the identification of trends in the country's real export capacity to different international markets.",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1968,6 +2098,8 @@
   "trade_exports_destination_price": {
     "description": "Exportaciones por destino, precio",
     "description_en": "Exports by destination, price",
+    "detailed_description": "Serie mensual de los precios de las exportaciones de Uruguay desde 2005 (base 2005=100), desagregada por países y regiones de destino. Incluye datos para el total de exportaciones y desagregaciones por principales socios comerciales y bloques regionales, como Argentina, Brasil, Paraguay, MERCOSUR, Estados Unidos, Unión Europea, y otros países. Este indicador permite analizar la evolución de los precios de exportación por destino, facilitando la identificación de tendencias en los términos de intercambio bilaterales y el impacto de los precios internacionales en los diferentes mercados de exportación del país.",
+    "detailed_description_en": "Monthly time series of Uruguay's export prices since 2005 (base 2005=100), disaggregated by destination countries and regions. Includes data for total exports and breakdowns by main trading partners and regional blocs, such as Argentina, Brazil, Paraguay, MERCOSUR, United States, European Union, and other countries. This indicator allows for the analysis of the evolution of export prices by destination, facilitating the identification of trends in bilateral terms of trade and the impact of international prices on the country's different export markets.",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -1991,6 +2123,8 @@
   "trade_imports_category_value": {
     "description": "Importaciones por categoría, valor",
     "description_en": "Imports by category, value",
+    "detailed_description": "Serie mensual del valor de las importaciones de Uruguay desde 2000, desagregada por categorías económicas. Incluye datos para el total de importaciones (FOB y CIF) y desagregaciones por bienes de consumo (alimentos y bebidas, automotores, duraderos, otros), bienes de capital (maquinaria y equipos, equipos de transporte) y bienes intermedios (petróleo y destilados, energía eléctrica, alimentos y bebidas, piezas de transporte, otros). Este indicador permite analizar la composición de las importaciones uruguayas por uso económico, identificar tendencias en la demanda de bienes importados, y evaluar la dependencia externa del país en diferentes categorías de productos.",
+    "detailed_description_en": "Monthly time series of the value of Uruguay's imports since 2000, disaggregated by economic categories. Includes data for total imports (FOB and CIF) and breakdowns by consumer goods (food and beverages, automotive, durables, others), capital goods (machinery and equipment, transport equipment) and intermediate goods (petroleum and distillates, electricity, food and beverages, transport parts, others). This indicator allows for the analysis of the composition of Uruguayan imports by economic use, identification of trends in the demand for imported goods, and evaluation of the country's external dependence on different product categories.",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -2014,6 +2148,8 @@
   "trade_imports_category_volume": {
     "description": "Importaciones por categoría, volumen",
     "description_en": "Imports by category, volume",
+    "detailed_description": "Serie mensual del volumen de las importaciones de Uruguay desde 2005 (base 2005=100), desagregada por categorías económicas. Incluye datos para el total de importaciones y desagregaciones por bienes de consumo (alimentos y bebidas, automotores, duraderos, otros), bienes de capital, y bienes intermedios (petróleo, alimentos y bebidas, transporte, otros). Este indicador permite analizar la evolución de las cantidades importadas por categoría de uso económico, independientemente de los cambios en los precios, facilitando la identificación de tendencias en la demanda real de bienes importados por parte de la economía uruguaya.",
+    "detailed_description_en": "Monthly time series of the volume of Uruguay's imports since 2005 (base 2005=100), disaggregated by economic categories. Includes data for total imports and breakdowns by consumer goods (food and beverages, automotive, durables, others), capital goods, and intermediate goods (petroleum, food and beverages, transport, others). This indicator allows for the analysis of the evolution of import quantities by category of economic use, regardless of price changes, facilitating the identification of trends in the real demand for imported goods by the Uruguayan economy.",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -2037,6 +2173,8 @@
   "trade_imports_category_price": {
     "description": "Importaciones por categoría, precio",
     "description_en": "Imports by category, price",
+    "detailed_description": "Serie mensual de los precios de las importaciones de Uruguay desde 2005 (base 2005=100), desagregada por categorías económicas. Incluye datos para el total de importaciones y desagregaciones por bienes de consumo (alimentos y bebidas, automotores, duraderos, otros), bienes de capital, y bienes intermedios (petróleo, alimentos y bebidas, transporte, otros). Este indicador permite analizar la evolución de los precios de importación por categoría de uso económico, facilitando la identificación de tendencias en los términos de intercambio sectoriales y el impacto de los precios internacionales en los diferentes tipos de bienes importados por el país.",
+    "detailed_description_en": "Monthly time series of Uruguay's import prices since 2005 (base 2005=100), disaggregated by economic categories. Includes data for total imports and breakdowns by consumer goods (food and beverages, automotive, durables, others), capital goods, and intermediate goods (petroleum, food and beverages, transport, others). This indicator allows for the analysis of the evolution of import prices by category of economic use, facilitating the identification of trends in sectoral terms of trade and the impact of international prices on the different types of goods imported by the country.",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -2060,6 +2198,8 @@
   "trade_imports_origin_value": {
     "description": "Importaciones por origen, valor",
     "description_en": "Imports by origin, value",
+    "detailed_description": "Serie mensual del valor de las importaciones de Uruguay desde 2000, desagregada por países y regiones de origen. Incluye datos para el total de importaciones y desagregaciones por principales socios comerciales y bloques regionales, como Argentina, Brasil, Paraguay, MERCOSUR, Estados Unidos, Unión Europea, China y otros países asiáticos. Este indicador permite analizar la distribución geográfica de las importaciones uruguayas, identificar los principales proveedores de bienes al país, y evaluar la evolución de la dependencia comercial de Uruguay respecto a diferentes regiones del mundo.",
+    "detailed_description_en": "Monthly time series of the value of Uruguay's imports since 2000, disaggregated by countries and regions of origin. Includes data for total imports and breakdowns by main trading partners and regional blocs, such as Argentina, Brazil, Paraguay, MERCOSUR, United States, European Union, China, and other Asian countries. This indicator allows for the analysis of the geographical distribution of Uruguayan imports, identification of the main suppliers of goods to the country, and evaluation of the evolution of Uruguay's trade dependence on different regions of the world.",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -2083,6 +2223,8 @@
   "trade_imports_origin_volume": {
     "description": "Importaciones por origen, volumen",
     "description_en": "Imports by origin, volume",
+    "detailed_description": "Serie mensual del volumen de las importaciones de Uruguay desde 2005 (base 2005=100), desagregada por países y regiones de origen. Incluye datos para el total de importaciones y desagregaciones por principales socios comerciales y bloques regionales, como Argentina, Brasil, Paraguay, MERCOSUR, Estados Unidos, Unión Europea, China y otros países. Este indicador permite analizar la evolución de las cantidades importadas por origen, independientemente de los cambios en los precios, facilitando la identificación de tendencias en la demanda real de bienes importados desde diferentes regiones del mundo.",
+    "detailed_description_en": "Monthly time series of the volume of Uruguay's imports since 2005 (base 2005=100), disaggregated by countries and regions of origin. Includes data for total imports and breakdowns by main trading partners and regional blocs, such as Argentina, Brazil, Paraguay, MERCOSUR, United States, European Union, China, and other countries. This indicator allows for the analysis of the evolution of import quantities by origin, regardless of price changes, facilitating the identification of trends in the real demand for imported goods from different regions of the world.",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -2106,6 +2248,8 @@
   "trade_imports_origin_price": {
     "description": "Importaciones por origen, precio",
     "description_en": "Imports by origin, price",
+    "detailed_description": "Serie mensual de los precios de las importaciones de Uruguay desde 2005 (base 2005=100), desagregada por países y regiones de origen. Incluye datos para el total de importaciones y desagregaciones por principales socios comerciales y bloques regionales, como Argentina, Brasil, Paraguay, MERCOSUR, Estados Unidos, Unión Europea, China y otros países. Este indicador permite analizar la evolución de los precios de importación por origen, facilitando la identificación de tendencias en los términos de intercambio bilaterales y el impacto de los precios internacionales en los diferentes mercados proveedores de bienes al país.",
+    "detailed_description_en": "Monthly time series of Uruguay's import prices since 2005 (base 2005=100), disaggregated by countries and regions of origin. Includes data for total imports and breakdowns by main trading partners and regional blocs, such as Argentina, Brazil, Paraguay, MERCOSUR, United States, European Union, China, and other countries. This indicator allows for the analysis of the evolution of import prices by origin, facilitating the identification of trends in bilateral terms of trade and the impact of international prices on the different markets supplying goods to the country.",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -2129,6 +2273,8 @@
   "rxr": {
     "description": "Tipos de cambio reales, BCU",
     "description_en": "Real exchange rates, BCU",
+    "detailed_description": "Serie mensual de los tipos de cambio reales de Uruguay desde 2000 (base 2017=100), calculados por el Banco Central del Uruguay. Incluye índices para el tipo de cambio real global, extrarregional, regional, y bilateral con los principales socios comerciales como Argentina, Brasil, Estados Unidos, México, Alemania, España, Reino Unido, Italia y China. Este indicador mide la competitividad-precio de la economía uruguaya frente a sus socios comerciales, ajustando los tipos de cambio nominales por los diferenciales de inflación. Un aumento del índice representa una depreciación real del peso uruguayo, lo que implica una mejora en la competitividad-precio de los productos uruguayos en los mercados internacionales.",
+    "detailed_description_en": "Monthly time series of Uruguay's real exchange rates since 2000 (base 2017=100), calculated by the Central Bank of Uruguay. Includes indices for the global, extra-regional, regional, and bilateral real exchange rates with main trading partners such as Argentina, Brazil, United States, Mexico, Germany, Spain, United Kingdom, Italy, and China. This indicator measures the price-competitiveness of the Uruguayan economy against its trading partners, adjusting nominal exchange rates by inflation differentials. An increase in the index represents a real depreciation of the Uruguayan peso, implying an improvement in the price-competitiveness of Uruguayan products in international markets.",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -2152,6 +2298,8 @@
   "international_reserves": {
     "description": "Reservas internacionales",
     "description_en": "International reserves",
+    "detailed_description": "Serie diaria de las reservas internacionales de Uruguay desde 2002, expresada en millones de dólares estadounidenses. Incluye datos sobre activos de reserva, otros activos externos de corto plazo, obligaciones en moneda extranjera con el sector público, obligaciones en moneda extranjera con el sector financiero, activos de reserva sin sector público y financiero, y la posición en moneda extranjera del Banco Central del Uruguay. Este indicador es fundamental para evaluar la capacidad del país para hacer frente a sus obligaciones externas de corto plazo, la solidez de su posición externa, y la capacidad de intervención del Banco Central en el mercado cambiario.",
+    "detailed_description_en": "Daily time series of Uruguay's international reserves since 2002, expressed in millions of US dollars. Includes data on reserve assets, other short-term external assets, foreign currency obligations with the public sector, foreign currency obligations with the financial sector, reserve assets excluding public and financial sectors, and the foreign currency position of the Central Bank of Uruguay. This indicator is essential for evaluating the country's ability to meet its short-term external obligations, the strength of its external position, and the Central Bank's capacity to intervene in the foreign exchange market.",
     "area": "external",
     "custom": false,
     "disabled": false,
@@ -2198,6 +2346,8 @@
   "balance_of_payments_summary": {
     "description": "Balanza de pagos resumida y flujos de capital",
     "description_en": "Summarized balance of payments and capital flows",
+    "detailed_description": "Serie trimestral resumida de la balanza de pagos de Uruguay desde 2012, con cálculos adicionales de flujos de capital. Incluye los principales componentes de la cuenta corriente (bienes, servicios, ingreso primario e ingreso secundario), cuenta de capital y cuenta financiera (inversión directa, inversión de cartera, derivados financieros y otra inversión), así como activos de reserva y errores y omisiones. Adicionalmente, incorpora cálculos de flujos brutos de capital (suma de inversión directa, inversión de cartera y otra inversión en Uruguay, más créditos en cuenta capital) y flujos netos de capital (saldo de la cuenta financiera más cuenta capital). Este indicador proporciona una visión simplificada pero completa de las transacciones económicas internacionales de Uruguay, facilitando el análisis de la posición externa del país.",
+    "detailed_description_en": "Quarterly summarized time series of Uruguay's balance of payments since 2012, with additional capital flow calculations. Includes the main components of the current account (goods, services, primary income, and secondary income), capital account, and financial account (direct investment, portfolio investment, financial derivatives, and other investment), as well as reserve assets and errors and omissions. Additionally, it incorporates calculations of gross capital flows (sum of direct investment, portfolio investment, and other investment in Uruguay, plus credits in the capital account) and net capital flows (balance of the financial account plus capital account). This indicator provides a simplified but comprehensive view of Uruguay's international economic transactions, facilitating the analysis of the country's external position.",
     "area": "external",
     "custom": true,
     "disabled": false,
@@ -2217,6 +2367,8 @@
   "trade_balance": {
     "description": "Balanza comercial por país",
     "description_en": "Trade balance by country",
+    "detailed_description": "Serie mensual de la balanza comercial de Uruguay (exportaciones menos importaciones) desde 2000, desagregada por países y regiones. Incluye datos para el total del comercio y desagregaciones por principales socios comerciales y bloques regionales, como Argentina, Brasil, Paraguay, MERCOSUR, Estados Unidos, Unión Europea, China y otros países asiáticos. Este indicador permite analizar el saldo comercial bilateral de Uruguay con sus principales socios, identificar mercados con superávit o déficit comercial, y evaluar la evolución de la inserción comercial del país en diferentes regiones del mundo.",
+    "detailed_description_en": "Monthly time series of Uruguay's trade balance (exports minus imports) since 2000, disaggregated by countries and regions. Includes data for total trade and breakdowns by main trading partners and regional blocs, such as Argentina, Brazil, Paraguay, MERCOSUR, United States, European Union, China, and other Asian countries. This indicator allows for the analysis of Uruguay's bilateral trade balance with its main partners, identification of markets with trade surplus or deficit, and evaluation of the evolution of the country's commercial insertion in different regions of the world.",
     "area": "external",
     "custom": true,
     "disabled": false,
@@ -2239,6 +2391,8 @@
   "terms_of_trade": {
     "description": "Términos de intercambio",
     "description_en": "Terms of trade",
+    "detailed_description": "Serie mensual de los términos de intercambio de Uruguay desde 2005, calculados como el ratio entre los precios de exportación y los precios de importación (base 2005=100). Este indicador mide el poder adquisitivo de las exportaciones en términos de importaciones, reflejando la relación entre los precios a los que un país vende sus productos al exterior y los precios que paga por sus compras internacionales. Una mejora en los términos de intercambio (aumento del índice) indica que el país puede importar más bienes con la misma cantidad de exportaciones, lo que representa una ganancia de bienestar. Este indicador es fundamental para analizar la evolución de la inserción internacional de Uruguay y el impacto de los precios internacionales en la economía nacional.",
+    "detailed_description_en": "Monthly time series of Uruguay's terms of trade since 2005, calculated as the ratio between export prices and import prices (base 2005=100). This indicator measures the purchasing power of exports in terms of imports, reflecting the relationship between the prices at which a country sells its products abroad and the prices it pays for its international purchases. An improvement in the terms of trade (increase in the index) indicates that the country can import more goods with the same amount of exports, representing a welfare gain. This indicator is fundamental for analyzing the evolution of Uruguay's international insertion and the impact of international prices on the national economy.",
     "area": "external",
     "custom": true,
     "disabled": false,
@@ -2261,6 +2415,8 @@
   "commodity_prices": {
     "description": "Precios de commodities seleccionados",
     "description_en": "Selected commodity prices",
+    "detailed_description": "Serie mensual de precios internacionales de commodities seleccionados relevantes para la economía uruguaya desde 2002. Incluye precios de carne bovina (USD por tonelada), pulpa de celulosa (USD por tonelada), soja (USD por tonelada), leche (USD por tonelada), arroz (USD por tonelada), madera (USD por metro cúbico), lana (centavos de USD por kilogramo), cebada (USD por tonelada), oro (USD por onza troy) y trigo (USD por tonelada). Este indicador permite analizar la evolución de los precios internacionales de los principales productos de exportación de Uruguay, evaluar los términos de intercambio sectoriales, y anticipar impactos en la balanza comercial y la economía en general.",
+    "detailed_description_en": "Monthly time series of international prices for selected commodities relevant to the Uruguayan economy since 2002. Includes prices for beef (USD per ton), cellulose pulp (USD per ton), soybeans (USD per ton), milk (USD per ton), rice (USD per ton), wood (USD per cubic meter), wool (US cents per kg), barley (USD per ton), gold (USD per troy ounce), and wheat (USD per ton). This indicator allows for the analysis of the evolution of international prices for Uruguay's main export products, evaluation of sectoral terms of trade, and anticipation of impacts on the trade balance and the economy in general.",
     "area": "external",
     "custom": true,
     "disabled": false,
@@ -2296,6 +2452,8 @@
   "commodity_index": {
     "description": "Índice econuy de precios de commodities",
     "description_en": "Econuy commodity price index",
+    "detailed_description": "Serie mensual del índice econuy de precios de commodities desde 2002 (base 2005=100), que pondera los precios internacionales de los principales productos de exportación de Uruguay según su participación en la canasta exportadora del país. Incluye los precios de carne bovina, pulpa de celulosa, soja, leche, arroz, madera, lana, cebada y trigo, entre otros. Este indicador proporciona una medida sintética de la evolución de los precios internacionales relevantes para Uruguay, permitiendo analizar tendencias generales en los términos de intercambio del país y anticipar impactos en la balanza comercial, el tipo de cambio real y la actividad económica.",
+    "detailed_description_en": "Monthly time series of the econuy commodity price index since 2002 (base 2005=100), which weights the international prices of Uruguay's main export products according to their share in the country's export basket. Includes prices for beef, cellulose pulp, soybeans, milk, rice, wood, wool, barley, and wheat, among others. This indicator provides a synthetic measure of the evolution of international prices relevant to Uruguay, allowing for the analysis of general trends in the country's terms of trade and anticipation of impacts on the trade balance, real exchange rate, and economic activity.",
     "area": "external",
     "custom": true,
     "disabled": false,
@@ -2326,6 +2484,8 @@
   "rxr_custom": {
     "description": "Tipos de cambio reales, cálculos econuy",
     "description_en": "Real exchange rates, econuy calculations",
+    "detailed_description": "Serie mensual de tipos de cambio reales bilaterales y multilaterales calculados por econuy. Incluye el tipo de cambio real bilateral con Argentina, Brasil, Estados Unidos, China y la Unión Europea, así como un índice multilateral ponderado por la participación de estos socios en el comercio exterior uruguayo. El tipo de cambio real es un indicador de competitividad-precio que mide el poder adquisitivo relativo de una moneda frente a otra, ajustando por diferenciales de inflación. Los cálculos utilizan datos de tipos de cambio nominales e índices de precios al consumidor de cada país, con metodología consistente para permitir comparaciones entre países y a lo largo del tiempo.",
+    "detailed_description_en": "Monthly time series of bilateral and multilateral real exchange rates calculated by econuy. Includes bilateral real exchange rates with Argentina, Brazil, United States, China, and the European Union, as well as a multilateral index weighted by the participation of these partners in Uruguayan foreign trade. The real exchange rate is a price-competitiveness indicator that measures the relative purchasing power of one currency against another, adjusting for inflation differentials. The calculations use nominal exchange rate data and consumer price indices from each country, with consistent methodology to allow comparisons across countries and over time.",
     "area": "external",
     "custom": true,
     "disabled": false,
@@ -2352,6 +2512,8 @@
   "bank_deposits": {
     "description": "Depósitos en el sistema bancario",
     "description_en": "Bank deposits",
+    "detailed_description": "Serie mensual de depósitos en el sistema bancario uruguayo, desagregados por moneda (pesos, dólares y otras monedas), residencia (residentes y no residentes) y tipo de depósito (a la vista, cajas de ahorro y a plazo fijo). Los datos provienen del Banco Central del Uruguay (BCU) y permiten analizar la evolución de la liquidez en el sistema financiero, las preferencias de ahorro de los agentes económicos, el grado de dolarización de la economía y la confianza en el sistema bancario. Esta información es fundamental para el análisis de la estabilidad financiera, la política monetaria y las expectativas de los agentes económicos.",
+    "detailed_description_en": "Monthly time series of deposits in the Uruguayan banking system, disaggregated by currency (pesos, dollars, and other currencies), residence (residents and non-residents), and type of deposit (demand deposits, savings accounts, and time deposits). The data comes from the Central Bank of Uruguay (BCU) and allows for the analysis of liquidity evolution in the financial system, saving preferences of economic agents, the degree of dollarization of the economy, and confidence in the banking system. This information is fundamental for the analysis of financial stability, monetary policy, and the expectations of economic agents.",
     "area": "financial",
     "custom": false,
     "disabled": false,
@@ -2375,6 +2537,8 @@
   "bank_credit": {
     "description": "Créditos del sistema bancario al sector no financiero",
     "description_en": "Bank credits to non-financial sector",
+    "detailed_description": "Serie mensual de créditos otorgados por el sistema bancario uruguayo al sector no financiero, desagregados por moneda (pesos y dólares), sector institucional (familias, empresas y sector público) y plazo (corto y largo). Los datos provienen del Banco Central del Uruguay (BCU) y permiten analizar la evolución del financiamiento bancario a la economía, el grado de dolarización del crédito, la orientación sectorial del financiamiento y las condiciones de acceso al crédito. Esta información es clave para evaluar el canal de crédito de la política monetaria, el ciclo financiero y las restricciones de liquidez que enfrentan los agentes económicos.",
+    "detailed_description_en": "Monthly time series of credits granted by the Uruguayan banking system to the non-financial sector, disaggregated by currency (pesos and dollars), institutional sector (households, businesses, and public sector), and term (short and long). The data comes from the Central Bank of Uruguay (BCU) and allows for the analysis of the evolution of bank financing to the economy, the degree of credit dollarization, the sectoral orientation of financing, and credit access conditions. This information is key to evaluating the credit channel of monetary policy, the financial cycle, and the liquidity constraints faced by economic agents.",
     "area": "financial",
     "custom": false,
     "disabled": false,
@@ -2398,6 +2562,8 @@
   "bank_interest_rates": {
     "description": "Tasas de interés activas y pasivas",
     "description_en": "Active and passive interest rates",
+    "detailed_description": "Serie mensual de tasas de interés activas (préstamos) y pasivas (depósitos) del sistema bancario uruguayo, desagregadas por moneda (pesos y dólares), plazo y sector institucional. Las tasas activas incluyen préstamos a empresas y familias para diferentes destinos (consumo, vivienda, etc.), mientras que las tasas pasivas cubren depósitos a la vista y a plazo. Los datos provienen del Banco Central del Uruguay (BCU) y permiten analizar la evolución del costo del crédito, los márgenes de intermediación bancaria, la transmisión de la política monetaria y las condiciones financieras que enfrentan los distintos agentes económicos. Esta información es fundamental para evaluar la efectividad de la política monetaria y las condiciones de acceso al financiamiento en la economía.",
+    "detailed_description_en": "Monthly time series of active (lending) and passive (deposit) interest rates in the Uruguayan banking system, disaggregated by currency (pesos and dollars), term, and institutional sector. Active rates include loans to businesses and households for different purposes (consumption, housing, etc.), while passive rates cover demand and time deposits. The data comes from the Central Bank of Uruguay (BCU) and allows for the analysis of credit cost evolution, banking intermediation margins, monetary policy transmission, and financial conditions faced by different economic agents. This information is fundamental for evaluating the effectiveness of monetary policy and financing access conditions in the economy.",
     "area": "financial",
     "custom": false,
     "disabled": false,
@@ -2421,6 +2587,8 @@
   "call_rate": {
     "description": "Tasa call a 1 día",
     "description_en": "Call rate",
+    "detailed_description": "Serie diaria de la tasa de interés del mercado de dinero interbancario (tasa call) a 1 día en Uruguay, desagregada por moneda (pesos y dólares). La tasa call representa el costo de los préstamos a muy corto plazo entre instituciones financieras y es un indicador clave de la liquidez del sistema bancario y de las condiciones monetarias. Los datos provienen de la Bolsa Electrónica de Valores (BEVSA) y permiten analizar la evolución de las tasas de interés de corto plazo, la efectividad de la política monetaria del Banco Central y las tensiones en el mercado interbancario. Esta tasa sirve como referencia para la formación de precios de otros instrumentos financieros y es un indicador adelantado de cambios en las condiciones monetarias.",
+    "detailed_description_en": "Daily time series of the interbank money market interest rate (call rate) for 1-day loans in Uruguay, disaggregated by currency (pesos and dollars). The call rate represents the cost of very short-term loans between financial institutions and is a key indicator of banking system liquidity and monetary conditions. The data comes from the Electronic Stock Exchange (BEVSA) and allows for the analysis of short-term interest rate evolution, the effectiveness of the Central Bank's monetary policy, and tensions in the interbank market. This rate serves as a reference for the price formation of other financial instruments and is a leading indicator of changes in monetary conditions.",
     "area": "financial",
     "custom": false,
     "disabled": false,
@@ -2442,6 +2610,8 @@
   "sovereign_risk_index": {
     "description": "Uruguay Bond Index - riesgo soberano",
     "description_en": "Uruguay Bond Index - sovereign risk",
+    "detailed_description": "Serie diaria del Uruguay Bond Index (UBI), un indicador del riesgo soberano de Uruguay que mide el diferencial de rendimiento (spread) entre los bonos soberanos uruguayos y los bonos del Tesoro de Estados Unidos. El UBI es calculado por República AFAP y representa el costo adicional que debe pagar Uruguay para financiarse en los mercados internacionales en comparación con Estados Unidos, considerado libre de riesgo. Este indicador es clave para analizar la percepción de riesgo país, las condiciones de acceso al financiamiento externo, y la confianza de los inversores internacionales en la economía uruguaya. El UBI se desagrega por moneda (dólares, pesos nominales, unidades indexadas y unidades previsionales) y por plazo, permitiendo un análisis detallado de la curva de rendimientos soberana.",
+    "detailed_description_en": "Daily time series of the Uruguay Bond Index (UBI), an indicator of Uruguay's sovereign risk that measures the yield differential (spread) between Uruguayan sovereign bonds and U.S. Treasury bonds. The UBI is calculated by República AFAP and represents the additional cost that Uruguay must pay to finance itself in international markets compared to the United States, considered risk-free. This indicator is key for analyzing country risk perception, conditions of access to external financing, and international investors' confidence in the Uruguayan economy. The UBI is disaggregated by currency (dollars, nominal pesos, indexed units, and pension units) and by term, allowing for a detailed analysis of the sovereign yield curve.",
     "area": "financial",
     "custom": false,
     "disabled": false,
@@ -2489,6 +2659,8 @@
   "income_household": {
     "description": "Ingreso medio de los hogares sin valor locativo ni aguinaldo",
     "description_en": "Average household income",
+    "detailed_description": "Serie mensual del ingreso medio de los hogares uruguayos sin considerar el valor locativo ni el aguinaldo, desagregada por área geográfica (total país, Montevideo e interior). Los datos provienen de la Encuesta Continua de Hogares (ECH) del Instituto Nacional de Estadística (INE) y permiten analizar la evolución del poder adquisitivo de los hogares, las disparidades territoriales en los ingresos y el impacto de las políticas económicas y sociales en el bienestar de las familias. Esta serie es fundamental para el estudio de la pobreza, la desigualdad y las condiciones de vida de la población uruguaya, así como para la evaluación de políticas públicas orientadas a mejorar la distribución del ingreso.",
+    "detailed_description_en": "Monthly time series of the average income of Uruguayan households without considering rental value or annual bonuses, disaggregated by geographic area (total country, Montevideo, and interior). The data comes from the Continuous Household Survey (ECH) of the National Institute of Statistics (INE) and allows for the analysis of household purchasing power evolution, territorial disparities in income, and the impact of economic and social policies on family welfare. This series is fundamental for the study of poverty, inequality, and living conditions of the Uruguayan population, as well as for the evaluation of public policies aimed at improving income distribution.",
     "area": "income",
     "custom": false,
     "disabled": false,
@@ -2512,6 +2684,8 @@
   "income_capita": {
     "description": "Ingreso medio per cápita sin valor locativo ni aguinaldo",
     "description_en": "Average per capita income",
+    "detailed_description": "Serie mensual del ingreso medio per cápita en Uruguay sin considerar el valor locativo ni el aguinaldo, desagregada por área geográfica (total país, Montevideo e interior). Los datos provienen de la Encuesta Continua de Hogares (ECH) del Instituto Nacional de Estadística (INE) y se calculan dividiendo el ingreso total del hogar entre el número de miembros. Esta serie permite analizar la evolución del bienestar económico individual, controlando por el tamaño del hogar, y facilita comparaciones internacionales de niveles de vida. El ingreso per cápita es un indicador clave para la medición de la pobreza, la desigualdad y la estratificación social, así como para evaluar el impacto distributivo de las políticas públicas y los cambios en la estructura demográfica de los hogares.",
+    "detailed_description_en": "Monthly time series of the average per capita income in Uruguay without considering rental value or annual bonuses, disaggregated by geographic area (total country, Montevideo, and interior). The data comes from the Continuous Household Survey (ECH) of the National Institute of Statistics (INE) and is calculated by dividing the total household income by the number of members. This series allows for the analysis of individual economic welfare evolution, controlling for household size, and facilitates international comparisons of living standards. Per capita income is a key indicator for measuring poverty, inequality, and social stratification, as well as for evaluating the distributive impact of public policies and changes in the demographic structure of households.",
     "area": "income",
     "custom": false,
     "disabled": false,
@@ -2646,6 +2820,8 @@
   "regional_gdp": {
     "description": "PBI real desestacionalizado de Argentina y Brasil",
     "description_en": "Real GDP of Argentina and Brazil",
+    "detailed_description": "Serie trimestral del Producto Bruto Interno (PBI) real desestacionalizado de Argentina y Brasil. Los datos provienen del Instituto Nacional de Estadística y Censos (INDEC) de Argentina y del Instituto Brasileño de Geografía y Estadística (IBGE). Esta serie permite analizar la evolución de la actividad económica de los principales socios comerciales de Uruguay en la región, facilitando el estudio de los ciclos económicos regionales y su impacto en la economía uruguaya. El seguimiento de estos indicadores es fundamental para comprender los canales de transmisión de shocks externos, anticipar cambios en los flujos comerciales y evaluar riesgos macroeconómicos derivados de la interdependencia regional.",
+    "detailed_description_en": "Quarterly time series of seasonally adjusted real Gross Domestic Product (GDP) for Argentina and Brazil. The data comes from Argentina's National Institute of Statistics and Census (INDEC) and Brazil's Brazilian Institute of Geography and Statistics (IBGE). This series allows for the analysis of economic activity evolution in Uruguay's main regional trading partners, facilitating the study of regional economic cycles and their impact on the Uruguayan economy. Monitoring these indicators is essential for understanding external shock transmission channels, anticipating changes in trade flows, and assessing macroeconomic risks derived from regional interdependence.",
     "area": "regional",
     "custom": true,
     "disabled": false,
@@ -2671,6 +2847,8 @@
   "regional_monthly_gdp": {
     "description": "PBI real mensual desestacionalizado de Argentina y Brasil",
     "description_en": "Real monthly seasonally adjusted GDP of Argentina and Brazil",
+    "detailed_description": "Serie mensual de indicadores de actividad económica de Argentina y Brasil que aproximan el comportamiento del Producto Bruto Interno (PBI) real con frecuencia mensual. Para Argentina se utiliza el Estimador Mensual de Actividad Económica (EMAE) del INDEC, mientras que para Brasil se emplea el Índice de Actividad Económica del Banco Central (IBC-Br). Ambas series están desestacionalizadas. Este conjunto de datos permite un seguimiento más frecuente y oportuno de la evolución económica de los principales socios comerciales regionales de Uruguay, facilitando el análisis de ciclos económicos, puntos de inflexión y la transmisión de shocks entre economías vecinas.",
+    "detailed_description_en": "Monthly time series of economic activity indicators for Argentina and Brazil that approximate real Gross Domestic Product (GDP) behavior with monthly frequency. For Argentina, the Monthly Economic Activity Estimator (EMAE) from INDEC is used, while for Brazil, the Central Bank Economic Activity Index (IBC-Br) is employed. Both series are seasonally adjusted. This dataset allows for more frequent and timely monitoring of the economic evolution of Uruguay's main regional trading partners, facilitating the analysis of economic cycles, turning points, and the transmission of shocks between neighboring economies.",
     "area": "regional",
     "custom": true,
     "disabled": false,
@@ -2694,6 +2872,8 @@
   "regional_cpi": {
     "description": "Índice de precios al consumo de Argentina y Brasil",
     "description_en": "Consumer price index of Argentina and Brazil",
+    "detailed_description": "Serie mensual del Índice de Precios al Consumo (IPC) de Argentina y Brasil. Para Argentina se incluyen tanto las estadísticas oficiales del INDEC como estimaciones alternativas durante períodos de intervención estadística. Para Brasil se utiliza el Índice Nacional de Precios al Consumidor Amplio (IPCA) del IBGE. Este conjunto de datos permite analizar la evolución de la inflación en los principales socios comerciales de Uruguay, facilitando el estudio de presiones inflacionarias regionales, su transmisión a la economía uruguaya y la comparación de dinámicas de precios entre países. El seguimiento de estos indicadores es fundamental para comprender los efectos de políticas monetarias y fiscales en la región.",
+    "detailed_description_en": "Monthly time series of the Consumer Price Index (CPI) for Argentina and Brazil. For Argentina, both official INDEC statistics and alternative estimates during periods of statistical intervention are included. For Brazil, the Broad National Consumer Price Index (IPCA) from IBGE is used. This dataset allows for the analysis of inflation evolution in Uruguay's main trading partners, facilitating the study of regional inflationary pressures, their transmission to the Uruguayan economy, and the comparison of price dynamics between countries. Monitoring these indicators is essential for understanding the effects of monetary and fiscal policies in the region.",
     "area": "regional",
     "custom": true,
     "disabled": false,
@@ -2720,6 +2900,8 @@
   "regional_embi_spreads": {
     "description": "EMBI spread (JP Morgan) de Argentina, Brasil y Global",
     "description_en": "EMBI spread (JP Morgan) of Argentina, Brazil and Global",
+    "detailed_description": "Serie diaria del diferencial de rendimiento (spread) del Emerging Markets Bond Index (EMBI) de JP Morgan para Argentina, Brasil y el índice Global. El EMBI mide la diferencia en puntos básicos entre el rendimiento de los bonos soberanos emitidos por países emergentes y bonos del Tesoro de Estados Unidos considerados libres de riesgo. Este conjunto de datos permite analizar la evolución del riesgo país percibido por los mercados financieros internacionales para los principales socios comerciales de Uruguay, así como para el conjunto de mercados emergentes. Es un indicador fundamental para evaluar las condiciones de financiamiento externo, la percepción de riesgo regional y los potenciales efectos de contagio financiero entre economías emergentes.",
+    "detailed_description_en": "Daily time series of the yield spread of JP Morgan's Emerging Markets Bond Index (EMBI) for Argentina, Brazil, and the Global index. The EMBI measures the difference in basis points between the yield on sovereign bonds issued by emerging countries and U.S. Treasury bonds considered risk-free. This dataset allows for the analysis of the evolution of country risk perceived by international financial markets for Uruguay's main trading partners, as well as for the set of emerging markets. It is a fundamental indicator for evaluating external financing conditions, regional risk perception, and potential financial contagion effects between emerging economies.",
     "area": "regional",
     "custom": false,
     "disabled": false,
@@ -2743,6 +2925,8 @@
   "regional_embi_yields": {
     "description": "EMBI yield (JP Morgan) de Argentina, Brasil y Global",
     "description_en": "EMBI yield (JP Morgan) of Argentina, Brazil and Global",
+    "detailed_description": "Serie diaria del rendimiento (yield) del Emerging Markets Bond Index (EMBI) de JP Morgan para Argentina, Brasil y el índice Global. A diferencia del EMBI spread, que mide el diferencial con respecto a los bonos del Tesoro de EE.UU., el EMBI yield representa el rendimiento total de los bonos soberanos emitidos por estos países en mercados internacionales. Este conjunto de datos permite analizar la evolución del costo absoluto de financiamiento externo para los principales socios comerciales de Uruguay y para el conjunto de mercados emergentes. Es un indicador clave para evaluar las condiciones financieras regionales, la sostenibilidad de la deuda soberana y las expectativas de los inversores sobre el desempeño económico futuro de estas economías.",
+    "detailed_description_en": "Daily time series of the yield of JP Morgan's Emerging Markets Bond Index (EMBI) for Argentina, Brazil, and the Global index. Unlike the EMBI spread, which measures the differential with respect to U.S. Treasury bonds, the EMBI yield represents the total return on sovereign bonds issued by these countries in international markets. This dataset allows for the analysis of the evolution of the absolute cost of external financing for Uruguay's main trading partners and for the set of emerging markets. It is a key indicator for evaluating regional financial conditions, sovereign debt sustainability, and investor expectations about the future economic performance of these economies.",
     "area": "regional",
     "custom": true,
     "disabled": false,
@@ -2765,6 +2949,8 @@
   "regional_nxr": {
     "description": "Tipo de cambio nominal diario de Argentina y Brasil",
     "description_en": "Nominal daily exchange rate of Argentina and Brazil",
+    "detailed_description": "Serie diaria del tipo de cambio nominal de Argentina (peso argentino) y Brasil (real) con respecto al dólar estadounidense. Los datos provienen del Banco Central de la República Argentina (BCRA) y del Banco Central de Brasil (BCB). Este conjunto de datos permite analizar la evolución de las monedas de los principales socios comerciales de Uruguay, facilitando el estudio de la competitividad cambiaria regional, los efectos de devaluaciones o apreciaciones en los flujos comerciales bilaterales, y la transmisión de shocks cambiarios entre economías vecinas. El seguimiento de estos indicadores es fundamental para comprender las dinámicas de precios relativos en el Mercosur y sus implicaciones para la economía uruguaya.",
+    "detailed_description_en": "Daily time series of the nominal exchange rate of Argentina (Argentine peso) and Brazil (real) against the U.S. dollar. The data comes from the Central Bank of Argentina (BCRA) and the Central Bank of Brazil (BCB). This dataset allows for the analysis of currency evolution in Uruguay's main trading partners, facilitating the study of regional exchange rate competitiveness, the effects of devaluations or appreciations on bilateral trade flows, and the transmission of exchange rate shocks between neighboring economies. Monitoring these indicators is essential for understanding relative price dynamics in Mercosur and their implications for the Uruguayan economy.",
     "area": "regional",
     "custom": true,
     "disabled": false,
@@ -2790,6 +2976,8 @@
   "regional_policy_rates": {
     "description": "Tasas de interés de política monetaria de Argentina y Brasil",
     "description_en": "Monetary policy interest rates of Argentina and Brazil",
+    "detailed_description": "Serie diaria de las tasas de interés de política monetaria establecidas por los bancos centrales de Argentina y Brasil. Para Argentina se incluye la tasa de referencia definida por el Banco Central de la República Argentina (BCRA), mientras que para Brasil se utiliza la tasa Selic establecida por el Comité de Política Monetaria (COPOM) del Banco Central de Brasil. Este conjunto de datos permite analizar la orientación de la política monetaria en los principales socios comerciales de Uruguay, facilitando el estudio de los ciclos monetarios regionales, las estrategias de control de la inflación y sus potenciales efectos sobre los flujos de capital, el tipo de cambio y la actividad económica en la región.",
+    "detailed_description_en": "Daily time series of monetary policy interest rates set by the central banks of Argentina and Brazil. For Argentina, the reference rate defined by the Central Bank of Argentina (BCRA) is included, while for Brazil, the Selic rate established by the Monetary Policy Committee (COPOM) of the Central Bank of Brazil is used. This dataset allows for the analysis of monetary policy orientation in Uruguay's main trading partners, facilitating the study of regional monetary cycles, inflation control strategies, and their potential effects on capital flows, exchange rates, and economic activity in the region.",
     "area": "regional",
     "custom": false,
     "disabled": false,
@@ -2836,6 +3024,8 @@
   "regional_rxr": {
     "description": "Tipo de cambio real vs. EE.UU. de Argentina y Brasil",
     "description_en": "Real exchange rate vs. the United States of Argentina and Brazil",
+    "detailed_description": "Serie mensual del tipo de cambio real bilateral de Argentina y Brasil con respecto a Estados Unidos. El tipo de cambio real se calcula como el producto del tipo de cambio nominal y el cociente entre el índice de precios de Estados Unidos y el índice de precios del país correspondiente. Para Argentina se incluyen cálculos basados tanto en estadísticas oficiales como en estimaciones alternativas durante períodos de intervención estadística. Este conjunto de datos permite analizar la evolución de la competitividad-precio de los principales socios comerciales de Uruguay frente a Estados Unidos, facilitando el estudio de los desequilibrios externos, la sostenibilidad de los regímenes cambiarios y las presiones para ajustes del tipo de cambio nominal en la región.",
+    "detailed_description_en": "Monthly time series of the bilateral real exchange rate of Argentina and Brazil with respect to the United States. The real exchange rate is calculated as the product of the nominal exchange rate and the ratio between the U.S. price index and the corresponding country's price index. For Argentina, calculations based on both official statistics and alternative estimates during periods of statistical intervention are included. This dataset allows for the analysis of price-competitiveness evolution of Uruguay's main trading partners against the United States, facilitating the study of external imbalances, exchange rate regime sustainability, and pressures for nominal exchange rate adjustments in the region.",
     "area": "regional",
     "custom": true,
     "disabled": false,
