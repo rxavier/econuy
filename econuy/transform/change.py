@@ -1,6 +1,8 @@
-from typing import Tuple
+from typing import Tuple, Literal
 
 import pandas as pd
+
+from econuy.utils.transform import error_handler
 
 
 def _chg_diff(
@@ -8,6 +10,7 @@ def _chg_diff(
     metadata: "Metadata",  # type: ignore # noqa: F821
     operation: str = "chg",
     period: str = "last",
+    error_handling: Literal["raise", "coerce", "ignore"] = "raise",
 ) -> Tuple[pd.DataFrame, "Metadata"]:  # type: ignore # noqa: F821
     from econuy.transform.rolling import _rolling
 
@@ -17,6 +20,16 @@ def _chg_diff(
     single_metadata = metadata.indicator_metadata[indicators[0]]
     time_series_type = single_metadata["time_series_type"]
     inferred_freq = pd.infer_freq(data.index)
+
+    if inferred_freq in ["ME"]:
+        last_year = 12
+    elif inferred_freq in ["QE", "QE-DEC"]:
+        last_year = 4
+    elif inferred_freq in ["YE", "YE-DEC"]:
+        last_year = 1
+    else:
+        output = error_handler(data, errors=error_handling, msg="Frequency needs to be ME, QE or YE")
+        return output, metadata
 
     type_change = {
         "last": {
@@ -35,18 +48,6 @@ def _chg_diff(
             "diff": [lambda x: x.diff(periods=last_year), "Change annual"],
         },
     }
-
-    if inferred_freq in ["ME"]:
-        last_year = 12
-    elif inferred_freq in ["QE", "QE-DEC"]:
-        last_year = 4
-    elif inferred_freq in ["YE", "YE-DEC"]:
-        last_year = 1
-    else:
-        raise ValueError(
-            "The dataframe needs to have a frequency of ME "
-            "(month end), QQ (quarter end) or YE (year end)"
-        )
 
     if period == "annual":
         if time_series_type == "Stock":

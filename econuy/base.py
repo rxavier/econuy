@@ -824,6 +824,7 @@ class Dataset:
         self,
         operation: Literal["chg", "diff"] = "chg",
         period: Literal["last", "inter", "annual"] = "last",
+        error_handling: Literal["raise", "coerce", "ignore"] = "raise",
     ) -> "Dataset":
         """Wrapper for the `pct_change <https://pandas.pydata.org/pandas-docs/stable/
         reference/api/pandas.DataFrame.pct_change.html>`_ and `diff <https://pandas
@@ -874,6 +875,7 @@ class Dataset:
                 metadata=self.metadata,
                 operation=operation,
                 period=period,
+                error_handling=error_handling,
             )
 
         else:
@@ -886,6 +888,7 @@ class Dataset:
                     metadata=n_dataset.metadata,
                     operation=operation,
                     period=period,
+                    error_handling=error_handling,
                 )
                 transformed.append(transformed_col)
                 new_metadatas.append(new_metadata)
