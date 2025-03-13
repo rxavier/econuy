@@ -9,7 +9,7 @@ import httpx
 from pandas.tseries.offsets import MonthEnd
 
 from econuy.utils.chromedriver import _build
-from econuy.utils.operations import get_download_sources, get_name_from_function
+from econuy.utils.operations import get_download_sources, get_id_from_function
 from econuy.utils.retrieval import get_with_ssl_context
 from econuy.base import Dataset, DatasetMetadata
 
@@ -22,8 +22,8 @@ def bank_credit() -> pd.DataFrame:
     Monthly credit : pd.DataFrame
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
     try:
         xls = pd.ExcelFile(sources["main"])
     except URLError as err:
@@ -91,7 +91,7 @@ def bank_credit() -> pd.DataFrame:
     output = output.rename_axis(None)
 
     spanish_names = output.columns
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -107,9 +107,9 @@ def bank_credit() -> pd.DataFrame:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -122,8 +122,8 @@ def bank_deposits() -> pd.DataFrame:
     Monthly deposits : pd.DataFrame
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
     try:
         xls = pd.ExcelFile(sources["main"])
     except URLError as err:
@@ -174,7 +174,7 @@ def bank_deposits() -> pd.DataFrame:
     output = output.rename_axis(None)
 
     spanish_names = output.columns
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -190,9 +190,9 @@ def bank_deposits() -> pd.DataFrame:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -205,8 +205,8 @@ def bank_interest_rates() -> pd.DataFrame:
     Monthly interest rates : pd.DataFrame
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
     try:
         xls = pd.ExcelFile(sources["main"])
     except URLError as err:
@@ -262,7 +262,7 @@ def bank_interest_rates() -> pd.DataFrame:
     output = output.rename_axis(None)
 
     spanish_names = output.columns
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -278,7 +278,7 @@ def bank_interest_rates() -> pd.DataFrame:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
     for indicator, currency in zip(
         ids,
@@ -330,7 +330,7 @@ def bank_interest_rates() -> pd.DataFrame:
         metadata.update_indicator_metadata_value(
             indicator, "inflation_adjustment", const
         )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -343,8 +343,8 @@ def sovereign_risk_index() -> pd.DataFrame:
     Uruguayan Bond Index : pd.DataFrame
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     try:
         historical = pd.read_excel(
@@ -382,7 +382,7 @@ def sovereign_risk_index() -> pd.DataFrame:
     output = output.rename_axis(None)
 
     spanish_names = output.columns
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -398,9 +398,9 @@ def sovereign_risk_index() -> pd.DataFrame:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -431,8 +431,8 @@ def call_rate() -> pd.DataFrame:
     Daily call rate : pd.DataFrame
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     driver = _build()
     _bypass_bevsa_disclaimer_maybe(driver, sources["main"])
@@ -466,7 +466,7 @@ def call_rate() -> pd.DataFrame:
     output = output.rename_axis(None)
 
     spanish_names = output.columns
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -482,9 +482,9 @@ def call_rate() -> pd.DataFrame:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -498,8 +498,8 @@ def sovereign_bond_yields() -> pd.DataFrame:
     Daily bond yields in basis points : pd.DataFrame
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     driver = _build()
     _bypass_bevsa_disclaimer_maybe(driver, sources["usd"])
@@ -541,7 +541,7 @@ def sovereign_bond_yields() -> pd.DataFrame:
     output = output.rename_axis(None)
 
     spanish_names = output.columns
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -557,7 +557,7 @@ def sovereign_bond_yields() -> pd.DataFrame:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
     for indicator, const in zip(ids, [None, "Const.", None]):
         metadata.update_indicator_metadata_value(
@@ -565,6 +565,6 @@ def sovereign_bond_yields() -> pd.DataFrame:
         )
     for indicator, currency in zip(ids, ["USD", "UYU", "UYU"]):
         metadata.update_indicator_metadata_value(indicator, "currency", currency)
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset

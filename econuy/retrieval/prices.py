@@ -4,7 +4,7 @@ import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
 from econuy.utils.operations import (
-    get_name_from_function,
+    get_id_from_function,
     get_download_sources,
     get_names_and_ids,
     get_base_metadata,
@@ -22,8 +22,8 @@ def cpi() -> Dataset:
     Monthly CPI : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = pd.read_excel(sources["main"], usecols="C").dropna(axis=0, how="any")
     output = raw.set_index(
@@ -32,7 +32,7 @@ def cpi() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
 
     spanish_names = ["Índice de precios al consumo"]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -48,9 +48,9 @@ def cpi() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -63,8 +63,8 @@ def cpi_core() -> Dataset:
     Monthly CPI : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = pd.read_excel(sources["main"], usecols="D")
     output = raw.set_index(
@@ -72,14 +72,14 @@ def cpi_core() -> Dataset:
     ).rename_axis(None)
     output = output.apply(pd.to_numeric, errors="coerce")
 
-    ids, spanish_names = get_names_and_ids(name, "es")
+    ids, spanish_names = get_names_and_ids(id, "es")
     output.columns = ids
 
-    base_metadata = get_base_metadata(name)
+    base_metadata = get_base_metadata(id)
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -92,22 +92,22 @@ def indexed_unit() -> Dataset:
     Monthly indexed unit : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = pd.read_excel(sources["main"], usecols="A:B", skiprows=5, index_col=0)
     output = raw.copy().rename_axis(None).dropna(how="any")
     output.index = pd.to_datetime(output.index, format="%m/%d/%Y")
     output = output.apply(pd.to_numeric, errors="coerce")
 
-    ids, spanish_names = get_names_and_ids(name, "es")
+    ids, spanish_names = get_names_and_ids(id, "es")
     output.columns = ids
 
-    base_metadata = get_base_metadata(name)
+    base_metadata = get_base_metadata(id)
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -120,22 +120,22 @@ def readjustable_unit() -> Dataset:
     Monthly readjustable unit : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = pd.read_excel(sources["main"], usecols="A:B", skiprows=5, index_col=0)
     output = raw.copy().rename_axis(None).dropna(how="any")
     output.index = pd.to_datetime(output.index, format="%m/%d/%Y")
     output = output.apply(pd.to_numeric, errors="coerce")
 
-    ids, spanish_names = get_names_and_ids(name, "es")
+    ids, spanish_names = get_names_and_ids(id, "es")
     output.columns = ids
 
-    base_metadata = get_base_metadata(name)
+    base_metadata = get_base_metadata(id)
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -148,8 +148,8 @@ def cpi_divisions() -> Dataset:
     Monthly CPI by division : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
     raw = (
         pd.read_excel(sources["main"], usecols="A:D")
         .dropna(axis=0, how="any")
@@ -179,7 +179,7 @@ def cpi_divisions() -> Dataset:
         "Seguros y servicios financieros",
         "Cuidado personal, protección social y bienes diversos",
     ]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -195,9 +195,9 @@ def cpi_divisions() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -280,8 +280,8 @@ def inflation_expectations() -> Dataset:
     Monthly inflation expectations : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     try:
         raw = pd.read_excel(sources["main"], skiprows=9)
@@ -311,7 +311,7 @@ def inflation_expectations() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
 
     spanish_names = output.columns
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -327,9 +327,9 @@ def inflation_expectations() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -342,22 +342,22 @@ def inflation_expectations_corporate() -> Dataset:
     Monthly corporate inflation expectations : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = pd.read_excel(sources["main"], skiprows=3, usecols="A:G", index_col=0)
     output = raw.copy()
     output.index = pd.date_range(start="2020-10-31", freq="ME", periods=len(output))
     output = output.apply(pd.to_numeric, errors="coerce")
 
-    ids, spanish_names = get_names_and_ids(name, "es")
+    ids, spanish_names = get_names_and_ids(id, "es")
     output.columns = ids
 
-    base_metadata = get_base_metadata(name)
+    base_metadata = get_base_metadata(id)
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -455,8 +455,8 @@ def ppi() -> Dataset:
     Monthly PPI : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = (
         pd.read_excel(sources["main"], skiprows=7, usecols="H,I,J,K")
@@ -472,7 +472,7 @@ def ppi() -> Dataset:
         "Explotación de minas y canteras",
         "Industria manufacturera",
     ]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -488,9 +488,9 @@ def ppi() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -504,8 +504,8 @@ def nxr_monthly(*args, **kwargs) -> Dataset:
         Sell rate, monthly average and end of period.
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     daily_data = load_dataset("nxr_daily", *args, **kwargs).data
 
@@ -534,7 +534,7 @@ def nxr_monthly(*args, **kwargs) -> Dataset:
     output = pd.concat([historical, output]).rename_axis(None)
 
     spanish_names = output.columns
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -550,9 +550,9 @@ def nxr_monthly(*args, **kwargs) -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -566,15 +566,15 @@ def nxr_daily() -> Dataset:
         Sell rate.
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     output = pd.read_excel(sources["main"], usecols="A,D", index_col=0)
     output.index = pd.to_datetime(output.index, format="%d-%m-%Y")
     output = output.loc[~output.index.duplicated(keep="last")]
 
     spanish_names = ["Tipo de cambio venta"]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -590,9 +590,9 @@ def nxr_daily() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 

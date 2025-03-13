@@ -14,7 +14,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from econuy.utils.operations import get_download_sources, get_name_from_function
+from econuy.utils.operations import get_download_sources, get_id_from_function
 from econuy.utils.chromedriver import _build
 from econuy.base import Dataset, DatasetMetadata
 from econuy import load_dataset
@@ -29,8 +29,8 @@ def monthly_gdp() -> Dataset:
     Monthly GDP : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         driver = _build(tmp_dir)
@@ -56,7 +56,7 @@ def monthly_gdp() -> Dataset:
     ]
     spanish_names = [{"es": x} for x in spanish_names]
 
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -72,13 +72,13 @@ def monthly_gdp() -> Dataset:
     }
 
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
     for indicator, adjustment in zip(ids, [None, "Seasonally adjusted", "Trend-cycle"]):
         metadata = metadata.update_indicator_metadata_value(
             indicator, "seasonal_adjustment", adjustment
         )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -91,8 +91,8 @@ def national_accounts_supply_constant_nsa() -> Dataset:
     National accounts, supply side, constant prices, NSA : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     r_bytes = get_with_ssl_context("bcu", sources["main"])
     raw = pd.read_excel(r_bytes, skiprows=7)
@@ -115,7 +115,7 @@ def national_accounts_supply_constant_nsa() -> Dataset:
         "Impuestos menos subvenciones",
         "Producto bruto interno",
     ]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -131,9 +131,9 @@ def national_accounts_supply_constant_nsa() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -146,8 +146,8 @@ def national_accounts_demand_constant_nsa() -> Dataset:
     National accounts, demand side, constant prices, NSA : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     r_bytes = get_with_ssl_context("bcu", sources["main"])
     raw = pd.read_excel(r_bytes, skiprows=7)
@@ -167,7 +167,7 @@ def national_accounts_demand_constant_nsa() -> Dataset:
         "Importaciones de bienes y servicios",
         "Producto bruto interno",
     ]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -183,9 +183,9 @@ def national_accounts_demand_constant_nsa() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -198,8 +198,8 @@ def national_accounts_demand_current_nsa() -> Dataset:
     National accounts, demand side, current prices, NSA : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     r_bytes = get_with_ssl_context("bcu", sources["main"])
     raw = pd.read_excel(r_bytes, skiprows=7)
@@ -219,7 +219,7 @@ def national_accounts_demand_current_nsa() -> Dataset:
         "Importaciones de bienes y servicios",
         "Producto bruto interno",
     ]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -235,9 +235,9 @@ def national_accounts_demand_current_nsa() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -250,8 +250,8 @@ def national_accounts_supply_current_nsa() -> Dataset:
     National accounts, supply side, current prices, NSA : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     r_bytes = get_with_ssl_context("bcu", sources["main"])
     raw = pd.read_excel(r_bytes, skiprows=7)
@@ -274,7 +274,7 @@ def national_accounts_supply_current_nsa() -> Dataset:
         "Impuestos menos subvenciones",
         "Producto bruto interno",
     ]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -290,9 +290,9 @@ def national_accounts_supply_current_nsa() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -305,8 +305,8 @@ def gdp_index_constant_sa() -> Dataset:
     National accounts, supply side, real index, SA : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     r_bytes = get_with_ssl_context("bcu", sources["main"])
     raw = pd.read_excel(r_bytes, skiprows=7)
@@ -315,7 +315,7 @@ def gdp_index_constant_sa() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce").rename_axis(None)
 
     spanish_names = ["Producto bruto interno"]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -331,9 +331,9 @@ def gdp_index_constant_sa() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -352,8 +352,8 @@ def national_accounts_supply_constant_nsa_extended(
     National accounts, supply side, constant prices, NSA : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     data_16 = load_dataset(
         "national_accounts_supply_constant_nsa", *args, **kwargs
@@ -484,7 +484,7 @@ def national_accounts_supply_constant_nsa_extended(
                 / data_83.loc[next_quarter, :]
             )
 
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -500,9 +500,9 @@ def national_accounts_supply_constant_nsa_extended(
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -518,8 +518,8 @@ def national_accounts_demand_constant_nsa_extended(*args, **kwargs) -> Dataset:
     National accounts, demand side, constant prices, NSA : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     data_16 = load_dataset(
         "national_accounts_demand_constant_nsa", *args, **kwargs
@@ -610,7 +610,7 @@ def national_accounts_demand_constant_nsa_extended(*args, **kwargs) -> Dataset:
         "Importaciones",
         "Producto bruto interno",
     ]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -626,9 +626,9 @@ def national_accounts_demand_constant_nsa_extended(*args, **kwargs) -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -644,8 +644,8 @@ def gdp_index_constant_sa_extended(*args, **kwargs) -> Dataset:
     GDP, constant prices, SA : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     data_16 = load_dataset("gdp_index_constant_sa", *args, **kwargs).to_detailed()
     data_16.columns = data_16.columns.get_level_values(0)
@@ -720,7 +720,7 @@ def gdp_index_constant_sa_extended(*args, **kwargs) -> Dataset:
 
     spanish_names = ["Producto bruto interno"]
 
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -736,9 +736,9 @@ def gdp_index_constant_sa_extended(*args, **kwargs) -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -755,8 +755,8 @@ def gdp_constant_nsa_extended(*args, **kwargs) -> Dataset:
     GDP, constant prices, NSA : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     data_16 = load_dataset(
         "national_accounts_supply_constant_nsa", *args, **kwargs
@@ -813,7 +813,7 @@ def gdp_constant_nsa_extended(*args, **kwargs) -> Dataset:
 
     spanish_names = ["Producto bruto interno"]
 
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -829,9 +829,9 @@ def gdp_constant_nsa_extended(*args, **kwargs) -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -847,8 +847,8 @@ def gdp_current_nsa_extended(*args, **kwargs) -> Dataset:
     GDP, current prices, NSA : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     data_16 = load_dataset(
         "national_accounts_supply_current_nsa", *args, **kwargs
@@ -876,7 +876,7 @@ def gdp_current_nsa_extended(*args, **kwargs) -> Dataset:
     output = pd.concat([data_97, data_16], axis=0)
 
     spanish_names = ["Producto bruto interno"]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -892,9 +892,9 @@ def gdp_current_nsa_extended(*args, **kwargs) -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -913,7 +913,7 @@ def gdp_denominator(*args, **kwargs):
         Quarterly GDP in UYU and USD with 1 year forecasts.
 
     """
-    name = get_name_from_function()
+    id = get_id_from_function()
 
     data_uyu = load_dataset("gdp_current_nsa_extended", *args, **kwargs).rolling(
         window=4, operation="sum"
@@ -962,7 +962,7 @@ def gdp_denominator(*args, **kwargs):
     output = output.rename_axis(None)
 
     spanish_names = ["Producto bruto interno", "Producto bruto interno"]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -978,10 +978,10 @@ def gdp_denominator(*args, **kwargs):
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    metadata.update_indicator_metadata_value(f"{name}_1", "currency", "USD")
-    dataset = Dataset(name, output, metadata)
+    metadata.update_indicator_metadata_value(f"{id}_1", "currency", "USD")
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -994,8 +994,8 @@ def industrial_production() -> Dataset:
     Monthly industrial production index : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = pd.read_excel(sources["main"], skiprows=4, usecols="D:DR", na_values="(s)")
     weights = pd.read_csv(sources["weights"]).dropna(how="all")
@@ -1033,7 +1033,7 @@ def industrial_production() -> Dataset:
         "Industrias manufactureras",
         "Industrias manufactureras sin refinería",
     ] + column_names
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -1049,9 +1049,9 @@ def industrial_production() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -1067,8 +1067,8 @@ def core_industrial_production(*args, **kwargs) -> Dataset:
     Measures of industrial production : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     data_18 = load_dataset("industrial_production", *args, **kwargs).to_detailed()
     data_18 = data_18[
@@ -1123,7 +1123,7 @@ def core_industrial_production(*args, **kwargs) -> Dataset:
         "Núcleo industrial",
     ]
 
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -1139,9 +1139,9 @@ def core_industrial_production(*args, **kwargs) -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata).rebase(
+    dataset = Dataset(id, output, metadata).rebase(
         start_date="2018-01-01", end_date="2018-12-31"
     )
     dataset.metadata.update_dataset_metadata({"unit": "2018=100"})
@@ -1158,8 +1158,8 @@ def livestock_slaughter() -> Dataset:
     Weekly livestock slaughter : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     excel = pd.ExcelFile(sources["main"])
     cattle = pd.read_excel(excel, sheet_name="BOVINOS", skiprows=8, usecols="C:H")
@@ -1183,7 +1183,7 @@ def livestock_slaughter() -> Dataset:
         "Total ovinos",
     ]
 
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -1199,9 +1199,9 @@ def livestock_slaughter() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -1214,8 +1214,8 @@ def milk_shipments() -> Dataset:
     Monhtly milk shipments from farms : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     r = httpx.get(sources["main"])
     url = re.findall(r'href="(.+\.xls)', r.text)[0]
@@ -1231,7 +1231,7 @@ def milk_shipments() -> Dataset:
 
     spanish_names = ["Remisión, litros", "Remisión, kilogramos"]
 
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -1247,12 +1247,12 @@ def milk_shipments() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
     metadata.update_indicator_metadata_value(
         "milk_shipments_1", "unit", "Thousand kilograms"
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -1269,8 +1269,8 @@ def diesel_sales() -> Dataset:
     Monthly diesel dales : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
     with open(temp_rar, "wb") as f:
@@ -1294,7 +1294,7 @@ def diesel_sales() -> Dataset:
 
     spanish_names = output.columns
 
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -1310,9 +1310,9 @@ def diesel_sales() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -1329,8 +1329,8 @@ def gasoline_sales() -> Dataset:
     Monthly gasoline dales : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
     with open(temp_rar, "wb") as f:
@@ -1354,7 +1354,7 @@ def gasoline_sales() -> Dataset:
 
     spanish_names = output.columns
 
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -1370,9 +1370,9 @@ def gasoline_sales() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -1389,8 +1389,8 @@ def electricity_sales() -> Dataset:
     Monthly electricity dales : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
     with open(temp_rar, "wb") as f:
@@ -1412,7 +1412,7 @@ def electricity_sales() -> Dataset:
 
     spanish_names = output.columns
 
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -1428,8 +1428,8 @@ def electricity_sales() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset

@@ -13,15 +13,15 @@ from pandas.tseries.offsets import MonthEnd, YearEnd
 from econuy import load_dataset
 from econuy.base import Dataset, DatasetMetadata
 from econuy.retrieval import regional
-from econuy.utils.operations import get_download_sources, get_name_from_function
+from econuy.utils.operations import get_download_sources, get_id_from_function
 from econuy.utils.extras import TRADE_METADATA, BOP_COLUMNS
 from econuy.utils.retrieval import get_with_ssl_context
 
 
-def _get_trade(dataset_name: str) -> Dataset:
+def _get_trade(id: str) -> Dataset:
     """Helper function. See any of the `trade_...()` functions."""
-    sources = get_download_sources(dataset_name)
-    meta = TRADE_METADATA[dataset_name]
+    sources = get_download_sources(id)
+    meta = TRADE_METADATA[id]
     try:
         xls = pd.ExcelFile(sources["main"])
     except URLError as err:
@@ -39,7 +39,7 @@ def _get_trade(dataset_name: str) -> Dataset:
         )
         raw.index = pd.to_datetime(raw.index, errors="coerce") + MonthEnd(0)
         proc = raw[raw.index.notnull()].dropna(thresh=5, axis=1)
-        if dataset_name != "trade_imports_category_value":
+        if id != "trade_imports_category_value":
             try:
                 proc = proc.loc[:, meta["colnames"].keys()]
             except KeyError:
@@ -59,7 +59,7 @@ def _get_trade(dataset_name: str) -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{dataset_name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -74,9 +74,9 @@ def _get_trade(dataset_name: str) -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        dataset_name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(dataset_name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -89,8 +89,8 @@ def trade_exports_sector_value() -> Dataset:
     Export values by product : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_trade(name)
+    id = get_id_from_function()
+    return _get_trade(id)
 
 
 def trade_exports_sector_volume() -> Dataset:
@@ -101,8 +101,8 @@ def trade_exports_sector_volume() -> Dataset:
     Export volumes by product : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_trade(name)
+    id = get_id_from_function()
+    return _get_trade(id)
 
 
 def trade_exports_sector_price() -> Dataset:
@@ -113,8 +113,8 @@ def trade_exports_sector_price() -> Dataset:
     Export prices by product : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_trade(name)
+    id = get_id_from_function()
+    return _get_trade(id)
 
 
 def trade_exports_destination_value() -> Dataset:
@@ -125,8 +125,8 @@ def trade_exports_destination_value() -> Dataset:
     Export values by destination : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_trade(name)
+    id = get_id_from_function()
+    return _get_trade(id)
 
 
 def trade_exports_destination_volume() -> Dataset:
@@ -137,8 +137,8 @@ def trade_exports_destination_volume() -> Dataset:
     Export volumes by destination : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_trade(name)
+    id = get_id_from_function()
+    return _get_trade(id)
 
 
 def trade_exports_destination_price() -> Dataset:
@@ -149,8 +149,8 @@ def trade_exports_destination_price() -> Dataset:
     Export prices by destination : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_trade(name)
+    id = get_id_from_function()
+    return _get_trade(id)
 
 
 def trade_imports_category_value() -> Dataset:
@@ -161,8 +161,8 @@ def trade_imports_category_value() -> Dataset:
     Import values by sector : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_trade(name)
+    id = get_id_from_function()
+    return _get_trade(id)
 
 
 def trade_imports_category_volume() -> Dataset:
@@ -173,8 +173,8 @@ def trade_imports_category_volume() -> Dataset:
     Import volumes by sector : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_trade(name)
+    id = get_id_from_function()
+    return _get_trade(id)
 
 
 def trade_imports_category_price() -> Dataset:
@@ -185,8 +185,8 @@ def trade_imports_category_price() -> Dataset:
     Import prices by sector : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_trade(name)
+    id = get_id_from_function()
+    return _get_trade(id)
 
 
 def trade_imports_origin_value() -> Dataset:
@@ -197,8 +197,8 @@ def trade_imports_origin_value() -> Dataset:
     Import values by origin : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_trade(name)
+    id = get_id_from_function()
+    return _get_trade(id)
 
 
 def trade_imports_origin_volume() -> Dataset:
@@ -209,8 +209,8 @@ def trade_imports_origin_volume() -> Dataset:
     Import volumes by origin : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_trade(name)
+    id = get_id_from_function()
+    return _get_trade(id)
 
 
 def trade_imports_origin_price() -> Dataset:
@@ -221,8 +221,8 @@ def trade_imports_origin_price() -> Dataset:
     Import prices by origin : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_trade(name)
+    id = get_id_from_function()
+    return _get_trade(id)
 
 
 def trade_balance(*args, **kwargs) -> Dataset:
@@ -234,7 +234,7 @@ def trade_balance(*args, **kwargs) -> Dataset:
     Net trade balance value by region/country : Dataset
 
     """
-    name = get_name_from_function()
+    id = get_id_from_function()
     exports = (
         load_dataset("trade_exports_destination_value", *args, **kwargs)
         .to_named()
@@ -250,7 +250,7 @@ def trade_balance(*args, **kwargs) -> Dataset:
 
     spanish_names = exports.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -265,9 +265,9 @@ def trade_balance(*args, **kwargs) -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -281,7 +281,7 @@ def terms_of_trade(*args, **kwargs) -> Dataset:
     Terms of trade (exports/imports) : Dataset
 
     """
-    name = get_name_from_function()
+    id = get_id_from_function()
     exports = (
         load_dataset("trade_exports_destination_price", *args, **kwargs)
         .to_named()
@@ -300,7 +300,7 @@ def terms_of_trade(*args, **kwargs) -> Dataset:
 
     spanish_names = exports.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -315,9 +315,9 @@ def terms_of_trade(*args, **kwargs) -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
     dataset = dataset.rebase("2005-01-01", "2005-12-31", 100)
     dataset.metadata.update_dataset_metadata({"unit": "2005=100"})
     dataset.transformed = False
@@ -376,8 +376,8 @@ def commodity_prices() -> Dataset:
         Prices and price indexes of relevant commodities for Uruguay.
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw_beef = pd.read_excel(
         sources["beef"], header=4, index_col=0, thousands=".", usecols="A:D"
@@ -497,7 +497,7 @@ def commodity_prices() -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -512,7 +512,7 @@ def commodity_prices() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
     units = [
         "USD per ton",
@@ -529,7 +529,7 @@ def commodity_prices() -> Dataset:
     for indicator, unit in zip(ids, units):
         metadata.update_indicator_metadata_value(indicator, "unit", unit)
 
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -543,7 +543,7 @@ def commodity_index(*args, **kwargs) -> Dataset:
         Export-weighted average of commodity prices relevant to Uruguay.
 
     """
-    name = get_name_from_function()
+    id = get_id_from_function()
     prices = load_dataset("commodity_prices", *args, **kwargs).to_named()
     prices = prices.interpolate(method="linear", limit=1).dropna(how="any")
     prices = prices.pct_change(periods=1)
@@ -560,7 +560,7 @@ def commodity_index(*args, **kwargs) -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -575,9 +575,9 @@ def commodity_index(*args, **kwargs) -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -591,8 +591,8 @@ def rxr() -> Dataset:
         Available: global, regional, extraregional, Argentina, Brazil, US.
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
     try:
         raw = pd.read_excel(sources["main"], skiprows=8, usecols="B:N", index_col=0)
     except URLError as err:
@@ -619,7 +619,7 @@ def rxr() -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -634,9 +634,9 @@ def rxr() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -650,7 +650,7 @@ def rxr_custom(*args, **kwargs) -> Dataset:
         Available: Argentina, Brazil, US.
 
     """
-    name = get_name_from_function()
+    id = get_id_from_function()
 
     ifs = regional._ifs(*args, **kwargs)
     uy_cpi = load_dataset("cpi", *args, **kwargs).to_named()
@@ -677,7 +677,7 @@ def rxr_custom(*args, **kwargs) -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -692,11 +692,11 @@ def rxr_custom(*args, **kwargs) -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
     for indicator, currency in zip(ids, ["UYU/ARS", "UYU/ARS", "UYU/BRL", "UYU/USD"]):
         metadata.update_indicator_metadata_value(indicator, "currency", currency)
-    dataset = Dataset(name, output, metadata).rebase("2010-01-01", "2010-12-31", 100)
+    dataset = Dataset(id, output, metadata).rebase("2010-01-01", "2010-12-31", 100)
     dataset.metadata.update_dataset_metadata({"unit": "2010=100"})
     dataset.transformed = False
 
@@ -711,8 +711,8 @@ def balance_of_payments() -> Dataset:
     Quarterly balance of payments : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
     try:
         raw = (
             pd.read_excel(
@@ -751,7 +751,7 @@ def balance_of_payments() -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -766,9 +766,9 @@ def balance_of_payments() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -781,7 +781,7 @@ def balance_of_payments_summary(*args, **kwargs) -> Dataset:
     Quarterly balance of payments summary : Dataset
 
     """
-    name = get_name_from_function()
+    id = get_id_from_function()
     bop = load_dataset("balance_of_payments", *args, **kwargs).to_named()
 
     output = pd.DataFrame(index=bop.index)
@@ -841,7 +841,7 @@ def balance_of_payments_summary(*args, **kwargs) -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -856,9 +856,9 @@ def balance_of_payments_summary(*args, **kwargs) -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -871,8 +871,8 @@ def international_reserves() -> Dataset:
     Daily international reserves : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
     try:
         raw = pd.read_excel(
             sources["main"], usecols="D:J", index_col=0, skiprows=5, na_values="n/d"
@@ -904,7 +904,7 @@ def international_reserves() -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -919,9 +919,9 @@ def international_reserves() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 

@@ -4,7 +4,7 @@ from pandas.tseries.offsets import MonthEnd
 from econuy.base import Dataset, DatasetMetadata
 from econuy import load_dataset
 from econuy.utils.operations import (
-    get_name_from_function,
+    get_id_from_function,
     get_download_sources,
     get_names_and_ids,
     get_base_metadata,
@@ -19,8 +19,8 @@ def labor_rates_gender() -> Dataset:
     Monthly participation, employment and unemployment rates : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = pd.read_excel(sources["main"], skiprows=7).dropna(axis=0, thresh=2)
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
@@ -43,7 +43,7 @@ def labor_rates_gender() -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -58,9 +58,9 @@ def labor_rates_gender() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -73,8 +73,8 @@ def activity_region() -> Dataset:
     Monthly participation rates : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = pd.read_excel(sources["main"], skiprows=8).dropna(axis=0, thresh=2)
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
@@ -84,14 +84,14 @@ def activity_region() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    ids, spanish_names = get_names_and_ids(name, "es")
+    ids, spanish_names = get_names_and_ids(id, "es")
     output.columns = ids
 
-    base_metadata = get_base_metadata(name)
+    base_metadata = get_base_metadata(id)
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -104,8 +104,8 @@ def employment_region() -> Dataset:
     Monthly employment rates : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = pd.read_excel(sources["main"], skiprows=8).dropna(axis=0, thresh=2)
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
@@ -115,14 +115,14 @@ def employment_region() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    ids, spanish_names = get_names_and_ids(name, "es")
+    ids, spanish_names = get_names_and_ids(id, "es")
     output.columns = ids
 
-    base_metadata = get_base_metadata(name)
+    base_metadata = get_base_metadata(id)
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -135,8 +135,8 @@ def unemployment_region() -> Dataset:
     Monthly unemployment rates : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = pd.read_excel(sources["main"], skiprows=8).dropna(axis=0, thresh=2)
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
@@ -146,14 +146,14 @@ def unemployment_region() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    ids, spanish_names = get_names_and_ids(name, "es")
+    ids, spanish_names = get_names_and_ids(id, "es")
     output.columns = ids
 
-    base_metadata = get_base_metadata(name)
+    base_metadata = get_base_metadata(id)
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -166,8 +166,8 @@ def employment_age() -> Dataset:
     Monthly employment rates : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = pd.read_excel(sources["main"], skiprows=7).dropna(axis=0, thresh=2)
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
@@ -177,14 +177,14 @@ def employment_age() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    ids, spanish_names = get_names_and_ids(name, "es")
+    ids, spanish_names = get_names_and_ids(id, "es")
     output.columns = ids
 
-    base_metadata = get_base_metadata(name)
+    base_metadata = get_base_metadata(id)
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -196,8 +196,8 @@ def unemployment_contributions() -> Dataset:
     Monthly unemployment rates : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = pd.read_excel(sources["main"], skiprows=9).dropna(axis=0, thresh=2)
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
@@ -207,14 +207,14 @@ def unemployment_contributions() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    ids, spanish_names = get_names_and_ids(name, "es")
+    ids, spanish_names = get_names_and_ids(id, "es")
     output.columns = ids
 
-    base_metadata = get_base_metadata(name)
+    base_metadata = get_base_metadata(id)
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -227,8 +227,8 @@ def unemployment_characteristics() -> Dataset:
     Monthly unemployment rates : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = pd.read_excel(sources["main"], skiprows=8).dropna(axis=0, thresh=2)
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
@@ -238,14 +238,14 @@ def unemployment_characteristics() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    ids, spanish_names = get_names_and_ids(name, "es")
+    ids, spanish_names = get_names_and_ids(id, "es")
     output.columns = ids
 
-    base_metadata = get_base_metadata(name)
+    base_metadata = get_base_metadata(id)
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -258,8 +258,8 @@ def unemployment_conditions() -> Dataset:
     Monthly unemployment rates : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = pd.read_excel(
         sources["main"], skiprows=9, na_values=[".."], usecols="A:I"
@@ -271,14 +271,14 @@ def unemployment_conditions() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    ids, spanish_names = get_names_and_ids(name, "es")
+    ids, spanish_names = get_names_and_ids(id, "es")
     output.columns = ids
 
-    base_metadata = get_base_metadata(name)
+    base_metadata = get_base_metadata(id)
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -291,8 +291,8 @@ def unemployment_duration() -> Dataset:
     Monthly average duration of unemployment : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = pd.read_excel(sources["main"], skiprows=9, usecols="A,J").dropna(
         axis=0, thresh=2
@@ -304,14 +304,14 @@ def unemployment_duration() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    ids, spanish_names = get_names_and_ids(name, "es")
+    ids, spanish_names = get_names_and_ids(id, "es")
     output.columns = ids
 
-    base_metadata = get_base_metadata(name)
+    base_metadata = get_base_metadata(id)
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -324,8 +324,8 @@ def employment_characteristics() -> Dataset:
     Monthly employment rates : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = pd.read_excel(sources["main"], skiprows=8).dropna(axis=0, thresh=2)
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
@@ -335,14 +335,14 @@ def employment_characteristics() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    ids, spanish_names = get_names_and_ids(name, "es")
+    ids, spanish_names = get_names_and_ids(id, "es")
     output.columns = ids
 
-    base_metadata = get_base_metadata(name)
+    base_metadata = get_base_metadata(id)
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -355,8 +355,8 @@ def nominal_wages() -> Dataset:
     Monthly wages separated by public and private sector : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     historical = pd.read_excel(sources["historical"], skiprows=8, usecols="A:B")
     current = pd.read_excel(sources["current"], skiprows=8, usecols="A,C:D")
@@ -374,7 +374,7 @@ def nominal_wages() -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -389,9 +389,9 @@ def nominal_wages() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -404,8 +404,8 @@ def employment_sector() -> Dataset:
     Monthly employment data by sector : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = pd.read_excel(sources["main"], skiprows=7).dropna(axis=0, thresh=2)
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
@@ -415,14 +415,14 @@ def employment_sector() -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    ids, spanish_names = get_names_and_ids(name, "es")
+    ids, spanish_names = get_names_and_ids(id, "es")
     output.columns = ids
 
-    base_metadata = get_base_metadata(name)
+    base_metadata = get_base_metadata(id)
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -435,8 +435,8 @@ def hours_worked() -> Dataset:
     Monthly hours worked : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = pd.read_excel(sources["main"]).dropna(axis=0, thresh=2)
 
@@ -467,7 +467,7 @@ def hours_worked() -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -482,9 +482,9 @@ def hours_worked() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -499,8 +499,8 @@ def labor_rates_persons(*args, **kwargs) -> Dataset:
     Labor market data : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     rates = load_dataset("labor_rates_gender", *args, **kwargs).to_named()
     rates = rates.loc[
@@ -532,7 +532,7 @@ def labor_rates_persons(*args, **kwargs) -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -547,11 +547,11 @@ def labor_rates_persons(*args, **kwargs) -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
     for indicator, unit in zip(ids[-3:], ["Persons", "Persons", "Persons"]):
         metadata.update_indicator_metadata_value(indicator, "unit", unit)
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -565,7 +565,7 @@ def real_wages(*args, **kwargs) -> Dataset:
     Real wages data : Dataset
 
     """
-    name = get_name_from_function()
+    id = get_id_from_function()
 
     nominal_wages = load_dataset("nominal_wages", *args, **kwargs)
     output = nominal_wages.convert("real").rebase("2008-07-31").to_named()
@@ -577,7 +577,7 @@ def real_wages(*args, **kwargs) -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -592,8 +592,8 @@ def real_wages(*args, **kwargs) -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset

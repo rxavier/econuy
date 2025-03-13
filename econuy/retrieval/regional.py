@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 from econuy import load_dataset
 from econuy.base import Dataset, DatasetMetadata
 from econuy.utils.chromedriver import _build
-from econuy.utils.operations import get_download_sources, get_name_from_function
+from econuy.utils.operations import get_download_sources, get_id_from_function
 from econuy.utils.retrieval import get_certs_path
 
 
@@ -33,8 +33,8 @@ def regional_gdp() -> Dataset:
     Quarterly real GDP : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     driver = _build()
     driver.get(sources["arg_new"])
@@ -74,7 +74,7 @@ def regional_gdp() -> Dataset:
     output = output.rename_axis(None)
 
     spanish_names = output.columns
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -90,11 +90,11 @@ def regional_gdp() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
     for indicator, currency in zip(ids, ["ARS", "BRL"]):
         metadata.update_indicator_metadata_value(indicator, "currency", currency)
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -109,8 +109,8 @@ def regional_monthly_gdp() -> Dataset:
     Monthly GDP : pd.DataFrame
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     arg = pd.read_excel(sources["arg"], usecols="E", skiprows=3).dropna(how="all")
     arg.index = pd.date_range(start="2004-01-31", freq="ME", periods=len(arg))
@@ -123,7 +123,7 @@ def regional_monthly_gdp() -> Dataset:
     output = output.rename_axis(None)
 
     spanish_names = output.columns
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
 
@@ -139,11 +139,11 @@ def regional_monthly_gdp() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
     for indicator, currency in zip(ids, ["ARS", "BRL"]):
         metadata.update_indicator_metadata_value(indicator, "currency", currency)
-    dataset = Dataset(name, output, metadata).rebase("2010-01-01", "2010-12-31")
+    dataset = Dataset(id, output, metadata).rebase("2010-01-01", "2010-12-31")
     dataset.metadata.update_dataset_metadata({"unit": "2010=100"})
     dataset.transformed = False
 
@@ -158,8 +158,8 @@ def regional_cpi() -> pd.DataFrame:
     Monthly CPI : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     certs = get_certs_path("bcra")
     ssl_context = ssl.create_default_context(cafile=str(certs))
@@ -204,7 +204,7 @@ def regional_cpi() -> pd.DataFrame:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -219,11 +219,11 @@ def regional_cpi() -> pd.DataFrame:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
     for indicator, currency in zip(ids, ["ARS", "BRL"]):
         metadata.update_indicator_metadata_value(indicator, "currency", currency)
-    dataset = Dataset(name, output, metadata).rebase("2010-01-01", "2010-12-31")
+    dataset = Dataset(id, output, metadata).rebase("2010-01-01", "2010-12-31")
     dataset.metadata.update_dataset_metadata({"unit": "2010=100"})
     dataset.transformed = False
 
@@ -238,8 +238,8 @@ def regional_embi_spreads() -> Dataset:
     Daily 10-year government bond spreads : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = pd.read_excel(sources["main"], usecols="A:B,E,G", skiprows=1, index_col=0)
     output = (
@@ -255,7 +255,7 @@ def regional_embi_spreads() -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -270,9 +270,9 @@ def regional_embi_spreads() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -288,8 +288,8 @@ def regional_embi_yields(*args, **kwargs) -> Dataset:
     Daily 10-year government bonds interest rates : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     if FRED_API_KEY is None:
         raise ValueError(
@@ -315,7 +315,7 @@ def regional_embi_yields(*args, **kwargs) -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -330,9 +330,9 @@ def regional_embi_yields(*args, **kwargs) -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -345,8 +345,8 @@ def regional_nxr() -> Dataset:
     Daily exchange rates : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     arg = []
     for dollar in ["ar", "ar_unofficial"]:
@@ -380,7 +380,7 @@ def regional_nxr() -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -395,9 +395,9 @@ def regional_nxr() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -412,8 +412,8 @@ def regional_policy_rates() -> Dataset:
     Daily policy interest rates : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     r = httpx.get(sources["main"])
     temp_dir = tempfile.TemporaryDirectory()
@@ -433,7 +433,7 @@ def regional_policy_rates() -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -448,11 +448,11 @@ def regional_policy_rates() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
     for indicator, currency in zip(ids, ["ARS", "BRL"]):
         metadata.update_indicator_metadata_value(indicator, "currency", currency)
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -511,7 +511,7 @@ def regional_rxr(*args, **kwargs) -> Dataset:
     Monthly real exchange rate : Dataset
 
     """
-    name = get_name_from_function()
+    id = get_id_from_function()
     proc = _ifs(*args, **kwargs)
 
     output = pd.DataFrame()
@@ -523,7 +523,7 @@ def regional_rxr(*args, **kwargs) -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -538,11 +538,11 @@ def regional_rxr(*args, **kwargs) -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
     for indicator, unit in zip(ids, ["ARS/USD", "BRL/USD"]):
         metadata.update_indicator_metadata_value(indicator, "unit", unit)
-    dataset = Dataset(name, output, metadata).rebase("2019-01-01", "2019-01-31")
+    dataset = Dataset(id, output, metadata).rebase("2019-01-01", "2019-01-31")
     dataset.metadata.update_dataset_metadata({"unit": "2019-01=100"})
     dataset.transformed = False
 

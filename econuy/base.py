@@ -17,25 +17,25 @@ from econuy.transform.decompose import _decompose
 
 
 class DatasetConfig:
-    def __init__(self, name: str) -> None:
-        self.name = name
+    def __init__(self, id: str) -> None:
+        self.id = id
         self.load()
 
     def load(self) -> None:
         from econuy.utils.operations import REGISTRY
 
-        dataset_config = REGISTRY[self.name]
+        dataset_config = REGISTRY[self.id]
         for key, value in dataset_config.items():
             setattr(self, key, value)
 
     def __repr__(self) -> str:
-        return json.dumps(self.__dict__, indent=4)
+        return json.dumps(self.__dict__, indent=2, ensure_ascii=False)
 
 
 class DatasetMetadata:
     def __init__(
         self,
-        name: str,
+        id: str,
         indicator_metadata: dict,
         created_at: Optional[datetime] = None,
         checked_at: Optional[datetime] = None,
@@ -43,17 +43,17 @@ class DatasetMetadata:
         last_update: Optional[Dict[str, List[datetime]]] = None,
         config: Optional[DatasetConfig] = None,
     ) -> None:
-        self.name = name
+        self.id = id
         self.indicator_metadata = indicator_metadata
         self.created_at = created_at or datetime.now(timezone.utc)
         self.checked_at = checked_at or self.created_at
         self.updated_at = updated_at
         self.last_update = last_update or {"updated": [], "new": []}
-        self.config = config or DatasetConfig(name)
+        self.config = config or DatasetConfig(id)
 
     def __getitem__(self, indicator) -> "DatasetMetadata":
         return self.__class__(
-            name=self.name,
+            id=self.id,
             indicator_metadata={indicator: self.indicator_metadata[indicator]},
         )
 
@@ -255,15 +255,15 @@ class DatasetMetadata:
         d["config"] = self.config.__dict__
         return d
 
-    def save(self, name: str, data_dir: Union[str, Path, None] = None) -> None:
+    def save(self, id: str, data_dir: Union[str, Path, None] = None) -> None:
         from econuy.utils.operations import get_data_dir
 
         data_dir = data_dir or get_data_dir()
         data_dir = Path(data_dir)
         data_dir.mkdir(parents=True, exist_ok=True)
         for_json = self.to_dict()
-        with open(data_dir / f"{name}_metadata.json", "w") as f:
-            json.dump(for_json, f, indent=4)
+        with open(data_dir / f"{id}_metadata.json", "w", encoding="utf-8") as f:
+            json.dump(for_json, f, indent=2, ensure_ascii=False)
         return
 
     @staticmethod
@@ -278,7 +278,7 @@ class DatasetMetadata:
 
     @classmethod
     def from_cast(
-        cls, name: str, base_metadata: dict, indicator_ids: list, indicator_names: list
+        cls, id: str, base_metadata: dict, indicator_ids: list, indicator_names: list
     ) -> "DatasetMetadata":
         """
         Create a metadata instance from a casted metadata.
@@ -287,9 +287,9 @@ class DatasetMetadata:
         ----------
         base_metadata : dict
             The base metadata.
-        names : list
-            The names of the indicators.
-        full_names : list
+        indicator_ids : list
+            The ids of the indicators.
+        indicator_names : list
             The full names of the indicators.
 
         Returns
@@ -300,11 +300,11 @@ class DatasetMetadata:
         indicator_metadata = cls.cast_metadata(
             base_metadata, indicator_ids, indicator_names
         )
-        return cls(name, indicator_metadata)
+        return cls(id, indicator_metadata)
 
     @classmethod
     def from_metadatas(
-        cls, name: str, metadatas: List["DatasetMetadata"]
+        cls, id: str, metadatas: List["DatasetMetadata"]
     ) -> "DatasetMetadata":
         """
         Create a metadata instance from a list of metadatas.
@@ -322,7 +322,7 @@ class DatasetMetadata:
         metadatas_dict = {
             k: v for d in metadatas for k, v in d.indicator_metadata.items()
         }
-        return cls(name, metadatas_dict)
+        return cls(id, metadatas_dict)
 
     @classmethod
     def from_json(cls, path: Union[str, Path]) -> "DatasetMetadata":
@@ -339,7 +339,7 @@ class DatasetMetadata:
         Metadata
             The created metadata instance.
         """
-        with open(path, "r") as f:
+        with open(path, "r", encoding="utf-8") as f:
             metadata_dict = json.load(f)
 
         def parse_datetime(dt_value: Union[str, datetime, None]) -> Optional[datetime]:
@@ -375,7 +375,7 @@ class DatasetMetadata:
     def __repr__(self) -> str:
         return "\n".join(
             [
-                f"Name: {self.name}",
+                f"ID: {self.id}",
                 f"Created at: {self.created_at}",
                 f"Updated at: {self.updated_at}",
                 f"Checked at: {self.checked_at}",
@@ -394,8 +394,8 @@ class Dataset:
         The economic data.
     metadata : Metadata
         The metadata of the data.
-    name : str
-        The name of the dataset.
+    id : str
+        The id of the dataset.
 
     Returns
     -------
@@ -409,7 +409,7 @@ class Dataset:
 
     def __init__(
         self,
-        name: str,
+        id: str,
         data: pd.DataFrame,
         metadata: DatasetMetadata,
         transformed: bool = False,
@@ -419,8 +419,8 @@ class Dataset:
 
         Parameters
         ----------
-        name : str
-            The name of the dataset.
+        id : str
+            The id of the dataset.
         data : pd.DataFrame
             The economic data.
         metadata : Metadata
@@ -434,7 +434,7 @@ class Dataset:
         """
         self.data = data
         self.metadata = metadata
-        self.name = name
+        self.id = id
         self.transformed = transformed
         self.indicators = self.metadata.indicator_ids
 
@@ -537,14 +537,14 @@ class Dataset:
         metadata = self.metadata.to_dict()
         metadata.pop("config")
         return {
-            "name": self.name,
+            "id": self.id,
             "data": data.to_dict(),
             "metadata": metadata,
             "transformed": self.transformed,
         }
 
     def save(
-        self, data_dir: Union[str, Path, None] = None, name: Optional[str] = None
+        self, data_dir: Union[str, Path, None] = None, id: Optional[str] = None
     ) -> None:
         """
         Save the dataset to a directory.
@@ -553,8 +553,8 @@ class Dataset:
         ----------
         data_dir : str or Path
             The directory to save the dataset to.
-        name : str, default None
-            The name to save the dataset as without suffixes.
+        id : str, default None
+            The id to save the dataset as without suffixes.
 
         Returns
         -------
@@ -566,9 +566,9 @@ class Dataset:
         data_dir = data_dir or get_data_dir()
         data_dir = Path(data_dir)
         data_dir.mkdir(parents=True, exist_ok=True)
-        name = name or (f"{self.name}_transformed" if self.transformed else self.name)
-        self.data.to_csv(data_dir / f"{name}.csv")
-        self.metadata.save(name, data_dir)
+        id = id or (f"{self.id}_transformed" if self.transformed else self.id)
+        self.data.to_csv(data_dir / f"{id}.csv")
+        self.metadata.save(id, data_dir)
         return
 
     def infer_frequency(self) -> Optional[pd.Timedelta]:
@@ -605,7 +605,7 @@ class Dataset:
         output = self.__class__(
             data=self.data.__getattribute__(method)(*args, **kwargs),
             metadata=self.metadata,
-            name=self.name,
+            id=self.id,
             transformed=self.transformed,
         )
         return output
@@ -615,8 +615,8 @@ class Dataset:
         metadata_dict = {i: self.metadata.indicator_metadata[i] for i in indicators}
         return self.__class__(
             data=self.data[indicators],
-            metadata=DatasetMetadata(self.name, metadata_dict),
-            name=self.name,
+            metadata=DatasetMetadata(self.id, metadata_dict),
+            id=self.id,
             transformed=self.transformed,
         )
 
@@ -655,14 +655,14 @@ class Dataset:
         return self.__class__(
             data=self.data.loc[start_date:end_date],
             metadata=self.metadata,
-            name=self.name,
+            id=self.id,
             transformed=self.transformed,
         )
 
     def __repr__(self) -> str:
         return "\n".join(
             [
-                f"Name: {self.name}",
+                f"ID: {self.id}",
                 f"Indicators: {self.indicators}",
             ]
         )
@@ -740,12 +740,12 @@ class Dataset:
                 transformed.append(transformed_col)
                 new_metadatas.append(new_metadata)
             transformed = pd.concat(transformed, axis=1)
-            new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
+            new_metadata = DatasetMetadata.from_metadatas(self.id, new_metadatas)
 
         inferred_frequency = pd.infer_freq(transformed.index)
         new_metadata.update_dataset_metadata({"frequency": inferred_frequency})
         output = self.__class__(
-            data=transformed, metadata=new_metadata, name=self.name, transformed=True
+            data=transformed, metadata=new_metadata, id=self.id, transformed=True
         )
         return output
 
@@ -811,11 +811,11 @@ class Dataset:
                 transformed.append(transformed_col)
                 new_metadatas.append(new_metadata)
             transformed = pd.concat(transformed, axis=1)
-            new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
+            new_metadata = DatasetMetadata.from_metadatas(self.id, new_metadatas)
         output = self.__class__(
             data=transformed,
             metadata=new_metadata,
-            name=self.name,
+            id=self.id,
             transformed=True,
         )
         return output
@@ -890,11 +890,11 @@ class Dataset:
                 transformed.append(transformed_col)
                 new_metadatas.append(new_metadata)
             transformed = pd.concat(transformed, axis=1)
-            new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
+            new_metadata = DatasetMetadata.from_metadatas(self.id, new_metadatas)
         output = self.__class__(
             data=transformed,
             metadata=new_metadata,
-            name=self.name,
+            id=self.id,
             transformed=True,
         )
         return output
@@ -949,11 +949,11 @@ class Dataset:
                 transformed.append(transformed_col)
                 new_metadatas.append(new_metadata)
             transformed = pd.concat(transformed, axis=1)
-            new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
+            new_metadata = DatasetMetadata.from_metadatas(self.id, new_metadatas)
         output = self.__class__(
             data=transformed,
             metadata=new_metadata,
-            name=self.name,
+            id=self.id,
             transformed=True,
         )
         return output
@@ -1038,11 +1038,11 @@ class Dataset:
                 transformed.append(transformed_col)
                 new_metadatas.append(new_metadata)
             transformed = pd.concat(transformed, axis=1)
-            new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
+            new_metadata = DatasetMetadata.from_metadatas(self.id, new_metadatas)
         output = self.__class__(
             data=transformed,
             metadata=new_metadata,
-            name=self.name,
+            id=self.id,
             transformed=True,
         )
         return output
@@ -1118,11 +1118,11 @@ class Dataset:
                 transformed.append(transformed_col)
                 new_metadatas.append(new_metadata)
             transformed = pd.concat(transformed, axis=1)
-            new_metadata = DatasetMetadata.from_metadatas(self.name, new_metadatas)
+            new_metadata = DatasetMetadata.from_metadatas(self.id, new_metadatas)
         output = self.__class__(
             data=transformed,
             metadata=new_metadata,
-            name=self.name,
+            id=self.id,
             transformed=True,
         )
         return output

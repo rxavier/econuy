@@ -11,7 +11,7 @@ This project simplifies gathering and processing of Uruguayan economic statistic
 
 If [this screenshot](https://i.imgur.com/Ku5OR0y.jpg) gives you anxiety, this package should be of interest.
 
-A webapp with a limited but interactive version of econuy is available at [econ.uy](https://econ.uy). Check out the [repo](https://github.com/rxavier/econuy-web) as well.
+If you want to see this library in action, try out the [explorer at the econuy website](https://econuy.ceppuy.com/explorer).
 
 The most basic econuy workflow goes like this:
 

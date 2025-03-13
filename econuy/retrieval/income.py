@@ -1,7 +1,7 @@
 import pandas as pd
 
 from econuy.base import Dataset, DatasetMetadata
-from econuy.utils.operations import get_name_from_function, get_download_sources
+from econuy.utils.operations import get_id_from_function, get_download_sources
 
 
 def income_household() -> Dataset:
@@ -12,8 +12,8 @@ def income_household() -> Dataset:
     Monthly average household income : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = (
         pd.read_excel(sources["main"], skiprows=5)
@@ -32,7 +32,7 @@ def income_household() -> Dataset:
         "Interior: localidades de más de 5 mil hab.",
         "Interior: localidades pequeñas y rural",
     ]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = [{"es": x} for x in spanish_names]
     output = output.apply(pd.to_numeric, errors="coerce")
@@ -50,9 +50,9 @@ def income_household() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -65,8 +65,8 @@ def income_capita() -> Dataset:
     Monthly average per capita income : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
 
     raw = (
         pd.read_excel(sources["main"], skiprows=5)
@@ -91,7 +91,7 @@ def income_capita() -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -106,8 +106,8 @@ def income_capita() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset

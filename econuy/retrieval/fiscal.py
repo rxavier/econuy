@@ -9,19 +9,19 @@ from pandas.tseries.offsets import MonthEnd
 from econuy import load_dataset
 from econuy.base import Dataset, DatasetMetadata
 from econuy.utils.extras import FISCAL_SHEETS, taxes_columns
-from econuy.utils.operations import get_name_from_function, get_download_sources
+from econuy.utils.operations import get_id_from_function, get_download_sources
 from econuy.utils.retrieval import get_with_ssl_context
 from econuy.utils.logging import logger
 
 
-def _get_fiscal_balances(dataset_name: str) -> Dataset:
+def _get_fiscal_balances(id: str) -> Dataset:
     """Helper function. See any of the `fiscal_balance_...()` functions."""
-    sources = get_download_sources("fiscal_balances")
+    sources = get_download_sources(id)
     response = httpx.get(sources["main"])
     url = re.findall(r"(http\S+Resultados.+\.xlsx)'", response.text)[0]
     xls = pd.ExcelFile(url)
     output = {}
-    dataset_details = FISCAL_SHEETS[dataset_name]
+    dataset_details = FISCAL_SHEETS[id]
     output = (
         pd.read_excel(xls, sheet_name=dataset_details["sheet"])
         .dropna(axis=0, thresh=4)
@@ -34,11 +34,11 @@ def _get_fiscal_balances(dataset_name: str) -> Dataset:
     output = output.apply(pd.to_numeric, errors="coerce")
     output = output.rename_axis(None)
 
-    if dataset_name == "fiscal_balance_central_government":
+    if id == "fiscal_balance_central_government":
         # this handles a rogue row in the central government sheet under Egresos totales
         output = output.dropna(axis=1, how="any")
 
-    ids = [f"{dataset_name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
     spanish_names = dataset_details["colnames"]
     spanish_names = [{"es": x} for x in spanish_names]
@@ -55,9 +55,9 @@ def _get_fiscal_balances(dataset_name: str) -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        dataset_name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(dataset_name, output, metadata)
+    dataset = Dataset(id, output, metadata)
     return dataset
 
 
@@ -69,8 +69,8 @@ def fiscal_balance_global_public_sector() -> Dataset:
     Monthly fiscal balance for the consolidated public sector : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_fiscal_balances(name)
+    id = get_id_from_function()
+    return _get_fiscal_balances(id)
 
 
 def fiscal_balance_nonfinancial_public_sector() -> Dataset:
@@ -81,8 +81,8 @@ def fiscal_balance_nonfinancial_public_sector() -> Dataset:
     Monthly fiscal balance for the non-financial public sector : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_fiscal_balances(name)
+    id = get_id_from_function()
+    return _get_fiscal_balances(id)
 
 
 def fiscal_balance_central_government() -> Dataset:
@@ -93,8 +93,8 @@ def fiscal_balance_central_government() -> Dataset:
     Monthly fiscal balance for the central government + BPS : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_fiscal_balances(name)
+    id = get_id_from_function()
+    return _get_fiscal_balances(id)
 
 
 def fiscal_balance_soe() -> Dataset:
@@ -105,8 +105,8 @@ def fiscal_balance_soe() -> Dataset:
     Monthly fiscal balance for public enterprises : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_fiscal_balances(name)
+    id = get_id_from_function()
+    return _get_fiscal_balances(id)
 
 
 def fiscal_balance_ancap() -> Dataset:
@@ -117,8 +117,8 @@ def fiscal_balance_ancap() -> Dataset:
     Monthly fiscal balance for ANCAP : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_fiscal_balances(name)
+    id = get_id_from_function()
+    return _get_fiscal_balances(id)
 
 
 def fiscal_balance_ute() -> Dataset:
@@ -129,8 +129,8 @@ def fiscal_balance_ute() -> Dataset:
     Monthly fiscal balance for UTE : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_fiscal_balances(name)
+    id = get_id_from_function()
+    return _get_fiscal_balances(id)
 
 
 def fiscal_balance_antel() -> Dataset:
@@ -141,8 +141,8 @@ def fiscal_balance_antel() -> Dataset:
     Monthly fiscal balance for ANTEL : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_fiscal_balances(name)
+    id = get_id_from_function()
+    return _get_fiscal_balances(id)
 
 
 def fiscal_balance_ose() -> Dataset:
@@ -153,8 +153,8 @@ def fiscal_balance_ose() -> Dataset:
     Monthly fiscal balance for OSE : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_fiscal_balances(name)
+    id = get_id_from_function()
+    return _get_fiscal_balances(id)
 
 
 def tax_revenue() -> Dataset:
@@ -169,8 +169,8 @@ def tax_revenue() -> Dataset:
     Monthly tax revenues : Dataset
 
     """
-    name = get_name_from_function()
-    sources = get_download_sources(name)
+    id = get_id_from_function()
+    sources = get_download_sources(id)
     r = httpx.get(sources["main"], timeout=20)
     url = re.findall(
         "https://[A-z0-9-/\.]+Recaudaci%C3%B3n%20por%20impuesto%20-%20Series%20mensuales.csv",
@@ -216,7 +216,7 @@ def tax_revenue() -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -231,9 +231,9 @@ def tax_revenue() -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -376,8 +376,8 @@ def public_debt_global_public_sector() -> Dataset:
     Quarterly public debt data for the consolidated public sector: Dataset
 
     """
-    name = get_name_from_function()
-    return _get_public_debt(name)
+    id = get_id_from_function()
+    return _get_public_debt(id)
 
 
 def public_debt_nonfinancial_public_sector() -> Dataset:
@@ -388,8 +388,8 @@ def public_debt_nonfinancial_public_sector() -> Dataset:
     Quarterly public debt data for the non-financial public sector: Dataset
 
     """
-    name = get_name_from_function()
-    return _get_public_debt(name)
+    id = get_id_from_function()
+    return _get_public_debt(id)
 
 
 def public_debt_central_bank() -> Dataset:
@@ -400,8 +400,8 @@ def public_debt_central_bank() -> Dataset:
     Quarterly public debt data for the central bank : Dataset
 
     """
-    name = get_name_from_function()
-    return _get_public_debt(name)
+    id = get_id_from_function()
+    return _get_public_debt(id)
 
 
 def public_assets() -> Dataset:
@@ -412,8 +412,8 @@ def public_assets() -> Dataset:
     Quarterly public sector assets: Dataset
 
     """
-    name = get_name_from_function()
-    return _get_public_debt(name)
+    id = get_id_from_function()
+    return _get_public_debt(id)
 
 
 def net_public_debt_global_public_sector(*args, **kwargs) -> Dataset:
@@ -426,7 +426,7 @@ def net_public_debt_global_public_sector(*args, **kwargs) -> Dataset:
     Net public debt excl. deposits at the central bank : Dataset
 
     """
-    name = get_name_from_function()
+    id = get_id_from_function()
 
     gross_debt = load_dataset(
         "public_debt_global_public_sector", *args, **kwargs
@@ -447,7 +447,7 @@ def net_public_debt_global_public_sector(*args, **kwargs) -> Dataset:
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -462,9 +462,9 @@ def net_public_debt_global_public_sector(*args, **kwargs) -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset
 
@@ -483,7 +483,7 @@ def fiscal_balance_summary(*args, **kwargs) -> Dataset:
     Summary fiscal balance table : Dataset
 
     """
-    name = get_name_from_function()
+    id = get_id_from_function()
 
     datasets = {}
     for dataset_name in [
@@ -618,7 +618,7 @@ def fiscal_balance_summary(*args, **kwargs) -> Dataset:
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
 
-    ids = [f"{name}_{i}" for i in range(output.shape[1])]
+    ids = [f"{id}_{i}" for i in range(output.shape[1])]
     output.columns = ids
 
     base_metadata = {
@@ -633,8 +633,8 @@ def fiscal_balance_summary(*args, **kwargs) -> Dataset:
         "transformations": [],
     }
     metadata = DatasetMetadata.from_cast(
-        name, base_metadata, output.columns, spanish_names
+        id, base_metadata, output.columns, spanish_names
     )
-    dataset = Dataset(name, output, metadata)
+    dataset = Dataset(id, output, metadata)
 
     return dataset

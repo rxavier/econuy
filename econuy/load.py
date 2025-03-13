@@ -26,19 +26,19 @@ OUTDATED_DELTA_THRESHOLD = dt.timedelta(days=1)  # TODO: Use an env var or confi
     retry_window_after_first_call_in_seconds=30,
 )
 def load_dataset(
-    name: str,
+    id: str,
     data_dir: Union[str, Path, None] = None,
     skip_cache: bool = False,
     force_overwrite: bool = False,
     skip_update: bool = False,
 ) -> Dataset:
     """
-    Load a dataset by name, optionally skipping cache and forcing overwrite.
+    Load a dataset by id, optionally skipping cache and forcing overwrite.
 
     Parameters
     ----------
-    name : str
-        The name of the dataset to load.
+    id : str
+        The id of the dataset to load.
     data_dir : Union[str, Path, None], optional
         The directory where the dataset is stored or will be stored. If None,
         the default data directory is used. Default is None.
@@ -58,7 +58,7 @@ def load_dataset(
     Raises
     ------
     ValueError
-        If the dataset name is not available in the registry.
+        If the dataset id is not available in the registry.
     AssertionError
         If the existing dataset has changed and force_overwrite is False.
     """
@@ -68,26 +68,26 @@ def load_dataset(
     now = dt.datetime.now(dt.timezone.utc)
 
     if not skip_cache:
-        existing_dataset = read_dataset(name, data_dir)
+        existing_dataset = read_dataset(id, data_dir)
         if existing_dataset is not None:
             checked_at = existing_dataset.metadata.checked_at
             if (now - checked_at) < OUTDATED_DELTA_THRESHOLD or skip_update:
                 logger.info(
-                    f"Using cached dataset {name} "
+                    f"Using cached dataset {id} "
                     f"(last checked: {existing_dataset.metadata.checked_at.strftime('%Y-%m-%d %H:%M:%S')})"
                 )
                 return existing_dataset
             else:
                 logger.info(
-                    f"Dataset {name} exists in cache but may be outdated "
+                    f"Dataset {id} exists in cache but may be outdated "
                     f"(last checked: {checked_at.strftime('%Y-%m-%d %H:%M:%S')}). "
                     "Retrieving new data."
                 )
 
     try:
-        dataset_metadata = REGISTRY[name]
+        dataset_metadata = REGISTRY[id]
     except KeyError:
-        raise ValueError(f"Dataset {name} not available.")
+        raise ValueError(f"Dataset {id} not available.")
 
     function_string = dataset_metadata["function"]
     module, function = function_string.split(".")
@@ -103,7 +103,7 @@ def load_dataset(
         dataset = dataset_retriever()
 
     if not force_overwrite:
-        existing_dataset = read_dataset(name, data_dir)
+        existing_dataset = read_dataset(id, data_dir)
         if existing_dataset is not None:
             compatible, updated_timestamps, new_timestamps = compare_datasets(existing_dataset, dataset)
             if compatible:
@@ -113,7 +113,7 @@ def load_dataset(
                 dataset.metadata.checked_at = now
                 if updated_timestamps or new_timestamps:
                     logger.info(
-                        f"Dataset {name} has changes: "
+                        f"Dataset {id} has changes: "
                         f"{len(updated_timestamps)} updated timestamps, "
                         f"{len(new_timestamps)} new timestamps"
                     )
@@ -124,7 +124,7 @@ def load_dataset(
                     dataset.metadata.updated_at = now
                 dataset.save(data_dir)
             else:
-                logger.warning(f"Dataset {name} has incompatible changes, will not overwrite")
+                logger.warning(f"Dataset {id} has incompatible changes, will not overwrite")
                 return existing_dataset
         else:
             dataset.metadata.checked_at = dataset.metadata.created_at
@@ -141,7 +141,7 @@ def load_dataset(
 
 
 def load_datasets_parallel(
-    names: List[str],
+    ids: List[str],
     data_dir: Union[str, Path, None] = None,
     skip_cache: bool = False,
     force_overwrite: bool = False,
@@ -154,8 +154,8 @@ def load_datasets_parallel(
 
     Parameters
     ----------
-    names : List[str]
-        List of dataset names to load.
+    ids : List[str]
+        List of dataset ids to load.
     data_dir : Union[str, Path, None], optional
         Directory where datasets are stored. If None, a default directory is used.
     skip_cache : bool, optional
@@ -172,7 +172,7 @@ def load_datasets_parallel(
     Returns
     -------
     Dict[str, Dataset]
-        A dictionary where keys are dataset names and values are the loaded datasets.
+        A dictionary where keys are dataset ids and values are the loaded datasets.
 
     Raises
     ------
@@ -192,24 +192,24 @@ def load_datasets_parallel(
         default_workers = os.cpu_count() or 1
 
     workers = max_workers or default_workers
-    workers = min(workers, len(names))
+    workers = min(workers, len(ids))
 
     with executor_class(workers) as executor:
-        future_to_name = {
+        future_to_id = {
             executor.submit(
-                load_dataset, name, data_dir, skip_cache, force_overwrite, skip_update
-            ): name
-            for name in names
+                load_dataset, id, data_dir, skip_cache, force_overwrite, skip_update
+            ): id
+            for id in ids
         }
-        with tqdm(total=len(names), desc="Loading datasets") as pbar:
-            for future in futures.as_completed(future_to_name):
-                name = future_to_name[future]
-                pbar.set_postfix_str(name)
+        with tqdm(total=len(ids), desc="Loading datasets") as pbar:
+            for future in futures.as_completed(future_to_id):
+                id = future_to_id[future]
+                pbar.set_postfix_str(id)
                 try:
                     dataset = future.result()
-                    datasets[name] = dataset
+                    datasets[id] = dataset
                 except Exception as exc:
-                    logger.error(f"Error loading dataset {name} | {exc}")
+                    logger.error(f"Error loading dataset {id} | {exc}")
                 pbar.update(1)
     return datasets
 
@@ -241,8 +241,8 @@ def compare_datasets(
         - List[datetime]: Timestamps where values changed (beyond floating point differences)
         - List[datetime]: Timestamps that are new in the new dataset
     """
-    if original.metadata.name != new.metadata.name:
-        logger.error(f"Datasets have different names: {original.metadata.name} vs {new.metadata.name}")
+    if original.metadata.id != new.metadata.id:
+        logger.error(f"Datasets have different ids: {original.metadata.id} vs {new.metadata.id}")
         return False, [], []
     if original.metadata.indicator_metadata != new.metadata.indicator_metadata:
         logger.error("Datasets have different indicator metadata")
