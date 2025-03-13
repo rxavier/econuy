@@ -367,7 +367,7 @@ class DatasetMetadata:
                 k: [parse_datetime(dt) for dt in v]
                 for k, v in metadata_dict.get("last_update", {"updated": [], "new": []}).items()
             }
-            metadata_dict["config"] = DatasetConfig(metadata_dict["name"])
+            metadata_dict["config"] = DatasetConfig(metadata_dict["id"])
             return cls(**metadata_dict)
         except (KeyError, TypeError, ValueError) as e:
             raise ValueError(f"Invalid metadata format in {path}: {str(e)}") from e
