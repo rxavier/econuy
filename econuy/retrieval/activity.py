@@ -2,6 +2,7 @@ import datetime as dt
 import re
 import tempfile
 import time
+import zipfile
 from pathlib import Path
 from os import listdir, path
 
@@ -1395,16 +1396,17 @@ def electricity_sales() -> Dataset:
     temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
     with open(temp_rar, "wb") as f:
         r = httpx.get(sources["main"])
-        rar_url = re.findall(
-            r"https://www.gub.uy/ministerio-industria-energia-mineria/sites/ministerio-industria-energia-mineria/files/[0-9\-]+/Facturaci%C3%B3n%20de%20energ%C3%ADa%20el%C3%A9ctrica%20por%20sector.rar",
+        zip_url = re.findall(
+            r"https://www.gub.uy/ministerio-industria-energia-mineria/sites/ministerio-industria-energia-mineria/files/[0-9\-]+/facturacion%20de%20energia%20electrica%20por%20sector.zip",
             r.text,
         )[0]
-        f.write(httpx.get(rar_url).content)
+        f.write(httpx.get(zip_url).content)
     with tempfile.TemporaryDirectory() as temp_dir:
-        patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
-        xls = [x for x in listdir(temp_dir) if x.endswith(".xls")][0]
-        path_temp = path.join(temp_dir, xls)
-        raw = pd.read_excel(path_temp, sheet_name="fact ee", skiprows=2, usecols="C:J")
+        with zipfile.ZipFile(temp_rar, "r") as zip_ref:
+            zip_ref.extractall(temp_dir)
+        csv_file = [x for x in listdir(temp_dir) if x.endswith(".csv")][0]
+        path_temp = path.join(temp_dir, csv_file)
+        raw = pd.read_csv(path_temp, skiprows=2, encoding="ISO-8859-1", sep=";").iloc[:, 2:-2]
         raw.index = pd.date_range(start="2000-01-31", freq="ME", periods=len(raw))
         raw.columns = raw.columns.str.capitalize()
         output = raw
