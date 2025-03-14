@@ -67,8 +67,9 @@ def load_dataset(
     data_dir.mkdir(parents=True, exist_ok=True, mode=0o755)
     now = dt.datetime.now(dt.timezone.utc)
 
+    existing_dataset = read_dataset(id, data_dir)
+
     if not skip_cache:
-        existing_dataset = read_dataset(id, data_dir)
         if existing_dataset is not None:
             checked_at = existing_dataset.metadata.checked_at
             if (now - checked_at) < OUTDATED_DELTA_THRESHOLD or skip_update:
@@ -103,7 +104,6 @@ def load_dataset(
         dataset = dataset_retriever()
 
     if not force_overwrite:
-        existing_dataset = read_dataset(id, data_dir)
         if existing_dataset is not None:
             compatible, updated_timestamps, new_timestamps = compare_datasets(existing_dataset, dataset)
             if compatible:
