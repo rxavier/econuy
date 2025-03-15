@@ -1404,7 +1404,7 @@ def electricity_sales() -> Dataset:
     with tempfile.TemporaryDirectory() as temp_dir:
         with zipfile.ZipFile(temp_rar, "r") as zip_ref:
             zip_ref.extractall(temp_dir)
-        csv_file = [x for x in listdir(temp_dir) if x.endswith(".csv")][0]
+        csv_file = [x for x in listdir(temp_dir) if x.endswith(".csv") and "notas" not in x.lower()][0]
         path_temp = path.join(temp_dir, csv_file)
         raw = pd.read_csv(path_temp, skiprows=2, encoding="ISO-8859-1", sep=";").iloc[:, 2:-2]
         raw.index = pd.date_range(start="2000-01-31", freq="ME", periods=len(raw))
