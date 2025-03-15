@@ -1406,7 +1406,7 @@ def electricity_sales() -> Dataset:
             zip_ref.extractall(temp_dir)
         csv_file = [x for x in listdir(temp_dir) if x.endswith(".csv") and "notas" not in x.lower()][0]
         path_temp = path.join(temp_dir, csv_file)
-        raw = pd.read_csv(path_temp, skiprows=2, encoding="ISO-8859-1", sep=";").iloc[:, 2:-2]
+        raw = pd.read_csv(path_temp, skiprows=2, encoding="ISO-8859-1", sep=";", thousands=".", decimal=",").iloc[:, 2:-2]
         raw.index = pd.date_range(start="2000-01-31", freq="ME", periods=len(raw))
         raw.columns = raw.columns.str.capitalize()
         output = raw
