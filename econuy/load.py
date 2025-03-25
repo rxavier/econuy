@@ -2,6 +2,7 @@ import importlib
 import datetime as dt
 import inspect
 import os
+import gc
 from typing import Union, List, Optional, Dict, Literal, Tuple
 from pathlib import Path
 from urllib.error import URLError
@@ -194,23 +195,32 @@ def load_datasets_parallel(
     workers = max_workers or default_workers
     workers = min(workers, len(ids))
 
-    with executor_class(workers) as executor:
-        future_to_id = {
-            executor.submit(
-                load_dataset, id, data_dir, skip_cache, force_overwrite, skip_update
-            ): id
-            for id in ids
-        }
-        with tqdm(total=len(ids), desc="Loading datasets") as pbar:
-            for future in futures.as_completed(future_to_id):
-                id = future_to_id[future]
-                pbar.set_postfix_str(id)
-                try:
-                    dataset = future.result()
-                    datasets[id] = dataset
-                except Exception as exc:
-                    logger.error(f"Error loading dataset {id} | {exc}")
-                pbar.update(1)
+    try:
+        with executor_class(workers) as executor:
+            future_to_id = {
+                executor.submit(
+                    load_dataset, id, data_dir, skip_cache, force_overwrite, skip_update
+                ): id
+                for id in ids
+            }
+            with tqdm(total=len(ids), desc="Loading datasets") as pbar:
+                for future in futures.as_completed(future_to_id):
+                    id = future_to_id[future]
+                    pbar.set_postfix_str(id)
+                    try:
+                        dataset = future.result()
+                        datasets[id] = dataset
+                    except Exception as exc:
+                        logger.error(f"Error loading dataset {id} | {exc}")
+                    pbar.update(1)
+    finally:
+        # Explicitly clean up any pending futures
+        for future in list(future_to_id.keys()):
+            if not future.done():
+                future.cancel()
+
+        gc.collect()
+
     return datasets
 
 

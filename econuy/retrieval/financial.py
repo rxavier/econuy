@@ -372,6 +372,7 @@ def sovereign_risk_index() -> pd.DataFrame:
         .rename_axis(None)
         .rename(columns={"Valor": "UBI"})
     )
+    driver.quit()
     current.index = pd.to_datetime(current.index, format="%d/%m/%y")
     output = pd.concat([historical, current])
     output = output.loc[~output.index.duplicated(keep="last")]
