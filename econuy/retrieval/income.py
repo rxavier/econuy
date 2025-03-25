@@ -1,5 +1,5 @@
 import pandas as pd
-
+import numpy as np
 from econuy.base import Dataset, DatasetMetadata
 from econuy.utils.operations import get_id_from_function, get_download_sources
 
@@ -88,6 +88,9 @@ def income_capita() -> Dataset:
 
     output = output.apply(pd.to_numeric, errors="coerce")
     output.rename_axis(None, inplace=True)
+
+    # Jun-2020 has a wrong decimal value
+    output[output < 100] *= 1000
 
     spanish_names = output.columns
     spanish_names = [{"es": x} for x in spanish_names]
