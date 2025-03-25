@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from econuy.base import Dataset, DatasetMetadata
 from econuy.utils.operations import get_id_from_function, get_download_sources
 
