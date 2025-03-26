@@ -367,7 +367,7 @@ def regional_nxr() -> Dataset:
     arg = arg[0].join(arg[1], how="left")
     arg.columns = ["Argentina - oficial", "Argentina - informal"]
     arg = arg.loc[~arg.index.duplicated(keep="first")]
-    
+
     r = httpx.get(sources["bra"])
     bra = pd.DataFrame(r.json())
     bra = [(x["VALDATA"], x["VALVALOR"]) for x in bra["value"]]

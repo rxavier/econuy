@@ -5,11 +5,12 @@ from typing import Optional
 # Create logger
 logger = logging.getLogger("econuy")
 
+
 def configure_logging(
     level: int = logging.INFO,
     handler: Optional[logging.Handler] = None,
     formatter: Optional[logging.Formatter] = None,
-    disable: bool = False
+    disable: bool = False,
 ) -> None:
     """Configure logging for the econuy package.
 
@@ -39,12 +40,13 @@ def configure_logging(
 
     # Use provided formatter or create default
     log_formatter = formatter or logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     log_handler.setFormatter(log_formatter)
     logger.addHandler(log_handler)
     logger.setLevel(level)
+
 
 # Configure default logging (enabled by default)
 configure_logging()

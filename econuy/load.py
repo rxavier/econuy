@@ -106,7 +106,9 @@ def load_dataset(
 
     if not force_overwrite:
         if existing_dataset is not None:
-            compatible, updated_timestamps, new_timestamps = compare_datasets(existing_dataset, dataset)
+            compatible, updated_timestamps, new_timestamps = compare_datasets(
+                existing_dataset, dataset
+            )
             if compatible:
                 dataset.metadata.created_at = existing_dataset.metadata.created_at
                 dataset.metadata.updated_at = existing_dataset.metadata.updated_at
@@ -120,12 +122,14 @@ def load_dataset(
                     )
                     dataset.metadata.last_update = {
                         "updated": updated_timestamps,
-                        "new": new_timestamps
+                        "new": new_timestamps,
                     }
                     dataset.metadata.updated_at = now
                 dataset.save(data_dir)
             else:
-                logger.warning(f"Dataset {id} has incompatible changes, will not overwrite")
+                logger.warning(
+                    f"Dataset {id} has incompatible changes, will not overwrite"
+                )
                 return existing_dataset
         else:
             dataset.metadata.checked_at = dataset.metadata.created_at
@@ -252,16 +256,22 @@ def compare_datasets(
         - List[datetime]: Timestamps that are new in the new dataset
     """
     if original.metadata.id != new.metadata.id:
-        logger.error(f"Datasets have different ids: {original.metadata.id} vs {new.metadata.id}")
+        logger.error(
+            f"Datasets have different ids: {original.metadata.id} vs {new.metadata.id}"
+        )
         return False, [], []
     if original.metadata.indicator_metadata != new.metadata.indicator_metadata:
         logger.error("Datasets have different indicator metadata")
         return False, [], []
     if original.data.shape[1] != new.data.shape[1]:
-        logger.error(f"Datasets have different number of columns: {original.data.shape[1]} vs {new.data.shape[1]}")
+        logger.error(
+            f"Datasets have different number of columns: {original.data.shape[1]} vs {new.data.shape[1]}"
+        )
         return False, [], []
     if original.data.index[0] != new.data.index[0]:
-        logger.error(f"Datasets have different start dates: {original.data.index[0]} vs {new.data.index[0]}")
+        logger.error(
+            f"Datasets have different start dates: {original.data.index[0]} vs {new.data.index[0]}"
+        )
         return False, [], []
 
     new_timestamps = new.data.index.difference(original.data.index).to_list()
@@ -276,7 +286,9 @@ def compare_datasets(
     pct_significant_changes = (relative_changes > value_change_threshold).mean()
 
     if (pct_significant_changes > max_changes_pct).any():
-        problematic_cols = pct_significant_changes[pct_significant_changes > max_changes_pct]
+        problematic_cols = pct_significant_changes[
+            pct_significant_changes > max_changes_pct
+        ]
         logger.error(
             "Datasets have incompatible changes. Columns with too many significant changes: "
             f"{', '.join(f'{col}: {pct:.1%}' for col, pct in problematic_cols.items())}"

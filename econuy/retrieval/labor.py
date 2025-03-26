@@ -1,4 +1,4 @@
-﻿import pandas as pd
+import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
 from econuy.base import Dataset, DatasetMetadata

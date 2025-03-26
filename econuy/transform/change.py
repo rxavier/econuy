@@ -28,7 +28,9 @@ def _chg_diff(
     elif inferred_freq in ["YE", "YE-DEC"]:
         last_year = 1
     else:
-        output = error_handler(data, errors=error_handling, msg="Frequency needs to be ME, QE or YE")
+        output = error_handler(
+            data, errors=error_handling, msg="Frequency needs to be ME, QE or YE"
+        )
         return output, metadata
 
     type_change = {

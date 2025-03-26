@@ -249,8 +249,7 @@ class DatasetMetadata:
         d["checked_at"] = format_datetime(d["checked_at"])
         d["updated_at"] = format_datetime(d["updated_at"])
         d["last_update"] = {
-            k: [format_datetime(dt) for dt in v]
-            for k, v in d["last_update"].items()
+            k: [format_datetime(dt) for dt in v] for k, v in d["last_update"].items()
         }
         d["config"] = self.config.__dict__
         return d
@@ -351,7 +350,9 @@ class DatasetMetadata:
             elif isinstance(dt_value, datetime):
                 dt = dt_value
             else:
-                raise TypeError(f"Expected string, datetime, or None for datetime, got {type(dt_value)}")
+                raise TypeError(
+                    f"Expected string, datetime, or None for datetime, got {type(dt_value)}"
+                )
 
             if dt.tzinfo is None:
                 dt = dt.replace(tzinfo=timezone.utc)
@@ -362,10 +363,14 @@ class DatasetMetadata:
             metadata_dict["checked_at"] = parse_datetime(
                 metadata_dict.get("checked_at", metadata_dict["created_at"])
             )
-            metadata_dict["updated_at"] = parse_datetime(metadata_dict.get("updated_at"))
+            metadata_dict["updated_at"] = parse_datetime(
+                metadata_dict.get("updated_at")
+            )
             metadata_dict["last_update"] = {
                 k: [parse_datetime(dt) for dt in v]
-                for k, v in metadata_dict.get("last_update", {"updated": [], "new": []}).items()
+                for k, v in metadata_dict.get(
+                    "last_update", {"updated": [], "new": []}
+                ).items()
             }
             metadata_dict["config"] = DatasetConfig(metadata_dict["id"])
             return cls(**metadata_dict)
