@@ -8,7 +8,6 @@ from os import listdir, path
 
 import pandas as pd
 import numpy as np
-import patoolib
 import httpx
 from pandas.tseries.offsets import MonthEnd
 from selenium.webdriver.common.by import By
@@ -1262,9 +1261,6 @@ def diesel_sales() -> Dataset:
     """
     Get diesel sales by department data.
 
-    This retrieval function requires the unrar binaries to be found in your
-    system.
-
     Returns
     -------
     Monthly diesel dales : Dataset
@@ -1273,20 +1269,39 @@ def diesel_sales() -> Dataset:
     id = get_id_from_function()
     sources = get_download_sources(id)
 
-    temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
-    with open(temp_rar, "wb") as f:
+    temp_zip = tempfile.NamedTemporaryFile(suffix=".zip").name
+    with open(temp_zip, "wb") as f:
         r = httpx.get(sources["main"])
-        rar_url = re.findall(
-            r'(https?://[^"]*?gas%20oil[^"]*?\.rar)',
+        zip_urls = re.findall(
+            r'(https://www\.gub\.uy/ministerio-industria-energia-mineria/sites/[^"]+\.zip)',
             r.text,
-        )[0]
-        f.write(httpx.get(rar_url).content)
+        )
+        zip_url = [
+            url
+            for url in zip_urls
+            if "gas%20oil" in url.lower() or "gas oil" in url.lower()
+        ][0]
+        f.write(httpx.get(zip_url).content)
     with tempfile.TemporaryDirectory() as temp_dir:
-        patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
-        xls = [x for x in listdir(temp_dir) if x.endswith(".xls")][0]
-        path_temp = path.join(temp_dir, xls)
-        raw = pd.read_excel(
-            path_temp, sheet_name="vta gas oil por depto", skiprows=2, usecols="C:W"
+        with zipfile.ZipFile(temp_zip, "r") as zip_ref:
+            zip_ref.extractall(temp_dir)
+        csv = [
+            x
+            for x in listdir(temp_dir)
+            if x.endswith(".csv") and "notas" not in x.lower()
+        ][0]
+        path_temp = path.join(temp_dir, csv)
+        raw = (
+            pd.read_csv(
+                path_temp,
+                skiprows=2,
+                encoding="ISO-8859-1",
+                sep=";",
+                thousands=".",
+                decimal=",",
+            )
+            .iloc[:, 2:-3]
+            .dropna(thresh=5, axis=1)
         )
         raw.index = pd.date_range(start="2004-01-31", freq="ME", periods=len(raw))
         raw.columns = list(raw.columns.str.replace("\n", " "))[:-1] + ["Total"]
@@ -1322,9 +1337,6 @@ def gasoline_sales() -> Dataset:
     """
     Get gasoline sales by department data.
 
-    This retrieval function requires the unrar binaries to be found in your
-    system.
-
     Returns
     -------
     Monthly gasoline dales : Dataset
@@ -1333,21 +1345,32 @@ def gasoline_sales() -> Dataset:
     id = get_id_from_function()
     sources = get_download_sources(id)
 
-    temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
-    with open(temp_rar, "wb") as f:
+    temp_zip = tempfile.NamedTemporaryFile(suffix=".zip").name
+    with open(temp_zip, "wb") as f:
         r = httpx.get(sources["main"])
-        rar_url = re.findall(
-            r'(https?://[^"]*?gasolinas[^"]*?\.rar)',
+        zip_urls = re.findall(
+            r'(https://www\.gub\.uy/ministerio-industria-energia-mineria/sites/[^"]+\.zip)',
             r.text,
-        )[0]
-        f.write(httpx.get(rar_url).content)
-    with tempfile.TemporaryDirectory() as temp_dir:
-        patoolib.extract_archive(temp_rar, outdir=temp_dir, verbosity=-1)
-        xls = [x for x in listdir(temp_dir) if x.endswith(".xls")][0]
-        path_temp = path.join(temp_dir, xls)
-        raw = pd.read_excel(
-            path_temp, sheet_name="vta gasolinas por depto", skiprows=2, usecols="C:W"
         )
+        zip_url = [url for url in zip_urls if "gasolinas" in url.lower()][0]
+        f.write(httpx.get(zip_url).content)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        with zipfile.ZipFile(temp_zip, "r") as zip_ref:
+            zip_ref.extractall(temp_dir)
+        csv = [
+            x
+            for x in listdir(temp_dir)
+            if x.endswith(".csv") and "notas" not in x.lower()
+        ][0]
+        path_temp = path.join(temp_dir, csv)
+        raw = pd.read_csv(
+            path_temp,
+            skiprows=2,
+            encoding="ISO-8859-1",
+            sep=";",
+            thousands=".",
+            decimal=",",
+        ).iloc[:, 2:-1]
         raw.index = pd.date_range(start="2004-01-31", freq="ME", periods=len(raw))
         raw.columns = list(raw.columns.str.replace("\n", " "))[:-1] + ["Total"]
         output = raw
@@ -1382,8 +1405,6 @@ def electricity_sales() -> Dataset:
     """
     Get electricity sales by sector data.
 
-    This retrieval function requires the unrar binaries to be found in your
-    system.
 
     Returns
     -------
@@ -1393,20 +1414,39 @@ def electricity_sales() -> Dataset:
     id = get_id_from_function()
     sources = get_download_sources(id)
 
-    temp_rar = tempfile.NamedTemporaryFile(suffix=".rar").name
-    with open(temp_rar, "wb") as f:
+    temp_zip = tempfile.NamedTemporaryFile(suffix=".zip").name
+    with open(temp_zip, "wb") as f:
         r = httpx.get(sources["main"])
-        zip_url = re.findall(
-            r"https://www.gub.uy/ministerio-industria-energia-mineria/sites/ministerio-industria-energia-mineria/files/[0-9\-]+/facturacion%20de%20energia%20electrica%20por%20sector.zip",
+        zip_urls = re.findall(
+            r'(https://www\.gub\.uy/ministerio-industria-energia-mineria/sites/[^"]+\.zip)',
             r.text,
-        )[0]
+        )
+        zip_url = [
+            url
+            for url in zip_urls
+            if "facturacion" in url
+            and "energia" in url
+            and "electrica" in url
+            and "sector" in url
+        ][0]
         f.write(httpx.get(zip_url).content)
     with tempfile.TemporaryDirectory() as temp_dir:
-        with zipfile.ZipFile(temp_rar, "r") as zip_ref:
+        with zipfile.ZipFile(temp_zip, "r") as zip_ref:
             zip_ref.extractall(temp_dir)
-        csv_file = [x for x in listdir(temp_dir) if x.endswith(".csv") and "notas" not in x.lower()][0]
+        csv_file = [
+            x
+            for x in listdir(temp_dir)
+            if x.endswith(".csv") and "notas" not in x.lower()
+        ][0]
         path_temp = path.join(temp_dir, csv_file)
-        raw = pd.read_csv(path_temp, skiprows=2, encoding="ISO-8859-1", sep=";", thousands=".", decimal=",").iloc[:, 2:-2]
+        raw = pd.read_csv(
+            path_temp,
+            skiprows=2,
+            encoding="ISO-8859-1",
+            sep=";",
+            thousands=".",
+            decimal=",",
+        ).iloc[:, 2:-2]
         raw.index = pd.date_range(start="2000-01-31", freq="ME", periods=len(raw))
         raw.columns = raw.columns.str.capitalize()
         output = raw
