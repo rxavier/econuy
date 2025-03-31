@@ -127,10 +127,16 @@ def load_dataset(
                     dataset.metadata.updated_at = now
                 dataset.save(data_dir)
             else:
-                logger.warning(
-                    f"Dataset {id} has incompatible changes, will not overwrite"
-                )
-                return existing_dataset
+                if skip_cache:
+                    logger.warning(
+                        f"Dataset {id} has incompatible changes, but skip_cache=True, returning new dataset without saving"
+                    )
+                    return dataset
+                else:
+                    logger.warning(
+                        f"Dataset {id} has incompatible changes, will not overwrite"
+                    )
+                    return existing_dataset
         else:
             dataset.metadata.checked_at = dataset.metadata.created_at
             dataset.metadata.updated_at = None
