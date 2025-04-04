@@ -3,6 +3,7 @@ import datetime as dt
 import inspect
 import os
 import gc
+import math
 from typing import Union, List, Optional, Dict, Literal, Tuple
 from pathlib import Path
 from urllib.error import URLError
@@ -237,21 +238,24 @@ def load_datasets_parallel(
 def compare_datasets(
     original: Dataset,
     new: Dataset,
-    value_change_threshold: float = 0.05,
-    max_changes_pct: float = 0.1,
+    value_change_threshold: float = 0.15,
+    max_changes_pct: float = 0.3,
+    max_changes_cols_pct: float = 0.3,
 ) -> Tuple[bool, List[dt.datetime], List[dt.datetime]]:
     """Compare two datasets and identify changes.
 
     Parameters
     ----------
-    original : Dataset
+    original : DatasetP
         The original dataset to compare against
     new : Dataset
         The new dataset to compare
-    value_change_threshold : float, default 0.05
+    value_change_threshold : float, default 0.2
         The relative threshold for considering a value as changed for compatibility checks.
-    max_changes_pct : float, default 0.1
+    max_changes_pct : float, default 0.3
         The maximum percentage of changes allowed for a column to be considered compatible.
+    max_changes_cols_pct : float, default 0.3
+        The maximum percentage of columns that can have significant changes to be considered compatible.
 
     Returns
     -------
@@ -291,7 +295,9 @@ def compare_datasets(
     relative_changes = (new_subset - original_subset).abs() / abs_mean
     pct_significant_changes = (relative_changes > value_change_threshold).mean()
 
-    if (pct_significant_changes > max_changes_pct).any():
+    changed_cols_threshold = math.ceil(max_changes_cols_pct * original.data.shape[1])
+
+    if sum(pct_significant_changes > max_changes_pct) > changed_cols_threshold:
         problematic_cols = pct_significant_changes[
             pct_significant_changes > max_changes_pct
         ]
