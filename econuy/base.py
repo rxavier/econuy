@@ -618,9 +618,17 @@ class Dataset:
     def __getitem__(self, indicators: Union[str, List[str]]) -> "Dataset":
         indicators = [indicators] if isinstance(indicators, str) else indicators
         metadata_dict = {i: self.metadata.indicator_metadata[i] for i in indicators}
+        new_metadata = DatasetMetadata(
+            self.id, metadata_dict,
+            self.metadata.created_at,
+            self.metadata.checked_at,
+            self.metadata.updated_at,
+            self.metadata.last_update,
+            self.metadata.config
+        )
         return self.__class__(
             data=self.data[indicators],
-            metadata=DatasetMetadata(self.id, metadata_dict),
+            metadata=new_metadata,
             id=self.id,
             transformed=self.transformed,
         )
