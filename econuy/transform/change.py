@@ -13,6 +13,7 @@ def _chg_diff(
     error_handling: Literal["raise", "coerce", "ignore"] = "raise",
 ) -> Tuple[pd.DataFrame, "Metadata"]:  # type: ignore # noqa: F821
     from econuy.transform.rolling import _rolling
+    from econuy.transform.resample import _resample
 
     indicators = metadata.indicator_ids
     metadata = metadata.copy()
@@ -27,6 +28,14 @@ def _chg_diff(
         last_year = 4
     elif inferred_freq in ["YE", "YE-DEC"]:
         last_year = 1
+    # If the data is not M, Q or Y and the comparison is interannual or annual, we resample to monthly first
+    elif period in ["inter", "annual"]:
+        resample_operation = "sum" if time_series_type == "Flow" else "mean"
+        data, metadata = _resample(data, metadata, rule="ME", operation=resample_operation)
+        last_year = 12
+    # If the data is not M, Q or Y and the comparison is last, we don't need to resample, just compare with previous period
+    elif period == "last":
+        pass
     else:
         output = error_handler(
             data, errors=error_handling, msg="Frequency needs to be ME, QE or YE"
