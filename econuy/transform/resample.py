@@ -69,11 +69,10 @@ def _resample(
                 antimask[1:-1] = False
                 output = output.mask(antimask, np.nan)
         except KeyError:
-            warnings.warn(
-                "No bin trimming performed because frequencies "
-                "could not be assigned a numeric value",
-                UserWarning,
-            )
+            # If the frequency cannot be inferred, we trim the last month if the last day is before the 25th
+            last_date = data.index[-1]
+            if last_date.day < 25:
+                output = output.iloc[:-1]
     metadata.add_transformation_step(
         {
             "resample": {
