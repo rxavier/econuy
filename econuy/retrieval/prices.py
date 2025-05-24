@@ -520,6 +520,11 @@ def nxr_monthly(*args, **kwargs) -> Dataset:
         }
     )
 
+    # We only include the last month if it has data past the 25th
+    last_date = daily_data.index[-1]
+    if last_date.day < 25:
+        output = output.iloc[:-1]
+
     historical = pd.read_excel(
         sources["historical"], skiprows=4, index_col=0, usecols="A,C,F"
     ).dropna(how="any", axis=0)
