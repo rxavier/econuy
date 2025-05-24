@@ -1,4 +1,3 @@
-import warnings
 from typing import Union, Tuple
 
 import pandas as pd
@@ -48,7 +47,7 @@ def _resample(
     if cum_periods != 1:
         input_notna = data.iloc[:, 0].count()
         output_notna = output.iloc[:, 0].count()
-        cum_adj = round(output_notna / input_notna)
+        cum_adj = max(1, round(output_notna / input_notna))
         metadata.update_dataset_metadata({"cumulative_periods": cum_adj})
 
     if operation in ["sum", "mean", "last"]:
