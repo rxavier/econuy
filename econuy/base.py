@@ -205,6 +205,16 @@ class DatasetMetadata:
             self.indicator_metadata[indicator].update(indicator_metadata)
         return self
 
+    def set_indicator_ids(self, new_ids: List[str]) -> "DatasetMetadata":
+        """
+        Set the indicator ids.
+        """
+        self.indicator_metadata = {
+            new_id: self.indicator_metadata[id]
+            for id, new_id in zip(self.indicator_ids, new_ids)
+        }
+        return self
+
     def add_transformation_step(self, transformation: dict) -> "DatasetMetadata":
         """
         Add a transformation step to the metadata.
@@ -437,11 +447,10 @@ class Dataset:
         -------
         None
         """
-        self.data = data
+        self._data = data
         self.metadata = metadata
         self.id = id
         self.transformed = transformed
-        self.indicators = self.metadata.indicator_ids
 
     def validate(self) -> None:
         """
@@ -460,6 +469,16 @@ class Dataset:
         assert all(indicator in self.data.columns for indicator in self.indicators)
         assert isinstance(self.data.index, pd.DatetimeIndex)
         assert self.data.dtypes.apply(pd.api.types.is_numeric_dtype).all()
+
+    @property
+    def indicators(self) -> List[str]:
+        return self.metadata.indicator_ids
+
+    @property
+    def data(self) -> pd.DataFrame:
+        data = self._data.copy()
+        data.columns = self.indicators
+        return data
 
     def to_detailed(self, language: str = "es") -> pd.DataFrame:
         """
@@ -619,12 +638,13 @@ class Dataset:
         indicators = [indicators] if isinstance(indicators, str) else indicators
         metadata_dict = {i: self.metadata.indicator_metadata[i] for i in indicators}
         new_metadata = DatasetMetadata(
-            self.id, metadata_dict,
+            self.id,
+            metadata_dict,
             self.metadata.created_at,
             self.metadata.checked_at,
             self.metadata.updated_at,
             self.metadata.last_update,
-            self.metadata.config
+            self.metadata.config,
         )
         return self.__class__(
             data=self.data[indicators],
@@ -1142,3 +1162,86 @@ class Dataset:
             transformed=True,
         )
         return output
+
+
+def concatenate_datasets(
+    datasets: List["Dataset"], id: str = "concatenated"
+) -> "Dataset":
+    """
+    Concatenate multiple datasets.
+
+    Parameters
+    ----------
+    datasets : List[Dataset]
+        List of datasets to concatenate.
+    id : str
+        ID for the new concatenated dataset.
+
+    Returns
+    -------
+    Dataset
+        Concatenated dataset.
+
+    Raises
+    ------
+    NotImplementedError
+        If datasets don't have the same frequency.
+    ValueError
+        If fewer than 2 datasets are provided.
+    """
+    if len(datasets) < 2:
+        raise ValueError("At least 2 datasets are required for concatenation")
+
+    frequencies = [dataset.infer_frequency() for dataset in datasets]
+    reference_freq = frequencies[0]
+    for i, freq in enumerate(frequencies[1:], 1):
+        if freq != reference_freq:
+            raise NotImplementedError(
+                f"All datasets must have the same frequency. Dataset 0 has {reference_freq}, dataset {i} has {freq}"
+            )
+
+    datasets = [copy.deepcopy(dataset) for dataset in datasets]
+
+    # Add dataset index to indicator ids to avoid duplicates
+    all_indicator_ids = [
+        id for dataset in datasets for id in dataset.metadata.indicator_ids
+    ]
+    if any(all_indicator_ids.count(id) > 1 for id in all_indicator_ids):
+        for i, dataset in enumerate(datasets):
+            new_ids = [f"{x}_{i}" for x in dataset.metadata.indicator_ids]
+            dataset.metadata.set_indicator_ids(new_ids)
+
+    concatenated_data = pd.concat([dataset.data for dataset in datasets], axis=1)
+
+    merged_indicator_metadata = {}
+    for dataset in datasets:
+        merged_indicator_metadata.update(dataset.metadata.indicator_metadata)
+
+    # Union of last_update from all datasets
+    all_updated = []
+    all_new = []
+    for dataset in datasets:
+        all_updated.extend(dataset.metadata.last_update["updated"])
+        all_new.extend(dataset.metadata.last_update["new"])
+    all_updated = list(dict.fromkeys(all_updated))
+    all_new = list(dict.fromkeys(all_new))
+
+    last_update_union = {"updated": all_updated, "new": all_new}
+
+    new_metadata = DatasetMetadata(
+        id=id,
+        indicator_metadata=merged_indicator_metadata,
+        last_update=last_update_union,
+        config={"id": id},
+    )
+
+    new_dataset = Dataset(
+        id=id,
+        data=concatenated_data,
+        metadata=new_metadata,
+        transformed=any(
+            dataset.transformed for dataset in datasets
+        ),  # If any is transformed
+    )
+
+    return new_dataset

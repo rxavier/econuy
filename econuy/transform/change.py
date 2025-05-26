@@ -31,7 +31,9 @@ def _chg_diff(
     # If the data is not M, Q or Y and the comparison is interannual or annual, we resample to monthly first
     elif period in ["inter", "annual"]:
         resample_operation = "sum" if time_series_type == "Flow" else "mean"
-        data, metadata = _resample(data, metadata, rule="ME", operation=resample_operation)
+        data, metadata = _resample(
+            data, metadata, rule="ME", operation=resample_operation
+        )
         last_year = 12
     # If the data is not M, Q or Y and the comparison is last, we don't need to resample, just compare with previous period
     elif period == "last":
