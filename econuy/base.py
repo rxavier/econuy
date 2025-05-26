@@ -17,15 +17,20 @@ from econuy.transform.decompose import _decompose
 
 
 class DatasetConfig:
-    def __init__(self, id: str) -> None:
+    def __init__(self, id: str, **kwargs) -> None:
         self.id = id
-        self.load()
+        self.load(**kwargs)
 
-    def load(self) -> None:
+    def load(self, **kwargs) -> None:
         from econuy.utils.operations import REGISTRY
 
-        dataset_config = REGISTRY[self.id]
+        if kwargs:
+            dataset_config = kwargs
+        else:
+            dataset_config = REGISTRY[self.id]
         for key, value in dataset_config.items():
+            if key == "id":
+                continue
             setattr(self, key, value)
 
     def __repr__(self) -> str:
@@ -1165,7 +1170,7 @@ class Dataset:
 
 
 def concatenate_datasets(
-    datasets: List["Dataset"], id: str = "concatenated"
+    datasets: List["Dataset"], id: str = "concatenated", config_dict: Optional[dict] = None
 ) -> "Dataset":
     """
     Concatenate multiple datasets.
@@ -1228,11 +1233,30 @@ def concatenate_datasets(
 
     last_update_union = {"updated": all_updated, "new": all_new}
 
+    if config_dict:
+        new_config = config_dict
+    else:
+        # Build config from intersection of matching attributes
+        config_dicts = [dataset.metadata.config.__dict__ for dataset in datasets]
+
+        common_keys = set(config_dicts[0].keys())
+        for config_dict in config_dicts[1:]:
+            common_keys &= set(config_dict.keys())
+
+        new_config = {}
+        for key in common_keys:
+            if key == "id":  # Skip id since we're setting a new one
+                continue
+            reference_value = config_dicts[0][key]
+            if all(config_dict[key] == reference_value for config_dict in config_dicts):
+                new_config[key] = reference_value
+
+
     new_metadata = DatasetMetadata(
         id=id,
         indicator_metadata=merged_indicator_metadata,
         last_update=last_update_union,
-        config={"id": id},
+        config=DatasetConfig(id=id, **new_config),
     )
 
     new_dataset = Dataset(
