@@ -27,7 +27,10 @@ class DatasetConfig:
         if kwargs:
             dataset_config = kwargs
         else:
-            dataset_config = REGISTRY[self.id]
+            try:
+                dataset_config = REGISTRY[self.id]
+            except KeyError:
+                dataset_config = {}
         for key, value in dataset_config.items():
             if key == "id":
                 continue
