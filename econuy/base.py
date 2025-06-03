@@ -1209,7 +1209,7 @@ def concatenate_datasets(
 
     # Add dataset index to indicator ids to avoid duplicates
     all_indicator_ids = [
-        id for dataset in datasets for id in dataset.metadata.indicator_ids
+        id_ for dataset in datasets for id_ in dataset.metadata.indicator_ids
     ]
     if any(all_indicator_ids.count(id) > 1 for id in all_indicator_ids):
         for i, dataset in enumerate(datasets):
