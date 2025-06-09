@@ -71,6 +71,7 @@ def cpi_core() -> Dataset:
         pd.date_range(start="2022-10-31", freq="ME", periods=len(raw))
     ).rename_axis(None)
     output = output.apply(pd.to_numeric, errors="coerce")
+    output = output.dropna(how="all")
 
     ids, spanish_names = get_names_and_ids(id, "es")
     output.columns = ids
