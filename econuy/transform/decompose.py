@@ -81,8 +81,8 @@ def _decompose(
                     trends = results.trend.reindex(data_proc.index).T
                     seas_adjs = results.seasadj.reindex(data_proc.index).T
 
-            except X13Error:
-                logger.warning(f"X13 error. Falling back to {fallback}")
+            except X13Error as e:
+                logger.warning(f"X13 error. Falling back to {fallback} | {e}")
                 if fallback == "loess":
                     results = STL(col_df).fit()
                 elif fallback == "mloess":
