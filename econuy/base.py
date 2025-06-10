@@ -339,7 +339,20 @@ class DatasetMetadata:
         metadatas_dict = {
             k: v for d in metadatas for k, v in d.indicator_metadata.items()
         }
-        return cls(id, metadatas_dict)
+
+        # Preserve common metadata fields from the first metadata object
+        # (assuming all come from the same original dataset)
+        first_metadata = metadatas[0]
+
+        return cls(
+            id=id,
+            indicator_metadata=metadatas_dict,
+            created_at=first_metadata.created_at,
+            checked_at=first_metadata.checked_at,
+            updated_at=first_metadata.updated_at,
+            last_update=first_metadata.last_update,
+            config=first_metadata.config
+        )
 
     @classmethod
     def from_json(cls, path: Union[str, Path]) -> "DatasetMetadata":
