@@ -676,11 +676,11 @@ class Dataset:
 
         if ids is None:
             names = [names] if isinstance(names, str) else names
-            ids = [
-                k
+            name_to_id = {
+                v["names"][language]: k
                 for k, v in self.metadata.indicator_metadata.items()
-                if v["names"][language] in names
-            ]
+            }
+            ids = [name_to_id[name] for name in names]
         return self.__getitem__(ids)
 
     def filter(
