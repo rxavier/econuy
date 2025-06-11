@@ -1,7 +1,5 @@
-import re
 import os
 import tempfile
-import time
 import zipfile
 import datetime as dt
 import ssl
@@ -16,7 +14,6 @@ from dotenv import load_dotenv
 
 from econuy import load_dataset
 from econuy.base import Dataset, DatasetMetadata
-from econuy.utils.chromedriver import _build
 from econuy.utils.operations import get_download_sources, get_id_from_function
 from econuy.utils.retrieval import get_certs_path
 
@@ -33,18 +30,34 @@ def regional_gdp() -> Dataset:
     Quarterly real GDP : Dataset
 
     """
+    def _get_arg_data(year: str) -> pd.DataFrame:
+        for month in ["12", "09", "06", "03"]:
+            try:
+                full_url = sources["arg_new"].format(month=month, year=year)
+                arg = pd.read_excel(full_url, skiprows=3, usecols="C").dropna(how="all")
+                arg.index = pd.date_range(start="2004-03-31", freq="QE-DEC", periods=len(arg))
+                return arg
+            except ValueError:
+                continue
+        return pd.DataFrame()
+
     id = get_id_from_function()
     sources = get_download_sources(id)
 
-    driver = _build()
-    driver.get(sources["arg_new"])
-    time.sleep(5)
-    source = driver.page_source
-    driver.quit()
-    url = re.findall(r"/ftp/cuadros/economia/.+desest.+\.xls", source)[0]
-    full_url = f"https://www.indec.gob.ar{url}"
-    arg = pd.read_excel(full_url, skiprows=3, usecols="C").dropna(how="all")
-    arg.index = pd.date_range(start="2004-03-31", freq="QE-DEC", periods=len(arg))
+    current_year = dt.datetime.now().year
+    current_year_string = str(current_year)[-2:]
+    arg = pd.DataFrame()
+
+    arg = _get_arg_data(current_year_string)
+
+    if arg.empty:
+        current_year = current_year - 1
+        current_year_string = str(current_year)[-2:]
+        arg = _get_arg_data(current_year_string)
+
+    if arg.empty:
+        raise ValueError("No data found for Argentina")
+
     arg_old = pd.read_excel(sources["arg_old"], skiprows=7, usecols="D").dropna(
         how="all"
     )
@@ -163,6 +176,9 @@ def regional_cpi() -> pd.DataFrame:
 
     certs = get_certs_path("bcra")
     ssl_context = ssl.create_default_context(cafile=str(certs))
+    print(sources["ar"].format(
+            end_date=dt.datetime.now().strftime("%Y-%m-%d"),
+        ))
     arg = httpx.get(
         sources["ar"].format(
             end_date=dt.datetime.now().strftime("%Y-%m-%d"),

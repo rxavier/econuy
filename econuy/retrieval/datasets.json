@@ -2927,7 +2927,7 @@
     "function": "regional.regional_gdp",
     "sources": {
       "downloads": {
-        "arg_new": "https://www.indec.gob.ar/indec/web/Nivel4-Tema-3-9-47",
+        "arg_new": "https://www.indec.gob.ar/ftp/cuadros/economia/sh_oferta_demanda_desest_{month}_{year}.xls",
         "arg_old": "https://www.indec.gob.ar/ftp/nuevaweb/cuadros/17/cuadro12.xls",
         "bra": "https://ftp.ibge.gov.br/Contas_Nacionais/Contas_Nacionais_Trimestrais/Tabelas_Completas/Tab_Compl_CNT.zip"
       },
