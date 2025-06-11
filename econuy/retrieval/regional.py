@@ -176,9 +176,6 @@ def regional_cpi() -> pd.DataFrame:
 
     certs = get_certs_path("bcra")
     ssl_context = ssl.create_default_context(cafile=str(certs))
-    print(sources["ar"].format(
-            end_date=dt.datetime.now().strftime("%Y-%m-%d"),
-        ))
     arg = httpx.get(
         sources["ar"].format(
             end_date=dt.datetime.now().strftime("%Y-%m-%d"),
