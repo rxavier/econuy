@@ -451,7 +451,7 @@ def commodity_prices() -> Dataset:
         raw_pulp = pd.read_csv(path_temp, sep=";").dropna(how="any")
     proc_pulp = raw_pulp.copy().sort_index(ascending=False)
     proc_pulp.index = pd.date_range(
-        start="1990-01-31", periods=len(proc_pulp), freq="ME"
+        start="1992-01-31", periods=len(proc_pulp), freq="ME"
     )
     proc_pulp = proc_pulp.drop(["Label", "Codes"], axis=1).astype(float)
     proc_pulp = proc_pulp.div(eurusd.reindex(proc_pulp.index).values)
@@ -463,7 +463,13 @@ def commodity_prices() -> Dataset:
     raw_imf = pd.read_excel(imf).dropna(how="all", axis=1).dropna(how="all", axis=0)
     raw_imf.columns = raw_imf.iloc[0, :]
     proc_imf = raw_imf.iloc[3:, 1:]
-    proc_imf.index = pd.date_range(start="1990-01-31", periods=len(proc_imf), freq="ME")
+
+    start_year = raw_imf.iloc[3, 0].split("M")[0]
+    if len(start_year) == 4 and start_year.isdigit():
+        start_date = f"{start_year}-01-31"
+    else:
+        start_date = "1992-01-31"
+    proc_imf.index = pd.date_range(start=start_date, periods=len(proc_imf), freq="ME")
     rice = proc_imf[proc_imf.columns[proc_imf.columns.str.contains("Rice")]]
     wood = proc_imf[proc_imf.columns[proc_imf.columns.str.contains("Sawnwood")]]
     wood = wood.mean(axis=1).to_frame()
@@ -475,7 +481,6 @@ def commodity_prices() -> Dataset:
         proc_imf.columns[proc_imf.columns.str.startswith("Soybeans, U.S.")]
     ]
     wheat = proc_imf[proc_imf.columns[proc_imf.columns.str.startswith("Wheat")]]
-
     output = pd.concat(
         [beef, pulp, soybean, milk, rice, wood, wool, barley, gold, wheat], axis=1
     )
