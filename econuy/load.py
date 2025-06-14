@@ -223,6 +223,9 @@ def load_datasets_parallel(
                         datasets[id] = dataset
                     except Exception as exc:
                         logger.error(f"Error loading dataset {id} | {exc}")
+                    finally:
+                        # Clear the future reference immediately after processing
+                        del future_to_id[future]
                     pbar.update(1)
     finally:
         # Explicitly clean up any pending futures
@@ -230,6 +233,10 @@ def load_datasets_parallel(
             if not future.done():
                 future.cancel()
 
+        # Clear the future dictionary
+        future_to_id.clear()
+
+        # Force garbage collection to clean up executor threads/processes
         gc.collect()
 
     return datasets
