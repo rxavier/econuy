@@ -76,7 +76,7 @@ def activity_region() -> Dataset:
     id = get_id_from_function()
     sources = get_download_sources(id)
 
-    raw = pd.read_excel(sources["main"], skiprows=8).dropna(axis=0, thresh=2)
+    raw = pd.read_excel(sources["main"], skiprows=7).dropna(axis=0, thresh=2)
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
     output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
     output = output.drop(columns="Unnamed: 0")
@@ -107,7 +107,7 @@ def employment_region() -> Dataset:
     id = get_id_from_function()
     sources = get_download_sources(id)
 
-    raw = pd.read_excel(sources["main"], skiprows=8).dropna(axis=0, thresh=2)
+    raw = pd.read_excel(sources["main"], skiprows=7).dropna(axis=0, thresh=2)
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
     output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
     output = output.drop(columns="Unnamed: 0")
@@ -138,7 +138,7 @@ def unemployment_region() -> Dataset:
     id = get_id_from_function()
     sources = get_download_sources(id)
 
-    raw = pd.read_excel(sources["main"], skiprows=8).dropna(axis=0, thresh=2)
+    raw = pd.read_excel(sources["main"], skiprows=7).dropna(axis=0, thresh=2)
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
     output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
     output = output.drop(columns="Unnamed: 0")
@@ -169,7 +169,7 @@ def employment_age() -> Dataset:
     id = get_id_from_function()
     sources = get_download_sources(id)
 
-    raw = pd.read_excel(sources["main"], skiprows=7).dropna(axis=0, thresh=2)
+    raw = pd.read_excel(sources["main"], skiprows=6).dropna(axis=0, thresh=2)
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
     output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
     output = output.drop(columns="Unnamed: 0")
@@ -199,7 +199,7 @@ def unemployment_contributions() -> Dataset:
     id = get_id_from_function()
     sources = get_download_sources(id)
 
-    raw = pd.read_excel(sources["main"], skiprows=9).dropna(axis=0, thresh=2)
+    raw = pd.read_excel(sources["main"], skiprows=8).dropna(axis=0, thresh=2)
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
     output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
     output = output.drop(columns="Unnamed: 0")
@@ -230,7 +230,7 @@ def unemployment_characteristics() -> Dataset:
     id = get_id_from_function()
     sources = get_download_sources(id)
 
-    raw = pd.read_excel(sources["main"], skiprows=8).dropna(axis=0, thresh=2)
+    raw = pd.read_excel(sources["main"], skiprows=7).dropna(axis=0, thresh=2)
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
     output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
     output = output.drop(columns="Unnamed: 0")
@@ -262,7 +262,7 @@ def unemployment_conditions() -> Dataset:
     sources = get_download_sources(id)
 
     raw = pd.read_excel(
-        sources["main"], skiprows=9, na_values=[".."], usecols="A:I"
+        sources["main"], skiprows=8, na_values=[".."], usecols="A:I"
     ).dropna(axis=0, thresh=2)
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
     output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
@@ -294,7 +294,7 @@ def unemployment_duration() -> Dataset:
     id = get_id_from_function()
     sources = get_download_sources(id)
 
-    raw = pd.read_excel(sources["main"], skiprows=9, usecols="A,J").dropna(
+    raw = pd.read_excel(sources["main"], skiprows=8, usecols="A,J").dropna(
         axis=0, thresh=2
     )
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
@@ -327,7 +327,7 @@ def employment_characteristics() -> Dataset:
     id = get_id_from_function()
     sources = get_download_sources(id)
 
-    raw = pd.read_excel(sources["main"], skiprows=8).dropna(axis=0, thresh=2)
+    raw = pd.read_excel(sources["main"], skiprows=7).dropna(axis=0, thresh=2)
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
     output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
     output = output.drop(columns="Unnamed: 0")
@@ -407,7 +407,7 @@ def employment_sector() -> Dataset:
     id = get_id_from_function()
     sources = get_download_sources(id)
 
-    raw = pd.read_excel(sources["main"], skiprows=7).dropna(axis=0, thresh=2)
+    raw = pd.read_excel(sources["main"], skiprows=6).dropna(axis=0, thresh=2)
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
     output.index = pd.date_range(start="2011-01-31", periods=len(output), freq="ME")
     output = output.drop(columns="Unnamed: 0")
