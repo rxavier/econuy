@@ -2507,7 +2507,8 @@
     "sources": {
       "downloads": {
         "beef": "https://github.com/rxavier/econuy-extras/raw/refs/heads/main/econuy_extras/retrieval/precios.xlsx",
-        "pulp": "https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600341?ordre=antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=12&anneeFin={year}",
+        "pulp2": "https://www.insee.fr/en/statistiques/serie/telecharger/csv/010600341?ordre=antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=12&anneeFin={year}",
+        "pulp": "https://bdm.insee.fr/series/010600341/csv?lang=en&ordre=antechronologique&transposition=donneescolonne&periodeDebut=1&anneeDebut=1990&periodeFin=12&anneeFin={year}&revision=sansrevisions",
         "milk1": "https://www.inale.org/estadisticas/",
         "milk2": "https://agriculture.ec.europa.eu/document/download/62d01488-33a0-4601-a841-ca48fa11d999_en?filename=eu-milk-historical-price-series_en_0.xlsx",
         "imf": "https://www.imf.org/en/Research/commodity-prices"
