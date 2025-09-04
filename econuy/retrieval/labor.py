@@ -22,8 +22,8 @@ def labor_rates_gender() -> Dataset:
     id = get_id_from_function()
     sources = get_download_sources(id)
 
-    raw = pd.read_excel(sources["main"], skiprows=6).dropna(axis=0, thresh=2)
-    output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
+    raw = pd.read_excel(sources["main"], skiprows=4).dropna(axis=0, thresh=2)
+    output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)].iloc[1:]
     output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
     output = output.drop(columns="Unnamed: 0")
     output.columns = [
