@@ -599,7 +599,7 @@ def rxr() -> Dataset:
     id = get_id_from_function()
     sources = get_download_sources(id)
     try:
-        raw = pd.read_excel(sources["main"], skiprows=8, usecols="B:N", index_col=0)
+        raw = pd.read_excel(sources["main"], skiprows=9, usecols="B:N", index_col=0)
     except URLError as err:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(err):
             r_bytes = get_with_ssl_context("bcu", sources["main"])

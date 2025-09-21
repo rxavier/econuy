@@ -24,8 +24,8 @@ def cpi() -> Dataset:
     """
     id = get_id_from_function()
     sources = get_download_sources(id)
-
-    raw = pd.read_excel(sources["main"], usecols="C").dropna(axis=0, how="any")
+    bytes = get_with_ssl_context("ine", sources["main"])
+    raw = pd.read_excel(bytes, usecols="C").dropna(axis=0, how="any")
     output = raw.set_index(
         pd.date_range(start="1937-07-31", freq="ME", periods=len(raw))
     ).rename_axis(None)
@@ -65,8 +65,8 @@ def cpi_core() -> Dataset:
     """
     id = get_id_from_function()
     sources = get_download_sources(id)
-
-    raw = pd.read_excel(sources["main"], usecols="D")
+    bytes = get_with_ssl_context("ine", sources["main"])
+    raw = pd.read_excel(bytes, usecols="D")
     output = raw.set_index(
         pd.date_range(start="2022-10-31", freq="ME", periods=len(raw))
     ).rename_axis(None)
@@ -95,8 +95,8 @@ def indexed_unit() -> Dataset:
     """
     id = get_id_from_function()
     sources = get_download_sources(id)
-
-    raw = pd.read_excel(sources["main"], usecols="A:B", skiprows=5, index_col=0)
+    bytes = get_with_ssl_context("ine", sources["main"])
+    raw = pd.read_excel(bytes, usecols="A:B", skiprows=5, index_col=0)
     output = raw.copy().rename_axis(None).dropna(how="any")
     output.index = pd.to_datetime(output.index, format="%m/%d/%Y")
     output = output.apply(pd.to_numeric, errors="coerce")
@@ -123,8 +123,8 @@ def readjustable_unit() -> Dataset:
     """
     id = get_id_from_function()
     sources = get_download_sources(id)
-
-    raw = pd.read_excel(sources["main"], usecols="A:B", skiprows=5, index_col=0)
+    bytes = get_with_ssl_context("ine", sources["main"])
+    raw = pd.read_excel(bytes, usecols="A:B", skiprows=5, index_col=0)
     output = raw.copy().rename_axis(None).dropna(how="any")
     output.index = pd.to_datetime(output.index, format="%m/%d/%Y")
     output = output.apply(pd.to_numeric, errors="coerce")
@@ -151,8 +151,9 @@ def cpi_divisions() -> Dataset:
     """
     id = get_id_from_function()
     sources = get_download_sources(id)
+    bytes = get_with_ssl_context("ine", sources["main"])
     raw = (
-        pd.read_excel(sources["main"], usecols="A:D")
+        pd.read_excel(bytes, usecols="A:D")
         .dropna(axis=0, how="any")
         .assign(
             date=lambda x: x["Año"].astype(str)
@@ -346,7 +347,8 @@ def inflation_expectations_corporate() -> Dataset:
     id = get_id_from_function()
     sources = get_download_sources(id)
 
-    raw = pd.read_excel(sources["main"], skiprows=3, usecols="A:G", index_col=0)
+    bytes = get_with_ssl_context("ine", sources["main"])
+    raw = pd.read_excel(bytes, skiprows=3, usecols="A:G", index_col=0)
     output = raw.copy()
     output.index = pd.date_range(start="2020-10-31", freq="ME", periods=len(output))
     output = output.apply(pd.to_numeric, errors="coerce")
@@ -459,8 +461,9 @@ def ppi() -> Dataset:
     id = get_id_from_function()
     sources = get_download_sources(id)
 
+    bytes = get_with_ssl_context("ine", sources["main"])
     raw = (
-        pd.read_excel(sources["main"], skiprows=7, usecols="H,I,J,K")
+        pd.read_excel(bytes, skiprows=7, usecols="H,I,J,K")
         .dropna()
         .rename_axis(None)
     )
@@ -575,7 +578,8 @@ def nxr_daily() -> Dataset:
     id = get_id_from_function()
     sources = get_download_sources(id)
 
-    output = pd.read_excel(sources["main"], usecols="A,D", index_col=0)
+    bytes = get_with_ssl_context("ine", sources["main"])
+    output = pd.read_excel(bytes, usecols="A,D", index_col=0)
     output.index = pd.to_datetime(output.index, format="%d-%m-%Y")
     output = output.loc[~output.index.duplicated(keep="last")]
 

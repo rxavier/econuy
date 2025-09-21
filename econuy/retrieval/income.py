@@ -1,6 +1,7 @@
 import pandas as pd
 from econuy.base import Dataset, DatasetMetadata
 from econuy.utils.operations import get_id_from_function, get_download_sources
+from econuy.utils.retrieval import get_with_ssl_context
 
 
 def income_household() -> Dataset:
@@ -13,9 +14,9 @@ def income_household() -> Dataset:
     """
     id = get_id_from_function()
     sources = get_download_sources(id)
-
+    bytes = get_with_ssl_context("ine", sources["main"])
     raw = (
-        pd.read_excel(sources["main"], skiprows=5)
+        pd.read_excel(bytes, skiprows=5)
         .dropna(thresh=5)
         .loc[lambda x: x["Mes, Trimestre y Año"].str.contains("/[0-9]{2}", regex=True)]
     )
@@ -66,9 +67,9 @@ def income_capita() -> Dataset:
     """
     id = get_id_from_function()
     sources = get_download_sources(id)
-
+    bytes = get_with_ssl_context("ine", sources["main"])
     raw = (
-        pd.read_excel(sources["main"], skiprows=5)
+        pd.read_excel(bytes, skiprows=5)
         .dropna(thresh=5)
         .loc[lambda x: x["Mes, Trimestre y Año "].str.contains("/[0-9]{2}", regex=True)]
     )

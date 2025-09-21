@@ -997,7 +997,8 @@ def industrial_production() -> Dataset:
     id = get_id_from_function()
     sources = get_download_sources(id)
 
-    raw = pd.read_excel(sources["main"], skiprows=4, usecols="D:DR", na_values="(s)")
+    bytes = get_with_ssl_context("ine", sources["main"])
+    raw = pd.read_excel(bytes, skiprows=4, usecols="D:DR", na_values="(s)")
     weights = pd.read_csv(sources["weights"]).dropna(how="all")
     weights[["División", "Grupo", "Agrupación / Clase"]] = weights[
         ["División", "Grupo", "Agrupación / Clase"]
@@ -1088,8 +1089,9 @@ def core_industrial_production(*args, **kwargs) -> Dataset:
     )
     data_18 = data_18[["total", "ex-refinery", "core"]]
 
+    bytes = get_with_ssl_context("ine", sources["2006"])
     data_06 = pd.read_excel(
-        sources["2006"], skiprows=6, usecols="B,D,F,CF,CX", na_values="(s)"
+        bytes, skiprows=6, usecols="B,D,F,CF,CX", na_values="(s)"
     ).dropna(how="all")
     data_06 = data_06.loc[~data_06.iloc[:, 0].str.contains("Prom")].iloc[:, 1:]
     data_06.columns = ["total", "ex-refinery", "other foods", "pulp"]
