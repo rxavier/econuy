@@ -109,8 +109,8 @@ def employment_region() -> Dataset:
     """
     id = get_id_from_function()
     sources = get_download_sources(id)
-
-    raw = pd.read_excel(sources["main"], skiprows=8).dropna(axis=0, thresh=2)
+    bytes = get_with_ssl_context("ine", sources["main"])
+    raw = pd.read_excel(bytes, skiprows=8).dropna(axis=0, thresh=2)
     output = raw[~raw["Unnamed: 0"].str.contains("-|/|Total", regex=True)]
     output.index = pd.date_range(start="2006-01-31", periods=len(output), freq="ME")
     output = output.drop(columns="Unnamed: 0")
